@@ -37,38 +37,126 @@
   margin-bottom: 0.5rem;
 }
 
-.demo {
+.playlist-selection {
   margin: 3rem 0;
-  padding: 2rem;
-  border: 1px solid #646cff;
-  border-radius: 10px;
+  text-align: center;
 }
 
-.counter-card {
-  padding: 2em;
-}
-
-.counter-card button {
-  font-size: 1.2rem;
-  padding: 1rem 2rem;
-  background: linear-gradient(45deg, #646cff, #535bf2);
-  border: none;
-  color: white;
+.playlist-selection h2 {
+  font-size: 2.5rem;
   margin-bottom: 1rem;
+  color: #646cff;
 }
 
-.next-steps {
-  margin: 3rem 0;
-  text-align: left;
+.playlist-selection p {
+  font-size: 1.2rem;
+  margin-bottom: 3rem;
+  opacity: 0.8;
 }
 
-.next-steps ol {
-  max-width: 600px;
-  margin: 1rem auto;
+.playlist-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-.next-steps li {
-  margin-bottom: 0.8rem;
+.playlist-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  border: 2px solid transparent;
+  border-radius: 15px;
+  background: linear-gradient(135deg, rgba(100, 108, 255, 0.1), rgba(83, 91, 242, 0.1));
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.playlist-button:hover {
+  transform: translateY(-5px);
+  border-color: #646cff;
+  background: linear-gradient(135deg, rgba(100, 108, 255, 0.2), rgba(83, 91, 242, 0.2));
+  box-shadow: 0 10px 25px rgba(100, 108, 255, 0.3);
+}
+
+.playlist-button:active {
+  transform: translateY(-2px);
+}
+
+.decade {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #646cff;
+  margin-bottom: 0.5rem;
+}
+
+.description {
+  font-size: 1rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.playlist-2020s:hover .decade {
+  color: #ff6b6b;
+}
+
+.playlist-2010s:hover .decade {
+  color: #4ecdc4;
+}
+
+.playlist-2000s:hover .decade {
+  color: #ffe66d;
+}
+
+.selection-feedback {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(100, 108, 255, 0.1), rgba(83, 91, 242, 0.1));
+  border-radius: 10px;
+  border-left: 4px solid #646cff;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.selection-feedback p {
+  margin-bottom: 0.5rem;
+}
+
+.selection-feedback strong {
+  color: #646cff;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .playlist-buttons {
+    max-width: 300px;
+    gap: 1rem;
+  }
+  
+  .playlist-button {
+    padding: 1.5rem;
+  }
+  
+  .decade {
+    font-size: 1.5rem;
+  }
+  
+  .description {
+    font-size: 0.9rem;
+  }
 }
 
 .footer {
