@@ -1,0 +1,160 @@
+.playlist-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  min-height: 100vh;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playlist-content {
+  max-width: 900px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header {
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  max-width: 100%;
+  height: auto;
+  max-height: 150px;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+}
+
+.main {
+  margin: 2rem 0;
+}
+
+.playlist-selection {
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.playlist-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.playlist-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.playlist-button:hover:not(:disabled) {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.playlist-button:active:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.playlist-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.decade {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.playlist-2020s:hover:not(:disabled) .decade {
+  color: #ff6b6b;
+}
+
+.playlist-2010s:hover:not(:disabled) .decade {
+  color: #4ecdc4;
+}
+
+.playlist-2000s:hover:not(:disabled) .decade {
+  color: #ffe66d;
+}
+
+.selection-feedback {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.5s ease-in;
+}
+
+.selection-feedback p {
+  margin-bottom: 0.5rem;
+}
+
+.selection-feedback strong {
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .playlist-container {
+    padding: 1rem;
+  }
+  
+  .playlist-content {
+    padding: 1.5rem;
+  }
+  
+  .logo {
+    max-height: 100px;
+  }
+  
+  .playlist-buttons {
+    max-width: 300px;
+    gap: 1rem;
+  }
+  
+  .playlist-button {
+    padding: 1.5rem;
+  }
+  
+  .decade {
+    font-size: 1.5rem;
+  }
+}
