@@ -3,9 +3,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background: linear-gradient(135deg, #1a0033 0%, #2d1b69 25%, #3b2a7d 50%, #4a3491 75%, #5b3da5 100%);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -28,6 +28,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background: linear-gradient(135deg, #1a0033 0%, #2d1b69 25%, #3b2a7d 50%, #4a3491 75%, #5b3da5 100%);
+  background-attachment: fixed;
 }
 
 h1 {

@@ -59,7 +59,7 @@ function App() {
         </main>
         
         <footer className="footer">
-          <p>Built with <a href="https://github.com/seanacres/mindly-starter-template" target="_blank">Mindly Starter Template</a></p>
+          <p>Song Play for Playtests © 2024</p>
         </footer>
       </div>
     </>
