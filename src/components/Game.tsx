@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import AIHost from './AIHost'
 import './Game.css'
 
 interface Song {
@@ -16,6 +17,8 @@ interface QuizQuestion {
   options: string[]
   correctAnswer: string
 }
+
+type AIHostPhase = 'question_start' | 'correct_answer' | 'wrong_answer' | 'round_end' | 'game_end'
 
 const Game = () => {
   const navigate = useNavigate()
@@ -35,6 +38,18 @@ const Game = () => {
   const [opponentCorrect, setOpponentCorrect] = useState(false)
   const [gameComplete, setGameComplete] = useState(false)
   const totalQuestions = 5
+
+  // AI Host state - smart timing to avoid audio conflicts
+  const [hostPhase, setHostPhase] = useState<AIHostPhase>('question_start')
+  const [selectedHost, setSelectedHost] = useState<string>('riley')
+
+  // Load selected AI Host character from localStorage (set in PlaylistSelection)
+  useEffect(() => {
+    const saved = localStorage.getItem('selectedAIHost')
+    if (saved) {
+      setSelectedHost(saved)
+    }
+  }, [])
   
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
@@ -154,6 +169,8 @@ const Game = () => {
     setShowFeedback(false)
     setIsPlaying(false)
     setCurrentTime(0)
+    
+    // No AI host during question phase - only during feedback
   }
 
   useEffect(() => {
@@ -183,7 +200,9 @@ const Game = () => {
     if (isPlaying) {
       audio.pause()
     } else {
-      audio.play()
+      audio.play().catch(error => {
+        console.error('Quiz Audio: Play failed:', error)
+      })
     }
     setIsPlaying(!isPlaying)
   }
@@ -194,6 +213,10 @@ const Game = () => {
     setSelectedAnswer(answer)
     const playerCorrect = answer === currentQuestion?.correctAnswer
     setIsCorrect(playerCorrect)
+    
+    // Update AI host based on answer
+    const newPhase = playerCorrect ? 'correct_answer' : 'wrong_answer'
+    setHostPhase(newPhase)
     
     // Simulate opponent answer (40% chance of being correct)
     const opponentGetsItRight = Math.random() < 0.4
@@ -220,9 +243,15 @@ const Game = () => {
   const nextQuestion = () => {
     if (questionNumber >= totalQuestions) {
       setGameComplete(true)
+      setHostPhase('game_end')
     } else {
       setQuestionNumber(prev => prev + 1)
-      startNewQuestion()
+      setHostPhase('round_end')
+      
+      // Start new question after brief delay for AI commentary
+      setTimeout(() => {
+        startNewQuestion()
+      }, 2000)
     }
   }
 
@@ -493,7 +522,25 @@ const Game = () => {
           </div>
         </div>
         
-        <button 
+                {/* AI Host Component */}
+        {!gameComplete && selectedHost !== 'none' && (
+          <AIHost
+            gamePhase={hostPhase}
+            playerName="You"
+            playerScore={score}
+            opponentScore={opponentScore}
+            songTitle={currentQuestion?.song.title}
+            songArtist={currentQuestion?.song.artist}
+            isCorrect={isCorrect}
+            character={selectedHost}
+            enabled={true}
+            voiceEnabled={true} // Voice synthesis enabled!
+          />
+        )}
+
+
+
+        <button
           className="back-to-playlists-btn"
           onClick={backToPlaylist}
         >
