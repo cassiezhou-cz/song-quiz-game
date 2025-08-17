@@ -24,10 +24,10 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  width: 100%;
   background: linear-gradient(135deg, #1a0033 0%, #2d1b69 25%, #3b2a7d 50%, #4a3491 75%, #5b3da5 100%);
   background-attachment: fixed;
 }

@@ -8,6 +8,7 @@ interface Song {
   artist: string
   file: string
   albumArt: string
+  alternatives: string[]
 }
 
 interface QuizQuestion {
@@ -35,18 +36,88 @@ const Game = () => {
   const [gameComplete, setGameComplete] = useState(false)
   const totalQuestions = 5
   
-  // 2010s playlist songs
+  // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
-    { id: '1', title: 'All of Me', artist: 'John Legend', file: '/songs/2010s/AllofMeJohnLegend.mp3', albumArt: '/assets/album-art/2010s/AllOfMeJohnLegend.jpeg' },
-    { id: '2', title: 'All The Stars', artist: 'Kendrick Lamar', file: '/songs/2010s/AllTheStarsKendrick.mp3', albumArt: '/assets/album-art/2010s/AllOfTheStarsKendrick.jpeg' },
-    { id: '3', title: 'Closer', artist: 'The Chainsmokers', file: '/songs/2010s/CloserChainsmokers.mp3', albumArt: '/assets/album-art/2010s/CloserChainsmokers.jpeg' },
-    { id: '4', title: 'Goosebumps', artist: 'Travis Scott', file: '/songs/2010s/GoosebumpsTravisScott.mp3', albumArt: '/assets/album-art/2010s/GoosebumpsTravisScott.jpeg' },
-    { id: '5', title: 'HUMBLE', artist: 'Kendrick Lamar', file: '/songs/2010s/HUMBLEKendrickLamar.mp3', albumArt: '/assets/album-art/2010s/HUMBLEKendrickLamar.jpeg' },
-    { id: '6', title: 'Low', artist: 'Flo Rida', file: '/songs/2010s/LowFloRida.mp3', albumArt: '/assets/album-art/2010s/LowFloRida.jpeg' },
-    { id: '7', title: 'One Dance', artist: 'Drake', file: '/songs/2010s/OneDanceDrake.mp3', albumArt: '/assets/album-art/2010s/OneDanceDrake.jpeg' },
-    { id: '8', title: 'Shut Up and Dance', artist: 'Walk the Moon', file: '/songs/2010s/ShupUpAndDance.mp3', albumArt: '/assets/album-art/2010s/ShutUpAndDance.jpeg' },
-    { id: '9', title: 'Sweater Weather', artist: 'The Neighbourhood', file: '/songs/2010s/SweaterWeatherTheNeighborhood.mp3', albumArt: '/assets/album-art/2010s/SweaterWeatherTheNeighborhood.jpeg' },
-    { id: '10', title: 'Wake Me Up', artist: 'Avicii', file: '/songs/2010s/WakeMeUpAvicii.mp3', albumArt: '/assets/album-art/2010s/WakeMeUpAvicii.jpeg' }
+    { 
+      id: '1', 
+      title: 'All of Me', 
+      artist: 'John Legend', 
+      file: '/songs/2010s/AllofMeJohnLegend.mp3', 
+      albumArt: '/assets/album-art/2010s/AllOfMeJohnLegend.jpeg',
+      alternatives: ['When I Was Your Man - Bruno Mars', 'Stay With Me - Sam Smith', 'Thinking Out Loud - Ed Sheeran']
+    },
+    { 
+      id: '2', 
+      title: 'All The Stars', 
+      artist: 'Kendrick Lamar', 
+      file: '/songs/2010s/AllTheStarsKendrick.mp3', 
+      albumArt: '/assets/album-art/2010s/AllOfTheStarsKendrick.jpeg',
+      alternatives: ['Location - Khalid', 'Love on the Brain - Rihanna', 'Pretty Little Fears - 6LACK feat. J. Cole']
+    },
+    { 
+      id: '3', 
+      title: 'Closer', 
+      artist: 'The Chainsmokers', 
+      file: '/songs/2010s/CloserChainsmokers.mp3', 
+      albumArt: '/assets/album-art/2010s/CloserChainsmokers.jpeg',
+      alternatives: ['It Ain\'t Me - Kygo & Selena Gomez', 'Faded - Zedd feat. Alessia Cara', 'Paris - Lauv']
+    },
+    { 
+      id: '4', 
+      title: 'Goosebumps', 
+      artist: 'Travis Scott', 
+      file: '/songs/2010s/GoosebumpsTravisScott.mp3', 
+      albumArt: '/assets/album-art/2010s/GoosebumpsTravisScott.jpeg',
+      alternatives: ['Lucid Dreams - Juice WRLD', 'Life Goes On - Lil Baby feat. Gunna & Lil Uzi Vert', 'Psycho - Post Malone feat. Ty Dolla $ign']
+    },
+    { 
+      id: '5', 
+      title: 'HUMBLE', 
+      artist: 'Kendrick Lamar', 
+      file: '/songs/2010s/HUMBLEKendrickLamar.mp3', 
+      albumArt: '/assets/album-art/2010s/HUMBLEKendrickLamar.jpeg',
+      alternatives: ['Mask Off - Future', 'Bad and Boujee - Migos feat. Lil Uzi Vert', 'Alright - J. Cole']
+    },
+    { 
+      id: '6', 
+      title: 'Low', 
+      artist: 'Flo Rida', 
+      file: '/songs/2010s/LowFloRida.mp3', 
+      albumArt: '/assets/album-art/2010s/LowFloRida.jpeg',
+      alternatives: ['Buy U a Drank - T-Pain feat. Yung Joc', 'Temperature - Sean Paul', 'Tipsy - J-Kwon']
+    },
+    { 
+      id: '7', 
+      title: 'One Dance', 
+      artist: 'Drake', 
+      file: '/songs/2010s/OneDanceDrake.mp3', 
+      albumArt: '/assets/album-art/2010s/OneDanceDrake.jpeg',
+      alternatives: ['Joanna - Afro B', 'On the Low - Burna Boy', 'Toast - Koffee']
+    },
+    { 
+      id: '8', 
+      title: 'Shut Up and Dance', 
+      artist: 'Walk the Moon', 
+      file: '/songs/2010s/ShupUpAndDance.mp3', 
+      albumArt: '/assets/album-art/2010s/ShutUpAndDance.jpeg',
+      alternatives: ['Fireflies - Owl City', 'Safe and Sound - Capital Cities', 'Cool Kids - Echosmith']
+    },
+    { 
+      id: '9', 
+      title: 'Sweater Weather', 
+      artist: 'The Neighbourhood', 
+      file: '/songs/2010s/SweaterWeatherTheNeighborhood.mp3', 
+      albumArt: '/assets/album-art/2010s/SweaterWeatherTheNeighborhood.jpeg',
+      alternatives: ['Sex - The 1975', 'Riptide - Vance Joy', 'Youth - Daughter']
+    },
+    { 
+      id: '10', 
+      title: 'Wake Me Up', 
+      artist: 'Avicii', 
+      file: '/songs/2010s/WakeMeUpAvicii.mp3', 
+      albumArt: '/assets/album-art/2010s/WakeMeUpAvicii.jpeg',
+      alternatives: ['Broken Arrows - Kygo', 'The Nights - Martin Garrix', 'Sunburst - Tobtok']
+    }
   ]
 
   const getPlaylistSongs = (playlistName: string): Song[] => {
@@ -63,12 +134,8 @@ const Game = () => {
     const randomIndex = Math.floor(Math.random() * playlistSongs.length)
     const correctSong = playlistSongs[randomIndex]
     
-    // Generate 3 wrong answers
-    const wrongAnswers = playlistSongs
-      .filter(song => song.id !== correctSong.id)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3)
-      .map(song => `${song.title} - ${song.artist}`)
+    // Use curated alternatives for this song
+    const wrongAnswers = correctSong.alternatives
     
     const correctAnswer = `${correctSong.title} - ${correctSong.artist}`
     const options = [...wrongAnswers, correctAnswer].sort(() => Math.random() - 0.5)
@@ -371,11 +438,6 @@ const Game = () => {
 
             {showFeedback && (
               <div className="simple-feedback">
-                {!isCorrect && (
-                  <div className="correct-answer">
-                    Correct answer: {currentQuestion.correctAnswer}
-                  </div>
-                )}
                 <button className="next-question-btn" onClick={nextQuestion}>
                   {questionNumber >= totalQuestions ? 'Finish Quiz' : 'Next Question →'}
                 </button>

@@ -89,12 +89,12 @@
 }
 
 .player-score .score-value {
-  color: #4ecdc4;
+  color: #E146EF;
   font-size: 1.3rem;
 }
 
 .opponent-score .score-value {
-  color: #ff6b6b;
+  color: #BC900E;
   font-size: 1.3rem;
 }
 
@@ -275,6 +275,7 @@
   display: flex;
   justify-content: center;
   gap: 1rem;
+  transform: translateY(-50px);
 }
 
 .game-btn {
@@ -391,14 +392,14 @@
   top: -90px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, rgba(78, 205, 196, 0.9), rgba(68, 160, 141, 0.9));
+  background: linear-gradient(135deg, rgba(225, 70, 239, 0.9), rgba(195, 60, 209, 0.9));
   color: white;
   padding: 0.8rem 3rem;
   border-radius: 25px;
   font-weight: bold;
   font-size: 1rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+  box-shadow: 0 4px 15px rgba(225, 70, 239, 0.4);
   animation: scorePopup 1.2s ease-out;
   z-index: 10;
   min-width: 200px;
@@ -406,8 +407,8 @@
 }
 
 .opponent-score-popup {
-  background: linear-gradient(135deg, rgba(78, 205, 196, 0.9), rgba(68, 160, 141, 0.9));
-  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+  background: linear-gradient(135deg, rgba(188, 144, 14, 0.9), rgba(158, 120, 12, 0.9));
+  box-shadow: 0 4px 15px rgba(188, 144, 14, 0.4);
 }
 
 /* Animations */
@@ -677,6 +678,7 @@
   margin-left: auto;
   margin-right: auto;
   margin-bottom: 2rem;
+  transform: translateY(-75px);
 }
 
 .final-score h3 {
@@ -710,13 +712,13 @@
 }
 
 .player-final-score h4 {
-  color: #4ecdc4;
+  color: #E146EF;
   margin-bottom: 1rem;
   font-size: 1.3rem;
 }
 
 .opponent-final-score h4 {
-  color: #ff6b6b;
+  color: #BC900E;
   margin-bottom: 1rem;
   font-size: 1.3rem;
 }
@@ -735,13 +737,13 @@
 }
 
 .player-final-score .score-number {
-  color: #4ecdc4;
-  text-shadow: 0 4px 20px rgba(78, 205, 196, 0.5);
+  color: #E146EF;
+  text-shadow: 0 4px 20px rgba(225, 70, 239, 0.5);
 }
 
 .opponent-final-score .score-number {
-  color: #ff6b6b;
-  text-shadow: 0 4px 20px rgba(255, 107, 107, 0.5);
+  color: #BC900E;
+  text-shadow: 0 4px 20px rgba(188, 144, 14, 0.5);
 }
 
 .score-total {
@@ -761,16 +763,16 @@
 }
 
 .winner {
-  color: #4ecdc4;
+  color: #E146EF;
   font-size: 2.5rem;
-  text-shadow: 0 4px 20px rgba(78, 205, 196, 0.5);
+  text-shadow: 0 4px 20px rgba(225, 70, 239, 0.5);
   animation: celebration 0.6s ease-in-out;
 }
 
 .loser {
-  color: #ff6b6b;
+  color: #BC900E;
   font-size: 2rem;
-  text-shadow: 0 4px 20px rgba(255, 107, 107, 0.5);
+  text-shadow: 0 4px 20px rgba(188, 144, 14, 0.5);
 }
 
 .tie {
