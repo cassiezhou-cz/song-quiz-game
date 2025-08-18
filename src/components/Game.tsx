@@ -135,12 +135,184 @@ const Game = () => {
     }
   ]
 
+  // 2000s playlist songs with curated alternatives
+  const songs2000s: Song[] = [
+    { 
+      id: '1', 
+      title: 'Complicated', 
+      artist: 'Avril Lavigne', 
+      file: '/songs/2000s/ComplicatedAvrilLavigne.mp3', 
+      albumArt: '/assets/album-art/2000s/ComplicatedAvrilLavigne.jpeg',
+      alternatives: ['Sk8er Boi - Simple Plan', 'Everywhere - Michelle Branch', 'Since U Been Gone - Kelly Clarkson']
+    },
+    { 
+      id: '2', 
+      title: 'Empire State of Mind', 
+      artist: 'Jay Z (feat. Alicia Keys)', 
+      file: '/songs/2000s/EmpireStateOfMindJayZ.mp3', 
+      albumArt: '/assets/album-art/2000s/EmpireStateOfMindJayZ.jpeg',
+      alternatives: ['Run This Town - Jay-Z, Rihanna & Kanye West', 'Nothin\' on You - B.o.B feat. Bruno Mars', 'All of the Lights - Kanye West feat. Rihanna & Kid Cudi']
+    },
+    { 
+      id: '3', 
+      title: 'Fireflies', 
+      artist: 'Owl City', 
+      file: '/songs/2000s/FirefliesOwlCity.mp3', 
+      albumArt: '/assets/album-art/2000s/FirefliesOwlCity.jpeg',
+      alternatives: ['Safe and Sound - Capital Cities', 'Shut Up and Dance - Walk The Moon', 'Electric Feel - MGMT']
+    },
+    { 
+      id: '4', 
+      title: 'Gimme More', 
+      artist: 'Britney Spears', 
+      file: '/songs/2000s/GimmeMoreBritneySpears.mp3', 
+      albumArt: '/assets/album-art/2000s/GimmeMoreBritneySpears.jpeg',
+      alternatives: ['Just Dance - Lady Gaga', 'Can\'t Get You Out of My Head - Kylie Minogue', 'Dirrty - Christina Aguilera']
+    },
+    { 
+      id: '5', 
+      title: 'I Want It That Way', 
+      artist: 'Backstreet Boys', 
+      file: '/songs/2000s/IWantItThatWayBackstreetBoys.mp3', 
+      albumArt: '/assets/album-art/2000s/IWantItThatWayBackstreetBoys.jpeg',
+      alternatives: ['Tearin\' Up My Heart - *NSYNC', 'Flying Without Wings - Westlife', 'Because of You - 98 Degrees']
+    },
+    { 
+      id: '6', 
+      title: 'The Middle', 
+      artist: 'Jimmy Eat World', 
+      file: '/songs/2000s/TheMiddleJimmyEatWorld.mp3', 
+      albumArt: '/assets/album-art/2000s/TheMiddleJimmyEatWorld.jpeg',
+      alternatives: ['Ocean Avenue - Yellowcard', 'Sugar, We\'re Goin Down - Fall Out Boy', 'Absolutely (Story of a Girl) - Nine Days']
+    },
+    { 
+      id: '7', 
+      title: 'Unwritten', 
+      artist: 'Natasha Bedingfield', 
+      file: '/songs/2000s/UnwrittenNatashaBedingfield.mp3', 
+      albumArt: '/assets/album-art/2000s/UnwrittenNatashaBedingfield.jpeg',
+      alternatives: ['Pocketful of Sunshine - Natasha Bedingfield', 'Breakaway - Kelly Clarkson', 'Suddenly I See - KT Tunstall']
+    },
+    { 
+      id: '8', 
+      title: 'Viva La Vida', 
+      artist: 'Coldplay', 
+      file: '/songs/2000s/VivaLaVidaColdplay.mp3', 
+      albumArt: '/assets/album-art/2000s/VivaLaVidaColdplay.jpeg',
+      alternatives: ['Chasing Cars - Snow Patrol', 'Clocks - Keane', 'Somewhere Only We Know - Keane']
+    },
+    { 
+      id: '9', 
+      title: 'Without Me', 
+      artist: 'Eminem', 
+      file: '/songs/2000s/WithoutMeEminem.mp3', 
+      albumArt: '/assets/album-art/2000s/WithoutMeEminem.jpeg',
+      alternatives: ['Forgot About Dre - Dr. Dre feat. Eminem', 'Hot in Herre - Nelly', 'In da Club - 50 Cent']
+    },
+    { 
+      id: '10', 
+      title: 'Yeah!', 
+      artist: 'Usher (feat. Lil Jon & Ludacris)', 
+      file: '/songs/2000s/YeahUsher.mp3', 
+      albumArt: '/assets/album-art/2000s/YeahUsher.jpeg',
+      alternatives: ['Get Low - Lil Jon & The East Side Boyz feat. Ying Yang Twins', 'Tipsy - J-Kwon', 'Lean Back - Terror Squad']
+    }
+  ]
+
+  // 2020s playlist songs with curated alternatives
+  const songs2020s: Song[] = [
+    { 
+      id: '1', 
+      title: 'Cardigan', 
+      artist: 'Taylor Swift', 
+      file: '/songs/2020s/CardiganTaylorSwift.mp3', 
+      albumArt: '/assets/album-art/2020s/CardiganTaylorSwift.jpeg',
+      alternatives: ['Liability - Lorde', 'Celeste - Ezra Vine', 'Fine Line - Harry Styles']
+    },
+    { 
+      id: '2', 
+      title: 'Enemy', 
+      artist: 'Imagine Dragons', 
+      file: '/songs/2020s/EnemyImagineDragons.mp3', 
+      albumArt: '/assets/album-art/2020s/EnemyImagineDragons.jpeg',
+      alternatives: ['Believer - OneRepublic', 'Centuries - Fall Out Boy', 'Radioactive - AWOLNATION']
+    },
+    { 
+      id: '3', 
+      title: 'Good Luck, Babe', 
+      artist: 'Chappell Roan', 
+      file: '/songs/2020s/GoodLuckBabeChappellRoan.mp3', 
+      albumArt: '/assets/album-art/2020s/GoodLuckBabeChappellRoan.jpeg',
+      alternatives: ['Strangers - Halsey feat. Lauren Jauregui', 'Green Light - Lorde', 'Stayaway - MUNA']
+    },
+    { 
+      id: '4', 
+      title: 'Here With Me', 
+      artist: 'd4vd', 
+      file: '/songs/2020s/HereWithMed4vd.mp3', 
+      albumArt: '/assets/album-art/2020s/HereWithMed4vd.jpeg',
+      alternatives: ['Romantic Homicide - d4vd', 'comethru - Jeremy Zucker', 'idontwannabeyouanymore - Billie Eilish']
+    },
+    { 
+      id: '5', 
+      title: 'Snooze', 
+      artist: 'SZA', 
+      file: '/songs/2020s/SnoozeSZA.mp3', 
+      albumArt: '/assets/album-art/2020s/SnoozeSZA.jpeg',
+      alternatives: ['Nights - Frank Ocean', 'After Dark - Drake feat. Static Major & Ty Dolla $ign', 'Find Someone Like You - Snoh Aalegra']
+    },
+    { 
+      id: '6', 
+      title: 'Taste', 
+      artist: 'Sabrina Carpenter', 
+      file: '/songs/2020s/TasteSabrinaCarpenter.mp3', 
+      albumArt: '/assets/album-art/2020s/TasteSabrinaCarpenter.jpeg',
+      alternatives: ['Good Ones - Charli XCX', 'Sweet but Psycho - Ava Max', 'Don\'t Call Me Up - Mabel']
+    },
+    { 
+      id: '7', 
+      title: 'the boy is mine', 
+      artist: 'Ariana Grande', 
+      file: '/songs/2020s/TheBoyIsMineArianaGrande.mp3', 
+      albumArt: '/assets/album-art/2020s/TheBoyIsMineArianaGrande.jpeg',
+      alternatives: ['No Tears Left to Cry - Dua Lipa', 'Say So - Doja Cat', 'Levitating - Dua Lipa feat. DaBaby']
+    },
+    { 
+      id: '8', 
+      title: 'Too Many Nights', 
+      artist: 'Metro Boomin', 
+      file: '/songs/2020s/TooManyNightsMetroBoomin.mp3', 
+      albumArt: '/assets/album-art/2020s/TooManyNightsMetroBoomin.jpeg',
+      alternatives: ['Knife Talk - Drake feat. 21 Savage', 'Bank Account - 21 Savage', 'Life Goes On - Lil Baby & Gunna']
+    },
+    { 
+      id: '9', 
+      title: 'Traitor', 
+      artist: 'Olivia Rodrigo', 
+      file: '/songs/2020s/TraitorOliviaRodrigo.mp3', 
+      albumArt: '/assets/album-art/2020s/TraitorOliviaRodrigo.jpeg',
+      alternatives: ['drivers license - Conan Gray', 'Moral of the Story - Ashe', 'You Broke Me First - Tate McRae']
+    },
+    { 
+      id: '10', 
+      title: 'Woman', 
+      artist: 'Doja Cat', 
+      file: '/songs/2020s/WomanDojaCat.mp3', 
+      albumArt: '/assets/album-art/2020s/WomanDojaCat.jpeg',
+      alternatives: ['Kiss Me More - Saweetie feat. H.E.R.', 'Savage Remix - Megan Thee Stallion feat. Beyoncé', 'Truth Hurts - Lizzo']
+    }
+  ]
+
   const getPlaylistSongs = (playlistName: string): Song[] => {
     switch (playlistName) {
+      case '2020s':
+        return songs2020s
       case '2010s':
         return songs2010s
+      case '2000s':
+        return songs2000s
       default:
-        return songs2010s // Default to 2010s for now
+        return songs2010s // Default to 2010s if playlist not found
     }
   }
 
