@@ -14,15 +14,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "functions": {
-    "app/api/**/*.ts": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "env": {
-    "VITE_OPENAI_API_KEY": "@vite-openai-api-key",
-    "VITE_ELEVENLABS_API_KEY": "@vite-elevenlabs-api-key",
-    "VITE_OPENAI_MODEL": "gpt-4o-mini"
-  }
+  ]
 }
