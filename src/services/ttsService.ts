@@ -19,7 +19,7 @@ class TTSService {
   private isConfigured = false
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY
+    this.apiKey = (import.meta as any).env?.VITE_ELEVENLABS_API_KEY
     this.isConfigured = !!(this.apiKey && this.apiKey !== 'your-elevenlabs-api-key-here')
   }
 

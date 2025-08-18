@@ -36,7 +36,7 @@ const getCharacterInfo = (characterId: string): CharacterInfo => {
 const getFallbackComment = (
   gamePhase: string,
   character: string,
-  isCorrect?: boolean, 
+  _isCorrect?: boolean, 
   songTitle?: string, 
   songArtist?: string
 ): string => {
@@ -125,7 +125,7 @@ const AIHost: React.FC<AIHostProps> = ({
       
       // Use fallback if rate limiting or if OpenAI fails
       if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
-        aiResponse = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
+        aiResponse = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist), processingTime: 0 }
       } else {
         try {
           setLastRequestTime(now)
@@ -143,7 +143,7 @@ const AIHost: React.FC<AIHostProps> = ({
         } catch (error: any) {
           console.warn('AI Host: Using fallback due to API error')
           // Fallback to predefined responses when OpenAI is rate limited
-          aiResponse = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
+          aiResponse = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist), processingTime: 0 }
         }
       }
 
