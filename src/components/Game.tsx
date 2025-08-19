@@ -47,6 +47,7 @@ const Game = () => {
   const [speechEnabled, setSpeechEnabled] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(false)
+  const [latestTranscript, setLatestTranscript] = useState('')
 
   // AI Host state - smart timing to avoid audio conflicts
   const [hostPhase, setHostPhase] = useState<AIHostPhase>('question_start')
@@ -366,6 +367,7 @@ const Game = () => {
     setArtistCorrect(false)
     setSongCorrect(false)
     setPointsEarned(0)
+    setLatestTranscript('')
     
     // Auto-play the song after a brief delay to let the audio element load
     setTimeout(() => {
@@ -570,7 +572,12 @@ const Game = () => {
       (response: DeepgramResponse) => {
         const transcript = response.transcript.toLowerCase().trim()
         
-        // Only process final results with decent confidence
+        // Store the latest transcript for manual stop processing
+        if (transcript.length > 2) {
+          setLatestTranscript(transcript)
+        }
+        
+        // Auto-process final results with decent confidence
         if (response.isFinal && response.confidence > 0.3 && transcript.length > 2) {
           const result = checkSpokenAnswer(transcript)
           if (result.answer) {
@@ -602,6 +609,24 @@ const Game = () => {
   const stopSpeechRecognition = () => {
     deepgramService.stopListening()
     setIsListening(false)
+  }
+
+  const handleManualStopRecording = () => {
+    stopSpeechRecognition()
+    
+    // Process the latest transcript if we have one
+    if (latestTranscript.length > 2) {
+      const result = checkSpokenAnswer(latestTranscript)
+      if (result.answer) {
+        handleAnswerSelect(result.answer, result.artistMatch, result.songMatch)
+      } else {
+        // If no match found, still submit as an incorrect answer to move to results
+        handleAnswerSelect('no match found', false, false)
+      }
+    } else {
+      // If no transcript captured, submit as incorrect to move to results
+      handleAnswerSelect('no speech detected', false, false)
+    }
   }
 
   // Cleanup speech recognition on unmount
@@ -793,7 +818,7 @@ const Game = () => {
                 </p>
                 <button
                   className={`speech-button ${isListening ? 'listening' : ''}`}
-                  onClick={isListening ? stopSpeechRecognition : startSpeechRecognition}
+                  onClick={isListening ? handleManualStopRecording : startSpeechRecognition}
                   disabled={!!selectedAnswer}
                 >
                   {isListening ? (
