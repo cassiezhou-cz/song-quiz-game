@@ -563,7 +563,6 @@ const Game = () => {
     
     const cleanTranscript = transcript.toLowerCase().trim()
     const songTitle = currentQuestion.song.title.toLowerCase()
-    const songArtist = currentQuestion.song.artist.toLowerCase()
     
     // Improved title matching - check if transcript contains song title
     const hasTitle = cleanTranscript.includes(songTitle)
