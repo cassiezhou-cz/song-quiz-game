@@ -11,6 +11,7 @@ interface Song {
   file: string
   albumArt: string
   alternatives: string[]
+  artistAlternatives?: string[] // Alternative spellings/pronunciations for artist names
 }
 
 interface QuizQuestion {
@@ -95,7 +96,8 @@ const Game = () => {
       artist: 'Kendrick Lamar', 
       file: '/songs/2010s/AllTheStarsKendrick.mp3', 
       albumArt: '/assets/album-art/2010s/AllOfTheStarsKendrick.jpeg',
-      alternatives: ['Location - Khalid', 'Love on the Brain - Rihanna', 'Pretty Little Fears - 6LACK feat. J. Cole']
+      alternatives: ['Location - Khalid', 'Love on the Brain - Rihanna', 'Pretty Little Fears - 6LACK feat. J. Cole'],
+      artistAlternatives: ['Kendrick Lamarr', 'Kendrick', 'Lamar']
     },
     { 
       id: '3', 
@@ -103,7 +105,8 @@ const Game = () => {
       artist: 'The Chainsmokers', 
       file: '/songs/2010s/CloserChainsmokers.mp3', 
       albumArt: '/assets/album-art/2010s/CloserChainsmokers.jpeg',
-      alternatives: ['It Ain\'t Me - Kygo & Selena Gomez', 'Faded - Zedd feat. Alessia Cara', 'Paris - Lauv']
+      alternatives: ['It Ain\'t Me - Kygo & Selena Gomez', 'Faded - Zedd feat. Alessia Cara', 'Paris - Lauv'],
+      artistAlternatives: ['Chainsmokers', 'Chain Smokers', 'Chainsmockers']
     },
     { 
       id: '4', 
@@ -119,7 +122,8 @@ const Game = () => {
       artist: 'Kendrick Lamar', 
       file: '/songs/2010s/HUMBLEKendrickLamar.mp3', 
       albumArt: '/assets/album-art/2010s/HUMBLEKendrickLamar.jpeg',
-      alternatives: ['Mask Off - Future', 'Bad and Boujee - Migos feat. Lil Uzi Vert', 'Alright - J. Cole']
+      alternatives: ['Mask Off - Future', 'Bad and Boujee - Migos feat. Lil Uzi Vert', 'Alright - J. Cole'],
+      artistAlternatives: ['Kendrick Lamarr', 'Kendrick', 'Lamar']
     },
     { 
       id: '6', 
@@ -127,7 +131,8 @@ const Game = () => {
       artist: 'Flo Rida', 
       file: '/songs/2010s/LowFloRida.mp3', 
       albumArt: '/assets/album-art/2010s/LowFloRida.jpeg',
-      alternatives: ['Buy U a Drank - T-Pain feat. Yung Joc', 'Temperature - Sean Paul', 'Tipsy - J-Kwon']
+      alternatives: ['Buy U a Drank - T-Pain feat. Yung Joc', 'Temperature - Sean Paul', 'Tipsy - J-Kwon'],
+      artistAlternatives: ['Flow Rider', 'Flow Rida', 'Flo Rider', 'Florida']
     },
     { 
       id: '7', 
@@ -564,7 +569,7 @@ const Game = () => {
     const hasTitle = cleanTranscript.includes(songTitle)
     
     // Improved artist matching - more flexible approach
-    const hasArtist = checkArtistMatch(cleanTranscript, songArtist)
+    const hasArtist = checkArtistMatch(cleanTranscript, currentQuestion.song)
     
     // If we have at least one match, consider it a valid answer
     if (hasTitle || hasArtist) {
@@ -593,41 +598,62 @@ const Game = () => {
     return { answer: null, artistMatch: false, songMatch: false }
   }
 
-  const checkArtistMatch = (transcript: string, artistName: string): boolean => {
-    // First try exact match
-    if (transcript.includes(artistName)) {
-      return true
-    }
+  const checkArtistMatch = (transcript: string, song: Song): boolean => {
+    const artistName = song.artist.toLowerCase()
     
-    // Split artist name into words and remove common articles
-    const artistWords = artistName
-      .replace(/^the\s+/i, '') // Remove "The" at the beginning
-      .split(/\s+/)
-      .filter(word => word.length > 1) // Filter out single letters and short words
-    
-    // Check if any significant artist word appears in transcript
-    for (const word of artistWords) {
-      if (word.length >= 3 && transcript.includes(word)) {
+    // Helper function to check artist name matching
+    const checkSingleArtistName = (name: string): boolean => {
+      // First try exact match
+      if (transcript.includes(name)) {
         return true
       }
-    }
-    
-    // Handle special cases for common artist name patterns
-    if (artistName.includes(' ')) {
-      const [firstName, ...lastNames] = artistWords
-      const lastName = lastNames.join(' ')
       
-      // Check first name + last initial (e.g., "John L" for "John Legend")
-      if (firstName && lastName && firstName.length >= 3) {
-        const lastInitial = lastName.charAt(0)
-        if (transcript.includes(firstName) && transcript.includes(lastInitial)) {
+      // Split artist name into words and remove common articles
+      const artistWords = name
+        .replace(/^the\s+/i, '') // Remove "The" at the beginning
+        .split(/\s+/)
+        .filter(word => word.length > 1) // Filter out single letters and short words
+      
+      // Check if any significant artist word appears in transcript
+      for (const word of artistWords) {
+        if (word.length >= 3 && transcript.includes(word)) {
           return true
         }
       }
       
-      // Check just last name for common single-name references
-      if (lastName && lastName.length >= 4 && transcript.includes(lastName)) {
-        return true
+      // Handle special cases for common artist name patterns
+      if (name.includes(' ')) {
+        const [firstName, ...lastNames] = artistWords
+        const lastName = lastNames.join(' ')
+        
+        // Check first name + last initial (e.g., "John L" for "John Legend")
+        if (firstName && lastName && firstName.length >= 3) {
+          const lastInitial = lastName.charAt(0)
+          if (transcript.includes(firstName) && transcript.includes(lastInitial)) {
+            return true
+          }
+        }
+        
+        // Check just last name for common single-name references
+        if (lastName && lastName.length >= 4 && transcript.includes(lastName)) {
+          return true
+        }
+      }
+      
+      return false
+    }
+    
+    // Check against the main artist name
+    if (checkSingleArtistName(artistName)) {
+      return true
+    }
+    
+    // Check against artist alternatives if they exist
+    if (song.artistAlternatives && song.artistAlternatives.length > 0) {
+      for (const alternative of song.artistAlternatives) {
+        if (checkSingleArtistName(alternative.toLowerCase())) {
+          return true
+        }
       }
     }
     
@@ -947,6 +973,9 @@ const Game = () => {
                     <div className="debug-transcript">
                       <p><strong>Captured Text:</strong> "{latestTranscript}"</p>
                       <p><strong>Expected:</strong> "{currentQuestion.song.title}" by "{currentQuestion.song.artist}"</p>
+                      {currentQuestion.song.artistAlternatives && (
+                        <p><strong>Artist Alternatives:</strong> {currentQuestion.song.artistAlternatives.join(', ')}</p>
+                      )}
                     </div>
                   </div>
                 )}
