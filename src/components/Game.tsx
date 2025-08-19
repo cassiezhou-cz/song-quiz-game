@@ -591,14 +591,7 @@ const Game = () => {
           setLatestTranscript(transcript)
         }
         
-        // Auto-process final results with decent confidence
-        if (response.isFinal && response.confidence > 0.3 && transcript.length > 2) {
-          const result = checkSpokenAnswer(transcript)
-          if (result.answer) {
-            stopSpeechRecognition()
-            handleAnswerSelect(result.answer, result.artistMatch, result.songMatch)
-          }
-        }
+        // No automatic processing - user must manually stop recording
       },
       // onError callback
       (error: any) => {
