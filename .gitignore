@@ -38,3 +38,4 @@ coverage/
 # Temporary folders
 tmp/
 temp/
+.vercel
