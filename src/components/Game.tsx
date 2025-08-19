@@ -51,6 +51,9 @@ const Game = () => {
 
   // Track used songs to prevent duplicates within the same game
   const [usedSongIds, setUsedSongIds] = useState<string[]>([])
+  
+  // Prevent multiple simultaneous question loading
+  const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
 
   // AI Host state - smart timing to avoid audio conflicts
   const [hostPhase, setHostPhase] = useState<AIHostPhase>('question_start')
@@ -370,27 +373,43 @@ const Game = () => {
   }
 
   const startNewQuestion = () => {
+    // Prevent multiple simultaneous calls
+    if (isLoadingQuestion) return
+    setIsLoadingQuestion(true)
+    
+    // Stop and reset any currently playing audio
+    const audio = audioRef.current
+    if (audio) {
+      audio.pause()
+      audio.currentTime = 0
+      setIsPlaying(false)
+      setCurrentTime(0)
+    }
+    
     const question = generateQuizQuestion()
     setCurrentQuestion(question)
     setSelectedAnswer(null)
     setShowFeedback(false)
-    setCurrentTime(0)
     setIsCorrect(false)
     setArtistCorrect(false)
     setSongCorrect(false)
     setPointsEarned(0)
     setLatestTranscript('')
     
-    // Auto-play the song after a brief delay to let the audio element load
+    // Auto-play the song after audio element has loaded the new source
     setTimeout(() => {
-      const audio = audioRef.current
-      if (audio) {
-        audio.play().then(() => {
+      const audioElement = audioRef.current
+      if (audioElement && audioElement.src.includes(question.song.file.split('/').pop() || '')) {
+        audioElement.play().then(() => {
           setIsPlaying(true)
+          setIsLoadingQuestion(false)
         }).catch(error => {
           console.error('Auto-play failed:', error)
           setIsPlaying(false)
+          setIsLoadingQuestion(false)
         })
+      } else {
+        setIsLoadingQuestion(false)
       }
     }, 500)
     
@@ -518,6 +537,7 @@ const Game = () => {
     setQuestionNumber(1)
     setGameComplete(false)
     setUsedSongIds([]) // Reset used songs for new game
+    setIsLoadingQuestion(false) // Reset loading state
     startNewQuestion()
   }
 
