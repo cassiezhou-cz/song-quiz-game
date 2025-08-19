@@ -1086,7 +1086,7 @@
 
 /* Score Breakdown Styles */
 .score-breakdown {
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.5);
   padding: 1.5rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
