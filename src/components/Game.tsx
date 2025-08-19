@@ -36,6 +36,9 @@ const Game = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
+  const [artistCorrect, setArtistCorrect] = useState(false)
+  const [songCorrect, setSongCorrect] = useState(false)
+  const [pointsEarned, setPointsEarned] = useState(0)
   const [opponentCorrect, setOpponentCorrect] = useState(false)
   const [gameComplete, setGameComplete] = useState(false)
   const totalQuestions = 5
@@ -360,6 +363,10 @@ const Game = () => {
     setShowFeedback(false)
     setIsPlaying(false)
     setCurrentTime(0)
+    setIsCorrect(false)
+    setArtistCorrect(false)
+    setSongCorrect(false)
+    setPointsEarned(0)
     
     // No AI host during question phase - only during feedback
   }
@@ -398,7 +405,7 @@ const Game = () => {
     setIsPlaying(!isPlaying)
   }
 
-  const handleAnswerSelect = (answer: string) => {
+  const handleAnswerSelect = (answer: string, artistMatch?: boolean, songMatch?: boolean) => {
     if (selectedAnswer) return // Already answered
     
     // Stop speech recognition if active
@@ -408,8 +415,28 @@ const Game = () => {
     const playerCorrect = answer === currentQuestion?.correctAnswer
     setIsCorrect(playerCorrect)
     
+    // Handle partial scoring for speech recognition
+    if (artistMatch !== undefined && songMatch !== undefined) {
+      // Speech recognition with partial scoring
+      setArtistCorrect(artistMatch)
+      setSongCorrect(songMatch)
+      const points = (artistMatch ? 10 : 0) + (songMatch ? 10 : 0)
+      setPointsEarned(points)
+    } else {
+      // Traditional multiple choice - all or nothing
+      if (playerCorrect) {
+        setArtistCorrect(true)
+        setSongCorrect(true)
+        setPointsEarned(20)
+      } else {
+        setArtistCorrect(false)
+        setSongCorrect(false)
+        setPointsEarned(0)
+      }
+    }
+    
     // Update AI host based on answer
-    const newPhase = playerCorrect ? 'correct_answer' : 'wrong_answer'
+    const newPhase = (artistMatch || songMatch || playerCorrect) ? 'correct_answer' : 'wrong_answer'
     setHostPhase(newPhase)
     
     // Simulate opponent answer (40% chance of being correct)
@@ -425,12 +452,20 @@ const Game = () => {
       setIsPlaying(false)
     }
     
-    // Award points
-    if (playerCorrect) {
-      setScore(prev => prev + 10)
+    // Award points based on new scoring system
+    if (artistMatch !== undefined && songMatch !== undefined) {
+      // Speech recognition with partial scoring
+      const points = (artistMatch ? 10 : 0) + (songMatch ? 10 : 0)
+      setScore(prev => prev + points)
+    } else if (playerCorrect) {
+      // Traditional multiple choice - full 20 points
+      setScore(prev => prev + 20)
     }
+    
     if (opponentGetsItRight) {
-      setOpponentScore(prev => prev + 10)
+      // Opponent gets random partial or full score
+      const opponentPoints = Math.random() < 0.5 ? 10 : 20
+      setOpponentScore(prev => prev + opponentPoints)
     }
   }
 
@@ -470,30 +505,42 @@ const Game = () => {
   }
 
   // Speech Recognition Functions
-  const checkSpokenAnswer = (transcript: string): string | null => {
-    if (!currentQuestion) return null
+  const checkSpokenAnswer = (transcript: string): { answer: string | null, artistMatch: boolean, songMatch: boolean } => {
+    if (!currentQuestion) return { answer: null, artistMatch: false, songMatch: false }
     
     const cleanTranscript = transcript.toLowerCase().trim()
     const songTitle = currentQuestion.song.title.toLowerCase()
     const songArtist = currentQuestion.song.artist.toLowerCase()
     
-    // Check if transcript contains both song title and artist
+    // Check if transcript contains song title and/or artist
     const hasTitle = cleanTranscript.includes(songTitle)
     const hasArtist = cleanTranscript.includes(songArtist)
     
-    if (hasTitle && hasArtist) {
-      return currentQuestion.correctAnswer
-    }
-    
-    // Check against all possible answers
-    for (const option of currentQuestion.options) {
-      const optionLower = option.toLowerCase()
-      if (cleanTranscript.includes(optionLower)) {
-        return option
+    // If we have at least one match, consider it a valid answer
+    if (hasTitle || hasArtist) {
+      return { 
+        answer: currentQuestion.correctAnswer, 
+        artistMatch: hasArtist, 
+        songMatch: hasTitle 
       }
     }
     
-    return null
+    // Check against all possible answers for fallback
+    for (const option of currentQuestion.options) {
+      const optionLower = option.toLowerCase()
+      if (cleanTranscript.includes(optionLower)) {
+        // For multiple choice matches, we can't determine partial scores
+        // so treat as full match if it's the correct answer
+        const isCorrect = option === currentQuestion.correctAnswer
+        return { 
+          answer: option, 
+          artistMatch: isCorrect, 
+          songMatch: isCorrect 
+        }
+      }
+    }
+    
+    return { answer: null, artistMatch: false, songMatch: false }
   }
 
   const startSpeechRecognition = async () => {
@@ -513,10 +560,10 @@ const Game = () => {
         
         // Only process final results with decent confidence
         if (response.isFinal && response.confidence > 0.3 && transcript.length > 2) {
-          const matchedAnswer = checkSpokenAnswer(transcript)
-          if (matchedAnswer) {
+          const result = checkSpokenAnswer(transcript)
+          if (result.answer) {
             stopSpeechRecognition()
-            handleAnswerSelect(matchedAnswer)
+            handleAnswerSelect(result.answer, result.artistMatch, result.songMatch)
           }
         }
       },
@@ -592,10 +639,10 @@ const Game = () => {
                   <h4>Your Score</h4>
                   <div className="score-display">
                     <span className="score-number">{score}</span>
-                    <span className="score-total">/ {totalQuestions * 10}</span>
+                    <span className="score-total">/ {totalQuestions * 20}</span>
                   </div>
                   <p className="score-percentage">
-                    {Math.round((score / (totalQuestions * 10)) * 100)}% Correct
+                    {Math.round((score / (totalQuestions * 20)) * 100)}% Correct
                   </p>
                 </div>
                 
@@ -605,10 +652,10 @@ const Game = () => {
                   <h4>Opponent Score</h4>
                   <div className="score-display">
                     <span className="score-number">{opponentScore}</span>
-                    <span className="score-total">/ {totalQuestions * 10}</span>
+                    <span className="score-total">/ {totalQuestions * 20}</span>
                   </div>
                   <p className="score-percentage">
-                    {Math.round((opponentScore / (totalQuestions * 10)) * 100)}% Correct
+                    {Math.round((opponentScore / (totalQuestions * 20)) * 100)}% Correct
                   </p>
                 </div>
               </div>
@@ -761,6 +808,23 @@ const Game = () => {
 
             {showFeedback && (
               <div className="simple-feedback">
+                <div className="score-breakdown">
+                  <h3>You earned {pointsEarned} points!</h3>
+                  {pointsEarned > 0 && (
+                    <div className="breakdown-details">
+                      {artistCorrect && <p>✅ Artist: {currentQuestion.song.artist} (+10 points)</p>}
+                      {songCorrect && <p>✅ Song: {currentQuestion.song.title} (+10 points)</p>}
+                      {!artistCorrect && pointsEarned > 0 && <p>❌ Artist: {currentQuestion.song.artist}</p>}
+                      {!songCorrect && pointsEarned > 0 && <p>❌ Song: {currentQuestion.song.title}</p>}
+                    </div>
+                  )}
+                  {pointsEarned === 0 && (
+                    <div className="breakdown-details">
+                      <p>The correct answer was:</p>
+                      <p><strong>{currentQuestion.song.title}</strong> by <strong>{currentQuestion.song.artist}</strong></p>
+                    </div>
+                  )}
+                </div>
                 <button className="next-question-btn" onClick={nextQuestion}>
                   {questionNumber >= totalQuestions ? 'Finish Quiz' : 'Next Question →'}
                 </button>
@@ -787,7 +851,9 @@ const Game = () => {
                   <div className="sparkle sparkle-5">✨</div>
                 </div>
                 <div className="score-popup player-score-popup">
-                  Correct! +10 Points
+                  {pointsEarned === 20 ? 'Perfect! +20 Points' :
+                   pointsEarned === 10 ? (artistCorrect ? 'Artist Correct! +10 Points' : 'Song Correct! +10 Points') :
+                   'Correct! +' + pointsEarned + ' Points'}
                 </div>
               </>
             )}
@@ -809,7 +875,7 @@ const Game = () => {
                   <div className="sparkle sparkle-5">✨</div>
                 </div>
                 <div className="score-popup opponent-score-popup">
-                  Correct! +10 Points
+                  Correct! +{Math.random() < 0.5 ? '10' : '20'} Points
                 </div>
               </>
             )}

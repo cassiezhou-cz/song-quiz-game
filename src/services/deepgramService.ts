@@ -14,7 +14,7 @@ class DeepgramService {
   private isListening = false
 
   constructor() {
-    const apiKey = import.meta.env.VITE_DEEPGRAM_API_KEY
+    const apiKey = (import.meta as any).env.VITE_DEEPGRAM_API_KEY
     
     if (apiKey && apiKey !== 'your-deepgram-api-key-here') {
       try {

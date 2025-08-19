@@ -1073,3 +1073,37 @@
     transform: scale(1.2);
   }
 }
+
+/* Score Breakdown Styles */
+.score-breakdown {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 2rem;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.score-breakdown h3 {
+  color: #ffffff;
+  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.breakdown-details {
+  margin: 1rem 0;
+}
+
+.breakdown-details p {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.breakdown-details p strong {
+  color: #ffffff;
+}
