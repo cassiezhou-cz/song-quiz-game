@@ -940,6 +940,17 @@ const Game = () => {
                   )}
                 </div>
 
+                {/* Temporary Debug Section */}
+                {latestTranscript && (
+                  <div className="debug-section">
+                    <h4>🔍 Debug - What Deepgram Heard:</h4>
+                    <div className="debug-transcript">
+                      <p><strong>Captured Text:</strong> "{latestTranscript}"</p>
+                      <p><strong>Expected:</strong> "{currentQuestion.song.title}" by "{currentQuestion.song.artist}"</p>
+                    </div>
+                  </div>
+                )}
+
                 <button className="next-question-btn" onClick={nextQuestion}>
                   {questionNumber >= totalQuestions ? 'Finish Quiz' : 'Next Question →'}
                 </button>

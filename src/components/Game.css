@@ -1175,6 +1175,20 @@
   .feedback-container .score-breakdown {
     max-width: 300px;
   }
+  
+  .debug-section {
+    max-width: 320px;
+    padding: 0.75rem;
+    margin: 0.75rem auto;
+  }
+  
+  .debug-transcript {
+    padding: 0.5rem;
+  }
+  
+  .debug-transcript p {
+    font-size: 0.8rem;
+  }
 }
 
 /* Sound Bars Animation */
@@ -1280,4 +1294,39 @@
   align-items: center;
   justify-content: center;
   margin-top: 0.5rem;
+}
+
+/* Debug Section - Temporary for Speech Recognition Testing */
+.debug-section {
+  background: rgba(255, 255, 0, 0.1);
+  border: 2px solid rgba(255, 255, 0, 0.5);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem auto;
+  max-width: 500px;
+  color: #ffffff;
+}
+
+.debug-section h4 {
+  color: #ffff00;
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.debug-transcript {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 4px solid #ffff00;
+}
+
+.debug-transcript p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.debug-transcript strong {
+  color: #ffff00;
 }
