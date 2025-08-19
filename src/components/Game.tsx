@@ -361,12 +361,24 @@ const Game = () => {
     setCurrentQuestion(question)
     setSelectedAnswer(null)
     setShowFeedback(false)
-    setIsPlaying(false)
     setCurrentTime(0)
     setIsCorrect(false)
     setArtistCorrect(false)
     setSongCorrect(false)
     setPointsEarned(0)
+    
+    // Auto-play the song after a brief delay to let the audio element load
+    setTimeout(() => {
+      const audio = audioRef.current
+      if (audio) {
+        audio.play().then(() => {
+          setIsPlaying(true)
+        }).catch(error => {
+          console.error('Auto-play failed:', error)
+          setIsPlaying(false)
+        })
+      }
+    }, 500)
     
     // No AI host during question phase - only during feedback
   }
@@ -754,6 +766,17 @@ const Game = () => {
                   >
                     {isPlaying ? '⏸️' : '▶️'}
                   </button>
+                  
+                  {/* Animated Sound Bars */}
+                  {isPlaying && (
+                    <div className="sound-bars">
+                      <div className="sound-bar bar-1"></div>
+                      <div className="sound-bar bar-2"></div>
+                      <div className="sound-bar bar-3"></div>
+                      <div className="sound-bar bar-4"></div>
+                      <div className="sound-bar bar-5"></div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -1172,3 +1172,66 @@
     max-width: 300px;
   }
 }
+
+/* Sound Bars Animation */
+.sound-bars {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: 1rem;
+}
+
+.sound-bar {
+  width: 4px;
+  background: linear-gradient(to top, #667eea, #764ba2);
+  border-radius: 2px;
+  animation: soundWave 0.8s ease-in-out infinite alternate;
+}
+
+.sound-bar.bar-1 {
+  height: 20px;
+  animation-delay: 0s;
+}
+
+.sound-bar.bar-2 {
+  height: 30px;
+  animation-delay: 0.1s;
+}
+
+.sound-bar.bar-3 {
+  height: 25px;
+  animation-delay: 0.2s;
+}
+
+.sound-bar.bar-4 {
+  height: 35px;
+  animation-delay: 0.3s;
+}
+
+.sound-bar.bar-5 {
+  height: 28px;
+  animation-delay: 0.4s;
+}
+
+@keyframes soundWave {
+  0% {
+    transform: scaleY(0.3);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Update control buttons layout */
+.control-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.play-pause-btn {
+  flex-shrink: 0;
+}
