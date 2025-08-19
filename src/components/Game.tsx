@@ -44,7 +44,7 @@ const Game = () => {
   const totalQuestions = 5
 
   // Speech Recognition state
-  const [speechEnabled, setSpeechEnabled] = useState(false)
+  const [speechEnabled, setSpeechEnabled] = useState(true)
   const [isListening, setIsListening] = useState(false)
   const [speechSupported, setSpeechSupported] = useState(false)
   const [latestTranscript, setLatestTranscript] = useState('')
@@ -66,10 +66,9 @@ const Game = () => {
     const isSupported = deepgramService.isReady()
     setSpeechSupported(isSupported)
     
-    // Enable speech by default if supported
-    if (isSupported) {
-      setSpeechEnabled(true)
-    } else {
+    // Disable speech if not supported
+    if (!isSupported) {
+      setSpeechEnabled(false)
       console.log(deepgramService.getConfigurationHelp())
     }
   }, [])
