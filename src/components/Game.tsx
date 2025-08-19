@@ -792,23 +792,10 @@ const Game = () => {
               </div>
             )}
 
-            {/* Results/Feedback Screen - combines album art and score breakdown */}
+            {/* Results/Feedback Screen - simplified score breakdown only */}
             {showFeedback && (
               <div className="feedback-container">
-                <div className="album-art-display">
-                  <img 
-                    src={currentQuestion.song.albumArt} 
-                    alt={`${currentQuestion.song.title} album art`}
-                    className="album-art"
-                  />
-                  <div className="song-details">
-                    <h3 className="revealed-song-title">{currentQuestion.song.title}</h3>
-                    <p className="revealed-song-artist">by {currentQuestion.song.artist}</p>
-                  </div>
-                </div>
-
                 <div className="score-breakdown">
-                  <h3>You earned {pointsEarned} points!</h3>
                   {pointsEarned > 0 && (
                     <div className="breakdown-details">
                       {artistCorrect && <p>✅ Artist: {currentQuestion.song.artist} (+10 points)</p>}
