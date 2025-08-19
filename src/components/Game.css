@@ -1094,7 +1094,7 @@
   padding: 1.5rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  margin: 1rem auto 2rem auto;
+  margin: calc(1rem + 25px) auto 2rem auto;
   backdrop-filter: blur(10px);
   max-width: 400px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
@@ -1145,7 +1145,7 @@
   top: auto;
   left: auto;
   transform: none;
-  margin: 0;
+  margin: 25px 0 0 0;
 }
 
 .feedback-container .next-question-btn {
