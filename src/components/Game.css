@@ -990,8 +990,12 @@
 
 /* Speech Recognition Styles */
 .speech-recognition-section {
-  margin: 2rem 0;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
+  z-index: 10;
 }
 
 .speech-instruction {
