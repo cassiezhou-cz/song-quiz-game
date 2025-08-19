@@ -792,9 +792,17 @@ const Game = () => {
               </div>
             )}
 
-            {/* Results/Feedback Screen - simplified score breakdown only */}
+            {/* Results/Feedback Screen - album art with simplified score breakdown */}
             {showFeedback && (
               <div className="feedback-container">
+                <div className="album-art-display">
+                  <img 
+                    src={currentQuestion.song.albumArt} 
+                    alt={`${currentQuestion.song.title} album art`}
+                    className="album-art"
+                  />
+                </div>
+
                 <div className="score-breakdown">
                   {pointsEarned > 0 && (
                     <div className="breakdown-details">
