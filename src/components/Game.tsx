@@ -758,22 +758,8 @@ const Game = () => {
               </div>
             )}
 
-            {showFeedback && (
-              <div className="album-art-display">
-                <img 
-                  src={currentQuestion.song.albumArt} 
-                  alt={`${currentQuestion.song.title} album art`}
-                  className="album-art"
-                />
-                <div className="song-details">
-                  <h3 className="revealed-song-title">{currentQuestion.song.title}</h3>
-                  <p className="revealed-song-artist">by {currentQuestion.song.artist}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Speech Recognition Interface */}
-            {speechSupported && speechEnabled && !selectedAnswer && (
+            {/* Speech Recognition Interface - only show during question phase */}
+            {speechSupported && speechEnabled && !selectedAnswer && !showFeedback && (
               <div className="speech-recognition-section">
                 <p className="speech-instruction">
                   🎤 Speak the name of the song and artist:
@@ -798,7 +784,7 @@ const Game = () => {
               </div>
             )}
             
-            {!speechSupported && (
+            {!speechSupported && !showFeedback && (
               <div className="speech-recognition-section">
                 <p className="speech-error">
                   Speech recognition is not available. Please configure Deepgram API key.
@@ -806,8 +792,21 @@ const Game = () => {
               </div>
             )}
 
+            {/* Results/Feedback Screen - combines album art and score breakdown */}
             {showFeedback && (
-              <div className="simple-feedback">
+              <div className="feedback-container">
+                <div className="album-art-display">
+                  <img 
+                    src={currentQuestion.song.albumArt} 
+                    alt={`${currentQuestion.song.title} album art`}
+                    className="album-art"
+                  />
+                  <div className="song-details">
+                    <h3 className="revealed-song-title">{currentQuestion.song.title}</h3>
+                    <p className="revealed-song-artist">by {currentQuestion.song.artist}</p>
+                  </div>
+                </div>
+
                 <div className="score-breakdown">
                   <h3>You earned {pointsEarned} points!</h3>
                   {pointsEarned > 0 && (
@@ -825,6 +824,7 @@ const Game = () => {
                     </div>
                   )}
                 </div>
+
                 <button className="next-question-btn" onClick={nextQuestion}>
                   {questionNumber >= totalQuestions ? 'Finish Quiz' : 'Next Question →'}
                 </button>
