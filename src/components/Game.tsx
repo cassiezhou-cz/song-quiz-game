@@ -49,6 +49,9 @@ const Game = () => {
   const [speechSupported, setSpeechSupported] = useState(false)
   const [latestTranscript, setLatestTranscript] = useState('')
 
+  // Track used songs to prevent duplicates within the same game
+  const [usedSongIds, setUsedSongIds] = useState<string[]>([])
+
   // AI Host state - smart timing to avoid audio conflicts
   const [hostPhase, setHostPhase] = useState<AIHostPhase>('question_start')
   const [selectedHost, setSelectedHost] = useState<string>('riley')
@@ -340,8 +343,18 @@ const Game = () => {
 
   const generateQuizQuestion = (): QuizQuestion => {
     const playlistSongs = getPlaylistSongs(playlist || '2010s')
-    const randomIndex = Math.floor(Math.random() * playlistSongs.length)
-    const correctSong = playlistSongs[randomIndex]
+    
+    // Filter out songs that have already been used in this game
+    const availableSongs = playlistSongs.filter(song => !usedSongIds.includes(song.id))
+    
+    // If all songs have been used, reset and use all songs again (shouldn't happen with 5 questions)
+    const songsToChooseFrom = availableSongs.length > 0 ? availableSongs : playlistSongs
+    
+    const randomIndex = Math.floor(Math.random() * songsToChooseFrom.length)
+    const correctSong = songsToChooseFrom[randomIndex]
+    
+    // Add this song to the used list
+    setUsedSongIds(prev => [...prev, correctSong.id])
     
     // Use curated alternatives for this song
     const wrongAnswers = correctSong.alternatives
@@ -385,6 +398,7 @@ const Game = () => {
   }
 
   useEffect(() => {
+    setUsedSongIds([]) // Reset used songs when playlist changes
     startNewQuestion()
   }, [playlist])
 
@@ -503,6 +517,7 @@ const Game = () => {
     setOpponentScore(0)
     setQuestionNumber(1)
     setGameComplete(false)
+    setUsedSongIds([]) // Reset used songs for new game
     startNewQuestion()
   }
 
