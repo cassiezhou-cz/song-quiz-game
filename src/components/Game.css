@@ -977,3 +977,99 @@
     font-size: 1.1rem;
   }
 }
+
+/* Speech Recognition Styles */
+.speech-recognition-section {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.speech-instruction {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.speech-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 auto;
+  min-width: 200px;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.speech-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.speech-button:active {
+  transform: translateY(0);
+}
+
+.speech-button.listening {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.speech-button.listening:hover {
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+.mic-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+}
+
+.mic-icon.listening {
+  animation: micPulse 1s infinite alternate;
+}
+
+.listening-text {
+  font-weight: 500;
+}
+
+.speech-error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  max-width: 400px;
+  margin: 1rem auto;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes micPulse {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.2);
+  }
+}

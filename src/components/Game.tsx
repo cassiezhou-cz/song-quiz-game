@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AIHost from './AIHost'
+import { deepgramService, type DeepgramResponse } from '../services/deepgramService'
 import './Game.css'
 
 interface Song {
@@ -39,6 +40,11 @@ const Game = () => {
   const [gameComplete, setGameComplete] = useState(false)
   const totalQuestions = 5
 
+  // Speech Recognition state
+  const [speechEnabled, setSpeechEnabled] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [speechSupported, setSpeechSupported] = useState(false)
+
   // AI Host state - smart timing to avoid audio conflicts
   const [hostPhase, setHostPhase] = useState<AIHostPhase>('question_start')
   const [selectedHost, setSelectedHost] = useState<string>('riley')
@@ -48,6 +54,19 @@ const Game = () => {
     const saved = localStorage.getItem('selectedAIHost')
     if (saved) {
       setSelectedHost(saved)
+    }
+  }, [])
+
+  // Check Deepgram support on component mount
+  useEffect(() => {
+    const isSupported = deepgramService.isReady()
+    setSpeechSupported(isSupported)
+    
+    // Enable speech by default if supported
+    if (isSupported) {
+      setSpeechEnabled(true)
+    } else {
+      console.log(deepgramService.getConfigurationHelp())
     }
   }, [])
   
@@ -382,6 +401,9 @@ const Game = () => {
   const handleAnswerSelect = (answer: string) => {
     if (selectedAnswer) return // Already answered
     
+    // Stop speech recognition if active
+    stopSpeechRecognition()
+    
     setSelectedAnswer(answer)
     const playerCorrect = answer === currentQuestion?.correctAnswer
     setIsCorrect(playerCorrect)
@@ -428,6 +450,7 @@ const Game = () => {
   }
 
   const restartGame = () => {
+    stopSpeechRecognition()
     setScore(0)
     setOpponentScore(0)
     setQuestionNumber(1)
@@ -436,6 +459,7 @@ const Game = () => {
   }
 
   const backToPlaylist = () => {
+    stopSpeechRecognition()
     navigate('/')
   }
 
@@ -444,6 +468,89 @@ const Game = () => {
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
+
+  // Speech Recognition Functions
+  const checkSpokenAnswer = (transcript: string): string | null => {
+    if (!currentQuestion) return null
+    
+    const cleanTranscript = transcript.toLowerCase().trim()
+    const songTitle = currentQuestion.song.title.toLowerCase()
+    const songArtist = currentQuestion.song.artist.toLowerCase()
+    
+    // Check if transcript contains both song title and artist
+    const hasTitle = cleanTranscript.includes(songTitle)
+    const hasArtist = cleanTranscript.includes(songArtist)
+    
+    if (hasTitle && hasArtist) {
+      return currentQuestion.correctAnswer
+    }
+    
+    // Check against all possible answers
+    for (const option of currentQuestion.options) {
+      const optionLower = option.toLowerCase()
+      if (cleanTranscript.includes(optionLower)) {
+        return option
+      }
+    }
+    
+    return null
+  }
+
+  const startSpeechRecognition = async () => {
+    if (!speechSupported || !speechEnabled || selectedAnswer || isListening) return
+
+    // Pause the audio when starting speech recognition
+    const audio = audioRef.current
+    if (audio && isPlaying) {
+      audio.pause()
+      setIsPlaying(false)
+    }
+
+    const success = await deepgramService.startListening(
+      // onTranscript callback
+      (response: DeepgramResponse) => {
+        const transcript = response.transcript.toLowerCase().trim()
+        
+        // Only process final results with decent confidence
+        if (response.isFinal && response.confidence > 0.3 && transcript.length > 2) {
+          const matchedAnswer = checkSpokenAnswer(transcript)
+          if (matchedAnswer) {
+            stopSpeechRecognition()
+            handleAnswerSelect(matchedAnswer)
+          }
+        }
+      },
+      // onError callback
+      (error: any) => {
+        console.error('Deepgram error:', error)
+        setIsListening(false)
+      },
+      // onStarted callback
+      () => {
+        setIsListening(true)
+      },
+      // onEnded callback
+      () => {
+        setIsListening(false)
+      }
+    )
+
+    if (!success) {
+      setIsListening(false)
+    }
+  }
+
+  const stopSpeechRecognition = () => {
+    deepgramService.stopListening()
+    setIsListening(false)
+  }
+
+  // Cleanup speech recognition on unmount
+  useEffect(() => {
+    return () => {
+      deepgramService.stopListening()
+    }
+  }, [])
 
   if (!currentQuestion) {
     return <div className="game-loading">Loading quiz...</div>
@@ -618,24 +725,39 @@ const Game = () => {
               </div>
             )}
 
-            <div className="quiz-options">
-              {currentQuestion.options.map((option, index) => (
+            {/* Speech Recognition Interface */}
+            {speechSupported && speechEnabled && !selectedAnswer && (
+              <div className="speech-recognition-section">
+                <p className="speech-instruction">
+                  🎤 Speak the name of the song and artist:
+                </p>
                 <button
-                  key={index}
-                  className={`quiz-option ${
-                    selectedAnswer === option ? 
-                      (isCorrect ? 'correct' : 'incorrect') : 
-                      ''
-                  } ${
-                    showFeedback && option === currentQuestion.correctAnswer ? 'show-correct' : ''
-                  }`}
-                  onClick={() => handleAnswerSelect(option)}
+                  className={`speech-button ${isListening ? 'listening' : ''}`}
+                  onClick={isListening ? stopSpeechRecognition : startSpeechRecognition}
                   disabled={!!selectedAnswer}
                 >
-                  {option}
+                  {isListening ? (
+                    <>
+                      <span className="mic-icon listening">🎤</span>
+                      <span className="listening-text">Listening...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="mic-icon">🎤</span>
+                      <span>Start Speaking</span>
+                    </>
+                  )}
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
+            
+            {!speechSupported && (
+              <div className="speech-recognition-section">
+                <p className="speech-error">
+                  Speech recognition is not available. Please configure Deepgram API key.
+                </p>
+              </div>
+            )}
 
             {showFeedback && (
               <div className="simple-feedback">
