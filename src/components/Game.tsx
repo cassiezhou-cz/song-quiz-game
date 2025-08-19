@@ -540,9 +540,11 @@ const Game = () => {
     const songTitle = currentQuestion.song.title.toLowerCase()
     const songArtist = currentQuestion.song.artist.toLowerCase()
     
-    // Check if transcript contains song title and/or artist
+    // Improved title matching - check if transcript contains song title
     const hasTitle = cleanTranscript.includes(songTitle)
-    const hasArtist = cleanTranscript.includes(songArtist)
+    
+    // Improved artist matching - more flexible approach
+    const hasArtist = checkArtistMatch(cleanTranscript, songArtist)
     
     // If we have at least one match, consider it a valid answer
     if (hasTitle || hasArtist) {
@@ -569,6 +571,47 @@ const Game = () => {
     }
     
     return { answer: null, artistMatch: false, songMatch: false }
+  }
+
+  const checkArtistMatch = (transcript: string, artistName: string): boolean => {
+    // First try exact match
+    if (transcript.includes(artistName)) {
+      return true
+    }
+    
+    // Split artist name into words and remove common articles
+    const artistWords = artistName
+      .replace(/^the\s+/i, '') // Remove "The" at the beginning
+      .split(/\s+/)
+      .filter(word => word.length > 1) // Filter out single letters and short words
+    
+    // Check if any significant artist word appears in transcript
+    for (const word of artistWords) {
+      if (word.length >= 3 && transcript.includes(word)) {
+        return true
+      }
+    }
+    
+    // Handle special cases for common artist name patterns
+    if (artistName.includes(' ')) {
+      const [firstName, ...lastNames] = artistWords
+      const lastName = lastNames.join(' ')
+      
+      // Check first name + last initial (e.g., "John L" for "John Legend")
+      if (firstName && lastName && firstName.length >= 3) {
+        const lastInitial = lastName.charAt(0)
+        if (transcript.includes(firstName) && transcript.includes(lastInitial)) {
+          return true
+        }
+      }
+      
+      // Check just last name for common single-name references
+      if (lastName && lastName.length >= 4 && transcript.includes(lastName)) {
+        return true
+      }
+    }
+    
+    return false
   }
 
   const startSpeechRecognition = async () => {
