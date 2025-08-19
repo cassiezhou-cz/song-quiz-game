@@ -991,7 +991,7 @@
 /* Speech Recognition Styles */
 .speech-recognition-section {
   position: fixed;
-  top: calc(50% + 150px);
+  top: calc(50% + 200px);
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
