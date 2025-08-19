@@ -770,19 +770,17 @@ const Game = () => {
                 />
                 
                 {/* Animated Sound Bars - above progress bar */}
-                {isPlaying && (
-                  <div className="sound-bars-container">
-                    <div className="sound-bars">
-                      <div className="sound-bar bar-1"></div>
-                      <div className="sound-bar bar-2"></div>
-                      <div className="sound-bar bar-3"></div>
-                      <div className="sound-bar bar-4"></div>
-                      <div className="sound-bar bar-5"></div>
-                      <div className="sound-bar bar-6"></div>
-                      <div className="sound-bar bar-7"></div>
-                    </div>
+                <div className={`sound-bars-container ${isPlaying ? 'playing' : ''}`}>
+                  <div className="sound-bars">
+                    <div className="sound-bar bar-1"></div>
+                    <div className="sound-bar bar-2"></div>
+                    <div className="sound-bar bar-3"></div>
+                    <div className="sound-bar bar-4"></div>
+                    <div className="sound-bar bar-5"></div>
+                    <div className="sound-bar bar-6"></div>
+                    <div className="sound-bar bar-7"></div>
                   </div>
-                )}
+                </div>
 
                 <div className="progress-bar">
                   <div className="progress-time">
