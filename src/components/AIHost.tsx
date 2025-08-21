@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { aiService, type AIResponse } from '../services/aiService'
-import { ttsService, type TTSResponse } from '../services/ttsService'
+import { gameHost } from '../services/gameHostManager'
 import './AIHost.css'
 
 interface AIHostProps {
@@ -103,56 +102,64 @@ const AIHost: React.FC<AIHostProps> = ({
   const MIN_REQUEST_INTERVAL = 2000 // 2 seconds between OpenAI requests
 
   useEffect(() => {
-    if (!enabled || !aiService.isReady()) return
+    if (!enabled || !gameHost.isInitialized()) {
+      // Try to initialize if not already done
+      gameHost.initialize().catch(console.error)
+      return
+    }
 
     generateHostComment()
   }, [gamePhase, playerScore, opponentScore, enabled])
 
   const generateHostComment = async () => {
-    if (!aiService.isReady()) return
+    if (!gameHost.isInitialized()) return
 
     setIsGenerating(true)
     setShowComment(false)
     
     try {
-      // Determine response length based on game phase
-      const responseLength = gamePhase === 'question_start' ? 'short' : 
-                           gamePhase === 'game_end' ? 'long' : 'medium'
-
-      let aiResponse: AIResponse
+      let response: { text: string; audioUrl?: string }
       const now = Date.now()
       const timeSinceLastRequest = now - lastRequestTime
       
-      // Use fallback if rate limiting or if OpenAI fails
+      // Use fallback if rate limiting
       if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
-        aiResponse = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist), processingTime: 0 }
+        response = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
       } else {
         try {
           setLastRequestTime(now)
-          aiResponse = await aiService.generateHostComment({
-            gamePhase,
-            playerName,
-            playerScore,
-            opponentScore,
-            songTitle,
-            songArtist,
-            isCorrect,
-            responseLength,
-            character: characterInfo
-          })
+          
+          // Use appropriate gameHost method based on game phase
+          if (gamePhase === 'correct_answer' && isCorrect) {
+            const songDetails = songTitle && songArtist ? `"${songTitle}" by ${songArtist}` : 'the song'
+            response = await gameHost.celebrateCorrectAnswer(playerName, playerScore, songDetails)
+          } else if (gamePhase === 'wrong_answer' && !isCorrect) {
+            const guess = 'their guess' // We don't have the actual guess here
+            const correctAnswer = songTitle && songArtist ? `${songTitle} by ${songArtist}` : 'the correct answer'
+            response = await gameHost.handleIncorrectAnswer(playerName, guess, correctAnswer)
+          } else if (gamePhase === 'question_start') {
+            response = await gameHost.announceNewRound('current category', 1)
+          } else {
+            // Use general banter for other phases
+            const context = `${gamePhase} phase - player ${playerName} has ${playerScore} points`
+            const text = await gameHost.provideGameBanter(context)
+            response = { text: text || getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
+          }
         } catch (error: any) {
           console.warn('AI Host: Using fallback due to API error')
-          // Fallback to predefined responses when OpenAI is rate limited
-          aiResponse = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist), processingTime: 0 }
+          response = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
         }
       }
 
-      setComment(aiResponse.text)
+      setComment(response.text)
       setShowComment(true)
 
-      // Generate voice if enabled and TTS is configured
-      if (voiceEnabled && ttsService.isReady() && aiResponse.text.trim()) {
-        await generateVoice(aiResponse.text)
+      // Use audio from gameHost response if available, otherwise generate TTS
+      if (voiceEnabled && response.audioUrl) {
+        setAudioUrl(response.audioUrl)
+        setTimeout(() => {
+          playVoice()
+        }, 500)
       }
     } catch (error) {
       console.error('Failed to generate AI comment:', error)
@@ -162,31 +169,8 @@ const AIHost: React.FC<AIHostProps> = ({
     }
   }
 
-  const generateVoice = async (text: string) => {
-    try {
-      const ttsResponse: TTSResponse = await ttsService.generateSpeech({
-        text: text,
-        stability: 0.6,
-        similarityBoost: 0.8
-      })
-
-      if (ttsResponse.success && ttsResponse.audioUrl) {
-        // Clean up previous audio URL
-        if (audioUrl) {
-          ttsService.revokeAudioUrl(audioUrl)
-        }
-        
-        setAudioUrl(ttsResponse.audioUrl)
-        
-        // Auto-play immediately during feedback phase (no audio conflicts)
-        setTimeout(() => {
-          playVoice()
-        }, 500) // Quick delay for UI to update
-      }
-    } catch (error) {
-      console.error('Voice generation failed:', error)
-    }
-  }
+  // Note: TTS generation is now handled by the gameHost service
+  // This method is kept for compatibility but may not be used
 
   const playVoice = () => {
     if (audioRef.current && audioUrl) {
@@ -204,13 +188,13 @@ const AIHost: React.FC<AIHostProps> = ({
   // Clean up audio URL on unmount
   useEffect(() => {
     return () => {
-      if (audioUrl) {
-        ttsService.revokeAudioUrl(audioUrl)
+      if (audioUrl && audioUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(audioUrl)
       }
     }
   }, [audioUrl])
 
-  if (!enabled || !aiService.isReady()) {
+  if (!enabled) {
     return null
   }
 

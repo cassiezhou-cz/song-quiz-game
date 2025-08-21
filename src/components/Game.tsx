@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import AIHost from './AIHost'
 import { deepgramService, type DeepgramResponse } from '../services/deepgramService'
+import { gameHost } from '../services/gameHostManager'
 import './Game.css'
 
 interface Song {
@@ -66,6 +67,13 @@ const Game = () => {
     if (saved) {
       setSelectedHost(saved)
     }
+  }, [])
+
+  // Initialize AI Host service when component mounts
+  useEffect(() => {
+    gameHost.initialize().catch(error => {
+      console.warn('AI Host initialization failed:', error)
+    })
   }, [])
 
   // Check Deepgram support on component mount
