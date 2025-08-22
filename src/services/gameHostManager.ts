@@ -8,6 +8,14 @@ import {
 export class GameHostManager {
   private initialized = false
 
+  private getRandomResponseLength(): 'short' | 'medium' | 'long' {
+    const rand = Math.random()
+    // 60% short, 30% medium, 10% long
+    if (rand < 0.60) return 'short'
+    if (rand < 0.90) return 'medium'
+    return 'long'
+  }
+
   async initialize(personalityId: string = 'riley'): Promise<boolean> {
     try {
       // Handle the "none" case - user doesn't want AI host
@@ -77,6 +85,8 @@ export class GameHostManager {
       
       const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)]
       
+      const responseLength = this.getRandomResponseLength()
+      
       const request: AIHostRequest = {
         scenario: randomScenario,
         flowStep: {
@@ -87,7 +97,7 @@ export class GameHostManager {
         },
         players: [{ id: '1', name: playerName, score: playerScore }],
         generateVoice: true,
-        responseLength: 'medium'
+        responseLength: responseLength
       }
 
       const response = await aiHostService.generateResponse(request)
@@ -130,6 +140,8 @@ export class GameHostManager {
       
       const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)]
       
+      const responseLength = this.getRandomResponseLength()
+      
       const request: AIHostRequest = {
         scenario: randomScenario,
         flowStep: {
@@ -140,7 +152,7 @@ export class GameHostManager {
         },
         players: [{ id: '1', name: playerName, score: 0 }],
         generateVoice: true,
-        responseLength: 'medium'
+        responseLength: responseLength
       }
 
       const response = await aiHostService.generateResponse(request)
