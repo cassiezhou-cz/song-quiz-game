@@ -363,6 +363,74 @@ export class GameHostManager {
   isServiceReady(): boolean {
     return this.initialized && aiService.isReady()
   }
+
+  // Alias for backwards compatibility
+  isInitialized(): boolean {
+    return this.initialized
+  }
+
+  async announceGameIntro(playlistName: string): Promise<HostResponse> {
+    if (!this.initialized) {
+      return { text: "Welcome to Song Quiz!", success: false, error: 'Host not initialized' }
+    }
+
+    try {
+      const character = this.getCharacterInfo(this.currentPersonality)
+      const context = {
+        gamePhase: 'question_start' as const,
+        playerName: 'Player',
+        playerScore: 0,
+        opponentScore: 0,
+        responseLength: 'medium' as const,
+        character
+      }
+
+      // Generate a personalized game intro
+      const response = await aiService.generateHostComment(context)
+      
+      let audioUrl: string | undefined
+
+      if (response.text && ttsService.isReady()) {
+        const ttsResponse = await ttsService.generateSpeech({
+          text: response.text,
+          voiceId: character.voiceId,
+          stability: 0.6,
+          similarityBoost: 0.8
+        })
+
+        if (ttsResponse.success) {
+          audioUrl = ttsResponse.audioUrl
+        }
+      }
+
+      return {
+        text: response.text || this.getFallbackGameIntro(playlistName),
+        audioUrl,
+        success: true
+      }
+
+    } catch (error: any) {
+      console.error('AI Host: Failed to generate game intro:', error)
+      return {
+        text: this.getFallbackGameIntro(playlistName),
+        success: false,
+        error: error.message
+      }
+    }
+  }
+
+  private getFallbackGameIntro(playlistName: string): string {
+    const character = this.getCharacterInfo(this.currentPersonality)
+    
+    const intros = {
+      riley: `${character.emoji} Welcome to Song Quiz! Get ready to rock the ${playlistName} playlist! Let's see what you've got!`,
+      willow: `${character.emoji} Welcome, music lover. Today we explore the beautiful sounds of the ${playlistName}. Listen with your heart.`,
+      alex: `${character.emoji} Hey there! Time for some ${playlistName} vibes. Let's see if you know your music.`,
+      jordan: `${character.emoji} Welcome to the show! The ${playlistName} are calling - let's see if you can answer! Get ready for some fun!`
+    }
+
+    return intros[this.currentPersonality as keyof typeof intros] || intros.riley
+  }
 }
 
 // Export singleton instance
