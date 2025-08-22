@@ -21,12 +21,11 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src",
-    "ai-host/src/services/aiHostService.ts",
-    "ai-host/src/types/index.ts"
+    "src"
   ],
   "exclude": [
-    "ai-host/node_modules",
-    "ai-host/dist"
+    "src/ai-host-submodule/**/*",
+    "ai-host/**/*",
+    "node_modules/**/*"
   ]
 }

@@ -160,13 +160,21 @@ const AIHost: React.FC<AIHostProps> = ({
           // Use appropriate gameHost method based on game phase
           if (gamePhase === 'correct_answer' && isCorrect) {
             console.log('🎤 AIHOST: Generating celebration response')
-            const songDetails = songTitle && songArtist ? `"${songTitle}" by ${songArtist}` : 'the song'
-            response = await gameHost.celebrateCorrectAnswer(playerName, playerScore, songDetails)
+            response = await gameHost.celebrateCorrectAnswer(
+              playerName, 
+              playerScore, 
+              songTitle || 'the song', 
+              songArtist || 'the artist',
+              { generateVoice: true }
+            )
           } else if (gamePhase === 'wrong_answer' && !isCorrect) {
             console.log('🎤 AIHOST: Generating encouragement response')
-            const guess = 'their guess' // We don't have the actual guess here
-            const correctAnswer = songTitle && songArtist ? `${songTitle} by ${songArtist}` : 'the correct answer'
-            response = await gameHost.handleIncorrectAnswer(playerName, guess, correctAnswer)
+            response = await gameHost.handleIncorrectAnswer(
+              playerName, 
+              songTitle || 'the song', 
+              songArtist || 'the artist',
+              { generateVoice: true }
+            )
           } else if (gamePhase === 'question_start') {
             // Skip generating responses during question start - no host commentary needed
             return
@@ -175,14 +183,16 @@ const AIHost: React.FC<AIHostProps> = ({
             return
           } else if (gamePhase === 'game_end') {
             console.log('🎤 AIHOST: Generating game end response')
-            const playerWon = playerScore > opponentScore
-            response = await gameHost.announceGameEnd(playerScore, opponentScore, playerWon)
+            response = await gameHost.handleGameEnd(
+              playerScore, 
+              5, // totalQuestions 
+              'Quiz Game',
+              { generateVoice: true }
+            )
           } else {
-            console.log('🎤 AIHOST: Generating banter for phase:', gamePhase)
-            // Use general banter for other phases
-            const context = `${gamePhase} phase - player ${playerName} has ${playerScore} points`
-            const text = await gameHost.provideGameBanter(context)
-            response = { text: text || getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
+            console.log('🎤 AIHOST: Using fallback for phase:', gamePhase)
+            // Use fallback for other phases
+            response = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
           }
           
           console.log('🎤 AIHOST: Generated response:', { text: response.text, hasAudio: !!response.audioUrl })
