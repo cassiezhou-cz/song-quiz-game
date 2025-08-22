@@ -1,63 +1,77 @@
-import { 
-  aiHostService,
-  type AIHostConfig,
-  type AIHostRequest,
-  type GameFlowStep
-} from '../../ai-host/src/services/aiHostService'
+import { aiService, type AIResponse } from './aiService'
+import { ttsService, type TTSResponse } from './ttsService'
+
+export interface HostResponse {
+  text: string
+  audioUrl?: string
+  success: boolean
+  error?: string
+}
+
+interface CharacterInfo {
+  name: string
+  emoji: string
+  personality: string
+  voiceId?: string
+}
 
 export class GameHostManager {
   private initialized = false
+  private currentPersonality = 'riley'
+  private isReady = false
 
-  private getRandomResponseLength(): 'short' | 'medium' | 'long' {
-    const rand = Math.random()
-    // 60% short, 30% medium, 10% long
-    if (rand < 0.60) return 'short'
-    if (rand < 0.90) return 'medium'
-    return 'long'
+  constructor() {
+    this.isReady = aiService.isReady()
+  }
+
+  private getCharacterInfo(characterId: string): CharacterInfo {
+    const characters: Record<string, CharacterInfo> = {
+      riley: { 
+        name: 'Riley', 
+        emoji: '🎤', 
+        personality: 'energetic',
+        voiceId: 'h2dQOVyUfIDqY2whPOMo' // Nayva
+      },
+      willow: { 
+        name: 'Willow', 
+        emoji: '🌿', 
+        personality: 'wise',
+        voiceId: 'yj30vwTGJxSHezdAGsv9' // Jessa
+      },
+      alex: { 
+        name: 'Alex', 
+        emoji: '🎧', 
+        personality: 'cool',
+        voiceId: 'yl2ZDV1MzN4HbQJbMihG' // Alex
+      },
+      jordan: { 
+        name: 'Jordan', 
+        emoji: '😄', 
+        personality: 'funny',
+        voiceId: 'x8xv0H8Ako6Iw3cKXLoC' // Haven
+      }
+    }
+    return characters[characterId] || characters.riley
   }
 
   async initialize(personalityId: string = 'riley'): Promise<boolean> {
     try {
       // Handle the "none" case - user doesn't want AI host
       if (personalityId === 'none') {
-        console.log('🎪 HOSTMANAGER: Host disabled by user selection')
+        console.log('🎪 AI Host: Disabled by user selection')
         this.initialized = false
-        return false // Return false but don't error - this is intentional
-      }
-
-      // Map personalities to their corresponding ElevenLabs voice IDs
-      const voiceMapping: Record<string, string> = {
-        riley: 'h2dQOVyUfIDqY2whPOMo',   // Nayva
-        willow: 'yj30vwTGJxSHezdAGsv9',  // Jessa
-        alex: 'yl2ZDV1MzN4HbQJbMihG',   // Alex
-        jordan: 'x8xv0H8Ako6Iw3cKXLoC'  // Haven
-      }
-
-      const config: AIHostConfig = {
-        gameType: 'songquiz',
-        gameMode: 'multiplayer',
-        personalityId: personalityId, // Use selected personality
-        voiceId: voiceMapping[personalityId], // Use matching voice
-        defaultResponseLength: 'medium',
-        usageRate: {
-          enabled: true,
-          maxResponsesPerMinute: 20,
-          cooldownBetweenResponses: 2
-        }
-      }
-
-      const result = await aiHostService.initialize(config)
-      this.initialized = result.success
-
-      if (!result.success) {
-        console.error('AI Host initialization failed:', result.error)
         return false
       }
 
-      console.log(`🎪 HOSTMANAGER: Initialized with personality "${personalityId}"`)
+      this.currentPersonality = personalityId
+      this.isReady = aiService.isReady()
+      this.initialized = true
+
+      console.log(`🎪 AI Host: Initialized with ${personalityId} personality`)
       return true
+
     } catch (error) {
-      console.error('GameHost: Initialization error:', error)
+      console.error('AI Host: Initialization error:', error)
       this.initialized = false
       return false
     }
@@ -65,332 +79,291 @@ export class GameHostManager {
 
   async celebrateCorrectAnswer(
     playerName: string,
-    playerScore: number, 
-    songDetails: string
-  ): Promise<{ text: string; audioUrl?: string }> {
+    playerScore: number,
+    songTitle: string,
+    songArtist: string,
+    options?: {
+      responseLength?: 'short' | 'medium' | 'long'
+      generateVoice?: boolean
+    }
+  ): Promise<HostResponse> {
     if (!this.initialized) {
-      // Fallback if not initialized
-      return { text: `YES! ${playerName} nailed it with ${songDetails}!` }
+      return { text: 'Nice job!', success: false, error: 'Host not initialized' }
     }
 
     try {
-      // Add variety to scenarios to trigger different response types
-      const scenarios = [
-        `${playerName} absolutely nailed ${songDetails}! They're on fire with ${playerScore} points!`,
-        `Perfect identification of ${songDetails}! ${playerName} is showing some serious music knowledge!`,
-        `${playerName} crushed that one! ${songDetails} was spot on - they now have ${playerScore} points!`,
-        `Impressive! ${playerName} knew ${songDetails} right away and earned those points!`,
-        `That's how it's done! ${playerName} identified ${songDetails} like a true music fan!`
-      ]
-      
-      const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)]
-      
-      const responseLength = this.getRandomResponseLength()
-      
-      const request: AIHostRequest = {
-        scenario: randomScenario,
-        flowStep: {
-          id: 'round_result',
-          name: 'Correct Answer',
-          description: 'Player answered correctly and earned points',
-          settings: { isCorrect: true }
-        },
-        players: [{ id: '1', name: playerName, score: playerScore }],
-        generateVoice: true,
-        responseLength: responseLength
+      const character = this.getCharacterInfo(this.currentPersonality)
+      const context = {
+        gamePhase: 'correct_answer' as const,
+        playerName,
+        playerScore,
+        opponentScore: 0,
+        songTitle,
+        songArtist,
+        isCorrect: true,
+        responseLength: options?.responseLength || 'medium',
+        character
       }
 
-      const response = await aiHostService.generateResponse(request)
+      const response = await aiService.generateHostComment(context)
       
-      if (response.success) {
-        console.log('🎪 HOSTMANAGER: ✅ AI-GENERATED correct response:', response.text)
-        return {
+      let audioUrl: string | undefined
+
+      if (options?.generateVoice && response.text && ttsService.isReady()) {
+        const ttsResponse = await ttsService.generateSpeech({
           text: response.text,
-          audioUrl: response.audioUrl
+          voiceId: character.voiceId,
+          stability: 0.6,
+          similarityBoost: 0.8
+        })
+
+        if (ttsResponse.success) {
+          audioUrl = ttsResponse.audioUrl
         }
-      } else {
-        console.warn('🎪 HOSTMANAGER: ❌ FALLBACK correct response due to:', response.error)
-        return { text: `Amazing work, ${playerName}!` }
       }
-    } catch (error) {
-      console.error('Error generating celebration:', error)
-      return { text: `Great job, ${playerName}!` }
+
+      return {
+        text: response.text,
+        audioUrl,
+        success: true
+      }
+
+    } catch (error: any) {
+      console.error('AI Host: Failed to generate correct answer response:', error)
+      return {
+        text: this.getFallbackResponse('correct_answer', songTitle, songArtist),
+        success: false,
+        error: error.message
+      }
     }
   }
 
   async handleIncorrectAnswer(
     playerName: string,
-    guess: string,
-    correctAnswer: string
-  ): Promise<{ text: string; audioUrl?: string }> {
+    songTitle: string,
+    songArtist: string,
+    options?: {
+      responseLength?: 'short' | 'medium' | 'long'
+      generateVoice?: boolean
+    }
+  ): Promise<HostResponse> {
     if (!this.initialized) {
-      // Fallback if not initialized
-      return { text: `Not quite! That was ${correctAnswer}` }
+      return { text: 'Nice try!', success: false, error: 'Host not initialized' }
     }
 
     try {
-      // Add variety to incorrect answer scenarios
-      const scenarios = [
-        `${playerName} took a swing with "${guess}" but it was actually "${correctAnswer}". Close call!`,
-        `Not quite! ${playerName} thought "${guess}" but we were looking for "${correctAnswer}". Keep that energy up!`,
-        `Ooh, "${guess}" was a bold choice, but "${correctAnswer}" was what we needed! Try the next one!`,
-        `${playerName} went with "${guess}" - good effort, but "${correctAnswer}" was the answer. Stay focused!`,
-        `Close but not quite! "${guess}" vs "${correctAnswer}" - these can be tricky sometimes!`
-      ]
-      
-      const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)]
-      
-      const responseLength = this.getRandomResponseLength()
-      
-      const request: AIHostRequest = {
-        scenario: randomScenario,
-        flowStep: {
-          id: 'round_result',
-          name: 'Incorrect Answer',
-          description: 'Player answered incorrectly but should be encouraged',
-          settings: { isCorrect: false }
-        },
-        players: [{ id: '1', name: playerName, score: 0 }],
-        generateVoice: true,
-        responseLength: responseLength
+      const character = this.getCharacterInfo(this.currentPersonality)
+      const context = {
+        gamePhase: 'wrong_answer' as const,
+        playerName,
+        playerScore: 0,
+        opponentScore: 0,
+        songTitle,
+        songArtist,
+        isCorrect: false,
+        responseLength: options?.responseLength || 'medium',
+        character
       }
 
-      const response = await aiHostService.generateResponse(request)
+      const response = await aiService.generateHostComment(context)
       
-      if (response.success) {
-        console.log('🎪 HOSTMANAGER: ✅ AI-GENERATED incorrect response:', response.text)
-        return {
+      let audioUrl: string | undefined
+
+      if (options?.generateVoice && response.text && ttsService.isReady()) {
+        const ttsResponse = await ttsService.generateSpeech({
           text: response.text,
-          audioUrl: response.audioUrl
+          voiceId: character.voiceId,
+          stability: 0.6,
+          similarityBoost: 0.8
+        })
+
+        if (ttsResponse.success) {
+          audioUrl = ttsResponse.audioUrl
         }
-      } else {
-        console.warn('🎪 HOSTMANAGER: ❌ FALLBACK incorrect response due to:', response.error)
-        return { text: `Close! The answer was ${correctAnswer}` }
       }
-    } catch (error) {
-      console.error('Error generating encouragement:', error)
-      return { text: `Keep trying! That was ${correctAnswer}` }
+
+      return {
+        text: response.text,
+        audioUrl,
+        success: true
+      }
+
+    } catch (error: any) {
+      console.error('AI Host: Failed to generate incorrect answer response:', error)
+      return {
+        text: this.getFallbackResponse('wrong_answer', songTitle, songArtist),
+        success: false,
+        error: error.message
+      }
     }
   }
 
-  async provideGameBanter(context: string): Promise<string> {
+  async introduceQuestion(
+    questionNumber: number,
+    totalQuestions: number,
+    playlistName: string,
+    options?: {
+      responseLength?: 'short' | 'medium'
+      generateVoice?: boolean
+    }
+  ): Promise<HostResponse> {
     if (!this.initialized) {
-      return "This is getting exciting!"
+      return { text: "Here's your next song!", success: false, error: 'Host not initialized' }
     }
 
     try {
-      const request: AIHostRequest = {
-        scenario: context,
-        flowStep: {
-          id: 'banter',
-          name: 'Host Commentary',
-          description: 'General host commentary and game atmosphere',
-          settings: {}
-        },
-        players: [{ id: '1', name: 'Player', score: 0 }],
-        responseLength: 'banter',
-        generateVoice: false // Skip voice for banter to keep it quick
+      const character = this.getCharacterInfo(this.currentPersonality)
+      const context = {
+        gamePhase: 'question_start' as const,
+        playerName: 'Player',
+        playerScore: 0,
+        opponentScore: 0,
+        responseLength: options?.responseLength || 'short',
+        character
       }
 
-      const response = await aiHostService.generateResponse(request)
-      return response.success ? response.text : "Great energy so far!"
-    } catch (error) {
-      console.error('Error generating banter:', error)
-      return "Keep it up!"
-    }
-  }
-
-  async announceGameIntro(playlistName: string): Promise<{ text: string; audioUrl?: string }> {
-    console.log('🎪 HOSTMANAGER: announceGameIntro called for playlist:', playlistName)
-    
-    if (!this.initialized) {
-      console.log('🎪 HOSTMANAGER: Not initialized, returning fallback')
-      return { text: `Welcome to ${playlistName} Song Quiz! Let's see what you've got!` }
-    }
-
-    try {
-      console.log('🎪 HOSTMANAGER: Creating AI request for game intro...')
-      const request: AIHostRequest = {
-        scenario: `Welcome to the ${playlistName} Song Quiz! Get the players excited and ready for some amazing music from the ${playlistName}. This is going to be fun!`,
-        flowStep: {
-          id: 'game_start',
-          name: 'Game Introduction',
-          description: 'Host introducing the game and getting players excited',
-          settings: {}
-        },
-        players: [{ id: '1', name: 'Players', score: 0 }],
-        generateVoice: true,
-        responseLength: 'medium'
-      }
-
-      console.log('🎪 HOSTMANAGER: Sending request to aiHostService...')
-      const response = await aiHostService.generateResponse(request)
-      console.log('🎪 HOSTMANAGER: Received response from aiHostService:', { 
-        success: response.success, 
-        text: response.text, 
-        hasAudio: !!response.audioUrl,
-        audioUrl: response.audioUrl?.substring(0, 50) + '...' 
-      })
+      const response = await aiService.generateHostComment(context)
       
-      if (response.success) {
-        return {
+      let audioUrl: string | undefined
+
+      if (options?.generateVoice && response.text && ttsService.isReady()) {
+        const ttsResponse = await ttsService.generateSpeech({
           text: response.text,
-          audioUrl: response.audioUrl
+          voiceId: character.voiceId,
+          stability: 0.6,
+          similarityBoost: 0.8
+        })
+
+        if (ttsResponse.success) {
+          audioUrl = ttsResponse.audioUrl
         }
-      } else {
-        console.warn('🎪 HOSTMANAGER: AI Host response failed:', response.error)
-        return { text: `Welcome to ${playlistName} Song Quiz! Let's get started!` }
       }
-    } catch (error) {
-      console.error('🎪 HOSTMANAGER: Error generating game intro:', error)
-      return { text: `Welcome to ${playlistName} Song Quiz!` }
+
+      return {
+        text: response.text,
+        audioUrl,
+        success: true
+      }
+
+    } catch (error: any) {
+      console.error('AI Host: Failed to generate question intro:', error)
+      return {
+        text: this.getFallbackResponse('question_start'),
+        success: false,
+        error: error.message
+      }
     }
   }
 
-  async announceNewRound(category: string, roundNumber: number): Promise<{ text: string; audioUrl?: string }> {
-    console.log('🎪 HOSTMANAGER: announceNewRound called:', { category, roundNumber })
-    
+  async handleGameEnd(
+    finalScore: number,
+    totalQuestions: number,
+    playlistName: string,
+    options?: {
+      generateVoice?: boolean
+    }
+  ): Promise<HostResponse> {
     if (!this.initialized) {
-      console.log('🎪 HOSTMANAGER: Not initialized for round announcement, returning fallback')
-      return { text: `Round ${roundNumber}: ${category} - Let's see what you've got!` }
+      return { text: 'Thanks for playing!', success: false, error: 'Host not initialized' }
     }
 
     try {
-      console.log('🎪 HOSTMANAGER: Creating AI request for round announcement...')
-      const request: AIHostRequest = {
-        scenario: `Starting round ${roundNumber} with ${category} songs! Time to get the players excited and ready for the next challenge.`,
-        flowStep: {
-          id: 'round_start',
-          name: 'New Round Announcement',
-          description: 'Host announcing the start of a new round',
-          settings: {}
-        },
-        players: [{ id: '1', name: 'Players', score: 0 }],
-        generateVoice: true,
-        responseLength: 'medium'
+      const character = this.getCharacterInfo(this.currentPersonality)
+      const context = {
+        gamePhase: 'game_end' as const,
+        playerName: 'Player',
+        playerScore: finalScore,
+        opponentScore: 0,
+        responseLength: 'long' as const,
+        character
       }
 
-      console.log('🎪 HOSTMANAGER: Sending round announcement to aiHostService...')
-      const response = await aiHostService.generateResponse(request)
-      console.log('🎪 HOSTMANAGER: Received round response:', { 
-        success: response.success, 
-        text: response.text, 
-        hasAudio: !!response.audioUrl 
-      })
+      const response = await aiService.generateHostComment(context)
       
-      if (response.success) {
-        return {
+      let audioUrl: string | undefined
+
+      if (options?.generateVoice && response.text && ttsService.isReady()) {
+        const ttsResponse = await ttsService.generateSpeech({
           text: response.text,
-          audioUrl: response.audioUrl
+          voiceId: character.voiceId,
+          stability: 0.6,
+          similarityBoost: 0.8
+        })
+
+        if (ttsResponse.success) {
+          audioUrl = ttsResponse.audioUrl
         }
-      } else {
-        console.warn('🎪 HOSTMANAGER: Round announcement failed:', response.error)
-        return { text: `Round ${roundNumber}: ${category}! Let's do this!` }
       }
-    } catch (error) {
-      console.error('🎪 HOSTMANAGER: Error generating round announcement:', error)
-      return { text: `Round ${roundNumber}: ${category}!` }
+
+      return {
+        text: response.text,
+        audioUrl,
+        success: true
+      }
+
+    } catch (error: any) {
+      console.error('AI Host: Failed to generate game end response:', error)
+      return {
+        text: this.getFallbackResponse('game_end'),
+        success: false,
+        error: error.message
+      }
     }
   }
 
-  async announceGameEnd(playerScore: number, opponentScore: number, playerWon: boolean): Promise<{ text: string; audioUrl?: string }> {
-    console.log('🎪 HOSTMANAGER: announceGameEnd called:', { playerScore, opponentScore, playerWon })
-    
-    if (!this.initialized) {
-      const fallbackText = playerWon ? "Congratulations! You won!" : "Good game! Better luck next time!"
-      return { text: fallbackText }
-    }
-
-    try {
-      const result = playerWon ? 'won' : (playerScore === opponentScore ? 'tied' : 'lost')
-      const scenario = `The game is over! Player scored ${playerScore} points and opponent scored ${opponentScore}. The player ${result}. Give them a fitting final commentary!`
-      
-      console.log('🎪 HOSTMANAGER: Creating AI request for game end...')
-      const request: AIHostRequest = {
-        scenario,
-        flowStep: {
-          id: 'game_end',
-          name: 'Game End Commentary',
-          description: 'Host providing final commentary on game results',
-          settings: { performance: playerWon ? 5 : (playerScore === opponentScore ? 3 : 1) }
-        },
-        players: [{ id: '1', name: 'Player', score: playerScore }],
-        generateVoice: true,
-        responseLength: 'long'
+  private getFallbackResponse(
+    gamePhase: string, 
+    songTitle?: string, 
+    songArtist?: string
+  ): string {
+    const fallbacks = {
+      riley: {
+        question_start: "Let's hear this one!",
+        correct_answer: "YES! You nailed it!",
+        wrong_answer: songTitle && songArtist ? `That was "${songTitle}" by ${songArtist}!` : "Not quite, but keep going!",
+        round_end: "Keep it up!",
+        game_end: "Amazing game!"
+      },
+      willow: {
+        question_start: "Listen deeply to this melody",
+        correct_answer: "Beautifully done!",
+        wrong_answer: songTitle && songArtist ? `That was "${songTitle}" by ${songArtist}` : "Every song teaches us something",
+        round_end: "You're growing with each song",
+        game_end: "What a meaningful journey"
+      },
+      alex: {
+        question_start: "Here's a good track",
+        correct_answer: "Nice! Good ear",
+        wrong_answer: songTitle && songArtist ? `That was "${songTitle}" by ${songArtist}` : "Keep listening, you'll get it",
+        round_end: "Solid round",
+        game_end: "Good session!"
+      },
+      jordan: {
+        question_start: "Ready for this one?",
+        correct_answer: "BAM! You crushed it!",
+        wrong_answer: songTitle && songArtist ? `Oops! That was "${songTitle}" by ${songArtist}` : "So close, yet so far!",
+        round_end: "This is getting interesting!",
+        game_end: "What a wild ride!"
       }
-
-      console.log('🎪 HOSTMANAGER: Sending game end request to aiHostService...')
-      const response = await aiHostService.generateResponse(request)
-      console.log('🎪 HOSTMANAGER: Received game end response:', { 
-        success: response.success, 
-        text: response.text, 
-        hasAudio: !!response.audioUrl 
-      })
-      
-      if (response.success) {
-        return {
-          text: response.text,
-          audioUrl: response.audioUrl
-        }
-      } else {
-        console.warn('🎪 HOSTMANAGER: Game end response failed:', response.error)
-        const fallbackText = playerWon ? "Amazing performance!" : "Great effort out there!"
-        return { text: fallbackText }
-      }
-    } catch (error) {
-      console.error('🎪 HOSTMANAGER: Error generating game end:', error)
-      return { text: "Thanks for playing!" }
-    }
-  }
-
-  async switchPersonality(personalityId: string): Promise<boolean> {
-    if (!this.initialized) {
-      console.log(`GameHost: Would switch to personality ${personalityId} (not initialized)`)
-      return false
     }
 
-    try {
-      // Update the configuration
-      const result = aiHostService.updateConfig({ personalityId })
-      if (result.success) {
-        console.log(`GameHost: Successfully switched to personality ${personalityId}`)
-        return true
-      } else {
-        console.warn(`GameHost: Failed to switch personality:`, result.error)
-        return false
-      }
-    } catch (error) {
-      console.error('Error switching personality:', error)
-      return false
-    }
+    const characterFallbacks = fallbacks[this.currentPersonality as keyof typeof fallbacks] || fallbacks.riley
+    return characterFallbacks[gamePhase as keyof typeof characterFallbacks] || "Great job playing!"
   }
 
   getStatus() {
-    if (!this.initialized) {
-      return {
-        initialized: false,
-        ready: false,
-        providers: {
-          ai: 'not_initialized',
-          tts: 'not_initialized'
-        }
-      }
-    }
-
-    try {
-      return aiHostService.getStatus()
-    } catch (error) {
-      return {
-        initialized: this.initialized,
-        ready: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }
+    return {
+      initialized: this.initialized,
+      currentPersonality: this.currentPersonality,
+      aiServiceReady: aiService.isReady(),
+      ttsServiceReady: ttsService.isReady()
     }
   }
 
-  isInitialized(): boolean {
-    return this.initialized
+  isServiceReady(): boolean {
+    return this.initialized && aiService.isReady()
   }
 }
 
+// Export singleton instance
 export const gameHost = new GameHostManager()
