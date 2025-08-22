@@ -369,7 +369,13 @@ export class GameHostManager {
     return this.initialized
   }
 
-  async announceGameIntro(playlistName: string): Promise<HostResponse> {
+  async announceGameIntro(
+    playlistName: string,
+    options?: {
+      responseLength?: 'short' | 'medium'
+      generateVoice?: boolean
+    }
+  ): Promise<HostResponse> {
     if (!this.initialized) {
       return { text: "Welcome to Song Quiz!", success: false, error: 'Host not initialized' }
     }
@@ -390,7 +396,10 @@ export class GameHostManager {
       
       let audioUrl: string | undefined
 
-      if (response.text && ttsService.isReady()) {
+      if (options?.generateVoice && response.text && ttsService.isReady()) {
+        console.log('🔊 TTS (Intro): Generating voice for:', response.text.substring(0, 50) + '...')
+        console.log('🔊 TTS (Intro): Using voice ID:', character.voiceId)
+        
         const ttsResponse = await ttsService.generateSpeech({
           text: response.text,
           voiceId: character.voiceId,
@@ -398,9 +407,17 @@ export class GameHostManager {
           similarityBoost: 0.8
         })
 
+        console.log('🔊 TTS (Intro): Response:', { success: ttsResponse.success, hasUrl: !!ttsResponse.audioUrl, error: ttsResponse.error })
+
         if (ttsResponse.success) {
           audioUrl = ttsResponse.audioUrl
         }
+      } else {
+        console.log('🔊 TTS (Intro): Skipped because:', {
+          generateVoice: options?.generateVoice,
+          hasText: !!response.text,
+          ttsReady: ttsService.isReady()
+        })
       }
 
       return {

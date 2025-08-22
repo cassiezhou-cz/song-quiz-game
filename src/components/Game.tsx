@@ -482,7 +482,7 @@ const Game = () => {
       console.log('🎮 GAME: Requesting AI host game introduction...')
       setWaitingForHostSpeech(true)
       const playlistName = playlist || '2010s'
-      const intro = await gameHost.announceGameIntro(playlistName)
+      const intro = await gameHost.announceGameIntro(playlistName, { generateVoice: true })
       console.log('🎮 GAME: Received intro response:', { text: intro.text, hasAudio: !!intro.audioUrl })
       
       if (intro.audioUrl) {
