@@ -32,7 +32,11 @@ class AIService {
     character?: { name: string; emoji: string; personality: string }
   }): Promise<AIResponse> {
     if (!this.isConfigured || !this.openai) {
-      throw new Error('OpenAI API not configured')
+      console.warn('🤖 AI Service: Not configured, using fallback response')
+      return {
+        text: this.getFallbackResponse(context),
+        processingTime: 0
+      }
     }
 
     const startTime = Date.now()
@@ -59,8 +63,22 @@ class AIService {
         processingTime
       }
     } catch (error) {
-      console.error('AI generation error:', error)
-      throw new Error('Failed to generate AI response')
+      console.error('🤖 AI Service: Generation failed:', error)
+      
+      // Check for specific API errors
+      if (error instanceof Error) {
+        if (error.message.includes('401') || error.message.includes('Authentication')) {
+          console.error('🤖 AI Service: API key authentication failed. Please check your OpenAI API key.')
+        } else if (error.message.includes('quota') || error.message.includes('limit')) {
+          console.error('🤖 AI Service: API quota exceeded. Please check your OpenAI billing.')
+        }
+      }
+      
+      // Return fallback instead of throwing
+      return {
+        text: this.getFallbackResponse(context),
+        processingTime: Date.now() - startTime
+      }
     }
   }
 
@@ -152,16 +170,74 @@ You ARE the host - respond as ${character.name}, not as an AI assistant.`
     }
   }
 
+  private getFallbackResponse(context: any): string {
+    const character = context.character || { name: 'Host', emoji: '🎤', personality: 'energetic' }
+    
+    // Character-specific fallback responses
+    const fallbacks = {
+      riley: {
+        question_start: "🎤 Let's rock this next song!",
+        correct_answer: "YES! You absolutely nailed it!",
+        wrong_answer: context.songTitle && context.songArtist ? 
+          `🎤 That was "${context.songTitle}" by ${context.songArtist}! Keep the energy up!` : 
+          "🎤 Not quite, but you're doing great!",
+        round_end: "🎤 What an amazing round! Keep it going!",
+        game_end: "🎤 What an incredible game! You were awesome out there!"
+      },
+      willow: {
+        question_start: "🌿 Listen with your heart to this melody",
+        correct_answer: "🌿 Beautiful! You truly heard the music",
+        wrong_answer: context.songTitle && context.songArtist ? 
+          `🌿 That was "${context.songTitle}" by ${context.songArtist}. Every song teaches us something` : 
+          "🌿 The music speaks differently to each of us",
+        round_end: "🌿 Each round brings new musical wisdom",
+        game_end: "🌿 What a meaningful musical journey we've shared"
+      },
+      alex: {
+        question_start: "🎧 Here's a solid track for you",
+        correct_answer: "🎧 Nice! You know your music",
+        wrong_answer: context.songTitle && context.songArtist ? 
+          `🎧 That was "${context.songTitle}" by ${context.songArtist}. Good track` : 
+          "🎧 Keep listening, you'll get the next one",
+        round_end: "🎧 Decent round, let's keep going",
+        game_end: "🎧 Good session! You played well"
+      },
+      jordan: {
+        question_start: "😄 Ready for this musical adventure?",
+        correct_answer: "😄 BAM! You totally crushed that one!",
+        wrong_answer: context.songTitle && context.songArtist ? 
+          `😄 Plot twist! That was "${context.songTitle}" by ${context.songArtist}!` : 
+          "😄 Oops! But hey, that's what makes it fun!",
+        round_end: "😄 This game is getting exciting!",
+        game_end: "😄 What a wild musical ride! You were fantastic!"
+      }
+    }
+
+    const personalityFallbacks = fallbacks[character.personality as keyof typeof fallbacks] || fallbacks.riley
+    return personalityFallbacks[context.gamePhase as keyof typeof personalityFallbacks] || "🎵 Keep the music playing!"
+  }
+
   isReady(): boolean {
     return this.isConfigured
   }
 
   getConfigurationHelp(): string {
-    return `To enable AI host commentary:
-1. Get an OpenAI API key from https://platform.openai.com/api-keys
-2. Create a .env file in your project root
-3. Add: VITE_OPENAI_API_KEY=your-actual-api-key-here
-4. Restart the development server`
+    return `To fix AI host commentary:
+
+🔑 OpenAI API Key Issues:
+1. Go to https://platform.openai.com/api-keys
+2. Create a new API key (not project-specific)
+3. Ensure you have billing set up and credits available
+4. Replace the key in your .env file:
+   VITE_OPENAI_API_KEY=sk-...your-new-key-here
+5. Restart the development server
+
+⚠️  Common Issues:
+- Project keys (sk-proj-...) may have limited access
+- Check your OpenAI billing/usage limits
+- Verify your account has access to GPT models
+
+💡 Alternative: The game will work with fallback text responses if AI fails`
   }
 }
 
