@@ -430,7 +430,13 @@ const Game = () => {
   }
 
   useEffect(() => {
-    console.log('🎮 GAME: useEffect [playlist] triggered with playlist:', playlist)
+    console.log('🎮 GAME: useEffect [playlist, selectedHost] triggered with:', { playlist, selectedHost })
+    
+    // Don't start until both playlist and selectedHost are ready
+    if (!playlist) {
+      console.log('🎮 GAME: Waiting for playlist to be set')
+      return
+    }
     
     // Check if we've already done intro for this playlist
     if (introExecutedRef.current === playlist) {
@@ -438,12 +444,12 @@ const Game = () => {
       return
     }
     
-    console.log('🎮 GAME: First time seeing playlist:', playlist, '- executing intro')
+    console.log('🎮 GAME: First time seeing playlist:', playlist, 'with host:', selectedHost, '- executing intro')
     introExecutedRef.current = playlist || null
     
     setUsedSongIds([]) // Reset used songs when playlist changes
     startGameWithIntro()
-  }, [playlist])
+  }, [playlist, selectedHost])
 
   const startGameWithIntro = async () => {
     console.log('🎮 GAME: startGameWithIntro called, selectedHost:', selectedHost)
