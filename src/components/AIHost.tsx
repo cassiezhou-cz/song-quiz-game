@@ -13,6 +13,7 @@ interface AIHostProps {
   character: string
   enabled?: boolean
   voiceEnabled?: boolean
+  gameIntroPlaying?: boolean // Add this to disable during intro
 }
 
 interface CharacterInfo {
@@ -88,8 +89,13 @@ const AIHost: React.FC<AIHostProps> = ({
   isCorrect,
   character,
   enabled = true,
-  voiceEnabled = true
+  voiceEnabled = true,
+  gameIntroPlaying = false
 }) => {
+  // COMPLETE DISABLE during intro
+  if (gameIntroPlaying) {
+    return null
+  }
   const characterInfo = getCharacterInfo(character)
   const [comment, setComment] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -102,18 +108,39 @@ const AIHost: React.FC<AIHostProps> = ({
   const MIN_REQUEST_INTERVAL = 2000 // 2 seconds between OpenAI requests
 
   useEffect(() => {
+    console.log('🎤 AIHOST: useEffect triggered', { 
+      enabled, 
+      initialized: gameHost.isInitialized(), 
+      gamePhase, 
+      playerScore, 
+      opponentScore,
+      character
+    })
+    
     if (!enabled || !gameHost.isInitialized()) {
-      // Try to initialize if not already done
-      gameHost.initialize().catch(console.error)
+      console.log('🎤 AIHOST: Not enabled or not initialized, waiting for Game component to initialize...')
+      // Let the Game component handle initialization with the correct personality
       return
     }
 
-    generateHostComment()
-  }, [gamePhase, playerScore, opponentScore, enabled])
+    // Add a small delay to ensure gameHost initialization is complete
+    console.log('🎤 AIHOST: Scheduling generateHostComment...')
+    const timer = setTimeout(() => {
+      console.log('🎤 AIHOST: Calling generateHostComment after delay...')
+      generateHostComment()
+    }, 100) // Small delay to ensure initialization is complete
+
+    return () => clearTimeout(timer)
+  }, [gamePhase, playerScore, opponentScore, enabled, character])
 
   const generateHostComment = async () => {
-    if (!gameHost.isInitialized()) return
+    console.log('🎤 AIHOST: generateHostComment called')
+    if (!gameHost.isInitialized()) {
+      console.log('🎤 AIHOST: gameHost not initialized, returning')
+      return
+    }
 
+    console.log('🎤 AIHOST: Starting generation for gamePhase:', gamePhase)
     setIsGenerating(true)
     setShowComment(false)
     
@@ -124,6 +151,7 @@ const AIHost: React.FC<AIHostProps> = ({
       
       // Use fallback if rate limiting
       if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+        console.log('🎤 AIHOST: Using fallback due to rate limiting')
         response = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
       } else {
         try {
@@ -131,35 +159,64 @@ const AIHost: React.FC<AIHostProps> = ({
           
           // Use appropriate gameHost method based on game phase
           if (gamePhase === 'correct_answer' && isCorrect) {
+            console.log('🎤 AIHOST: Generating celebration response')
             const songDetails = songTitle && songArtist ? `"${songTitle}" by ${songArtist}` : 'the song'
             response = await gameHost.celebrateCorrectAnswer(playerName, playerScore, songDetails)
           } else if (gamePhase === 'wrong_answer' && !isCorrect) {
+            console.log('🎤 AIHOST: Generating encouragement response')
             const guess = 'their guess' // We don't have the actual guess here
             const correctAnswer = songTitle && songArtist ? `${songTitle} by ${songArtist}` : 'the correct answer'
             response = await gameHost.handleIncorrectAnswer(playerName, guess, correctAnswer)
           } else if (gamePhase === 'question_start') {
-            response = await gameHost.announceNewRound('current category', 1)
+            // Skip generating responses during question start - no host commentary needed
+            return
+          } else if (gamePhase === 'round_end') {
+            // Skip generating responses during round end - no banter between questions
+            return
+          } else if (gamePhase === 'game_end') {
+            console.log('🎤 AIHOST: Generating game end response')
+            const playerWon = playerScore > opponentScore
+            response = await gameHost.announceGameEnd(playerScore, opponentScore, playerWon)
           } else {
+            console.log('🎤 AIHOST: Generating banter for phase:', gamePhase)
             // Use general banter for other phases
             const context = `${gamePhase} phase - player ${playerName} has ${playerScore} points`
             const text = await gameHost.provideGameBanter(context)
             response = { text: text || getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
           }
+          
+          console.log('🎤 AIHOST: Generated response:', { text: response.text, hasAudio: !!response.audioUrl })
         } catch (error: any) {
-          console.warn('AI Host: Using fallback due to API error')
+          console.warn('🎤 AIHOST: Using fallback due to API error:', error)
           response = { text: getFallbackComment(gamePhase, character, isCorrect, songTitle, songArtist) }
         }
       }
 
+      console.log('🎤 AIHOST: Setting comment and showing:', response.text)
       setComment(response.text)
       setShowComment(true)
 
-      // Use audio from gameHost response if available, otherwise generate TTS
+      // Use audio from gameHost response if available
       if (voiceEnabled && response.audioUrl) {
+        console.log('🎤 AIHOST: Playing audio from response:', response.audioUrl.substring(0, 50) + '...')
         setAudioUrl(response.audioUrl)
+        // Play audio immediately after setting URL
         setTimeout(() => {
-          playVoice()
-        }, 500)
+          if (audioRef.current && response.audioUrl) {
+            console.log('🎤 AIHOST: Actually playing audio now...')
+            audioRef.current.src = response.audioUrl
+            audioRef.current.play().then(() => {
+              console.log('🎤 AIHOST: Audio playback started successfully')
+              setIsPlaying(true)
+            }).catch(error => {
+              console.error('🎤 AIHOST: Audio play failed:', error)
+            })
+          } else {
+            console.log('🎤 AIHOST: audioRef or audioUrl not available for playback')
+          }
+        }, 100) // Shorter delay
+      } else {
+        console.log('🎤 AIHOST: No audio to play (voiceEnabled:', voiceEnabled, ', hasAudio:', !!response.audioUrl, ')')
       }
     } catch (error) {
       console.error('Failed to generate AI comment:', error)
@@ -173,11 +230,17 @@ const AIHost: React.FC<AIHostProps> = ({
   // This method is kept for compatibility but may not be used
 
   const playVoice = () => {
+    console.log('🎤 AIHOST: playVoice called', { hasRef: !!audioRef.current, audioUrl: audioUrl.substring(0, 50) + '...' })
     if (audioRef.current && audioUrl) {
-      audioRef.current.play().catch(error => {
-        console.error('AI Host audio play failed:', error)
+      audioRef.current.src = audioUrl
+      audioRef.current.play().then(() => {
+        console.log('🎤 AIHOST: playVoice succeeded')
+        setIsPlaying(true)
+      }).catch(error => {
+        console.error('🎤 AIHOST: playVoice failed:', error)
       })
-      setIsPlaying(true)
+    } else {
+      console.log('🎤 AIHOST: playVoice - missing ref or audioUrl')
     }
   }
 
@@ -225,14 +288,11 @@ const AIHost: React.FC<AIHostProps> = ({
         </div>
       )}
 
-      {audioUrl && (
-        <audio
-          ref={audioRef}
-          src={audioUrl}
-          onEnded={handleAudioEnd}
-          style={{ display: 'none' }}
-        />
-      )}
+      <audio
+        ref={audioRef}
+        onEnded={handleAudioEnd}
+        style={{ display: 'none' }}
+      />
 
       {isGenerating && (
         <div className="generating-indicator">

@@ -60,6 +60,9 @@ const Game = () => {
   // AI Host state - smart timing to avoid audio conflicts
   const [hostPhase, setHostPhase] = useState<AIHostPhase>('question_start')
   const [selectedHost, setSelectedHost] = useState<string>('riley')
+  const [gameIntroPlaying, setGameIntroPlaying] = useState(true) // New state for game intro
+  const [waitingForHostSpeech, setWaitingForHostSpeech] = useState(false)
+  const introExecutedRef = useRef<string | null>(null) // Track which playlist intro was executed
 
   // Load selected AI Host character from localStorage (set in PlaylistSelection)
   useEffect(() => {
@@ -69,12 +72,17 @@ const Game = () => {
     }
   }, [])
 
-  // Initialize AI Host service when component mounts
+  // Initialize AI Host service when component mounts with selected personality
   useEffect(() => {
-    gameHost.initialize().catch(error => {
+    if (selectedHost === 'none') {
+      console.log('🎪 HOSTMANAGER: Host disabled, skipping initialization')
+      return
+    }
+    
+    gameHost.initialize(selectedHost).catch(error => {
       console.warn('AI Host initialization failed:', error)
     })
-  }, [])
+  }, [selectedHost])
 
   // Check Deepgram support on component mount
   useEffect(() => {
@@ -430,9 +438,91 @@ const Game = () => {
   }
 
   useEffect(() => {
+    console.log('🎮 GAME: useEffect [playlist] triggered with playlist:', playlist)
+    
+    // Check if we've already done intro for this playlist
+    if (introExecutedRef.current === playlist) {
+      console.log('🎮 GAME: Intro already executed for playlist:', playlist, '- skipping')
+      return
+    }
+    
+    console.log('🎮 GAME: First time seeing playlist:', playlist, '- executing intro')
+    introExecutedRef.current = playlist || null
+    
     setUsedSongIds([]) // Reset used songs when playlist changes
-    startNewQuestion()
+    startGameWithIntro()
   }, [playlist])
+
+  const startGameWithIntro = async () => {
+    console.log('🎮 GAME: startGameWithIntro called, selectedHost:', selectedHost)
+    
+    if (selectedHost === 'none') {
+      // No AI host, start game immediately
+      console.log('🎮 GAME: No AI host selected, starting game immediately')
+      setGameIntroPlaying(false)
+      startNewQuestion()
+      return
+    }
+
+    // Wait for gameHost to initialize if not already
+    if (!gameHost.isInitialized()) {
+      console.log('🎮 GAME: GameHost not initialized, initializing with personality:', selectedHost)
+      setWaitingForHostSpeech(true)
+      const initialized = await gameHost.initialize(selectedHost)
+      if (!initialized) {
+        // Failed to initialize, start without host
+        console.log('🎮 GAME: GameHost initialization failed, starting without host')
+        setGameIntroPlaying(false)
+        setWaitingForHostSpeech(false)
+        startNewQuestion()
+        return
+      }
+    }
+
+    try {
+      // Get AI host game introduction
+      console.log('🎮 GAME: Requesting AI host game introduction...')
+      setWaitingForHostSpeech(true)
+      const playlistName = playlist || '2010s'
+      const intro = await gameHost.announceGameIntro(playlistName)
+      console.log('🎮 GAME: Received intro response:', { text: intro.text, hasAudio: !!intro.audioUrl })
+      
+      if (intro.audioUrl) {
+        // Play the intro audio and wait for it to finish
+        console.log('🎮 GAME: Playing intro audio from URL:', intro.audioUrl.substring(0, 50) + '...')
+        const audio = new Audio(intro.audioUrl)
+        audio.addEventListener('ended', () => {
+          console.log('🎮 GAME: Intro audio ended, starting game')
+          console.log('🎮 GAME: Setting gameIntroPlaying to false')
+          setGameIntroPlaying(false)
+          setWaitingForHostSpeech(false)
+          startNewQuestion()
+        })
+        audio.play().then(() => {
+          console.log('🎮 GAME: Intro audio playback started successfully')
+        }).catch(error => {
+          console.error('🎮 GAME: Failed to play intro audio:', error)
+          setGameIntroPlaying(false)
+          setWaitingForHostSpeech(false)
+          startNewQuestion()
+        })
+      } else {
+        console.log('🎮 GAME: No audio URL, proceeding with delay')
+        // No audio, proceed after brief delay to show text
+        setTimeout(() => {
+          console.log('🎮 GAME: Delay finished, starting game')
+          setGameIntroPlaying(false)
+          setWaitingForHostSpeech(false)
+          startNewQuestion()
+        }, 2000)
+      }
+    } catch (error) {
+      console.error('🎮 GAME: Failed to get game intro:', error)
+      setGameIntroPlaying(false)
+      setWaitingForHostSpeech(false)
+      startNewQuestion()
+    }
+  }
 
   useEffect(() => {
     const audio = audioRef.current
@@ -831,6 +921,23 @@ const Game = () => {
               />
             </div>
           </div>
+          
+          {/* AI Host Component for Game End */}
+          {selectedHost !== 'none' && (
+            <AIHost
+              gamePhase="game_end"
+              playerName="You"
+              playerScore={score}
+              opponentScore={opponentScore}
+              songTitle=""
+              songArtist=""
+              isCorrect={score > opponentScore}
+              character={selectedHost}
+              enabled={true}
+              voiceEnabled={true}
+              gameIntroPlaying={false}
+            />
+          )}
         </div>
       </div>
     )
@@ -864,6 +971,54 @@ const Game = () => {
         </header>
 
         <main className="game-main">
+          {/* Game Introduction Screen */}
+          {gameIntroPlaying && (
+            <div className="game-intro-screen" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '300px',
+              textAlign: 'center',
+              padding: '2rem'
+            }}>
+              <h2 style={{ 
+                color: 'white', 
+                marginBottom: '1rem',
+                fontSize: '1.8rem'
+              }}>
+                Welcome to {playlist || '2010s'} Song Quiz!
+              </h2>
+              
+              {waitingForHostSpeech ? (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  color: 'white',
+                  fontSize: '1.1rem'
+                }}>
+                  <div className="thinking-dots">
+                    <span>•</span>
+                    <span>•</span>
+                    <span>•</span>
+                  </div>
+                  Your host is getting ready...
+                </div>
+              ) : (
+                <p style={{ 
+                  color: 'white', 
+                  fontSize: '1.1rem',
+                  opacity: 0.8
+                }}>
+                  Listen to your AI host introduction, then the music will begin!
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Quiz Section - only show when not in intro */}
+          {!gameIntroPlaying && (
           <div className="quiz-section">
             {!showFeedback && (
               <div className="audio-controls">
@@ -993,9 +1148,11 @@ const Game = () => {
               </div>
             )}
           </div>
+          )}
         </main>
         
-        {/* Competitive Avatars */}
+        {/* Competitive Avatars - only show when not in intro */}
+        {!gameIntroPlaying && (
         <div className="avatars">
           <div className="avatar-container player-container">
             <img 
@@ -1043,9 +1200,9 @@ const Game = () => {
             )}
           </div>
         </div>
+        )}
         
-                {/* AI Host Component */}
-        {!gameComplete && selectedHost !== 'none' && (
+        {!gameComplete && selectedHost !== 'none' && !gameIntroPlaying && (
           <AIHost
             gamePhase={hostPhase}
             playerName="You"
@@ -1056,7 +1213,8 @@ const Game = () => {
             isCorrect={isCorrect}
             character={selectedHost}
             enabled={true}
-            voiceEnabled={true} // Voice synthesis enabled!
+            voiceEnabled={true}
+            gameIntroPlaying={gameIntroPlaying}
           />
         )}
 
