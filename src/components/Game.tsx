@@ -257,14 +257,6 @@ const Game = () => {
       file: '/songs/2000s/WithoutMeEminem.mp3', 
       albumArt: '/assets/album-art/2000s/WithoutMeEminem.jpeg',
       alternatives: ['Forgot About Dre - Dr. Dre feat. Eminem', 'Hot in Herre - Nelly', 'In da Club - 50 Cent']
-    },
-    { 
-      id: '10', 
-      title: 'Yeah!', 
-      artist: 'Usher (feat. Lil Jon & Ludacris)', 
-      file: '/songs/2000s/YeahUsher.mp3', 
-      albumArt: '/assets/album-art/2000s/YeahUsher.jpeg',
-      alternatives: ['Get Low - Lil Jon & The East Side Boyz feat. Ying Yang Twins', 'Tipsy - J-Kwon', 'Lean Back - Terror Squad']
     }
   ]
 
@@ -1128,19 +1120,6 @@ const Game = () => {
                   )}
                 </div>
 
-                {/* Temporary Debug Section */}
-                {latestTranscript && (
-                  <div className="debug-section">
-                    <h4>🔍 Debug - What Deepgram Heard:</h4>
-                    <div className="debug-transcript">
-                      <p><strong>Captured Text:</strong> "{latestTranscript}"</p>
-                      <p><strong>Expected:</strong> "{currentQuestion.song.title}" by "{currentQuestion.song.artist}"</p>
-                      {currentQuestion.song.artistAlternatives && (
-                        <p><strong>Artist Alternatives:</strong> {currentQuestion.song.artistAlternatives.join(', ')}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 <button className="next-question-btn" onClick={nextQuestion}>
                   {questionNumber >= totalQuestions ? 'Finish Quiz' : 'Next Question →'}

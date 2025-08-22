@@ -48,8 +48,8 @@ class DeepgramService {
         smart_format: true,
         interim_results: true,
         language: 'en-US',
-        utterance_end_ms: 1000, // End utterance after 1 second of silence
-        endpointing: 100 // Milliseconds of silence to wait before sending final transcript
+        utterance_end_ms: 1000,
+        endpointing: 100
       })
 
       this.connection.on(LiveTranscriptionEvents.Open, () => {
@@ -60,11 +60,11 @@ class DeepgramService {
           .then(stream => {
             this.mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
             this.mediaRecorder.ondataavailable = (event) => {
-              if (event.data.size > 0 && this.connection.getReadyState() === 1) {
+              if (event.data.size > 0 && this.connection && this.connection.getReadyState() === 1) {
                 this.connection.send(event.data)
               }
             }
-            this.mediaRecorder.start(250) // Send data every 250ms
+            this.mediaRecorder.start(250)
           })
           .catch(err => {
             console.error('Error accessing microphone:', err)
@@ -83,7 +83,11 @@ class DeepgramService {
         const transcript = data.channel.alternatives[0].transcript
         const isFinal = data.is_final
         const confidence = data.channel.alternatives[0].confidence
-        onTranscript({ transcript, isFinal, confidence })
+        
+        // Only process transcripts with actual content and reasonable confidence
+        if (transcript && transcript.trim().length > 0 && confidence > 0.1) {
+          onTranscript({ transcript, isFinal, confidence })
+        }
       })
 
       this.connection.on(LiveTranscriptionEvents.Error, (error: any) => {
