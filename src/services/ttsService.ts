@@ -24,7 +24,14 @@ class TTSService {
   }
 
   async generateSpeech(options: TTSOptions): Promise<TTSResponse> {
+    console.log('🔊 TTS Service: generateSpeech called with:', { 
+      textLength: options.text.length, 
+      voiceId: options.voiceId,
+      isConfigured: this.isConfigured 
+    })
+
     if (!this.isConfigured) {
+      console.error('🔊 TTS Service: API key not configured!')
       return {
         audioUrl: '',
         duration: 0,
@@ -37,6 +44,7 @@ class TTSService {
     
     try {
       const enhancedText = this.enhanceTextForSpeech(options.text)
+      console.log('🔊 TTS Service: Making API call to ElevenLabs with voice:', voiceId)
       
       const response = await fetch(`${this.baseUrl}/text-to-speech/${voiceId}`, {
         method: 'POST',
@@ -64,6 +72,7 @@ class TTSService {
 
       const audioBlob = await response.blob()
       const audioUrl = URL.createObjectURL(audioBlob)
+      console.log('🔊 TTS Service: Successfully generated audio blob, created URL:', audioUrl.substring(0, 50) + '...')
 
       // Estimate duration based on text length
       const wordCount = options.text.split(/\s+/).length
