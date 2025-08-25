@@ -60,15 +60,21 @@ const Game = () => {
   // AI Host state - smart timing to avoid audio conflicts
   const [hostPhase, setHostPhase] = useState<AIHostPhase>('question_start')
   const [selectedHost, setSelectedHost] = useState<string>('riley')
+  const [playerName, setPlayerName] = useState<string>('Player')
   const [gameIntroPlaying, setGameIntroPlaying] = useState(true) // New state for game intro
   const [waitingForHostSpeech, setWaitingForHostSpeech] = useState(false)
   const introExecutedRef = useRef<string | null>(null) // Track which playlist intro was executed
 
-  // Load selected AI Host character from localStorage (set in PlaylistSelection)
+  // Load player name and selected AI Host character from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('selectedAIHost')
-    if (saved) {
-      setSelectedHost(saved)
+    const savedHost = localStorage.getItem('selectedAIHost')
+    if (savedHost) {
+      setSelectedHost(savedHost)
+    }
+    
+    const savedPlayerName = localStorage.getItem('playerName')
+    if (savedPlayerName) {
+      setPlayerName(savedPlayerName)
     }
   }, [])
 
@@ -989,7 +995,7 @@ const Game = () => {
           {selectedHost !== 'none' && (
             <AIHost
               gamePhase="game_end"
-              playerName="You"
+              playerName={playerName}
               playerScore={score}
               opponentScore={opponentScore}
               songTitle=""
@@ -1255,7 +1261,7 @@ const Game = () => {
         {!gameComplete && selectedHost !== 'none' && !gameIntroPlaying && (
           <AIHost
             gamePhase={hostPhase}
-            playerName="You"
+            playerName={playerName}
             playerScore={score}
             opponentScore={opponentScore}
             songTitle={currentQuestion?.song.title}
