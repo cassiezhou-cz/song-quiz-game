@@ -660,8 +660,8 @@ const Game = () => {
     const cleanTranscript = transcript.toLowerCase().trim()
     const songTitle = currentQuestion.song.title.toLowerCase()
     
-    // Improved title matching - check if transcript contains song title
-    const hasTitle = cleanTranscript.includes(songTitle)
+    // Enhanced title matching - more flexible approach
+    const hasTitle = checkSongTitleMatch(cleanTranscript, songTitle)
     
     // Improved artist matching - more flexible approach
     const hasArtist = checkArtistMatch(cleanTranscript, currentQuestion.song)
@@ -691,6 +691,71 @@ const Game = () => {
     }
     
     return { answer: null, artistMatch: false, songMatch: false }
+  }
+
+  const checkSongTitleMatch = (transcript: string, songTitle: string): boolean => {
+    // First try exact match
+    if (transcript.includes(songTitle)) {
+      return true
+    }
+    
+    // Remove common punctuation and normalize spacing
+    const cleanTitle = songTitle
+      .replace(/[.,!?'"()]/g, '') // Remove punctuation
+      .replace(/\s+/g, ' ') // Normalize spacing
+      .trim()
+    
+    const cleanTranscript = transcript
+      .replace(/[.,!?'"()]/g, '') // Remove punctuation  
+      .replace(/\s+/g, ' ') // Normalize spacing
+      .trim()
+    
+    // Try exact match with cleaned versions
+    if (cleanTranscript.includes(cleanTitle)) {
+      return true
+    }
+    
+    // Split title into significant words (ignore common articles)
+    const titleWords = cleanTitle
+      .replace(/^(the|a|an)\s+/i, '') // Remove leading articles
+      .split(/\s+/)
+      .filter(word => word.length > 2) // Only significant words
+    
+    // Check if transcript contains most of the significant title words
+    if (titleWords.length > 0) {
+      const matchedWords = titleWords.filter(word => 
+        cleanTranscript.includes(word)
+      )
+      
+      // Consider it a match if we have:
+      // - All words for short titles (1-2 words)
+      // - Most words for longer titles (>= 75% for 3+ words)
+      const matchThreshold = titleWords.length <= 2 ? titleWords.length : Math.ceil(titleWords.length * 0.75)
+      
+      if (matchedWords.length >= matchThreshold) {
+        return true
+      }
+    }
+    
+    // Handle partial word matching for single word titles
+    if (titleWords.length === 1) {
+      const titleWord = titleWords[0]
+      
+      // Check if transcript contains the title word as a substring of a spoken word
+      const transcriptWords = cleanTranscript.split(/\s+/)
+      for (const spokenWord of transcriptWords) {
+        // Allow partial matches for words >= 4 chars if spoken word contains most of title
+        if (titleWord.length >= 4 && spokenWord.includes(titleWord.substring(0, titleWord.length - 1))) {
+          return true
+        }
+        // Allow title word to be contained in longer spoken word (e.g., "closer" contains "close")
+        if (titleWord.includes(spokenWord) && spokenWord.length >= 3) {
+          return true
+        }
+      }
+    }
+    
+    return false
   }
 
   const checkArtistMatch = (transcript: string, song: Song): boolean => {
