@@ -67,9 +67,21 @@ const Game = () => {
 
   // Load player name and selected AI Host character from localStorage
   useEffect(() => {
+    // Check for reset parameter in URL
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('resetHost') === 'true') {
+      console.log('🎪 HOSTMANAGER: Resetting host selection to default (riley)')
+      localStorage.removeItem('selectedAIHost')
+      setSelectedHost('riley')
+      return
+    }
+
     const savedHost = localStorage.getItem('selectedAIHost')
     if (savedHost) {
+      console.log('🎪 HOSTMANAGER: Loaded host from localStorage:', savedHost)
       setSelectedHost(savedHost)
+    } else {
+      console.log('🎪 HOSTMANAGER: No saved host, using default: riley')
     }
     
     const savedPlayerName = localStorage.getItem('playerName')
@@ -81,12 +93,14 @@ const Game = () => {
   // Initialize AI Host service when component mounts with selected personality
   useEffect(() => {
     if (selectedHost === 'none') {
-      console.log('🎪 HOSTMANAGER: Host disabled, skipping initialization')
+      console.log('🎪 HOSTMANAGER: Host disabled by user choice ("No Host" selected)')
+      console.log('🎪 HOSTMANAGER: To re-enable, go to the landing page and select a different host')
       return
     }
     
+    console.log('🎪 HOSTMANAGER: Initializing host:', selectedHost)
     gameHost.initialize(selectedHost).catch(error => {
-      console.warn('AI Host initialization failed:', error)
+      console.warn('🎪 HOSTMANAGER: Initialization failed:', error)
     })
   }, [selectedHost])
 
