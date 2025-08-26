@@ -738,6 +738,21 @@ const Game = () => {
 
   const playVictoryApplauseSfx = () => {
     console.log('🎉 SFX: playVictoryApplauseSfx called')
+    console.log('🎉 SFX: Current game state:', { gameComplete, showResults: !!showResults })
+    
+    // First, let's see what's in the DOM
+    const allAudioElements = document.querySelectorAll('audio')
+    console.log('🎉 SFX: ALL audio elements in DOM:', allAudioElements.length)
+    
+    for (let i = 0; i < allAudioElements.length; i++) {
+      const audio = allAudioElements[i]
+      console.log(`🎉 SFX: Audio ${i}:`, { 
+        src: audio.src,
+        outerHTML: audio.outerHTML.substring(0, 100) + '...',
+        hasApplauseInSrc: audio.src.includes('sfx_sq_applause_correct_answer'),
+        hasApplauseInHTML: audio.outerHTML.includes('sfx_sq_applause_correct_answer')
+      })
+    }
     
     // Try to find the audio element by ref first
     let sfx = victoryApplauseSfxRef.current
@@ -751,19 +766,14 @@ const Game = () => {
     // If ref doesn't work, try to find it by DOM query as fallback
     if (!sfx) {
       console.log('🎉 SFX: Ref failed, trying DOM query fallback...')
-      const audioElements = document.querySelectorAll('audio')
-      console.log('🎉 SFX: Found audio elements:', audioElements.length)
       
-      for (let i = 0; i < audioElements.length; i++) {
-        const audio = audioElements[i]
-        console.log(`🎉 SFX: Audio ${i}:`, { 
-          src: audio.src, 
-          hasApplauseSource: audio.src.includes('sfx_sq_applause_correct_answer')
-        })
-        
-        if (audio.src.includes('sfx_sq_applause_correct_answer')) {
+      // Try multiple approaches to find the audio
+      for (let i = 0; i < allAudioElements.length; i++) {
+        const audio = allAudioElements[i]
+        if (audio.src.includes('sfx_sq_applause_correct_answer') || 
+            audio.outerHTML.includes('sfx_sq_applause_correct_answer')) {
           sfx = audio
-          console.log('🎉 SFX: Found applause audio via DOM query!')
+          console.log('🎉 SFX: Found applause audio via DOM query at index:', i)
           break
         }
       }
@@ -781,6 +791,7 @@ const Game = () => {
       })
     } else {
       console.error('🎉 SFX: No victory applause audio element found via ref OR DOM query!')
+      console.log('🎉 SFX: victoryApplauseSfxRef.current:', victoryApplauseSfxRef.current)
     }
   }
 
