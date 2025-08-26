@@ -199,7 +199,8 @@ const Game = () => {
       artist: 'The Neighbourhood', 
       file: '/songs/2010s/SweaterWeatherTheNeighborhood.mp3', 
       albumArt: '/assets/album-art/2010s/SweaterWeatherTheNeighborhood.jpeg',
-      alternatives: ['Sex - The 1975', 'Riptide - Vance Joy', 'Youth - Daughter']
+      alternatives: ['Sex - The 1975', 'Riptide - Vance Joy', 'Youth - Daughter'],
+      artistAlternatives: ['Neighbourhood', 'Neighborhood', 'The Neighborhood']
     },
     { 
       id: '10', 
@@ -311,7 +312,8 @@ const Game = () => {
       artist: 'Chappell Roan', 
       file: '/songs/2020s/GoodLuckBabeChappellRoan.mp3', 
       albumArt: '/assets/album-art/2020s/GoodLuckBabeChappellRoan.jpeg',
-      alternatives: ['Strangers - Halsey feat. Lauren Jauregui', 'Green Light - Lorde', 'Stayaway - MUNA']
+      alternatives: ['Strangers - Halsey feat. Lauren Jauregui', 'Green Light - Lorde', 'Stayaway - MUNA'],
+      artistAlternatives: ['Chapel Roan', 'Chapelle Roan', 'Chappel Roan']
     },
     { 
       id: '4', 
@@ -319,7 +321,8 @@ const Game = () => {
       artist: 'd4vd', 
       file: '/songs/2020s/HereWithMed4vd.mp3', 
       albumArt: '/assets/album-art/2020s/HereWithMed4vd.jpeg',
-      alternatives: ['Romantic Homicide - d4vd', 'comethru - Jeremy Zucker', 'idontwannabeyouanymore - Billie Eilish']
+      alternatives: ['Romantic Homicide - d4vd', 'comethru - Jeremy Zucker', 'idontwannabeyouanymore - Billie Eilish'],
+      artistAlternatives: ['David', 'D4VD', 'D four V D', 'Dee Four Vee Dee']
     },
     { 
       id: '5', 
@@ -327,7 +330,8 @@ const Game = () => {
       artist: 'SZA', 
       file: '/songs/2020s/SnoozeSZA.mp3', 
       albumArt: '/assets/album-art/2020s/SnoozeSZA.jpeg',
-      alternatives: ['Nights - Frank Ocean', 'After Dark - Drake feat. Static Major & Ty Dolla $ign', 'Find Someone Like You - Snoh Aalegra']
+      alternatives: ['Nights - Frank Ocean', 'After Dark - Drake feat. Static Major & Ty Dolla $ign', 'Find Someone Like You - Snoh Aalegra'],
+      artistAlternatives: ['Essa', 'S-Z-A', 'Sza', 'Solana']
     },
     { 
       id: '6', 
@@ -351,7 +355,8 @@ const Game = () => {
       artist: 'Metro Boomin', 
       file: '/songs/2020s/TooManyNightsMetroBoomin.mp3', 
       albumArt: '/assets/album-art/2020s/TooManyNightsMetroBoomin.jpeg',
-      alternatives: ['Knife Talk - Drake feat. 21 Savage', 'Bank Account - 21 Savage', 'Life Goes On - Lil Baby & Gunna']
+      alternatives: ['Knife Talk - Drake feat. 21 Savage', 'Bank Account - 21 Savage', 'Life Goes On - Lil Baby & Gunna'],
+      artistAlternatives: ['Metro Booming', 'Metro Boomin\'', 'Metro']
     },
     { 
       id: '9', 
@@ -842,7 +847,11 @@ const Game = () => {
   }
 
   const checkArtistMatch = (transcript: string, song: Song): boolean => {
+    // Clean the artist name - remove "(feat. ...)" and similar
     const artistName = song.artist.toLowerCase()
+      .replace(/\s*\(feat\..*?\)/gi, '') // Remove "(feat. ...)"
+      .replace(/\s*feat\..*$/gi, '') // Remove "feat. ..." at end
+      .trim()
     
     // Helper function to check artist name matching
     const checkSingleArtistName = (name: string): boolean => {
@@ -860,6 +869,10 @@ const Game = () => {
       // Check if any significant artist word appears in transcript
       for (const word of artistWords) {
         if (word.length >= 3 && transcript.includes(word)) {
+          return true
+        }
+        // Special handling for common short artist names
+        if (word.length === 2 && ['jay', 'ed', 'dj', 'mc', 'lil', 'big'].includes(word.toLowerCase()) && transcript.includes(word)) {
           return true
         }
       }
