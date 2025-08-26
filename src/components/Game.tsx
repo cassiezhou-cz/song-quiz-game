@@ -664,7 +664,7 @@ const Game = () => {
 
   const backToPlaylist = () => {
     stopSpeechRecognition()
-    navigate('/')
+    navigate('/playlists')
   }
 
   const formatTime = (time: number) => {
