@@ -439,16 +439,26 @@ const Game = () => {
     // Auto-play the song after audio element has loaded the new source
     setTimeout(() => {
       const audioElement = audioRef.current
+      console.log('🎵 GAME: Attempting to auto-play new song:', {
+        hasAudioElement: !!audioElement,
+        currentSrc: audioElement?.src,
+        expectedFile: question.song.file,
+        isLoadingQuestion
+      })
+      
       if (audioElement && audioElement.src.includes(question.song.file.split('/').pop() || '')) {
+        console.log('🎵 GAME: Starting audio playback for:', question.song.title)
         audioElement.play().then(() => {
+          console.log('🎵 GAME: Audio playback started successfully')
           setIsPlaying(true)
           setIsLoadingQuestion(false)
         }).catch(error => {
-          console.error('Auto-play failed:', error)
+          console.error('🎵 GAME: Auto-play failed:', error)
           setIsPlaying(false)
           setIsLoadingQuestion(false)
         })
       } else {
+        console.log('🎵 GAME: Audio element or src mismatch, skipping auto-play')
         setIsLoadingQuestion(false)
       }
     }, 500)

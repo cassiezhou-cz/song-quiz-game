@@ -121,14 +121,11 @@ const AIHost = forwardRef<AIHostRef, AIHostProps>(({
     
     const audio = audioRef.current
     if (audio) {
-      console.log('🎤 AIHOST: Stopping audio due to user action - FORCED STOP')
+      console.log('🎤 AIHOST: Stopping audio due to user action')
       audio.pause()
       audio.currentTime = 0
       setIsPlaying(false)
-      
-      // Additional cleanup - remove src to ensure it stops
-      audio.src = ''
-      audio.load()
+      // Remove aggressive src clearing to avoid conflicts with song audio
     } else {
       console.log('🎤 AIHOST: No audio ref available to stop')
     }
