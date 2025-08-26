@@ -682,8 +682,12 @@ const Game = () => {
       
       // Play victory applause SFX if player won (with slight delay to sync with results display)
       setTimeout(() => {
+        console.log('🎉 GAME: Checking victory condition:', { score, opponentScore, playerWon: score > opponentScore })
         if (score > opponentScore) {
+          console.log('🎉 GAME: Player won! Playing victory applause')
           playVictoryApplauseSfx()
+        } else {
+          console.log('🎉 GAME: Player did not win, no applause')
         }
       }, 500) // Small delay to allow results to appear first
     } else {
@@ -731,13 +735,27 @@ const Game = () => {
   }
 
   const playVictoryApplauseSfx = () => {
+    console.log('🎉 SFX: playVictoryApplauseSfx called')
     const sfx = victoryApplauseSfxRef.current
+    console.log('🎉 SFX: Audio element:', { 
+      hasElement: !!sfx, 
+      src: sfx?.src, 
+      readyState: sfx?.readyState,
+      duration: sfx?.duration
+    })
+    
     if (sfx) {
       sfx.volume = 0.5 // Set to 50% volume as requested
       sfx.currentTime = 0
-      sfx.play().catch(error => {
-        console.log('SFX: Victory applause sound failed to play:', error)
+      console.log('🎉 SFX: Attempting to play victory applause at volume:', sfx.volume)
+      
+      sfx.play().then(() => {
+        console.log('🎉 SFX: Victory applause started playing successfully')
+      }).catch(error => {
+        console.error('🎉 SFX: Victory applause sound failed to play:', error)
       })
+    } else {
+      console.error('🎉 SFX: No victory applause audio element found!')
     }
   }
 
