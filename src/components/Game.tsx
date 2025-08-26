@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import AIHost from './AIHost'
+import AIHost, { type AIHostRef } from './AIHost'
 import { deepgramService, type DeepgramResponse } from '../services/deepgramService'
 import { gameHost } from '../services/gameHostManager'
 import './Game.css'
@@ -31,6 +31,9 @@ const Game = () => {
   // Sound effect refs
   const correctAnswerSfxRef = useRef<HTMLAudioElement>(null)
   const victoryApplauseSfxRef = useRef<HTMLAudioElement>(null)
+  
+  // AI Host ref for stopping speech
+  const aiHostRef = useRef<AIHostRef>(null)
   
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -648,6 +651,9 @@ const Game = () => {
   }
 
   const nextQuestion = () => {
+    // Stop AI Host speech immediately when user clicks Next Question
+    aiHostRef.current?.stopAudio()
+    
     if (questionNumber >= totalQuestions) {
       setGameComplete(true)
       setHostPhase('game_end')
@@ -1060,6 +1066,7 @@ const Game = () => {
           {/* AI Host Component for Game End */}
           {selectedHost !== 'none' && (
             <AIHost
+              ref={aiHostRef}
               gamePhase="game_end"
               playerName={playerName}
               playerScore={score}
@@ -1326,6 +1333,7 @@ const Game = () => {
         
         {!gameComplete && selectedHost !== 'none' && !gameIntroPlaying && (
           <AIHost
+            ref={aiHostRef}
             gamePhase={hostPhase}
             playerName={playerName}
             playerScore={score}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import { gameHost } from '../services/gameHostManager'
 import './AIHost.css'
 
@@ -14,6 +14,10 @@ interface AIHostProps {
   enabled?: boolean
   voiceEnabled?: boolean
   gameIntroPlaying?: boolean // Add this to disable during intro
+}
+
+export interface AIHostRef {
+  stopAudio: () => void
 }
 
 interface CharacterInfo {
@@ -79,7 +83,7 @@ const getFallbackComment = (
     : phaseResponses
 }
 
-const AIHost: React.FC<AIHostProps> = ({
+const AIHost = forwardRef<AIHostRef, AIHostProps>(({
   gamePhase,
   playerName,
   playerScore,
@@ -91,7 +95,7 @@ const AIHost: React.FC<AIHostProps> = ({
   enabled = true,
   voiceEnabled = true,
   gameIntroPlaying = false
-}) => {
+}, ref) => {
   // COMPLETE DISABLE during intro
   if (gameIntroPlaying) {
     return null
@@ -106,6 +110,22 @@ const AIHost: React.FC<AIHostProps> = ({
   const audioRef = useRef<HTMLAudioElement>(null)
   
   const MIN_REQUEST_INTERVAL = 2000 // 2 seconds between OpenAI requests
+
+  // Expose method to stop audio from parent component
+  const stopAudio = () => {
+    const audio = audioRef.current
+    if (audio && isPlaying) {
+      console.log('🎤 AIHOST: Stopping audio due to user action')
+      audio.pause()
+      audio.currentTime = 0
+      setIsPlaying(false)
+    }
+  }
+
+  // Expose the stopAudio method via imperative handle
+  useImperativeHandle(ref, () => ({
+    stopAudio
+  }), [isPlaying])
 
   useEffect(() => {
     console.log('🎤 AIHOST: useEffect triggered', { 
@@ -315,6 +335,8 @@ const AIHost: React.FC<AIHostProps> = ({
       )}
     </div>
   )
-}
+})
+
+AIHost.displayName = 'AIHost'
 
 export default AIHost
