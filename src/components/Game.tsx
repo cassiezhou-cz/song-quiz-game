@@ -738,7 +738,7 @@ const Game = () => {
 
   const playVictoryApplauseSfx = () => {
     console.log('🎉 SFX: playVictoryApplauseSfx called')
-    console.log('🎉 SFX: Current game state:', { gameComplete, showResults: !!showResults })
+    console.log('🎉 SFX: Current game state:', { gameComplete, questionNumber, totalQuestions })
     
     // First, let's see what's in the DOM
     const allAudioElements = document.querySelectorAll('audio')
@@ -1164,6 +1164,23 @@ const Game = () => {
               gameIntroPlaying={false}
             />
           )}
+
+          {/* Sound Effect Audio Elements - Available on Game Complete Screen */}
+          <audio 
+            ref={correctAnswerSfxRef}
+            preload="auto"
+          >
+            <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
+            Your browser does not support the audio element.
+          </audio>
+          
+          <audio 
+            ref={victoryApplauseSfxRef}
+            preload="auto"
+          >
+            <source src="/assets/sfx_sq_applause_correct_answer.ogg" type="audio/ogg" />
+            Your browser does not support the audio element.
+          </audio>
         </div>
       </div>
     )
@@ -1441,22 +1458,7 @@ const Game = () => {
           ← Back to Playlists
         </button>
 
-        {/* Sound Effect Audio Elements */}
-        <audio 
-          ref={correctAnswerSfxRef}
-          preload="auto"
-        >
-          <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
-          Your browser does not support the audio element.
-        </audio>
-        
-        <audio 
-          ref={victoryApplauseSfxRef}
-          preload="auto"
-        >
-          <source src="/assets/sfx_sq_applause_correct_answer.ogg" type="audio/ogg" />
-          Your browser does not support the audio element.
-        </audio>
+
       </div>
     </div>
   )
