@@ -259,6 +259,7 @@ export class GameHostManager {
     finalScore: number,
     totalQuestions: number,
     playlistName: string,
+    playerName: string = 'Player',
     options?: {
       generateVoice?: boolean
     }
@@ -271,7 +272,7 @@ export class GameHostManager {
       const character = this.getCharacterInfo(this.currentPersonality)
       const context = {
         gamePhase: 'game_end' as const,
-        playerName: 'Player',
+        playerName,
         playerScore: finalScore,
         opponentScore: 0,
         responseLength: 'long' as const,
@@ -371,6 +372,7 @@ export class GameHostManager {
 
   async announceGameIntro(
     playlistName: string,
+    playerName: string = 'Player',
     options?: {
       responseLength?: 'short' | 'medium'
       generateVoice?: boolean
@@ -384,7 +386,7 @@ export class GameHostManager {
       const character = this.getCharacterInfo(this.currentPersonality)
       const context = {
         gamePhase: 'question_start' as const,
-        playerName: 'Player',
+        playerName,
         playerScore: 0,
         opponentScore: 0,
         responseLength: 'medium' as const,

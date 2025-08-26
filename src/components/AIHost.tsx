@@ -219,6 +219,7 @@ const AIHost = forwardRef<AIHostRef, AIHostProps>(({
               playerScore, 
               5, // totalQuestions 
               'Quiz Game',
+              playerName,
               { generateVoice: true }
             )
           } else {
