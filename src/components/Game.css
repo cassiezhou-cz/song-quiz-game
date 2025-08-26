@@ -816,12 +816,66 @@
   justify-content: center;
   min-height: 100vh;
   color: #ffffff;
-  font-size: 1.5rem;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 15px;
   padding: 2rem;
   margin: 2rem;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+}
+
+.loading-image {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loading-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  animation: fadeInUp 1s ease-out;
+}
+
+.loading-subtitle {
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.9;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  animation: fadeInUp 1s ease-out 0.3s both;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Mobile responsive */
@@ -832,6 +886,24 @@
   
   .game-content {
     padding: 1rem;
+  }
+
+  .game-loading {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .loading-image {
+    width: 150px;
+    height: 150px;
+  }
+
+  .loading-title {
+    font-size: 1.5rem;
+  }
+
+  .loading-subtitle {
+    font-size: 1rem;
   }
   
   .game-logo {

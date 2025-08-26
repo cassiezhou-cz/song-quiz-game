@@ -913,7 +913,19 @@ const Game = () => {
   }, [])
 
   if (!currentQuestion) {
-    return <div className="game-loading">Loading quiz...</div>
+    return (
+      <div className="game-loading">
+        <div className="loading-content">
+          <img 
+            src="/assets/Opponent found.png" 
+            alt="Opponent Found" 
+            className="loading-image"
+          />
+          <h2 className="loading-title">Opponent Found!</h2>
+          <p className="loading-subtitle">Preparing your musical challenge...</p>
+        </div>
+      </div>
+    )
   }
 
   if (gameComplete) {
