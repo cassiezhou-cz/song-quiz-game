@@ -680,14 +680,16 @@ const Game = () => {
       setGameComplete(true)
       setHostPhase('game_end')
       
-      // Play victory applause SFX if player won (with slight delay to sync with results display)
+      // TEMPORARY: Play victory applause SFX regardless of win/loss to test audio
       setTimeout(() => {
         console.log('🎉 GAME: Checking victory condition:', { score, opponentScore, playerWon: score > opponentScore })
+        console.log('🎉 GAME: TESTING - Playing applause regardless of outcome')
+        playVictoryApplauseSfx()
+        
         if (score > opponentScore) {
-          console.log('🎉 GAME: Player won! Playing victory applause')
-          playVictoryApplauseSfx()
+          console.log('🎉 GAME: Player won!')
         } else {
-          console.log('🎉 GAME: Player did not win, no applause')
+          console.log('🎉 GAME: Player did not win')
         }
       }, 500) // Small delay to allow results to appear first
     } else {
@@ -736,13 +738,36 @@ const Game = () => {
 
   const playVictoryApplauseSfx = () => {
     console.log('🎉 SFX: playVictoryApplauseSfx called')
-    const sfx = victoryApplauseSfxRef.current
-    console.log('🎉 SFX: Audio element:', { 
+    
+    // Try to find the audio element by ref first
+    let sfx = victoryApplauseSfxRef.current
+    console.log('🎉 SFX: Audio element via ref:', { 
       hasElement: !!sfx, 
       src: sfx?.src, 
       readyState: sfx?.readyState,
       duration: sfx?.duration
     })
+    
+    // If ref doesn't work, try to find it by DOM query as fallback
+    if (!sfx) {
+      console.log('🎉 SFX: Ref failed, trying DOM query fallback...')
+      const audioElements = document.querySelectorAll('audio')
+      console.log('🎉 SFX: Found audio elements:', audioElements.length)
+      
+      for (let i = 0; i < audioElements.length; i++) {
+        const audio = audioElements[i]
+        console.log(`🎉 SFX: Audio ${i}:`, { 
+          src: audio.src, 
+          hasApplauseSource: audio.src.includes('sfx_sq_applause_correct_answer')
+        })
+        
+        if (audio.src.includes('sfx_sq_applause_correct_answer')) {
+          sfx = audio
+          console.log('🎉 SFX: Found applause audio via DOM query!')
+          break
+        }
+      }
+    }
     
     if (sfx) {
       sfx.volume = 0.5 // Set to 50% volume as requested
@@ -755,7 +780,7 @@ const Game = () => {
         console.error('🎉 SFX: Victory applause sound failed to play:', error)
       })
     } else {
-      console.error('🎉 SFX: No victory applause audio element found!')
+      console.error('🎉 SFX: No victory applause audio element found via ref OR DOM query!')
     }
   }
 
