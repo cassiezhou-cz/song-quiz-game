@@ -28,6 +28,10 @@ const Game = () => {
   const { playlist } = useParams<{ playlist: string }>()
   const audioRef = useRef<HTMLAudioElement>(null)
   
+  // Sound effect refs
+  const correctAnswerSfxRef = useRef<HTMLAudioElement>(null)
+  const victoryApplauseSfxRef = useRef<HTMLAudioElement>(null)
+  
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -589,12 +593,19 @@ const Game = () => {
       setSongCorrect(songMatch)
       const points = (artistMatch ? 10 : 0) + (songMatch ? 10 : 0)
       setPointsEarned(points)
+      
+      // Play correct answer SFX if got at least part of the answer correct
+      if (artistMatch || songMatch) {
+        playCorrectAnswerSfx()
+      }
     } else {
       // Traditional multiple choice - all or nothing
       if (playerCorrect) {
         setArtistCorrect(true)
         setSongCorrect(true)
         setPointsEarned(20)
+        // Play correct answer SFX for traditional correct answer
+        playCorrectAnswerSfx()
       } else {
         setArtistCorrect(false)
         setSongCorrect(false)
@@ -640,6 +651,13 @@ const Game = () => {
     if (questionNumber >= totalQuestions) {
       setGameComplete(true)
       setHostPhase('game_end')
+      
+      // Play victory applause SFX if player won (with slight delay to sync with results display)
+      setTimeout(() => {
+        if (score > opponentScore) {
+          playVictoryApplauseSfx()
+        }
+      }, 500) // Small delay to allow results to appear first
     } else {
       setQuestionNumber(prev => prev + 1)
       setHostPhase('round_end')
@@ -671,6 +689,28 @@ const Game = () => {
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  // Sound effect functions
+  const playCorrectAnswerSfx = () => {
+    const sfx = correctAnswerSfxRef.current
+    if (sfx) {
+      sfx.currentTime = 0
+      sfx.play().catch(error => {
+        console.log('SFX: Correct answer sound failed to play:', error)
+      })
+    }
+  }
+
+  const playVictoryApplauseSfx = () => {
+    const sfx = victoryApplauseSfxRef.current
+    if (sfx) {
+      sfx.volume = 0.5 // Set to 50% volume as requested
+      sfx.currentTime = 0
+      sfx.play().catch(error => {
+        console.log('SFX: Victory applause sound failed to play:', error)
+      })
+    }
   }
 
   // Speech Recognition Functions
@@ -1308,6 +1348,23 @@ const Game = () => {
         >
           ← Back to Playlists
         </button>
+
+        {/* Sound Effect Audio Elements */}
+        <audio 
+          ref={correctAnswerSfxRef}
+          preload="auto"
+        >
+          <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
+          Your browser does not support the audio element.
+        </audio>
+        
+        <audio 
+          ref={victoryApplauseSfxRef}
+          preload="auto"
+        >
+          <source src="/assets/sfx_sq_applause_correct_answer.ogg" type="audio/ogg" />
+          Your browser does not support the audio element.
+        </audio>
       </div>
     </div>
   )
