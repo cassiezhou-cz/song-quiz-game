@@ -818,9 +818,9 @@
   color: #ffffff;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border-radius: 15px;
-  padding: 2rem;
-  margin: 2rem;
+  padding: 2rem 1rem;
+  margin: 0;
+  width: 100%;
 }
 
 .loading-content {
@@ -830,12 +830,10 @@
   text-align: center;
   gap: 2rem;
   width: 100%;
-  max-width: 600px;
 }
 
 .loading-image {
   width: 100%;
-  max-width: 500px;
   height: auto;
   object-fit: contain;
   border-radius: 15px;
@@ -892,13 +890,12 @@
   }
 
   .game-loading {
-    margin: 1rem;
-    padding: 1.5rem;
+    margin: 0;
+    padding: 1.5rem 0.5rem;
   }
 
   .loading-image {
     width: 100%;
-    max-width: 350px;
     height: auto;
   }
 
