@@ -1373,7 +1373,7 @@ const Game = () => {
 
 
                 <button className="next-question-btn" onClick={nextQuestion}>
-                  {questionNumber >= totalQuestions ? 'Finish Quiz' : 'Next Question →'}
+                  {questionNumber === totalQuestions ? 'Finish Quiz' : 'Next Question →'}
                 </button>
               </div>
             )}
