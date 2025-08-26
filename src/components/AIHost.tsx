@@ -113,19 +113,31 @@ const AIHost = forwardRef<AIHostRef, AIHostProps>(({
 
   // Expose method to stop audio from parent component
   const stopAudio = () => {
+    console.log('🎤 AIHOST: stopAudio called', { 
+      hasAudioRef: !!audioRef.current, 
+      isPlaying, 
+      currentSrc: audioRef.current?.src 
+    })
+    
     const audio = audioRef.current
-    if (audio && isPlaying) {
-      console.log('🎤 AIHOST: Stopping audio due to user action')
+    if (audio) {
+      console.log('🎤 AIHOST: Stopping audio due to user action - FORCED STOP')
       audio.pause()
       audio.currentTime = 0
       setIsPlaying(false)
+      
+      // Additional cleanup - remove src to ensure it stops
+      audio.src = ''
+      audio.load()
+    } else {
+      console.log('🎤 AIHOST: No audio ref available to stop')
     }
   }
 
   // Expose the stopAudio method via imperative handle
   useImperativeHandle(ref, () => ({
     stopAudio
-  }), [isPlaying])
+  }), [])
 
   useEffect(() => {
     console.log('🎤 AIHOST: useEffect triggered', { 
@@ -236,7 +248,7 @@ const AIHost = forwardRef<AIHostRef, AIHostProps>(({
             console.log('🎤 AIHOST: Actually playing audio now...')
             audioRef.current.src = response.audioUrl
             audioRef.current.play().then(() => {
-              console.log('🎤 AIHOST: Audio playback started successfully')
+              console.log('🎤 AIHOST: Audio playback started successfully - AUTO PLAY')
               setIsPlaying(true)
             }).catch(error => {
               console.error('🎤 AIHOST: Audio play failed:', error)
@@ -275,6 +287,17 @@ const AIHost = forwardRef<AIHostRef, AIHostProps>(({
   }
 
   const handleAudioEnd = () => {
+    console.log('🎤 AIHOST: Audio ended')
+    setIsPlaying(false)
+  }
+
+  const handleAudioStart = () => {
+    console.log('🎤 AIHOST: Audio actually started playing')
+    setIsPlaying(true)
+  }
+
+  const handleAudioPause = () => {
+    console.log('🎤 AIHOST: Audio paused')
     setIsPlaying(false)
   }
 
@@ -321,6 +344,8 @@ const AIHost = forwardRef<AIHostRef, AIHostProps>(({
       <audio
         ref={audioRef}
         onEnded={handleAudioEnd}
+        onPlay={handleAudioStart}
+        onPause={handleAudioPause}
         style={{ display: 'none' }}
       />
 

@@ -651,8 +651,15 @@ const Game = () => {
   }
 
   const nextQuestion = () => {
+    console.log('🎮 GAME: nextQuestion called - attempting to stop AI Host audio')
+    
     // Stop AI Host speech immediately when user clicks Next Question
-    aiHostRef.current?.stopAudio()
+    if (aiHostRef.current) {
+      console.log('🎮 GAME: AI Host ref exists, calling stopAudio()')
+      aiHostRef.current.stopAudio()
+    } else {
+      console.log('🎮 GAME: No AI Host ref available')
+    }
     
     if (questionNumber >= totalQuestions) {
       setGameComplete(true)
