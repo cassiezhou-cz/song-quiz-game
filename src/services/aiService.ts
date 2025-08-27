@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 
 interface AIResponse {
   text: string
@@ -6,17 +6,21 @@ interface AIResponse {
 }
 
 class AIService {
-  private openai: OpenAI | null = null
+  private anthropic: Anthropic | null = null
   private isConfigured = false
+  private provider: 'anthropic' = 'anthropic' // Default to Anthropic
 
   constructor() {
-    const apiKey = (import.meta as any).env?.VITE_OPENAI_API_KEY
-    if (apiKey && apiKey !== 'your-openai-api-key-here') {
-      this.openai = new OpenAI({
-        apiKey: apiKey,
+    // Try Anthropic first
+    const anthropicKey = (import.meta as any).env?.VITE_ANTHROPIC_API_KEY
+    if (anthropicKey && anthropicKey !== 'your-anthropic-api-key-here') {
+      this.anthropic = new Anthropic({
+        apiKey: anthropicKey,
         dangerouslyAllowBrowser: true // Note: Only for development
       })
       this.isConfigured = true
+      this.provider = 'anthropic'
+      console.log('🤖 AI Service: Using Anthropic/Claude')
     }
   }
 
@@ -31,7 +35,7 @@ class AIService {
     responseLength: 'short' | 'medium' | 'long'
     character?: { name: string; emoji: string; personality: string }
   }): Promise<AIResponse> {
-    if (!this.isConfigured || !this.openai) {
+    if (!this.isConfigured || !this.anthropic) {
       console.warn('🤖 AI Service: Not configured, using fallback response')
       return {
         text: this.getFallbackResponse(context),
@@ -45,17 +49,19 @@ class AIService {
     const userPrompt = this.buildUserPrompt(context)
 
     try {
-      const completion = await this.openai.chat.completions.create({
-        model: (import.meta as any).env?.VITE_OPENAI_MODEL || 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
+      const model = (import.meta as any).env?.VITE_ANTHROPIC_MODEL || 'claude-3-haiku-20240307'
+      
+      const message = await this.anthropic.messages.create({
+        model: model, // Fast and efficient claude-3-haiku, or upgrade to claude-3-sonnet for better quality
         max_tokens: this.getMaxTokens(context.responseLength),
-        temperature: 0.8
+        temperature: 0.8,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: userPrompt }
+        ]
       })
 
-      const responseText = completion.choices[0]?.message?.content || ''
+      const responseText = message.content[0]?.type === 'text' ? message.content[0].text : ''
       const processingTime = Date.now() - startTime
 
       return {
@@ -68,9 +74,9 @@ class AIService {
       // Check for specific API errors
       if (error instanceof Error) {
         if (error.message.includes('401') || error.message.includes('Authentication')) {
-          console.error('🤖 AI Service: API key authentication failed. Please check your OpenAI API key.')
+          console.error('🤖 AI Service: API key authentication failed. Please check your Anthropic API key.')
         } else if (error.message.includes('quota') || error.message.includes('limit')) {
-          console.error('🤖 AI Service: API quota exceeded. Please check your OpenAI billing.')
+          console.error('🤖 AI Service: API quota exceeded. Please check your Anthropic billing.')
         }
       }
       
@@ -224,18 +230,18 @@ You ARE the host - respond as ${character.name}, not as an AI assistant.`
   getConfigurationHelp(): string {
     return `To fix AI host commentary:
 
-🔑 OpenAI API Key Issues:
-1. Go to https://platform.openai.com/api-keys
-2. Create a new API key (not project-specific)
-3. Ensure you have billing set up and credits available
+🔑 Anthropic API Key Issues:
+1. Go to https://console.anthropic.com/account/keys
+2. Create a new API key
+3. Ensure you have credits available in your account
 4. Replace the key in your .env file:
-   VITE_OPENAI_API_KEY=sk-...your-new-key-here
+   VITE_ANTHROPIC_API_KEY=sk-ant-api03-...your-new-key-here
 5. Restart the development server
 
 ⚠️  Common Issues:
-- Project keys (sk-proj-...) may have limited access
-- Check your OpenAI billing/usage limits
-- Verify your account has access to GPT models
+- Check your Anthropic billing/usage limits
+- Verify your account has access to Claude models
+- Ensure the API key has proper permissions
 
 💡 Alternative: The game will work with fallback text responses if AI fails`
   }
