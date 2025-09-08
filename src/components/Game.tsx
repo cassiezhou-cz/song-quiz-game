@@ -43,6 +43,12 @@ const Game = () => {
   const [isCorrect, setIsCorrect] = useState(false)
   const [artistCorrect, setArtistCorrect] = useState(false)
   const [songCorrect, setSongCorrect] = useState(false)
+  const [isPartialCredit, setIsPartialCredit] = useState(false) // Track 10-point partial credit scenarios
+  
+  // Track base correctness for each question (for accurate percentage calculation without bonuses)
+  const [questionsCorrectness, setQuestionsCorrectness] = useState<Array<{artistCorrect: boolean, songCorrect: boolean}>>([])
+  const [opponentQuestionsCorrectness, setOpponentQuestionsCorrectness] = useState<Array<{artistCorrect: boolean, songCorrect: boolean}>>([])
+  
   const [pointsEarned, setPointsEarned] = useState(0)
   const [opponentCorrect, setOpponentCorrect] = useState(false)
   const [opponentPointsEarned, setOpponentPointsEarned] = useState(0)
@@ -424,9 +430,9 @@ const Game = () => {
     setIsCorrect(false)
     setArtistCorrect(false)
     setSongCorrect(false)
+    setIsPartialCredit(false)
     setPointsEarned(0)
-    console.log(`🐛 BUG FIX: NOT resetting opponentPointsEarned in startNewQuestion - it should only reset when new scoring happens`)
-    // setOpponentPointsEarned(0) // REMOVED - this was causing the popup mismatch!
+    // Note: opponentPointsEarned is not reset here to prevent popup display issues
     
     // Version-specific resets
     if (version === 'Version A') {
@@ -809,13 +815,25 @@ const Game = () => {
     if (points >= 20) {
       artistCorrect = true
       songCorrect = true
+      setIsPartialCredit(false) // Full credit
+    } else if (points === 10) {
+      // Partial credit - for percentage calculation, count as one correct out of two
+      artistCorrect = true  // For percentage calculation, treat as partial credit
+      songCorrect = false
+      setIsPartialCredit(true) // Partial credit (don't show indicators in UI)
+    } else {
+      // No credit
+      artistCorrect = false
+      songCorrect = false
+      setIsPartialCredit(false) // No credit
     }
-    // For 10 points, don't set artistCorrect or songCorrect - leave them as false
-    // This way we won't show ✅ or ❌ indicators, just the song info
     
     setArtistCorrect(artistCorrect)
     setSongCorrect(songCorrect)
     setIsCorrect(points > 0) // Player gets credit for any points earned
+    
+    // Record base correctness for percentage calculation (no bonuses)
+    setQuestionsCorrectness(prev => [...prev, { artistCorrect, songCorrect }])
     
     // Calculate bonuses for Version A
     let bonusPoints = 0
@@ -864,6 +882,18 @@ const Game = () => {
     
     setOpponentCorrect(opponentGetsItRight)
     
+    // Record opponent base correctness for percentage calculation
+    if (opponentGetsItRight) {
+      if (opponentPointsValue >= 20) {
+        setOpponentQuestionsCorrectness(prev => [...prev, { artistCorrect: true, songCorrect: true }])
+      } else {
+        // 10 points - partial credit (either artist or song correct)
+        setOpponentQuestionsCorrectness(prev => [...prev, { artistCorrect: true, songCorrect: false }])
+      }
+    } else {
+      setOpponentQuestionsCorrectness(prev => [...prev, { artistCorrect: false, songCorrect: false }])
+    }
+    
     // Update opponent streak
     if (opponentGetsItRight) {
       const newOpponentStreak = opponentStreak + 1
@@ -911,15 +941,28 @@ const Game = () => {
       setPointsEarned(20)
       // Play correct answer SFX for correct answer
       playCorrectAnswerSfx()
+      
+      // Record base correctness for percentage calculation
+      setQuestionsCorrectness(prev => [...prev, { artistCorrect: true, songCorrect: true }])
     } else {
       setArtistCorrect(false)
       setSongCorrect(false)
       setPointsEarned(0)
+      
+      // Record base correctness for percentage calculation
+      setQuestionsCorrectness(prev => [...prev, { artistCorrect: false, songCorrect: false }])
     }
     
     // Simulate opponent answer (50% chance of being correct)
     const opponentGetsItRight = Math.random() < 0.5
     setOpponentCorrect(opponentGetsItRight)
+    
+    // Record opponent base correctness for percentage calculation
+    if (opponentGetsItRight) {
+      setOpponentQuestionsCorrectness(prev => [...prev, { artistCorrect: true, songCorrect: true }])
+    } else {
+      setOpponentQuestionsCorrectness(prev => [...prev, { artistCorrect: false, songCorrect: false }])
+    }
     
     // Update opponent streak (for non-Version A)
     if (opponentGetsItRight) {
@@ -1007,6 +1050,10 @@ const Game = () => {
     setOpponentStreak(0)
     setOpponentIsOnStreak(false)
     setSpeedBonusToggle(false) // Reset speed bonus toggle
+    setIsPartialCredit(false) // Reset partial credit state
+    // Reset correctness tracking for percentage calculation
+    setQuestionsCorrectness([])
+    setOpponentQuestionsCorrectness([])
     // Reset Version B stars
     setCurrentStars(0)
     // Reset Version C timer and attempts
@@ -1029,6 +1076,21 @@ const Game = () => {
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  // Calculate correct rate based on base correctness (no bonuses)
+  const calculateCorrectRate = (correctnessData: Array<{artistCorrect: boolean, songCorrect: boolean}>): number => {
+    if (correctnessData.length === 0) return 0
+    
+    const totalPossiblePoints = correctnessData.length * 20 // 10 for artist + 10 for song per question
+    const earnedBasePoints = correctnessData.reduce((total, question) => {
+      let points = 0
+      if (question.artistCorrect) points += 10
+      if (question.songCorrect) points += 10
+      return total + points
+    }, 0)
+    
+    return Math.round((earnedBasePoints / totalPossiblePoints) * 100)
   }
 
   // Sound effect functions
@@ -1264,10 +1326,9 @@ const Game = () => {
                     <h4>Your Score</h4>
                     <div className="score-display">
                       <span className="score-number">{score}</span>
-                      <span className="score-total">/ {totalQuestions * 20}</span>
                     </div>
                     <p className="score-percentage">
-                      {Math.round((score / (totalQuestions * 20)) * 100)}% Correct
+                      {calculateCorrectRate(questionsCorrectness)}% correct
                     </p>
                   </div>
                   
@@ -1277,10 +1338,9 @@ const Game = () => {
                     <h4>Opponent Score</h4>
                     <div className="score-display">
                       <span className="score-number">{opponentScore}</span>
-                      <span className="score-total">/ {totalQuestions * 20}</span>
                     </div>
                     <p className="score-percentage">
-                      {Math.round((opponentScore / (totalQuestions * 20)) * 100)}% Correct
+                      {calculateCorrectRate(opponentQuestionsCorrectness)}% correct
                     </p>
                   </div>
                 </div>
@@ -1338,7 +1398,7 @@ const Game = () => {
               /* Show opponent avatar for Version A */
               <div className="avatar-container opponent-container">
                 {/* Total Score Display Above Opponent Avatar */}
-                {showFeedback && (
+                {showFeedback && !gameComplete && (
                   <div className="total-score-display opponent-total-score">
                     <div className="total-score-value">{opponentScore}</div>
                   </div>
@@ -1630,8 +1690,8 @@ const Game = () => {
                   {version === 'Version A' && (
                     <div className="version-a-breakdown">
                       <div className="breakdown-details artist-title-section">
-                        {/* For 10 points with no specific correctness, don't show indicators */}
-                        {pointsEarned === 10 && !artistCorrect && !songCorrect ? (
+                        {/* For partial credit (10-point base), don't show indicators */}
+                        {isPartialCredit ? (
                           <>
                             <p>Artist: {currentQuestion.song.artist}</p>
                             <p>Song: {currentQuestion.song.title}</p>
@@ -1803,7 +1863,7 @@ const Game = () => {
             /* Show opponent avatar for Version A */
             <div className="avatar-container opponent-container">
               {/* Total Score Display Above Opponent Avatar */}
-              {showFeedback && (
+              {showFeedback && !gameComplete && (
                 <div className="total-score-display opponent-total-score">
                   <div className="total-score-value">{opponentScore}</div>
                 </div>
