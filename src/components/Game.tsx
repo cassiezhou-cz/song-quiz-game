@@ -45,6 +45,7 @@ const Game = () => {
   const [songCorrect, setSongCorrect] = useState(false)
   const [pointsEarned, setPointsEarned] = useState(0)
   const [opponentCorrect, setOpponentCorrect] = useState(false)
+  const [opponentPointsEarned, setOpponentPointsEarned] = useState(0)
   const [gameComplete, setGameComplete] = useState(false)
   const totalQuestions = 7
 
@@ -395,16 +396,25 @@ const Game = () => {
     }
     setIsLoadingQuestion(true)
     
-    // Stop and reset any currently playing audio
+    // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
     if (audio) {
+      console.log('🎵 START: Performing comprehensive audio cleanup')
       audio.pause()
       audio.currentTime = 0
       setIsPlaying(false)
       setCurrentTime(0)
-      // Clear any event listeners that might interfere
-      audio.onloadeddata = null
+      
+      // Clear ALL event listeners that might interfere
       audio.oncanplay = null
+      audio.oncanplaythrough = null 
+      audio.onloadeddata = null
+      audio.onloadedmetadata = null
+      audio.onerror = null
+      
+      // Complete reset of audio element for all versions (not just Version C)
+      audio.src = ''
+      audio.load()
     }
     
     const question = generateQuizQuestion()
@@ -415,6 +425,8 @@ const Game = () => {
     setArtistCorrect(false)
     setSongCorrect(false)
     setPointsEarned(0)
+    console.log(`🐛 BUG FIX: NOT resetting opponentPointsEarned in startNewQuestion - it should only reset when new scoring happens`)
+    // setOpponentPointsEarned(0) // REMOVED - this was causing the popup mismatch!
     
     // Version-specific resets
     if (version === 'Version A') {
@@ -457,21 +469,40 @@ const Game = () => {
       })
       
       if (audioElement) {
-        // For Version C, ensure we completely reset the audio element
-        if (version === 'Version C') {
-          console.log('🎵 VERSION C: Completely resetting audio element')
-          audioElement.pause()
-          audioElement.currentTime = 0
-          audioElement.src = ''
-          // Force a complete reload
-          audioElement.load()
-        }
+        // Ensure clean state before setting new source
+        console.log('🎵 AUTOPLAY: Ensuring clean audio state')
+        audioElement.pause()
+        audioElement.currentTime = 0
+        
+        // Clear any existing event listeners to prevent conflicts
+        audioElement.oncanplay = null
+        audioElement.oncanplaythrough = null
+        audioElement.onloadeddata = null
+        audioElement.onloadedmetadata = null
+        audioElement.onerror = null
         
         // Set the new source
         audioElement.src = question.song.file
+        console.log(`🎵 AUTOPLAY: Set new source: ${question.song.file}`)
+        
+        // Add error handler for this attempt
+        audioElement.onerror = (error) => {
+          console.error(`🎵 AUTOPLAY: Audio loading error on attempt ${attemptNumber}:`, error)
+          audioElement.onerror = null
+          if (attemptNumber < maxAttempts) {
+            setTimeout(() => attemptAutoPlay(attemptNumber + 1, maxAttempts), 500)
+          } else {
+            console.error('🎵 AUTOPLAY: All attempts failed due to loading errors')
+            setIsPlaying(false)
+            setIsLoadingQuestion(false)
+          }
+        }
         
         // Wait for audio to be ready and then play
         const playAudio = () => {
+          // Clear error handler since we're about to play
+          audioElement.onerror = null
+          
           audioElement.play().then(() => {
             console.log(`🎵 GAME: Audio playback started successfully for ${question.song.title}`)
             setIsPlaying(true)
@@ -479,8 +510,8 @@ const Game = () => {
           }).catch(error => {
             console.error(`🎵 GAME: Auto-play attempt ${attemptNumber} failed for ${question.song.title}:`, error)
             if (attemptNumber < maxAttempts) {
-              // Try again after a short delay
-              setTimeout(() => attemptAutoPlay(attemptNumber + 1, maxAttempts), 300)
+              // Try again after a longer delay
+              setTimeout(() => attemptAutoPlay(attemptNumber + 1, maxAttempts), 500)
             } else {
               console.error('🎵 GAME: All auto-play attempts failed')
               setIsPlaying(false)
@@ -489,20 +520,41 @@ const Game = () => {
           })
         }
         
-        // Try to play immediately, or wait for audio to load
+        // Try to play immediately if ready, or wait for audio to load
         if (audioElement.readyState >= 3) { // HAVE_FUTURE_DATA
+          console.log('🎵 AUTOPLAY: Audio ready, playing immediately')
           playAudio()
         } else {
+          console.log('🎵 AUTOPLAY: Waiting for audio to load...')
           audioElement.oncanplay = () => {
+            console.log('🎵 AUTOPLAY: Audio can play, starting playback')
             audioElement.oncanplay = null
             playAudio()
           }
-          // For Version C, add additional loading event handlers
-          if (version === 'Version C') {
-            audioElement.onloadeddata = () => {
-              console.log('🎵 VERSION C: Audio data loaded, ready to play')
+          
+          // Add timeout in case oncanplay never fires
+          const timeoutId = setTimeout(() => {
+            console.warn('🎵 AUTOPLAY: Timeout waiting for canplay, trying anyway')
+            audioElement.oncanplay = null
+            if (audioElement.readyState >= 2) { // HAVE_CURRENT_DATA
+              playAudio()
+            } else if (attemptNumber < maxAttempts) {
+              setTimeout(() => attemptAutoPlay(attemptNumber + 1, maxAttempts), 500)
+            } else {
+              console.error('🎵 AUTOPLAY: Final timeout - audio never became ready')
+              setIsPlaying(false)
+              setIsLoadingQuestion(false)
             }
+          }, 3000) // 3 second timeout
+          
+          // Clear timeout when canplay fires
+          audioElement.oncanplay = () => {
+            console.log('🎵 AUTOPLAY: Audio can play, starting playback')
+            clearTimeout(timeoutId)
+            audioElement.oncanplay = null
+            playAudio()
           }
+          
           audioElement.load() // Force reload
         }
       } else {
@@ -511,8 +563,8 @@ const Game = () => {
       }
     }
     
-    // Start auto-play with a short delay to allow React to update the audio src
-    setTimeout(() => attemptAutoPlay(), 300)
+    // Start auto-play with a short delay to allow audio element cleanup to complete
+    setTimeout(() => attemptAutoPlay(), 500)
     
   }
 
@@ -779,7 +831,8 @@ const Game = () => {
     }
     
     // Streak bonus - check if player has 3+ correct in a row
-    if (artistCorrect || songCorrect) {
+    // Any positive score should count toward streak (including 10-point partial scores)
+    if (points > 0) {
       const newStreak = streak + 1
       setStreak(newStreak)
       
@@ -796,14 +849,19 @@ const Game = () => {
     const totalPoints = basePoints + bonusPoints
     setPointsEarned(totalPoints)
     
-    console.log(`Version A Scoring: Base ${basePoints} + Bonus ${bonusPoints} = ${totalPoints}`, { bonusReasons })
     
     if (totalPoints > 0) {
       playCorrectAnswerSfx()
     }
     
-    // Simulate opponent answer (40% chance of being correct)
-    const opponentGetsItRight = Math.random() < 0.4
+    // Generate opponent random values ONCE to prevent flickering
+    const opponentCorrectRandom = Math.random()
+    const opponentPointsRandom = Math.random()
+    
+    // Simulate opponent answer (50% chance of being correct)
+    const opponentGetsItRight = opponentCorrectRandom < 0.5
+    const opponentPointsValue = opponentPointsRandom < 0.5 ? 10 : 20
+    
     setOpponentCorrect(opponentGetsItRight)
     
     // Update opponent streak
@@ -831,9 +889,11 @@ const Game = () => {
     setScore(prev => prev + totalPoints)
     
     if (opponentGetsItRight) {
-      // Opponent gets random partial or full score
-      const opponentPoints = Math.random() < 0.5 ? 10 : 20
-      setOpponentScore(prev => prev + opponentPoints)
+      // Use the pre-calculated opponent points (no new random generation)
+      setOpponentPointsEarned(opponentPointsValue)
+      setOpponentScore(prev => prev + opponentPointsValue)
+    } else {
+      setOpponentPointsEarned(0)
     }
   }
 
@@ -857,8 +917,8 @@ const Game = () => {
       setPointsEarned(0)
     }
     
-    // Simulate opponent answer (40% chance of being correct)
-    const opponentGetsItRight = Math.random() < 0.4
+    // Simulate opponent answer (50% chance of being correct)
+    const opponentGetsItRight = Math.random() < 0.5
     setOpponentCorrect(opponentGetsItRight)
     
     // Update opponent streak (for non-Version A)
@@ -890,11 +950,28 @@ const Game = () => {
     if (opponentGetsItRight) {
       // Opponent gets random partial or full score
       const opponentPoints = Math.random() < 0.5 ? 10 : 20
-      setOpponentScore(prev => prev + opponentPoints)
+      // setOpponentPointsEarned(opponentPoints) // DISABLED - causes race condition with handleManualScore
+      // setOpponentScore(prev => prev + opponentPoints) // DISABLED - opponent scoring handled by handleManualScore only
+    } else {
+      // setOpponentPointsEarned(0) // DISABLED - opponent scoring handled by handleManualScore only
     }
   }
 
   const nextQuestion = () => {
+    // First, properly stop and cleanup current audio
+    const audio = audioRef.current
+    if (audio) {
+      console.log('🎵 NEXT: Stopping current audio before proceeding')
+      audio.pause()
+      audio.currentTime = 0
+      setIsPlaying(false)
+      setCurrentTime(0)
+      // Clear any pending event listeners
+      audio.oncanplay = null
+      audio.oncanplaythrough = null
+      audio.onloadeddata = null
+    }
+
     if (questionNumber >= totalQuestions) {
       setGameComplete(true)
       
@@ -908,7 +985,7 @@ const Game = () => {
     } else {
       setQuestionNumber(prev => prev + 1)
       
-      // Start new question immediately
+      // Start new question with proper delay for cleanup
       setTimeout(() => {
         startNewQuestion()
       }, 1000)
@@ -922,6 +999,8 @@ const Game = () => {
     setGameComplete(false)
     setUsedSongIds([]) // Reset used songs for new game
     setIsLoadingQuestion(false) // Reset loading state
+    // Reset opponent points tracking
+    setOpponentPointsEarned(0)
     // Reset Version A streaks
     setStreak(0)
     setIsOnStreak(false)
@@ -1280,7 +1359,7 @@ const Game = () => {
                   alt="Opponent Avatar" 
                   className={`avatar opponent-avatar ${showFeedback && opponentCorrect ? 'celebrating' : ''}`}
                 />
-                {showFeedback && opponentCorrect && (
+                {showFeedback && opponentCorrect && !gameComplete && (
                   <>
                     <div className="sparkles">
                       <div className="sparkle sparkle-1">✨</div>
@@ -1290,7 +1369,7 @@ const Game = () => {
                       <div className="sparkle sparkle-5">✨</div>
                     </div>
                     <div className="score-popup opponent-score-popup">
-                      Correct! +{Math.random() < 0.5 ? '10' : '20'} Points
+                      Correct! +{opponentPointsEarned} Points
                     </div>
                   </>
                 )}
@@ -1733,13 +1812,32 @@ const Game = () => {
               <img 
                 src="/assets/OpponentAvatar.png" 
                 alt="Opponent Avatar" 
-                className={`avatar opponent-avatar ${showFeedback && opponentBuzzedIn ? 'celebrating' : ''}`}
+                className={`avatar opponent-avatar ${showFeedback && opponentCorrect ? 'celebrating' : ''}`}
               />
               
+              {/* Opponent Score Popup - Missing from this container! */}
+              {showFeedback && opponentCorrect && (
+                <>
+                  <div className="sparkles">
+                    <div className="sparkle sparkle-1">✨</div>
+                    <div className="sparkle sparkle-2">⭐</div>
+                    <div className="sparkle sparkle-3">✨</div>
+                    <div className="sparkle sparkle-4">⭐</div>
+                    <div className="sparkle sparkle-5">✨</div>
+                  </div>
+                  <div className="score-popup opponent-score-popup">
+                    Correct! +{opponentPointsEarned} Points
+                  </div>
+                </>
+              )}
+              
               {/* Opponent Buzz In Indicator */}
-              {opponentBuzzedIn && (
+              {opponentBuzzedIn && !showFeedback && (
                 <div className="opponent-buzz-indicator">
-                  ANSWERED!
+                  <div className="buzz-alert">
+                    <span className="buzz-icon">⚡</span>
+                  </div>
+                  <div className="buzz-text">ANSWERED!</div>
                 </div>
               )}
               
