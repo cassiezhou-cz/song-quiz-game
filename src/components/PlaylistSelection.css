@@ -122,6 +122,72 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Version Selection Styles */
+.version-selection {
+  margin: 3rem auto 2rem;
+  max-width: 600px;
+}
+
+.version-title {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
+}
+
+.version-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.version-button {
+  padding: 0.8rem 1.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  font-size: 0.95rem;
+  font-weight: 500;
+  min-width: 100px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.version-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.version-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.version-button.selected {
+  border-color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.2);
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
+}
+
+.version-button.selected:hover:not(:disabled) {
+  border-color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(78, 205, 196, 0.4);
+}
+
+.version-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -158,5 +224,18 @@
   
   .decade {
     font-size: 1.5rem;
+  }
+  
+  .version-buttons {
+    flex-direction: column;
+    gap: 0.8rem;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+  
+  .version-button {
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+    min-width: auto;
   }
 }

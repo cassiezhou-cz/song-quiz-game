@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import AIHost, { type AIHostRef } from './AIHost'
-import { deepgramService, type DeepgramResponse } from '../services/deepgramService'
-import { gameHost } from '../services/gameHostManager'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import './Game.css'
 
 interface Song {
@@ -21,19 +18,18 @@ interface QuizQuestion {
   correctAnswer: string
 }
 
-type AIHostPhase = 'question_start' | 'correct_answer' | 'wrong_answer' | 'round_end' | 'game_end'
 
 const Game = () => {
   const navigate = useNavigate()
   const { playlist } = useParams<{ playlist: string }>()
+  const [searchParams] = useSearchParams()
+  const version = searchParams.get('version') || 'Version A'
   const audioRef = useRef<HTMLAudioElement>(null)
+  
   
   // Sound effect refs
   const correctAnswerSfxRef = useRef<HTMLAudioElement>(null)
   const victoryApplauseSfxRef = useRef<HTMLAudioElement>(null)
-  
-  // AI Host ref for stopping speech
-  const aiHostRef = useRef<AIHostRef>(null)
   
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -50,78 +46,47 @@ const Game = () => {
   const [pointsEarned, setPointsEarned] = useState(0)
   const [opponentCorrect, setOpponentCorrect] = useState(false)
   const [gameComplete, setGameComplete] = useState(false)
-  const totalQuestions = 5
+  const totalQuestions = 7
 
-  // Speech Recognition state
-  const [speechEnabled, setSpeechEnabled] = useState(true)
-  const [isListening, setIsListening] = useState(false)
-  const [speechSupported, setSpeechSupported] = useState(false)
-  const [latestTranscript, setLatestTranscript] = useState('')
-
+  // Version A specific state
+  const [streak, setStreak] = useState(0)
+  const [isOnStreak, setIsOnStreak] = useState(false)
+  const [opponentStreak, setOpponentStreak] = useState(0)
+  const [opponentIsOnStreak, setOpponentIsOnStreak] = useState(false)
+  const [opponentBuzzedIn, setOpponentBuzzedIn] = useState(false)
+  const [playerBuzzedFirst, setPlayerBuzzedFirst] = useState(false)
+  const [roundStartTime, setRoundStartTime] = useState<number>(0)
+  const [speedBonusToggle, setSpeedBonusToggle] = useState(false)
+  
+  // Version B specific state
+  const [currentStars, setCurrentStars] = useState(0)
+  
+  // Version C specific state
+  const [timeRemaining, setTimeRemaining] = useState(60)
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
+  const [allAttemptedSongs, setAllAttemptedSongs] = useState<Array<{
+    song: any,
+    pointsEarned: number,
+    artistCorrect: boolean,
+    songCorrect: boolean
+  }>>([])
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Version B star calculation
+  const calculateStars = (totalScore: number): number => {
+    if (totalScore < 20) return 0
+    if (totalScore >= 20 && totalScore <= 50) return 1
+    if (totalScore >= 51 && totalScore <= 109) return 2
+    if (totalScore >= 110) return 3
+    return 0
+  }
+  
   // Track used songs to prevent duplicates within the same game
   const [usedSongIds, setUsedSongIds] = useState<string[]>([])
   
   // Prevent multiple simultaneous question loading
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
 
-  // AI Host state - smart timing to avoid audio conflicts
-  const [hostPhase, setHostPhase] = useState<AIHostPhase>('question_start')
-  const [selectedHost, setSelectedHost] = useState<string>('riley')
-  const [playerName, setPlayerName] = useState<string>('Player')
-  const [gameIntroPlaying, setGameIntroPlaying] = useState(true) // New state for game intro
-  const [waitingForHostSpeech, setWaitingForHostSpeech] = useState(false)
-  const introExecutedRef = useRef<string | null>(null) // Track which playlist intro was executed
-
-  // Load player name and selected AI Host character from localStorage
-  useEffect(() => {
-    // Check for reset parameter in URL
-    const urlParams = new URLSearchParams(window.location.search)
-    if (urlParams.get('resetHost') === 'true') {
-      console.log('🎪 HOSTMANAGER: Resetting host selection to default (riley)')
-      localStorage.removeItem('selectedAIHost')
-      setSelectedHost('riley')
-      return
-    }
-
-    const savedHost = localStorage.getItem('selectedAIHost')
-    if (savedHost) {
-      console.log('🎪 HOSTMANAGER: Loaded host from localStorage:', savedHost)
-      setSelectedHost(savedHost)
-    } else {
-      console.log('🎪 HOSTMANAGER: No saved host, using default: riley')
-    }
-    
-    const savedPlayerName = localStorage.getItem('playerName')
-    if (savedPlayerName) {
-      setPlayerName(savedPlayerName)
-    }
-  }, [])
-
-  // Initialize AI Host service when component mounts with selected personality
-  useEffect(() => {
-    if (selectedHost === 'none') {
-      console.log('🎪 HOSTMANAGER: Host disabled by user choice ("No Host" selected)')
-      console.log('🎪 HOSTMANAGER: To re-enable, go to the landing page and select a different host')
-      return
-    }
-    
-    console.log('🎪 HOSTMANAGER: Initializing host:', selectedHost)
-    gameHost.initialize(selectedHost).catch(error => {
-      console.warn('🎪 HOSTMANAGER: Initialization failed:', error)
-    })
-  }, [selectedHost])
-
-  // Check Deepgram support on component mount
-  useEffect(() => {
-    const isSupported = deepgramService.isReady()
-    setSpeechSupported(isSupported)
-    
-    // Disable speech if not supported
-    if (!isSupported) {
-      setSpeechEnabled(false)
-      console.log(deepgramService.getConfigurationHelp())
-    }
-  }, [])
   
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
@@ -395,8 +360,14 @@ const Game = () => {
     // Filter out songs that have already been used in this game
     const availableSongs = playlistSongs.filter(song => !usedSongIds.includes(song.id))
     
-    // If all songs have been used, reset and use all songs again (shouldn't happen with 5 questions)
+    // For Version C, if we've used all songs, reset the list (since it's a rapid-fire mode)
+    // For other versions, if all songs have been used, reset and use all songs again
     const songsToChooseFrom = availableSongs.length > 0 ? availableSongs : playlistSongs
+    
+    // Reset used songs if we're out of unique songs (mainly for Version C)
+    if (availableSongs.length === 0) {
+      setUsedSongIds([])
+    }
     
     const randomIndex = Math.floor(Math.random() * songsToChooseFrom.length)
     const correctSong = songsToChooseFrom[randomIndex]
@@ -419,7 +390,9 @@ const Game = () => {
 
   const startNewQuestion = () => {
     // Prevent multiple simultaneous calls
-    if (isLoadingQuestion) return
+    if (isLoadingQuestion) {
+      return
+    }
     setIsLoadingQuestion(true)
     
     // Stop and reset any currently playing audio
@@ -429,6 +402,9 @@ const Game = () => {
       audio.currentTime = 0
       setIsPlaying(false)
       setCurrentTime(0)
+      // Clear any event listeners that might interfere
+      audio.onloadeddata = null
+      audio.oncanplay = null
     }
     
     const question = generateQuizQuestion()
@@ -439,130 +415,157 @@ const Game = () => {
     setArtistCorrect(false)
     setSongCorrect(false)
     setPointsEarned(0)
-    setLatestTranscript('')
+    
+    // Version-specific resets
+    if (version === 'Version A') {
+      setOpponentBuzzedIn(false)
+      setPlayerBuzzedFirst(false)
+      setRoundStartTime(Date.now())
+      setSpeedBonusToggle(false) // Reset speed bonus toggle for new question
+      
+      // Randomly schedule opponent buzz-in (60% chance they buzz in first)
+      if (Math.random() < 0.6) {
+        const buzzInDelay = Math.random() * 8000 + 2000 // 2-10 seconds
+        setTimeout(() => {
+          if (!selectedAnswer) { // Only if player hasn't answered yet
+            setOpponentBuzzedIn(true)
+          }
+        }, buzzInDelay)
+      }
+    } else if (version === 'Version B') {
+      // Version B has no opponent mechanics, just update star progress
+      setCurrentStars(calculateStars(score))
+    } else if (version === 'Version C') {
+      // Version C: Start timer if not already running, or continue if still running
+      if (!isTimerRunning && timeRemaining === 60) {
+        setIsTimerRunning(true)
+      } else if (!isTimerRunning && timeRemaining > 0) {
+        setIsTimerRunning(true)
+      }
+    }
     
     // Auto-play the song after audio element has loaded the new source
-    setTimeout(() => {
+    // Use multiple attempts to ensure audio plays reliably
+    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3) => {
       const audioElement = audioRef.current
-      console.log('🎵 GAME: Attempting to auto-play new song:', {
+      console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
         currentSrc: audioElement?.src,
         expectedFile: question.song.file,
-        isLoadingQuestion
+        readyState: audioElement?.readyState,
+        songTitle: question.song.title
       })
       
-      if (audioElement && audioElement.src.includes(question.song.file.split('/').pop() || '')) {
-        console.log('🎵 GAME: Starting audio playback for:', question.song.title)
-        audioElement.play().then(() => {
-          console.log('🎵 GAME: Audio playback started successfully')
-          setIsPlaying(true)
-          setIsLoadingQuestion(false)
-        }).catch(error => {
-          console.error('🎵 GAME: Auto-play failed:', error)
-          setIsPlaying(false)
-          setIsLoadingQuestion(false)
-        })
+      if (audioElement) {
+        // For Version C, ensure we completely reset the audio element
+        if (version === 'Version C') {
+          console.log('🎵 VERSION C: Completely resetting audio element')
+          audioElement.pause()
+          audioElement.currentTime = 0
+          audioElement.src = ''
+          // Force a complete reload
+          audioElement.load()
+        }
+        
+        // Set the new source
+        audioElement.src = question.song.file
+        
+        // Wait for audio to be ready and then play
+        const playAudio = () => {
+          audioElement.play().then(() => {
+            console.log(`🎵 GAME: Audio playback started successfully for ${question.song.title}`)
+            setIsPlaying(true)
+            setIsLoadingQuestion(false)
+          }).catch(error => {
+            console.error(`🎵 GAME: Auto-play attempt ${attemptNumber} failed for ${question.song.title}:`, error)
+            if (attemptNumber < maxAttempts) {
+              // Try again after a short delay
+              setTimeout(() => attemptAutoPlay(attemptNumber + 1, maxAttempts), 300)
+            } else {
+              console.error('🎵 GAME: All auto-play attempts failed')
+              setIsPlaying(false)
+              setIsLoadingQuestion(false)
+            }
+          })
+        }
+        
+        // Try to play immediately, or wait for audio to load
+        if (audioElement.readyState >= 3) { // HAVE_FUTURE_DATA
+          playAudio()
+        } else {
+          audioElement.oncanplay = () => {
+            audioElement.oncanplay = null
+            playAudio()
+          }
+          // For Version C, add additional loading event handlers
+          if (version === 'Version C') {
+            audioElement.onloadeddata = () => {
+              console.log('🎵 VERSION C: Audio data loaded, ready to play')
+            }
+          }
+          audioElement.load() // Force reload
+        }
       } else {
-        console.log('🎵 GAME: Audio element or src mismatch, skipping auto-play')
+        console.log('🎵 GAME: No audio element found')
         setIsLoadingQuestion(false)
       }
-    }, 500)
+    }
     
-    // No AI host during question phase - only during feedback
+    // Start auto-play with a short delay to allow React to update the audio src
+    setTimeout(() => attemptAutoPlay(), 300)
+    
   }
 
   useEffect(() => {
-    console.log('🎮 GAME: useEffect [playlist, selectedHost] triggered with:', { playlist, selectedHost })
-    
-    // Don't start until both playlist and selectedHost are ready
     if (!playlist) {
-      console.log('🎮 GAME: Waiting for playlist to be set')
       return
     }
-    
-    // Check if we've already done intro for this playlist
-    if (introExecutedRef.current === playlist) {
-      console.log('🎮 GAME: Intro already executed for playlist:', playlist, '- skipping')
-      return
-    }
-    
-    console.log('🎮 GAME: First time seeing playlist:', playlist, 'with host:', selectedHost, '- executing intro')
-    introExecutedRef.current = playlist || null
     
     setUsedSongIds([]) // Reset used songs when playlist changes
-    startGameWithIntro()
-  }, [playlist, selectedHost])
-
-  const startGameWithIntro = async () => {
-    console.log('🎮 GAME: startGameWithIntro called, selectedHost:', selectedHost)
     
-    if (selectedHost === 'none') {
-      // No AI host, start game immediately
-      console.log('🎮 GAME: No AI host selected, starting game immediately')
-      setGameIntroPlaying(false)
-      startNewQuestion()
-      return
+    // Version C: Start timer when game begins
+    if (version === 'Version C') {
+      setIsTimerRunning(true)
+      setTimeRemaining(60)
+      setAllAttemptedSongs([])
     }
-
-    // Wait for gameHost to initialize if not already
-    if (!gameHost.isInitialized()) {
-      console.log('🎮 GAME: GameHost not initialized, initializing with personality:', selectedHost)
-      setWaitingForHostSpeech(true)
-      const initialized = await gameHost.initialize(selectedHost)
-      if (!initialized) {
-        // Failed to initialize, start without host
-        console.log('🎮 GAME: GameHost initialization failed, starting without host')
-        setGameIntroPlaying(false)
-        setWaitingForHostSpeech(false)
-        startNewQuestion()
-        return
+    
+    startNewQuestion()
+  }, [playlist])
+  
+  // Version C Timer Effect
+  useEffect(() => {
+    if (version === 'Version C' && isTimerRunning && timeRemaining > 0) {
+      timerRef.current = setTimeout(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            // Timer reached 0, end the game
+            setIsTimerRunning(false)
+            setGameComplete(true)
+            
+            // Pause current audio
+            const audio = audioRef.current
+            if (audio) {
+              audio.pause()
+              setIsPlaying(false)
+            }
+            
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    
+    // Cleanup timer
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
       }
     }
+  }, [version, isTimerRunning, timeRemaining])
 
-    try {
-      // Get AI host game introduction
-      console.log('🎮 GAME: Requesting AI host game introduction...')
-      setWaitingForHostSpeech(true)
-      const playlistName = playlist || '2010s'
-      const intro = await gameHost.announceGameIntro(playlistName, playerName, { generateVoice: true })
-      console.log('🎮 GAME: Received intro response:', { text: intro.text, hasAudio: !!intro.audioUrl })
-      
-      if (intro.audioUrl) {
-        // Play the intro audio and wait for it to finish
-        console.log('🎮 GAME: Playing intro audio from URL:', intro.audioUrl.substring(0, 50) + '...')
-        const audio = new Audio(intro.audioUrl)
-        audio.addEventListener('ended', () => {
-          console.log('🎮 GAME: Intro audio ended, starting game')
-          console.log('🎮 GAME: Setting gameIntroPlaying to false')
-          setGameIntroPlaying(false)
-          setWaitingForHostSpeech(false)
-          startNewQuestion()
-        })
-        audio.play().then(() => {
-          console.log('🎮 GAME: Intro audio playback started successfully')
-        }).catch(error => {
-          console.error('🎮 GAME: Failed to play intro audio:', error)
-          setGameIntroPlaying(false)
-          setWaitingForHostSpeech(false)
-          startNewQuestion()
-        })
-      } else {
-        console.log('🎮 GAME: No audio URL, proceeding with delay')
-        // No audio, proceed after brief delay to show text
-        setTimeout(() => {
-          console.log('🎮 GAME: Delay finished, starting game')
-          setGameIntroPlaying(false)
-          setWaitingForHostSpeech(false)
-          startNewQuestion()
-        }, 2000)
-      }
-    } catch (error) {
-      console.error('🎮 GAME: Failed to get game intro:', error)
-      setGameIntroPlaying(false)
-      setWaitingForHostSpeech(false)
-      startNewQuestion()
-    }
-  }
 
   useEffect(() => {
     const audio = audioRef.current
@@ -586,58 +589,144 @@ const Game = () => {
 
     if (isPlaying) {
       audio.pause()
+      setIsPlaying(false)
     } else {
-      audio.play().catch(error => {
-        console.error('Quiz Audio: Play failed:', error)
-      })
+      // Ensure audio is ready to play
+      const attemptPlay = () => {
+        audio.play().then(() => {
+          setIsPlaying(true)
+          console.log('🎵 GAME: Manual play started successfully')
+        }).catch(error => {
+          console.error('🎵 GAME: Manual play failed, attempting to reload:', error)
+          // Try reloading the audio source and playing again
+          const originalSrc = audio.src
+          audio.src = ''
+          audio.src = originalSrc
+          audio.load()
+          
+          setTimeout(() => {
+            audio.play().then(() => {
+              setIsPlaying(true)
+              console.log('🎵 GAME: Manual play retry successful')
+            }).catch(retryError => {
+              console.error('🎵 GAME: Manual play retry failed:', retryError)
+              setIsPlaying(false)
+            })
+          }, 100)
+        })
+      }
+      
+      // If audio seems ready, play immediately, otherwise wait for it to load
+      if (audio.readyState >= 2) { // HAVE_CURRENT_DATA
+        attemptPlay()
+      } else {
+        audio.oncanplaythrough = () => {
+          audio.oncanplaythrough = null
+          attemptPlay()
+        }
+        audio.load()
+      }
     }
-    setIsPlaying(!isPlaying)
   }
 
-  const handleAnswerSelect = (answer: string, artistMatch?: boolean, songMatch?: boolean) => {
-    if (selectedAnswer) return // Already answered
+  // Version C rapid-fire scoring function
+  const handleVersionCScore = (points: number) => {
+    if (selectedAnswer || !isTimerRunning || !currentQuestion) return // Already answered or timer stopped or no question
     
-    // Stop speech recognition if active
-    stopSpeechRecognition()
+    console.log('🎵 VERSION C: handleVersionCScore called with points:', points)
     
-    setSelectedAnswer(answer)
-    const playerCorrect = answer === currentQuestion?.correctAnswer
-    setIsCorrect(playerCorrect)
+    setSelectedAnswer('manual_score')
     
-    // Handle partial scoring for speech recognition
-    if (artistMatch !== undefined && songMatch !== undefined) {
-      // Speech recognition with partial scoring
-      setArtistCorrect(artistMatch)
-      setSongCorrect(songMatch)
-      const points = (artistMatch ? 10 : 0) + (songMatch ? 10 : 0)
-      setPointsEarned(points)
-      
-      // Play correct answer SFX if got at least part of the answer correct
-      if (artistMatch || songMatch) {
-        playCorrectAnswerSfx()
-      }
-    } else {
-      // Traditional multiple choice - all or nothing
-      if (playerCorrect) {
-        setArtistCorrect(true)
-        setSongCorrect(true)
-        setPointsEarned(20)
-        // Play correct answer SFX for traditional correct answer
-        playCorrectAnswerSfx()
-      } else {
-        setArtistCorrect(false)
-        setSongCorrect(false)
-        setPointsEarned(0)
-      }
+    // Determine correctness based on points
+    let artistCorrect = false
+    let songCorrect = false
+    
+    if (points >= 20) {
+      artistCorrect = true
+      songCorrect = true
+    } else if (points >= 10) {
+      // For 10 points, don't set correctness indicators (as per previous fix)
+      artistCorrect = false
+      songCorrect = false
     }
     
-    // Update AI host based on answer
-    const newPhase = (artistMatch || songMatch || playerCorrect) ? 'correct_answer' : 'wrong_answer'
-    setHostPhase(newPhase)
+    // Add this attempt to the tracking array
+    setAllAttemptedSongs(prev => [...prev, {
+      song: currentQuestion.song,
+      pointsEarned: points,
+      artistCorrect,
+      songCorrect
+    }])
     
-    // Simulate opponent answer (40% chance of being correct)
-    const opponentGetsItRight = Math.random() < 0.4
-    setOpponentCorrect(opponentGetsItRight)
+    // Award points to player
+    const newScore = score + points
+    setScore(newScore)
+    
+    if (points > 0) {
+      playCorrectAnswerSfx()
+    }
+    
+    // Stop current audio completely
+    const audio = audioRef.current
+    if (audio) {
+      console.log('🎵 VERSION C: Pausing current audio and resetting')
+      audio.pause()
+      audio.currentTime = 0
+      setIsPlaying(false)
+      setCurrentTime(0)
+      // Clear event listeners to prevent conflicts
+      audio.onloadeddata = null
+      audio.oncanplay = null
+      audio.oncanplaythrough = null
+    }
+    
+    // Reset selected answer for next question
+    setSelectedAnswer(null)
+    
+    // For Version C, immediately move to next song (very short delay to allow state updates)
+    setTimeout(() => {
+      console.log('🎵 VERSION C: Moving to next question after scoring', points, 'points')
+      console.log('🎵 VERSION C: Current timer running:', isTimerRunning, 'Time remaining:', timeRemaining)
+      startNewQuestion()
+    }, 200) // Reduced delay for faster progression
+  }
+
+  // Version B manual scoring function
+  const handleVersionBScore = (points: number) => {
+    if (selectedAnswer) return // Already answered
+    
+    setSelectedAnswer('manual_score')
+    
+    // For Version B, questions 1-6 use 0,10,20 scoring
+    // Question 7 uses 0,30 scoring
+    let artistCorrect = false
+    let songCorrect = false
+    
+    if (questionNumber === totalQuestions) {
+      // Question 7: 0 or 30 points
+      if (points === 30) {
+        artistCorrect = true
+        songCorrect = true
+      }
+      // For 10 points on Q7 (shouldn't happen, but just in case), don't set any correctness
+    } else {
+      // Questions 1-6: 0, 10, or 20 points
+      if (points >= 20) {
+        artistCorrect = true
+        songCorrect = true
+      }
+      // For 10 points, don't set artistCorrect or songCorrect - leave them as false
+      // This way we won't show ✅ or ❌ indicators, just the song info
+    }
+    
+    setArtistCorrect(artistCorrect)
+    setSongCorrect(songCorrect)
+    setIsCorrect(points > 0) // Player gets credit for any points earned
+    setPointsEarned(points)
+    
+    if (points > 0) {
+      playCorrectAnswerSfx()
+    }
     
     setShowFeedback(true)
     
@@ -648,13 +737,153 @@ const Game = () => {
       setIsPlaying(false)
     }
     
-    // Award points based on new scoring system
-    if (artistMatch !== undefined && songMatch !== undefined) {
-      // Speech recognition with partial scoring
-      const points = (artistMatch ? 10 : 0) + (songMatch ? 10 : 0)
-      setScore(prev => prev + points)
-    } else if (playerCorrect) {
-      // Traditional multiple choice - full 20 points
+    // Award points to player and update star progress
+    const newScore = score + points
+    setScore(newScore)
+    setCurrentStars(calculateStars(newScore))
+  }
+
+  // Version A manual scoring function
+  const handleManualScore = (points: number) => {
+    if (selectedAnswer) return // Already answered
+    
+    setSelectedAnswer('manual_score')
+    
+    // Determine what the points represent
+    let artistCorrect = false
+    let songCorrect = false
+    let basePoints = points
+    
+    if (points >= 20) {
+      artistCorrect = true
+      songCorrect = true
+    }
+    // For 10 points, don't set artistCorrect or songCorrect - leave them as false
+    // This way we won't show ✅ or ❌ indicators, just the song info
+    
+    setArtistCorrect(artistCorrect)
+    setSongCorrect(songCorrect)
+    setIsCorrect(points > 0) // Player gets credit for any points earned
+    
+    // Calculate bonuses for Version A
+    let bonusPoints = 0
+    let bonusReasons: string[] = []
+    
+    // Speed bonus - use manual toggle
+    if (speedBonusToggle) {
+      bonusPoints += 10
+      bonusReasons.push('Speed Bonus')
+      setPlayerBuzzedFirst(true)
+    } else {
+      setPlayerBuzzedFirst(false)
+    }
+    
+    // Streak bonus - check if player has 3+ correct in a row
+    if (artistCorrect || songCorrect) {
+      const newStreak = streak + 1
+      setStreak(newStreak)
+      
+      if (newStreak >= 3) {
+        bonusPoints += 10
+        bonusReasons.push('Streak Bonus')
+        setIsOnStreak(true)
+      }
+    } else {
+      setStreak(0)
+      setIsOnStreak(false)
+    }
+    
+    const totalPoints = basePoints + bonusPoints
+    setPointsEarned(totalPoints)
+    
+    console.log(`Version A Scoring: Base ${basePoints} + Bonus ${bonusPoints} = ${totalPoints}`, { bonusReasons })
+    
+    if (totalPoints > 0) {
+      playCorrectAnswerSfx()
+    }
+    
+    // Simulate opponent answer (40% chance of being correct)
+    const opponentGetsItRight = Math.random() < 0.4
+    setOpponentCorrect(opponentGetsItRight)
+    
+    // Update opponent streak
+    if (opponentGetsItRight) {
+      const newOpponentStreak = opponentStreak + 1
+      setOpponentStreak(newOpponentStreak)
+      if (newOpponentStreak >= 3) {
+        setOpponentIsOnStreak(true)
+      }
+    } else {
+      setOpponentStreak(0)
+      setOpponentIsOnStreak(false)
+    }
+    
+    setShowFeedback(true)
+    
+    // Pause audio
+    const audio = audioRef.current
+    if (audio) {
+      audio.pause()
+      setIsPlaying(false)
+    }
+    
+    // Award points to player
+    setScore(prev => prev + totalPoints)
+    
+    if (opponentGetsItRight) {
+      // Opponent gets random partial or full score
+      const opponentPoints = Math.random() < 0.5 ? 10 : 20
+      setOpponentScore(prev => prev + opponentPoints)
+    }
+  }
+
+  const handleAnswerSelect = (answer: string) => {
+    if (selectedAnswer) return // Already answered
+    
+    setSelectedAnswer(answer)
+    const playerCorrect = answer === currentQuestion?.correctAnswer
+    setIsCorrect(playerCorrect)
+    
+    // Traditional multiple choice - all or nothing
+    if (playerCorrect) {
+      setArtistCorrect(true)
+      setSongCorrect(true)
+      setPointsEarned(20)
+      // Play correct answer SFX for correct answer
+      playCorrectAnswerSfx()
+    } else {
+      setArtistCorrect(false)
+      setSongCorrect(false)
+      setPointsEarned(0)
+    }
+    
+    // Simulate opponent answer (40% chance of being correct)
+    const opponentGetsItRight = Math.random() < 0.4
+    setOpponentCorrect(opponentGetsItRight)
+    
+    // Update opponent streak (for non-Version A)
+    if (opponentGetsItRight) {
+      const newOpponentStreak = opponentStreak + 1
+      setOpponentStreak(newOpponentStreak)
+      if (newOpponentStreak >= 3) {
+        setOpponentIsOnStreak(true)
+      }
+    } else {
+      setOpponentStreak(0)
+      setOpponentIsOnStreak(false)
+    }
+    
+    setShowFeedback(true)
+    
+    // Pause audio
+    const audio = audioRef.current
+    if (audio) {
+      audio.pause()
+      setIsPlaying(false)
+    }
+    
+    // Award points
+    if (playerCorrect) {
       setScore(prev => prev + 20)
     }
     
@@ -666,57 +895,55 @@ const Game = () => {
   }
 
   const nextQuestion = () => {
-    console.log('🎮 GAME: nextQuestion called - attempting to stop AI Host audio')
-    
-    // Stop AI Host speech immediately when user clicks Next Question
-    if (aiHostRef.current) {
-      console.log('🎮 GAME: AI Host ref exists, calling stopAudio()')
-      aiHostRef.current.stopAudio()
-    } else {
-      console.log('🎮 GAME: No AI Host ref available')
-    }
-    
     if (questionNumber >= totalQuestions) {
       setGameComplete(true)
-      setHostPhase('game_end')
       
-      // TEMPORARY: Play victory applause SFX regardless of win/loss to test audio
+      // Play victory applause SFX if player won
       setTimeout(() => {
-        console.log('🎉 GAME: Checking victory condition:', { score, opponentScore, playerWon: score > opponentScore })
-        console.log('🎉 GAME: TESTING - Playing applause regardless of outcome')
-        playVictoryApplauseSfx()
-        
         if (score > opponentScore) {
           console.log('🎉 GAME: Player won!')
-        } else {
-          console.log('🎉 GAME: Player did not win')
+          playVictoryApplauseSfx()
         }
       }, 500) // Small delay to allow results to appear first
     } else {
       setQuestionNumber(prev => prev + 1)
-      setHostPhase('round_end')
       
-      // Start new question after brief delay for AI commentary
+      // Start new question immediately
       setTimeout(() => {
         startNewQuestion()
-      }, 2000)
+      }, 1000)
     }
   }
 
   const restartGame = () => {
-    stopSpeechRecognition()
     setScore(0)
     setOpponentScore(0)
     setQuestionNumber(1)
     setGameComplete(false)
     setUsedSongIds([]) // Reset used songs for new game
     setIsLoadingQuestion(false) // Reset loading state
+    // Reset Version A streaks
+    setStreak(0)
+    setIsOnStreak(false)
+    setOpponentStreak(0)
+    setOpponentIsOnStreak(false)
+    setSpeedBonusToggle(false) // Reset speed bonus toggle
+    // Reset Version B stars
+    setCurrentStars(0)
+    // Reset Version C timer and attempts
+    setTimeRemaining(60)
+    setIsTimerRunning(false)
+    setAllAttemptedSongs([])
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    
     startNewQuestion()
   }
 
   const backToPlaylist = () => {
-    stopSpeechRecognition()
-    navigate('/playlists')
+    navigate('/')
   }
 
   const formatTime = (time: number) => {
@@ -795,252 +1022,6 @@ const Game = () => {
     }
   }
 
-  // Speech Recognition Functions
-  const checkSpokenAnswer = (transcript: string): { answer: string | null, artistMatch: boolean, songMatch: boolean } => {
-    if (!currentQuestion) return { answer: null, artistMatch: false, songMatch: false }
-    
-    const cleanTranscript = transcript.toLowerCase().trim()
-    const songTitle = currentQuestion.song.title.toLowerCase()
-    
-    // Enhanced title matching - more flexible approach
-    const hasTitle = checkSongTitleMatch(cleanTranscript, songTitle)
-    
-    // Improved artist matching - more flexible approach
-    const hasArtist = checkArtistMatch(cleanTranscript, currentQuestion.song)
-    
-    // If we have at least one match, consider it a valid answer
-    if (hasTitle || hasArtist) {
-      return { 
-        answer: currentQuestion.correctAnswer, 
-        artistMatch: hasArtist, 
-        songMatch: hasTitle 
-      }
-    }
-    
-    // Check against all possible answers for fallback
-    for (const option of currentQuestion.options) {
-      const optionLower = option.toLowerCase()
-      if (cleanTranscript.includes(optionLower)) {
-        // For multiple choice matches, we can't determine partial scores
-        // so treat as full match if it's the correct answer
-        const isCorrect = option === currentQuestion.correctAnswer
-        return { 
-          answer: option, 
-          artistMatch: isCorrect, 
-          songMatch: isCorrect 
-        }
-      }
-    }
-    
-    return { answer: null, artistMatch: false, songMatch: false }
-  }
-
-  const checkSongTitleMatch = (transcript: string, songTitle: string): boolean => {
-    // First try exact match
-    if (transcript.includes(songTitle)) {
-      return true
-    }
-    
-    // Remove common punctuation and normalize spacing
-    const cleanTitle = songTitle
-      .replace(/[.,!?'"()]/g, '') // Remove punctuation
-      .replace(/\s+/g, ' ') // Normalize spacing
-      .trim()
-    
-    const cleanTranscript = transcript
-      .replace(/[.,!?'"()]/g, '') // Remove punctuation  
-      .replace(/\s+/g, ' ') // Normalize spacing
-      .trim()
-    
-    // Try exact match with cleaned versions
-    if (cleanTranscript.includes(cleanTitle)) {
-      return true
-    }
-    
-    // Split title into significant words (ignore common articles)
-    const titleWords = cleanTitle
-      .replace(/^(the|a|an)\s+/i, '') // Remove leading articles
-      .split(/\s+/)
-      .filter(word => word.length > 2) // Only significant words
-    
-    // Check if transcript contains most of the significant title words
-    if (titleWords.length > 0) {
-      const matchedWords = titleWords.filter(word => 
-        cleanTranscript.includes(word)
-      )
-      
-      // Consider it a match if we have:
-      // - All words for short titles (1-2 words)
-      // - Most words for longer titles (>= 75% for 3+ words)
-      const matchThreshold = titleWords.length <= 2 ? titleWords.length : Math.ceil(titleWords.length * 0.75)
-      
-      if (matchedWords.length >= matchThreshold) {
-        return true
-      }
-    }
-    
-    // Handle partial word matching for single word titles
-    if (titleWords.length === 1) {
-      const titleWord = titleWords[0]
-      
-      // Check if transcript contains the title word as a substring of a spoken word
-      const transcriptWords = cleanTranscript.split(/\s+/)
-      for (const spokenWord of transcriptWords) {
-        // Allow partial matches for words >= 4 chars if spoken word contains most of title
-        if (titleWord.length >= 4 && spokenWord.includes(titleWord.substring(0, titleWord.length - 1))) {
-          return true
-        }
-        // Allow title word to be contained in longer spoken word (e.g., "closer" contains "close")
-        if (titleWord.includes(spokenWord) && spokenWord.length >= 3) {
-          return true
-        }
-      }
-    }
-    
-    return false
-  }
-
-  const checkArtistMatch = (transcript: string, song: Song): boolean => {
-    // Clean the artist name - remove "(feat. ...)" and similar
-    const artistName = song.artist.toLowerCase()
-      .replace(/\s*\(feat\..*?\)/gi, '') // Remove "(feat. ...)"
-      .replace(/\s*feat\..*$/gi, '') // Remove "feat. ..." at end
-      .trim()
-    
-    // Helper function to check artist name matching
-    const checkSingleArtistName = (name: string): boolean => {
-      // First try exact match
-      if (transcript.includes(name)) {
-        return true
-      }
-      
-      // Split artist name into words and remove common articles
-      const artistWords = name
-        .replace(/^the\s+/i, '') // Remove "The" at the beginning
-        .split(/\s+/)
-        .filter(word => word.length > 1) // Filter out single letters and short words
-      
-      // Check if any significant artist word appears in transcript
-      for (const word of artistWords) {
-        if (word.length >= 3 && transcript.includes(word)) {
-          return true
-        }
-        // Special handling for common short artist names
-        if (word.length === 2 && ['jay', 'ed', 'dj', 'mc', 'lil', 'big'].includes(word.toLowerCase()) && transcript.includes(word)) {
-          return true
-        }
-      }
-      
-      // Handle special cases for common artist name patterns
-      if (name.includes(' ')) {
-        const [firstName, ...lastNames] = artistWords
-        const lastName = lastNames.join(' ')
-        
-        // Check first name + last initial (e.g., "John L" for "John Legend")
-        if (firstName && lastName && firstName.length >= 3) {
-          const lastInitial = lastName.charAt(0)
-          if (transcript.includes(firstName) && transcript.includes(lastInitial)) {
-            return true
-          }
-        }
-        
-        // Check just last name for common single-name references
-        if (lastName && lastName.length >= 4 && transcript.includes(lastName)) {
-          return true
-        }
-      }
-      
-      return false
-    }
-    
-    // Check against the main artist name
-    if (checkSingleArtistName(artistName)) {
-      return true
-    }
-    
-    // Check against artist alternatives if they exist
-    if (song.artistAlternatives && song.artistAlternatives.length > 0) {
-      for (const alternative of song.artistAlternatives) {
-        if (checkSingleArtistName(alternative.toLowerCase())) {
-          return true
-        }
-      }
-    }
-    
-    return false
-  }
-
-  const startSpeechRecognition = async () => {
-    if (!speechSupported || !speechEnabled || selectedAnswer || isListening) return
-
-    // Pause the audio when starting speech recognition
-    const audio = audioRef.current
-    if (audio && isPlaying) {
-      audio.pause()
-      setIsPlaying(false)
-    }
-
-    const success = await deepgramService.startListening(
-      // onTranscript callback
-      (response: DeepgramResponse) => {
-        const transcript = response.transcript.toLowerCase().trim()
-        
-        // Store the latest transcript for manual stop processing
-        if (transcript.length > 2) {
-          setLatestTranscript(transcript)
-        }
-        
-        // No automatic processing - user must manually stop recording
-      },
-      // onError callback
-      (error: any) => {
-        console.error('Deepgram error:', error)
-        setIsListening(false)
-      },
-      // onStarted callback
-      () => {
-        setIsListening(true)
-      },
-      // onEnded callback
-      () => {
-        setIsListening(false)
-      }
-    )
-
-    if (!success) {
-      setIsListening(false)
-    }
-  }
-
-  const stopSpeechRecognition = () => {
-    deepgramService.stopListening()
-    setIsListening(false)
-  }
-
-  const handleManualStopRecording = () => {
-    stopSpeechRecognition()
-    
-    // Process the latest transcript if we have one
-    if (latestTranscript.length > 2) {
-      const result = checkSpokenAnswer(latestTranscript)
-      if (result.answer) {
-        handleAnswerSelect(result.answer, result.artistMatch, result.songMatch)
-      } else {
-        // If no match found, still submit as an incorrect answer to move to results
-        handleAnswerSelect('no match found', false, false)
-      }
-    } else {
-      // If no transcript captured, submit as incorrect to move to results
-      handleAnswerSelect('no speech detected', false, false)
-    }
-  }
-
-  // Cleanup speech recognition on unmount
-  useEffect(() => {
-    return () => {
-      deepgramService.stopListening()
-    }
-  }, [])
 
   if (!currentQuestion) {
     return (
@@ -1060,7 +1041,7 @@ const Game = () => {
 
   if (gameComplete) {
     return (
-      <div className="game-container">
+      <div className={`game-container ${version === 'Version B' ? 'version-b' : version === 'Version C' ? 'version-c' : ''}`}>
         <div className="game-content">
           <header className="game-header">
             <img 
@@ -1072,48 +1053,159 @@ const Game = () => {
 
           <main className="game-main">
             <div className="final-score">
-              {score > opponentScore && (
-                <div className="confetti-container">
-                  <div className="confetti-piece confetti-1">🎉</div>
-                  <div className="confetti-piece confetti-2">🎊</div>
-                  <div className="confetti-piece confetti-3">⭐</div>
-                  <div className="confetti-piece confetti-4">🎉</div>
-                  <div className="confetti-piece confetti-5">🎊</div>
-                  <div className="confetti-piece confetti-6">⭐</div>
-                  <div className="confetti-piece confetti-7">🎉</div>
-                  <div className="confetti-piece confetti-8">🎊</div>
-                  <div className="confetti-piece confetti-9">⭐</div>
-                  <div className="confetti-piece confetti-10">🎉</div>
+              {/* Version B Final Results */}
+              {version === 'Version B' && (
+                <div className="version-b-results">
+                  {currentStars >= 2 && (
+                    <div className="confetti-container">
+                      <div className="confetti-piece confetti-1">🎉</div>
+                      <div className="confetti-piece confetti-2">🎊</div>
+                      <div className="confetti-piece confetti-3">⭐</div>
+                      <div className="confetti-piece confetti-4">🎉</div>
+                      <div className="confetti-piece confetti-5">🎊</div>
+                      <div className="confetti-piece confetti-6">⭐</div>
+                      <div className="confetti-piece confetti-7">🎉</div>
+                      <div className="confetti-piece confetti-8">🎊</div>
+                      <div className="confetti-piece confetti-9">⭐</div>
+                      <div className="confetti-piece confetti-10">🎉</div>
+                    </div>
+                  )}
+                  <h3 className="victory-message">Quiz Complete!</h3>
+                  <div className="final-star-rating">
+                    <div className="star-display">
+                      {[1, 2, 3].map((starNum) => (
+                        <span
+                          key={starNum}
+                          className={`star final-star ${currentStars >= starNum ? 'filled' : 'empty'}`}
+                        >
+                          ⭐
+                        </span>
+                      ))}
+                    </div>
+                    <p className="star-message">
+                      {currentStars === 0 && "Keep practicing! Try again to earn your first star!"}
+                      {currentStars === 1 && "Good job! You earned your first star!"}
+                      {currentStars === 2 && "Great work! Two stars - you're getting good at this!"}
+                      {currentStars === 3 && "Amazing! Perfect 3 stars - you're a music quiz master!"}
+                    </p>
+                    <p className="final-score-text">Final Score: {score}</p>
+                  </div>
                 </div>
               )}
-              <h3 className="victory-message">
-                {score > opponentScore ? 'You Win!' : score < opponentScore ? 'You lost' : 'It\'s a Tie!'}
-              </h3>
-              <div className="final-scores-container">
-                <div className="player-final-score">
-                  <h4>Your Score</h4>
-                  <div className="score-display">
-                    <span className="score-number">{score}</span>
-                    <span className="score-total">/ {totalQuestions * 20}</span>
+              
+              {/* Version C Final Results */}
+              {version === 'Version C' && (
+                <div className="version-c-results">
+                  <div className="confetti-container">
+                    <div className="confetti-piece confetti-1">🎉</div>
+                    <div className="confetti-piece confetti-2">🎊</div>
+                    <div className="confetti-piece confetti-3">⚡</div>
+                    <div className="confetti-piece confetti-4">🎉</div>
+                    <div className="confetti-piece confetti-5">🎊</div>
+                    <div className="confetti-piece confetti-6">⚡</div>
+                    <div className="confetti-piece confetti-7">🎉</div>
+                    <div className="confetti-piece confetti-8">🎊</div>
+                    <div className="confetti-piece confetti-9">⚡</div>
+                    <div className="confetti-piece confetti-10">🎉</div>
                   </div>
-                  <p className="score-percentage">
-                    {Math.round((score / (totalQuestions * 20)) * 100)}% Correct
-                  </p>
-                </div>
-                
-                <div className="vs-divider">VS</div>
-                
-                <div className="opponent-final-score">
-                  <h4>Opponent Score</h4>
-                  <div className="score-display">
-                    <span className="score-number">{opponentScore}</span>
-                    <span className="score-total">/ {totalQuestions * 20}</span>
+                  <h3 className="victory-message">⚡ Time's Up! ⚡</h3>
+                  <div className="version-c-final-stats">
+                    <div className="final-score-large">
+                      <div className="score-label">Final Score</div>
+                      <div className="score-number">{score}</div>
+                    </div>
+                    <div className="rapid-fire-stats">
+                      <div className="stat-item">
+                        <div className="stat-value">{allAttemptedSongs.length}</div>
+                        <div className="stat-label">Songs Attempted</div>
+                      </div>
+                      <div className="stat-item">
+                        <div className="stat-value">{allAttemptedSongs.filter(song => song.pointsEarned > 0).length}</div>
+                        <div className="stat-label">Songs Scored</div>
+                      </div>
+                      <div className="stat-item">
+                        <div className="stat-value">{allAttemptedSongs.length > 0 ? Math.round((score / (allAttemptedSongs.length * 20)) * 100) : 0}%</div>
+                        <div className="stat-label">Accuracy</div>
+                      </div>
+                    </div>
                   </div>
-                  <p className="score-percentage">
-                    {Math.round((opponentScore / (totalQuestions * 20)) * 100)}% Correct
-                  </p>
+                  <div className="comprehensive-summary">
+                    <h4>Complete Song Summary</h4>
+                    <div className="song-attempts-grid">
+                      {allAttemptedSongs.map((attempt, index) => (
+                        <div key={index} className="attempt-card">
+                          <div className="attempt-album-art">
+                            <img 
+                              src={attempt.song.albumArt} 
+                              alt={`${attempt.song.title} album art`}
+                              className="attempt-album-image"
+                            />
+                          </div>
+                          <div className="attempt-info">
+                            <div className="attempt-title">{attempt.song.title}</div>
+                            <div className="attempt-artist">{attempt.song.artist}</div>
+                            <div className={`attempt-score ${attempt.pointsEarned > 0 ? 'scored' : 'missed'}`}>
+                              {attempt.pointsEarned} pts
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+              
+              {/* Version A and other versions results */}
+              {version !== 'Version B' && version !== 'Version C' && (
+                <>
+                  {score > opponentScore && (
+                    <div className="confetti-container">
+                      <div className="confetti-piece confetti-1">🎉</div>
+                      <div className="confetti-piece confetti-2">🎊</div>
+                      <div className="confetti-piece confetti-3">⭐</div>
+                      <div className="confetti-piece confetti-4">🎉</div>
+                      <div className="confetti-piece confetti-5">🎊</div>
+                      <div className="confetti-piece confetti-6">⭐</div>
+                      <div className="confetti-piece confetti-7">🎉</div>
+                      <div className="confetti-piece confetti-8">🎊</div>
+                      <div className="confetti-piece confetti-9">⭐</div>
+                      <div className="confetti-piece confetti-10">🎉</div>
+                    </div>
+                  )}
+                  <h3 className="victory-message">
+                    {score > opponentScore ? 'You Win!' : score < opponentScore ? 'You lost' : 'It\'s a Tie!'}
+                  </h3>
+                </>
+              )}
+              
+              {/* Hide Your Score vs Opponent Score for Version C (single-player) */}
+              {version !== 'Version C' && (
+                <div className="final-scores-container">
+                  <div className="player-final-score">
+                    <h4>Your Score</h4>
+                    <div className="score-display">
+                      <span className="score-number">{score}</span>
+                      <span className="score-total">/ {totalQuestions * 20}</span>
+                    </div>
+                    <p className="score-percentage">
+                      {Math.round((score / (totalQuestions * 20)) * 100)}% Correct
+                    </p>
+                  </div>
+                  
+                  <div className="vs-divider">VS</div>
+                  
+                  <div className="opponent-final-score">
+                    <h4>Opponent Score</h4>
+                    <div className="score-display">
+                      <span className="score-number">{opponentScore}</span>
+                      <span className="score-total">/ {totalQuestions * 20}</span>
+                    </div>
+                    <p className="score-percentage">
+                      {Math.round((opponentScore / (totalQuestions * 20)) * 100)}% Correct
+                    </p>
+                  </div>
+                </div>
+              )}
               
 
             </div>
@@ -1138,32 +1230,81 @@ const Game = () => {
               />
             </div>
             
-            <div className="avatar-container opponent-container">
-              <img 
-                src="/assets/OpponentAvatar.png" 
-                alt="Opponent Avatar" 
-                className="avatar opponent-avatar"
-              />
-            </div>
+            {/* Version B Star Progress, Version C Score Tracker, or Opponent Avatar */}
+            {version === 'Version B' ? (
+              <div className="avatar-container star-container">
+                <div className="version-b-star-progress">
+                  <div className="star-progress-header">Progress</div>
+                  <div className="star-display-large">
+                    {[1, 2, 3].map((starNum) => (
+                      <div key={starNum} className="star-item">
+                        <span className={`star-large ${currentStars >= starNum ? 'filled' : 'empty'}`}>
+                          ⭐
+                        </span>
+                        <div className="star-label">
+                          {starNum === 1 ? '20+ pts' : starNum === 2 ? '51+ pts' : '110+ pts'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="current-score-display">
+                    <div className="score-label">Score</div>
+                    <div className="score-value">{score}</div>
+                  </div>
+                </div>
+              </div>
+            ) : version === 'Version C' ? (
+              null
+            ) : (
+              /* Show opponent avatar for Version A */
+              <div className="avatar-container opponent-container">
+                {/* Total Score Display Above Opponent Avatar */}
+                {showFeedback && (
+                  <div className="total-score-display opponent-total-score">
+                    <div className="total-score-value">{opponentScore}</div>
+                  </div>
+                )}
+                
+                {/* Version A Opponent Buzz Indicator */}
+                {version === 'Version A' && opponentBuzzedIn && !showFeedback && (
+                  <div className="opponent-buzz-indicator">
+                    <div className="buzz-alert">
+                      <span className="buzz-icon">⚡</span>
+                    </div>
+                    <div className="buzz-text">ANSWERED!</div>
+                  </div>
+                )}
+                
+                <img 
+                  src="/assets/OpponentAvatar.png" 
+                  alt="Opponent Avatar" 
+                  className={`avatar opponent-avatar ${showFeedback && opponentCorrect ? 'celebrating' : ''}`}
+                />
+                {showFeedback && opponentCorrect && (
+                  <>
+                    <div className="sparkles">
+                      <div className="sparkle sparkle-1">✨</div>
+                      <div className="sparkle sparkle-2">⭐</div>
+                      <div className="sparkle sparkle-3">✨</div>
+                      <div className="sparkle sparkle-4">⭐</div>
+                      <div className="sparkle sparkle-5">✨</div>
+                    </div>
+                    <div className="score-popup opponent-score-popup">
+                      Correct! +{Math.random() < 0.5 ? '10' : '20'} Points
+                    </div>
+                  </>
+                )}
+                
+                {/* Version A Opponent Streak Text */}
+                {version === 'Version A' && opponentIsOnStreak && (
+                  <div className="avatar-streak-text opponent-streak-text">
+                    🔥 {opponentStreak} Streak!
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
-          {/* AI Host Component for Game End */}
-          {selectedHost !== 'none' && (
-            <AIHost
-              ref={aiHostRef}
-              gamePhase="game_end"
-              playerName={playerName}
-              playerScore={score}
-              opponentScore={opponentScore}
-              songTitle=""
-              songArtist=""
-              isCorrect={score > opponentScore}
-              character={selectedHost}
-              enabled={true}
-              voiceEnabled={true}
-              gameIntroPlaying={false}
-            />
-          )}
 
           {/* Sound Effect Audio Elements - Available on Game Complete Screen */}
           <audio 
@@ -1187,7 +1328,7 @@ const Game = () => {
   }
 
   return (
-    <div className="game-container">
+    <div className={`game-container ${version === 'Version B' ? 'version-b' : version === 'Version C' ? 'version-c' : ''}`}>
       <div className="game-content">
         <header className="game-header">
           <img 
@@ -1196,72 +1337,32 @@ const Game = () => {
             className="game-logo"
           />
           <div className="quiz-info">
-            <div className="quiz-progress">
-              <span>Question {questionNumber} of {totalQuestions}</span>
-            </div>
-            <div className="competitive-scores">
-              <div className="player-score">
-                <span className="score-label">You:</span>
-                <span className="score-value">{score}</span>
+            {(() => {
+              console.log('🕐 TIMER RENDERING CHECK:', { version, isVersionC: version === 'Version C', timeRemaining });
+              return null;
+            })()}
+            {version === 'Version C' ? (
+              <div className="version-c-timer">
+                <div className="timer-display">
+                  <div className="timer-label">Time Remaining</div>
+                  <div className={`timer-value ${timeRemaining <= 10 ? 'timer-urgent' : ''}`}>
+                    {timeRemaining}s
+                  </div>
+                </div>
+                <div className="attempts-counter">
+                  Songs Attempted: {allAttemptedSongs.length}
+                </div>
               </div>
-              <div className="score-divider">|</div>
-              <div className="opponent-score">
-                <span className="score-label">Opponent:</span>
-                <span className="score-value">{opponentScore}</span>
+            ) : (
+              <div className="quiz-progress">
+                <span>Question {questionNumber} of {totalQuestions}</span>
               </div>
-            </div>
+            )}
+            {/* Version B Star Progress moved to right side */}
           </div>
         </header>
 
         <main className="game-main">
-          {/* Game Introduction Screen */}
-          {gameIntroPlaying && (
-            <div className="game-intro-screen" style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '300px',
-              textAlign: 'center',
-              padding: '2rem'
-            }}>
-              <h2 style={{ 
-                color: 'white', 
-                marginBottom: '1rem',
-                fontSize: '1.8rem'
-              }}>
-                Welcome to {playlist || '2010s'} Song Quiz!
-              </h2>
-              
-              {waitingForHostSpeech ? (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  color: 'white',
-                  fontSize: '1.1rem'
-                }}>
-                  <div className="thinking-dots">
-                    <span>•</span>
-                    <span>•</span>
-                    <span>•</span>
-                  </div>
-                  Your host is getting ready...
-                </div>
-              ) : (
-                <p style={{ 
-                  color: 'white', 
-                  fontSize: '1.1rem',
-                  opacity: 0.8
-                }}>
-                  Listen to your AI host introduction, then the music will begin!
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Quiz Section - only show when not in intro */}
-          {!gameIntroPlaying && (
           <div className="quiz-section">
             {!showFeedback && (
               <div className="audio-controls">
@@ -1271,18 +1372,20 @@ const Game = () => {
                   onEnded={() => setIsPlaying(false)}
                 />
                 
-                {/* Animated Sound Bars - above progress bar */}
-                <div className={`sound-bars-container ${isPlaying ? 'playing' : ''}`}>
-                  <div className="sound-bars">
-                    <div className="sound-bar bar-1"></div>
-                    <div className="sound-bar bar-2"></div>
-                    <div className="sound-bar bar-3"></div>
-                    <div className="sound-bar bar-4"></div>
-                    <div className="sound-bar bar-5"></div>
-                    <div className="sound-bar bar-6"></div>
-                    <div className="sound-bar bar-7"></div>
+                {/* Animated Sound Bars - hide for Version C */}
+                {version !== 'Version C' && (
+                  <div className={`sound-bars-container ${isPlaying ? 'playing' : ''}`}>
+                    <div className="sound-bars">
+                      <div className="sound-bar bar-1"></div>
+                      <div className="sound-bar bar-2"></div>
+                      <div className="sound-bar bar-3"></div>
+                      <div className="sound-bar bar-4"></div>
+                      <div className="sound-bar bar-5"></div>
+                      <div className="sound-bar bar-6"></div>
+                      <div className="sound-bar bar-7"></div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="progress-bar">
                   <div className="progress-time">
@@ -1309,37 +1412,127 @@ const Game = () => {
               </div>
             )}
 
-            {/* Speech Recognition Interface - only show during question phase */}
-            {speechSupported && speechEnabled && !selectedAnswer && !showFeedback && (
-              <div className="speech-recognition-section">
-                <p className="speech-instruction">
-                  🎤 Speak the name of the song and artist:
-                </p>
-                <button
-                  className={`speech-button ${isListening ? 'listening' : ''}`}
-                  onClick={isListening ? handleManualStopRecording : startSpeechRecognition}
-                  disabled={!!selectedAnswer}
-                >
-                  {isListening ? (
-                    <>
-                      <span className="mic-icon listening">🎤</span>
-                      <span className="listening-text">Listening...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="mic-icon">🎤</span>
-                      <span>Start Speaking</span>
-                    </>
-                  )}
-                </button>
+            {/* Version A Manual Scoring */}
+            {version === 'Version A' && !selectedAnswer && !showFeedback && (
+              <div className="manual-scoring">
+                <div className="score-buttons">
+                  <button
+                    className="score-button score-0"
+                    onClick={() => handleManualScore(0)}
+                  >
+                    0 Points
+                  </button>
+                  <button
+                    className="score-button score-10"
+                    onClick={() => handleManualScore(10)}
+                  >
+                    10 Points
+                  </button>
+                  <button
+                    className="score-button score-20"
+                    onClick={() => handleManualScore(20)}
+                  >
+                    20 Points
+                  </button>
+                </div>
+                <div className="speed-bonus-toggle">
+                  <label className="toggle-label">
+                    <input
+                      type="checkbox"
+                      checked={speedBonusToggle}
+                      onChange={(e) => setSpeedBonusToggle(e.target.checked)}
+                      className="toggle-checkbox"
+                    />
+                    <span className="toggle-text">Speed Bonus (+10 points)</span>
+                  </label>
+                </div>
               </div>
             )}
             
-            {!speechSupported && !showFeedback && (
-              <div className="speech-recognition-section">
-                <p className="speech-error">
-                  Speech recognition is not available. Please configure Deepgram API key.
-                </p>
+            {/* Version B Manual Scoring */}
+            {version === 'Version B' && !selectedAnswer && !showFeedback && (
+              <div className="manual-scoring">
+                <div className="score-buttons">
+                  <button
+                    className="score-button score-0"
+                    onClick={() => handleVersionBScore(0)}
+                  >
+                    0 Points
+                  </button>
+                  <button
+                    className="score-button score-10"
+                    onClick={() => handleVersionBScore(10)}
+                  >
+                    10 Points
+                  </button>
+                  <button
+                    className="score-button score-20"
+                    onClick={() => handleVersionBScore(20)}
+                  >
+                    20 Points
+                  </button>
+                  {/* Question 7 gets a 30-point option */}
+                  {questionNumber === totalQuestions && (
+                    <button
+                      className="score-button score-30"
+                      onClick={() => handleVersionBScore(30)}
+                    >
+                      30 Points
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Version C Rapid-Fire Scoring */}
+            {(() => {
+              console.log('🎯 VERSION C SCORING BUTTONS CHECK:', { version, isVersionC: version === 'Version C', selectedAnswer, showFeedback });
+              return null;
+            })()}
+            {version === 'Version C' && !selectedAnswer && !showFeedback && (
+              <div className="manual-scoring version-c-scoring">
+                <div className="rapid-fire-header">
+                  <div className="rapid-fire-title">⚡ Rapid Fire Mode</div>
+                  <div className="rapid-fire-instruction">Score and move to next song instantly!</div>
+                </div>
+                <div className="score-buttons">
+                  <button
+                    className="score-button score-0"
+                    onClick={() => handleVersionCScore(0)}
+                  >
+                    0 Points
+                  </button>
+                  <button
+                    className="score-button score-10"
+                    onClick={() => handleVersionCScore(10)}
+                  >
+                    10 Points
+                  </button>
+                  <button
+                    className="score-button score-20"
+                    onClick={() => handleVersionCScore(20)}
+                  >
+                    20 Points
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Multiple Choice Options for other versions */}
+            {version !== 'Version A' && version !== 'Version B' && version !== 'Version C' && !selectedAnswer && !showFeedback && (
+              <div className="answer-options">
+                <h3>What song is this?</h3>
+                <div className="options-grid">
+                  {currentQuestion.options.map((option, index) => (
+                    <button
+                      key={index}
+                      className="option-button"
+                      onClick={() => handleAnswerSelect(option)}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -1355,36 +1548,104 @@ const Game = () => {
                 </div>
 
                 <div className="score-breakdown">
-                  {pointsEarned > 0 && (
-                    <div className="breakdown-details">
-                      {artistCorrect && <p>✅ Artist: {currentQuestion.song.artist} (+10 points)</p>}
-                      {songCorrect && <p>✅ Song: {currentQuestion.song.title} (+10 points)</p>}
-                      {!artistCorrect && pointsEarned > 0 && <p>❌ Artist: {currentQuestion.song.artist}</p>}
-                      {!songCorrect && pointsEarned > 0 && <p>❌ Song: {currentQuestion.song.title}</p>}
+                  {version === 'Version A' && (
+                    <div className="version-a-breakdown">
+                      <div className="breakdown-details artist-title-section">
+                        {/* For 10 points with no specific correctness, don't show indicators */}
+                        {pointsEarned === 10 && !artistCorrect && !songCorrect ? (
+                          <>
+                            <p>Artist: {currentQuestion.song.artist}</p>
+                            <p>Song: {currentQuestion.song.title}</p>
+                          </>
+                        ) : (
+                          <>
+                            <p>{artistCorrect ? '✅' : '❌'} Artist: {currentQuestion.song.artist} {artistCorrect ? '(+10 points)' : ''}</p>
+                            <p>{songCorrect ? '✅' : '❌'} Song: {currentQuestion.song.title} {songCorrect ? '(+10 points)' : ''}</p>
+                          </>
+                        )}
+                      </div>
+                      {(playerBuzzedFirst || (isOnStreak && streak >= 3)) && (
+                        <div className="breakdown-details bonus-section">
+                          {playerBuzzedFirst && <p>⚡ Speed Bonus (+10 points)</p>}
+                          {isOnStreak && streak >= 3 && <p>🔥 Streak Bonus (+10 points)</p>}
+                        </div>
+                      )}
                     </div>
                   )}
-                  {pointsEarned === 0 && (
-                    <div className="breakdown-details">
-                      <p>The correct answer was:</p>
-                      <p><strong>{currentQuestion.song.title}</strong> by <strong>{currentQuestion.song.artist}</strong></p>
+                  
+                  {version === 'Version B' && (
+                    <div className="version-b-breakdown">
+                      <div className="breakdown-details artist-title-section">
+                        {/* For 10 points with no specific correctness, don't show indicators */}
+                        {pointsEarned === 10 && !artistCorrect && !songCorrect ? (
+                          <>
+                            <p>Artist: {currentQuestion.song.artist}</p>
+                            <p>Song: {currentQuestion.song.title}</p>
+                          </>
+                        ) : (
+                          <>
+                            <p>{artistCorrect ? '✅' : '❌'} Artist: {currentQuestion.song.artist}</p>
+                            <p>{songCorrect ? '✅' : '❌'} Song: {currentQuestion.song.title}</p>
+                          </>
+                        )}
+                        {pointsEarned > 0 && <p>Points Earned: {pointsEarned}</p>}
+                      </div>
+                      <div className="star-progress-result">
+                        <div className="star-display">
+                          Current Progress: 
+                          {[1, 2, 3].map((starNum) => (
+                            <span
+                              key={starNum}
+                              className={`star ${currentStars >= starNum ? 'filled' : 'empty'}`}
+                            >
+                              ⭐
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
+                  )}
+                  
+                  {version !== 'Version A' && version !== 'Version B' && (
+                    <>
+                      {pointsEarned > 0 && (
+                        <div className="breakdown-details">
+                          {artistCorrect && <p>✅ Artist: {currentQuestion.song.artist} (+10 points)</p>}
+                          {songCorrect && <p>✅ Song: {currentQuestion.song.title} (+10 points)</p>}
+                          {!artistCorrect && pointsEarned > 0 && <p>❌ Artist: {currentQuestion.song.artist}</p>}
+                          {!songCorrect && pointsEarned > 0 && <p>❌ Song: {currentQuestion.song.title}</p>}
+                        </div>
+                      )}
+                      {pointsEarned === 0 && (
+                        <div className="breakdown-details">
+                          <p>The correct answer was:</p>
+                          <p><strong>{currentQuestion.song.title}</strong> by <strong>{currentQuestion.song.artist}</strong></p>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
 
                 <button className="next-question-btn" onClick={nextQuestion}>
-                  {questionNumber === totalQuestions ? 'Finish Quiz' : 'Next Question →'}
+                  {questionNumber >= totalQuestions ? 'Finish Quiz' : 'Next Question →'}
                 </button>
               </div>
             )}
           </div>
-          )}
         </main>
         
-        {/* Competitive Avatars - only show when not in intro */}
-        {!gameIntroPlaying && (
+        {/* Competitive Avatars */}
         <div className="avatars">
           <div className="avatar-container player-container">
+            {/* Total Score Display Above Player Avatar */}
+            {showFeedback && (
+              <div className="total-score-display player-total-score">
+                <div className="total-score-value">{score}</div>
+              </div>
+            )}
+            
+            
             <img 
               src="/assets/YourAvatar.png" 
               alt="Your Avatar" 
@@ -1400,54 +1661,98 @@ const Game = () => {
                   <div className="sparkle sparkle-5">✨</div>
                 </div>
                 <div className="score-popup player-score-popup">
-                  {pointsEarned === 20 ? 'Perfect! +20 Points' :
+                  {version === 'Version A' ? `+${pointsEarned} Points` :
+                   pointsEarned === 20 ? 'Perfect! +20 Points' :
                    pointsEarned === 10 ? (artistCorrect ? 'Artist Correct! +10 Points' : 'Song Correct! +10 Points') :
                    'Correct! +' + pointsEarned + ' Points'}
                 </div>
               </>
             )}
-          </div>
-          
-          <div className="avatar-container opponent-container">
-            <img 
-              src="/assets/OpponentAvatar.png" 
-              alt="Opponent Avatar" 
-              className={`avatar opponent-avatar ${showFeedback && opponentCorrect ? 'celebrating' : ''}`}
-            />
-            {showFeedback && opponentCorrect && (
-              <>
-                <div className="sparkles">
-                  <div className="sparkle sparkle-1">✨</div>
-                  <div className="sparkle sparkle-2">⭐</div>
-                  <div className="sparkle sparkle-3">✨</div>
-                  <div className="sparkle sparkle-4">⭐</div>
-                  <div className="sparkle sparkle-5">✨</div>
-                </div>
-                <div className="score-popup opponent-score-popup">
-                  Correct! +{Math.random() < 0.5 ? '10' : '20'} Points
-                </div>
-              </>
+            
+            {/* Version A Player Streak Text */}
+            {version === 'Version A' && isOnStreak && (
+              <div className="avatar-streak-text player-streak-text">
+                🔥 {streak} Streak!
+              </div>
             )}
           </div>
+          
+          {/* Version B Star Progress, Version C Score Tracker, or Opponent Avatar */}
+          {version === 'Version B' ? (
+            <div className="avatar-container star-container">
+              <div className="version-b-star-progress">
+                <div className="star-progress-header">Progress</div>
+                <div className="star-display-large">
+                  {[1, 2, 3].map((starNum) => (
+                    <div key={starNum} className="star-item">
+                      <span className={`star-large ${currentStars >= starNum ? 'filled' : 'empty'}`}>
+                        ⭐
+                      </span>
+                      <div className="star-label">
+                        {starNum === 1 ? '20+ pts' : starNum === 2 ? '51+ pts' : '110+ pts'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="current-score-display">
+                  <div className="score-label">Score</div>
+                  <div className="score-value">{score}</div>
+                </div>
+              </div>
+            </div>
+          ) : version === 'Version C' ? (
+            <div className="avatar-container score-tracker-container">
+              <div className="version-c-score-tracker">
+                <div className="score-tracker-header">Live Score</div>
+                <div className="live-score-display">
+                  <div className="live-score-value">{score}</div>
+                  <div className="live-score-label">Points</div>
+                </div>
+                <div className="score-stats">
+                  <div className="stat-item">
+                    <div className="stat-value">{allAttemptedSongs.filter(song => song.pointsEarned > 0).length}</div>
+                    <div className="stat-label">Scored</div>
+                  </div>
+                  <div className="stat-item">
+                    <div className="stat-value">{allAttemptedSongs.length}</div>
+                    <div className="stat-label">Questions</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Show opponent avatar for Version A */
+            <div className="avatar-container opponent-container">
+              {/* Total Score Display Above Opponent Avatar */}
+              {showFeedback && (
+                <div className="total-score-display opponent-total-score">
+                  <div className="total-score-value">{opponentScore}</div>
+                </div>
+              )}
+              
+              <img 
+                src="/assets/OpponentAvatar.png" 
+                alt="Opponent Avatar" 
+                className={`avatar opponent-avatar ${showFeedback && opponentBuzzedIn ? 'celebrating' : ''}`}
+              />
+              
+              {/* Opponent Buzz In Indicator */}
+              {opponentBuzzedIn && (
+                <div className="opponent-buzz-indicator">
+                  ANSWERED!
+                </div>
+              )}
+              
+              {/* Version A Opponent Streak Text */}
+              {version === 'Version A' && opponentIsOnStreak && (
+                <div className="avatar-streak-text opponent-streak-text">
+                  🔥 {opponentStreak} Streak!
+                </div>
+              )}
+            </div>
+          )}
+          
         </div>
-        )}
-        
-        {!gameComplete && selectedHost !== 'none' && !gameIntroPlaying && (
-          <AIHost
-            ref={aiHostRef}
-            gamePhase={hostPhase}
-            playerName={playerName}
-            playerScore={score}
-            opponentScore={opponentScore}
-            songTitle={currentQuestion?.song.title}
-            songArtist={currentQuestion?.song.artist}
-            isCorrect={isCorrect}
-            character={selectedHost}
-            enabled={true}
-            voiceEnabled={true}
-            gameIntroPlaying={gameIntroPlaying}
-          />
-        )}
 
 
 

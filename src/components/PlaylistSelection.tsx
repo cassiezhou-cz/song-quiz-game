@@ -5,15 +5,23 @@ import './PlaylistSelection.css'
 const PlaylistSelection = () => {
   const navigate = useNavigate()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
+  const [selectedVersion, setSelectedVersion] = useState<string>('Version A')
 
   const handlePlaylistSelect = (playlist: string) => {
     setSelectedPlaylist(playlist)
-    console.log(`Selected playlist: ${playlist}`)
+    console.log(`Selected playlist: ${playlist}, Version: ${selectedVersion}`)
     
-    // Navigate to game after a brief moment to show selection feedback
+    // Navigate to game with version parameter after a brief moment to show selection feedback
+    const url = `/game/${playlist}?version=${encodeURIComponent(selectedVersion)}`
+    console.log('🚀 NAVIGATING TO:', url, 'Version:', selectedVersion)
     setTimeout(() => {
-      navigate(`/game/${playlist}`)
+      navigate(url)
     }, 1000)
+  }
+
+  const handleVersionSelect = (version: string) => {
+    setSelectedVersion(version)
+    console.log(`Selected version: ${version}`)
   }
 
   return (
@@ -56,9 +64,38 @@ const PlaylistSelection = () => {
               </button>
             </div>
 
+            <div className="version-selection">
+              <h3 className="version-title">Choose Game Version</h3>
+              <div className="version-buttons">
+                <button 
+                  className={`version-button ${selectedVersion === 'Version A' ? 'selected' : ''}`}
+                  onClick={() => handleVersionSelect('Version A')}
+                  disabled={selectedPlaylist !== null}
+                >
+                  Version A
+                </button>
+                
+                <button 
+                  className={`version-button ${selectedVersion === 'Version B' ? 'selected' : ''}`}
+                  onClick={() => handleVersionSelect('Version B')}
+                  disabled={selectedPlaylist !== null}
+                >
+                  Version B
+                </button>
+                
+                <button 
+                  className={`version-button ${selectedVersion === 'Version C' ? 'selected' : ''}`}
+                  onClick={() => handleVersionSelect('Version C')}
+                  disabled={selectedPlaylist !== null}
+                >
+                  Version C
+                </button>
+              </div>
+            </div>
+
             {selectedPlaylist && (
               <div className="selection-feedback">
-                <p>✨ You selected the <strong>{selectedPlaylist}</strong> playlist!</p>
+                <p>✨ You selected the <strong>{selectedPlaylist}</strong> playlist with <strong>{selectedVersion}</strong>!</p>
                 <p><em>Starting game...</em></p>
               </div>
             )}
