@@ -77,14 +77,29 @@ const Game = () => {
     artistCorrect: boolean,
     songCorrect: boolean
   }>>([])
+  
+  // Version C Booster state
+  const [boosters, setBoosters] = useState({
+    doublePoints: {
+      available: true,
+      active: false,
+      timeRemaining: 0
+    },
+    bonusTime: {
+      available: true,
+      active: false
+    }
+  })
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const doublePointsTimerRef = useRef<NodeJS.Timeout | null>(null)
   
   // Version B star calculation
   const calculateStars = (totalScore: number): number => {
     if (totalScore < 20) return 0
-    if (totalScore >= 20 && totalScore <= 50) return 1
-    if (totalScore >= 51 && totalScore <= 109) return 2
-    if (totalScore >= 110) return 3
+    if (totalScore >= 20 && totalScore <= 49) return 1
+    if (totalScore >= 50 && totalScore <= 99) return 2
+    if (totalScore >= 100) return 3
     return 0
   }
   
@@ -716,8 +731,14 @@ const Game = () => {
       songCorrect
     }])
     
+    // Apply double points booster if active
+    let finalPoints = points
+    if (boosters.doublePoints.active && points > 0) {
+      finalPoints = points * 2
+    }
+    
     // Award points to player
-    const newScore = score + points
+    const newScore = score + finalPoints
     setScore(newScore)
     
     if (points > 0) {
@@ -755,8 +776,8 @@ const Game = () => {
     
     setSelectedAnswer('manual_score')
     
-    // For Version B, questions 1-6 use 0,10,20 scoring
-    // Question 7 uses 0,30 scoring
+    // For Version B, questions 1-6 use -10, 0, 10, 20 scoring
+    // Question 7 uses 0, 30 scoring
     let artistCorrect = false
     let songCorrect = false
     
@@ -768,19 +789,22 @@ const Game = () => {
       }
       // For 10 points on Q7 (shouldn't happen, but just in case), don't set any correctness
     } else {
-      // Questions 1-6: 0, 10, or 20 points
+      // Questions 1-6: -10, 0, 10, or 20 points
       if (points >= 20) {
         artistCorrect = true
         songCorrect = true
       }
-      // For 10 points, don't set artistCorrect or songCorrect - leave them as false
+      // For 10 points or negative points, don't set artistCorrect or songCorrect - leave them as false
       // This way we won't show ✅ or ❌ indicators, just the song info
     }
     
     setArtistCorrect(artistCorrect)
     setSongCorrect(songCorrect)
-    setIsCorrect(points > 0) // Player gets credit for any points earned
+    setIsCorrect(points > 0) // Player gets credit for positive points only
     setPointsEarned(points)
+    
+    // Record base correctness for percentage calculation (Version B)
+    setQuestionsCorrectness(prev => [...prev, { artistCorrect, songCorrect }])
     
     if (points > 0) {
       playCorrectAnswerSfx()
@@ -1060,9 +1084,18 @@ const Game = () => {
     setTimeRemaining(60)
     setIsTimerRunning(false)
     setAllAttemptedSongs([])
+    // Reset Version C boosters
+    setBoosters({
+      doublePoints: { available: true, active: false, timeRemaining: 0 },
+      bonusTime: { available: true, active: false }
+    })
     if (timerRef.current) {
       clearTimeout(timerRef.current)
       timerRef.current = null
+    }
+    if (doublePointsTimerRef.current) {
+      clearTimeout(doublePointsTimerRef.current)
+      doublePointsTimerRef.current = null
     }
     
     startNewQuestion()
@@ -1076,6 +1109,61 @@ const Game = () => {
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  // Version C Booster Functions
+  const activateDoublePoints = () => {
+    if (!boosters.doublePoints.available || boosters.doublePoints.active) return
+    
+    setBoosters(prev => ({
+      ...prev,
+      doublePoints: {
+        ...prev.doublePoints,
+        available: false,
+        active: true,
+        timeRemaining: 10
+      }
+    }))
+    
+    // Start 10-second countdown for double points
+    let timeLeft = 10
+    const countdown = setInterval(() => {
+      timeLeft -= 1
+      setBoosters(prev => ({
+        ...prev,
+        doublePoints: {
+          ...prev.doublePoints,
+          timeRemaining: timeLeft
+        }
+      }))
+      
+      if (timeLeft <= 0) {
+        clearInterval(countdown)
+        setBoosters(prev => ({
+          ...prev,
+          doublePoints: {
+            ...prev.doublePoints,
+            active: false,
+            timeRemaining: 0
+          }
+        }))
+      }
+    }, 1000)
+  }
+
+  const activateBonusTime = () => {
+    if (!boosters.bonusTime.available || !isTimerRunning) return
+    
+    setBoosters(prev => ({
+      ...prev,
+      bonusTime: {
+        ...prev.bonusTime,
+        available: false,
+        active: false // This is instant, no ongoing effect
+      }
+    }))
+    
+    setTimeRemaining(prev => prev + 10)
   }
 
   // Calculate correct rate based on base correctness (no bonuses)
@@ -1381,7 +1469,7 @@ const Game = () => {
                           ⭐
                         </span>
                         <div className="star-label">
-                          {starNum === 1 ? '20+ pts' : starNum === 2 ? '51+ pts' : '110+ pts'}
+                          {starNum === 1 ? '20+ pts' : starNum === 2 ? '50+ pts' : '100+ pts'}
                         </div>
                       </div>
                     ))}
@@ -1481,16 +1569,21 @@ const Game = () => {
               return null;
             })()}
             {version === 'Version C' ? (
-              <div className="version-c-timer">
-                <div className="timer-display">
+              <div className={`version-c-timer ${boosters.doublePoints.active ? 'double-points-active' : ''}`}>
+                <div className={`timer-display ${boosters.doublePoints.active ? 'timer-boosted' : ''}`}>
                   <div className="timer-label">Time Remaining</div>
-                  <div className={`timer-value ${timeRemaining <= 10 ? 'timer-urgent' : ''}`}>
+                  <div className={`timer-value ${timeRemaining <= 10 ? 'timer-urgent' : ''} ${boosters.doublePoints.active ? 'timer-value-boosted' : ''}`}>
                     {timeRemaining}s
                   </div>
+                  {boosters.doublePoints.active && (
+                    <div className="timer-booster-indicator">
+                      2× POINTS ACTIVE
+                    </div>
+                  )}
                 </div>
-                <div className="attempts-counter">
-                  Songs Attempted: {allAttemptedSongs.length}
-                </div>
+                {boosters.doublePoints.active && (
+                  <div className="timer-glow-effect"></div>
+                )}
               </div>
             ) : (
               <div className="quiz-progress">
@@ -1592,6 +1685,12 @@ const Game = () => {
             {version === 'Version B' && !selectedAnswer && !showFeedback && (
               <div className="manual-scoring">
                 <div className="score-buttons">
+                  <button
+                    className="score-button score-negative"
+                    onClick={() => handleVersionBScore(-10)}
+                  >
+                    -10 Points
+                  </button>
                   <button
                     className="score-button score-0"
                     onClick={() => handleVersionBScore(0)}
@@ -1774,6 +1873,45 @@ const Game = () => {
           </div>
         </main>
         
+        {/* Version C Boosters - Bottom Left Position */}
+        {version === 'Version C' && !gameComplete && (
+          <div className="version-c-boosters-bottom">
+            <div className="boosters-container-bottom">
+              <button 
+                className={`booster-button-large double-points-booster ${!boosters.doublePoints.available ? 'used' : boosters.doublePoints.active ? 'active' : ''}`}
+                onClick={activateDoublePoints}
+                disabled={!boosters.doublePoints.available}
+              >
+                <div className="booster-icon-large">2×</div>
+                <div className="booster-text-large">
+                  <div className="booster-title">Double Points</div>
+                  {boosters.doublePoints.active && (
+                    <div className="booster-timer-large">{boosters.doublePoints.timeRemaining}s left</div>
+                  )}
+                  {!boosters.doublePoints.available && !boosters.doublePoints.active && (
+                    <div className="booster-used-text">Used</div>
+                  )}
+                </div>
+              </button>
+              
+              <button 
+                className={`booster-button-large bonus-time-booster ${!boosters.bonusTime.available ? 'used' : ''}`}
+                onClick={activateBonusTime}
+                disabled={!boosters.bonusTime.available}
+              >
+                <div className="booster-icon-large">⏰</div>
+                <div className="booster-text-large">
+                  <div className="booster-title">Bonus Time</div>
+                  <div className="booster-subtitle">+10 Seconds</div>
+                  {!boosters.bonusTime.available && (
+                    <div className="booster-used-text">Used</div>
+                  )}
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+        
         {/* Competitive Avatars */}
         <div className="avatars">
           <div className="avatar-container player-container">
@@ -1801,6 +1939,13 @@ const Game = () => {
                 </div>
                 <div className="score-popup player-score-popup">
                   {version === 'Version A' ? `+${pointsEarned} Points` :
+                   version === 'Version B' ? (
+                     pointsEarned === 20 ? 'Perfect! +20 Points' :
+                     pointsEarned === 10 ? 'Correct! +10 Points' :
+                     pointsEarned === 30 ? 'Perfect! +30 Points' :
+                     pointsEarned === -10 ? 'Incorrect! -10 Points' :
+                     'Correct! +' + pointsEarned + ' Points'
+                   ) :
                    pointsEarned === 20 ? 'Perfect! +20 Points' :
                    pointsEarned === 10 ? (artistCorrect ? 'Artist Correct! +10 Points' : 'Song Correct! +10 Points') :
                    'Correct! +' + pointsEarned + ' Points'}
@@ -1828,7 +1973,7 @@ const Game = () => {
                         ⭐
                       </span>
                       <div className="star-label">
-                        {starNum === 1 ? '20+ pts' : starNum === 2 ? '51+ pts' : '110+ pts'}
+                        {starNum === 1 ? '20+ pts' : starNum === 2 ? '50+ pts' : '100+ pts'}
                       </div>
                     </div>
                   ))}
@@ -1856,6 +2001,9 @@ const Game = () => {
                     <div className="stat-value">{allAttemptedSongs.length}</div>
                     <div className="stat-label">Questions</div>
                   </div>
+                </div>
+                <div className="attempts-counter-right">
+                  Songs Attempted: {allAttemptedSongs.length}
                 </div>
               </div>
             </div>
