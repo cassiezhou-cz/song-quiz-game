@@ -103,6 +103,10 @@
   color: #ffe66d;
 }
 
+.playlist-90s:hover:not(:disabled) .decade {
+  color: #ff9ff3;
+}
+
 .selection-feedback {
   margin-top: 2rem;
   padding: 1.5rem;

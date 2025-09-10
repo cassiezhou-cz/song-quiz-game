@@ -363,6 +363,236 @@ const Game = () => {
     }
   ]
 
+  // 90s playlist songs with curated alternatives  
+  const songs90s: Song[] = [
+    { 
+      id: '1', 
+      title: 'Wonderwall', 
+      artist: 'Oasis', 
+      file: '/songs/90s/WonderwallOasis.mp3', 
+      albumArt: '/assets/album-art/90s/WonderwallOasis.jpeg',
+      alternatives: ['Champagne Supernova - Oasis', 'Creep - Radiohead', 'Mr. Brightside - The Killers']
+    },
+    { 
+      id: '2', 
+      title: 'Come As You Are', 
+      artist: 'Nirvana', 
+      file: '/songs/90s/ComeAsYouAreNirvana.mp3', 
+      albumArt: '/assets/album-art/90s/ComeAsYouAreNirvana.jpeg',
+      alternatives: ['Smells Like Teen Spirit - Nirvana', 'Black - Pearl Jam', 'Alive - Pearl Jam']
+    },
+    { 
+      id: '3', 
+      title: 'No Scrubs', 
+      artist: 'TLC', 
+      file: '/songs/90s/NoScrubsTLC.mp3', 
+      albumArt: '/assets/album-art/90s/NoScrubsTLC.jpeg',
+      alternatives: ['Waterfalls - TLC', 'What\'s Up? - 4 Non Blondes', 'I Will Always Love You - Whitney Houston']
+    },
+    { 
+      id: '4', 
+      title: 'California Love', 
+      artist: '2Pac', 
+      file: '/songs/90s/CaliforniaLove2Pac.mp3', 
+      albumArt: '/assets/album-art/90s/CaliforniaLove2Pac.jpeg',
+      alternatives: ['Changes - 2Pac', 'Juicy - The Notorious B.I.G.', 'Gangsta\'s Paradise - Coolio'],
+      artistAlternatives: ['Tupac', '2-Pac', 'Tupac Shakur', 'Two Pac']
+    },
+    { 
+      id: '5', 
+      title: 'Wannabe', 
+      artist: 'Spice Girls', 
+      file: '/songs/90s/WannabeSpiceGirls.mp3', 
+      albumArt: '/assets/album-art/90s/WannabeSpiceGirls.jpeg',
+      alternatives: ['Say You\'ll Be There - Spice Girls', 'MMMBop - Hanson', 'I Want It That Way - Backstreet Boys']
+    },
+    { 
+      id: '6', 
+      title: '1979', 
+      artist: 'The Smashing Pumpkins', 
+      file: '/songs/90s/1979TheSmashingPumpkins.mp3', 
+      albumArt: '/assets/album-art/90s/1979TheSmashingPumpkins.jpeg',
+      alternatives: ['Tonight, Tonight - The Smashing Pumpkins', 'Zero - The Smashing Pumpkins', 'Bullet with Butterfly Wings - The Smashing Pumpkins']
+    },
+    { 
+      id: '7', 
+      title: 'Zombie', 
+      artist: 'The Cranberries', 
+      file: '/songs/90s/ZombieTheCranberries.mp3', 
+      albumArt: '/assets/album-art/90s/ZombieTheCranberries.jpeg',
+      alternatives: ['Linger - The Cranberries', 'Dreams - The Cranberries', 'Ode to My Family - The Cranberries']
+    },
+    { 
+      id: '8', 
+      title: 'Black', 
+      artist: 'Pearl Jam', 
+      file: '/songs/90s/BlackPearlJam.mp3', 
+      albumArt: '/assets/album-art/90s/BlackPearlJam.jpeg',
+      alternatives: ['Alive - Pearl Jam', 'Jeremy - Pearl Jam', 'Even Flow - Pearl Jam']
+    },
+    { 
+      id: '9', 
+      title: 'Ironic', 
+      artist: 'Alanis Morissette', 
+      file: '/songs/90s/ironicAlanisMorissette.mp3', 
+      albumArt: '/assets/album-art/90s/ironicAlanisMorissette.jpeg',
+      alternatives: ['You Oughta Know - Alanis Morissette', 'Hand in My Pocket - Alanis Morissette', 'You Learn - Alanis Morissette']
+    },
+    { 
+      id: '10', 
+      title: 'U Can\'t Touch This', 
+      artist: 'MC Hammer', 
+      file: '/songs/90s/UCan\'tTouchThisMCHammer.mp3', 
+      albumArt: '/assets/album-art/90s/UCan\'tTouchThisMCHammer.jpeg',
+      alternatives: ['Ice Ice Baby - Vanilla Ice', 'Push It - Salt-N-Pepa', '2 Legit 2 Quit - MC Hammer']
+    },
+    { 
+      id: '11', 
+      title: 'Don\'t Speak', 
+      artist: 'No Doubt', 
+      file: '/songs/90s/Don\'tSpeakNoDoubt.mp3', 
+      albumArt: '/assets/album-art/90s/Don\'tSpeakNoDoubt.jpeg',
+      alternatives: ['Just a Girl - No Doubt', 'Spiderwebs - No Doubt', 'Sunday Girl - No Doubt']
+    },
+    { 
+      id: '12', 
+      title: 'Kiss Me', 
+      artist: 'Sixpence None The Richer', 
+      file: '/songs/90s/KissMeSixpenceNoneTheRicher.mp3', 
+      albumArt: '/assets/album-art/90s/KissMeSixpenceNoneTheRicher.jpeg',
+      alternatives: ['There She Goes - The La\'s', 'I\'m Gonna Be (500 Miles) - The Proclaimers', 'Semi-Charmed Life - Third Eye Blind']
+    },
+    { 
+      id: '13', 
+      title: 'Torn', 
+      artist: 'Natalie Imbruglia', 
+      file: '/songs/90s/TornNatalieImbruglia.mp3', 
+      albumArt: '/assets/album-art/90s/TornNatalieImbruglia.jpeg',
+      alternatives: ['Big Me - Foo Fighters', 'Counting Blue Cars - Dishwalla', 'Name - Goo Goo Dolls']
+    },
+    { 
+      id: '14', 
+      title: 'Always', 
+      artist: 'Bon Jovi', 
+      file: '/songs/90s/AlwaysBonJovi.mp3', 
+      albumArt: '/assets/album-art/90s/AlwaysBonJovi.jpeg',
+      alternatives: ['Bed of Roses - Bon Jovi', 'Livin\' on a Prayer - Bon Jovi', 'Wanted Dead or Alive - Bon Jovi']
+    },
+    { 
+      id: '15', 
+      title: '(Everything I Do) I Do It for You', 
+      artist: 'Bryan Adams', 
+      file: '/songs/90s/(EverythingIDo)IDoItForYouBryanAdams.mp3', 
+      albumArt: '/assets/album-art/90s/(EverythingIDo)IDoItForYouBryanAdams.jpeg',
+      alternatives: ['Summer of \'69 - Bryan Adams', 'Heaven - Bryan Adams', 'Run to You - Bryan Adams']
+    },
+    { 
+      id: '16', 
+      title: 'End of the Road', 
+      artist: 'Boyz II Men', 
+      file: '/songs/90s/EndOfTheRoadBoyztoMen.mp3', 
+      albumArt: '/assets/album-art/90s/EndOfTheRoadBoyztoMen.jpeg',
+      alternatives: ['I\'ll Make Love to You - Boyz II Men', 'Motownphilly - Boyz II Men', 'On Bended Knee - Boyz II Men'],
+      artistAlternatives: ['Boys 2 Men', 'Boys II Men', 'Boyz 2 Men']
+    },
+    { 
+      id: '17', 
+      title: 'Always Be My Baby', 
+      artist: 'Mariah Carey', 
+      file: '/songs/90s/AlwaysBeMyBabyMariahCarey.mp3', 
+      albumArt: '/assets/album-art/90s/AlwaysBeMyBabyMariahCarey.jpeg',
+      alternatives: ['Vision of Love - Mariah Carey', 'Hero - Mariah Carey', 'Fantasy - Mariah Carey']
+    },
+    { 
+      id: '18', 
+      title: 'Shoop', 
+      artist: 'Salt-N-Pepa', 
+      file: '/songs/90s/ShoopSaltNPepa.mp3', 
+      albumArt: '/assets/album-art/90s/ShoopSaltNPepa.jpeg',
+      alternatives: ['Push It - Salt-N-Pepa', 'Whatta Man - Salt-N-Pepa feat. En Vogue', 'Let\'s Talk About Sex - Salt-N-Pepa']
+    },
+    { 
+      id: '19', 
+      title: 'Loser', 
+      artist: 'Beck', 
+      file: '/songs/90s/LoserBeck.mp3', 
+      albumArt: '/assets/album-art/90s/LoserBeck.jpeg',
+      alternatives: ['Where It\'s At - Beck', 'Devils Haircut - Beck', 'E-Pro - Beck']
+    },
+    { 
+      id: '20', 
+      title: 'Crazy', 
+      artist: 'Aerosmith', 
+      file: '/songs/90s/CrazyAerosmith.mp3', 
+      albumArt: '/assets/album-art/90s/CrazyAerosmith.jpeg',
+      alternatives: ['I Don\'t Want to Miss a Thing - Aerosmith', 'Love in an Elevator - Aerosmith', 'Sweet Emotion - Aerosmith']
+    },
+    { 
+      id: '21', 
+      title: 'High and Dry', 
+      artist: 'Radiohead', 
+      file: '/songs/90s/HighAndDryRadiohead.mp3', 
+      albumArt: '/assets/album-art/90s/HighAndDryRadiohead.jpeg',
+      alternatives: ['Creep - Radiohead', 'Fake Plastic Trees - Radiohead', 'Just - Radiohead']
+    },
+    { 
+      id: '22', 
+      title: 'Fly Away', 
+      artist: 'Lenny Kravitz', 
+      file: '/songs/90s/FlyAwayLennyKravitz.mp3', 
+      albumArt: '/assets/album-art/90s/FlyAwayLennyKravitz.jpeg',
+      alternatives: ['Are You Gonna Go My Way - Lenny Kravitz', 'It Ain\'t Over \'til It\'s Over - Lenny Kravitz', 'American Woman - Lenny Kravitz']
+    },
+    { 
+      id: '23', 
+      title: 'Killing Me Softly with His Song', 
+      artist: 'Fugees', 
+      file: '/songs/90s/KillingMeSoftlyWithHisSongFugees.mp3', 
+      albumArt: '/assets/album-art/90s/KillingMeSoftlyWithHisSongFugees.jpeg',
+      alternatives: ['Ready or Not - Fugees', 'Fu-Gee-La - Fugees', 'No Woman, No Cry - Fugees']
+    },
+    { 
+      id: '24', 
+      title: 'Under the Bridge', 
+      artist: 'Red Hot Chili Peppers', 
+      file: '/songs/90s/UnderTheBridgeTheRedHotChiliPeppers.mp3', 
+      albumArt: '/assets/album-art/90s/UnderTheBridgeTheRedHotChiliPeppers.jpeg',
+      alternatives: ['Give It Away - Red Hot Chili Peppers', 'Soul to Squeeze - Red Hot Chili Peppers', 'Californication - Red Hot Chili Peppers']
+    },
+    { 
+      id: '25', 
+      title: 'November Rain', 
+      artist: 'Guns N\' Roses', 
+      file: '/songs/90s/NovemberRainGunsNRoses.mp3', 
+      albumArt: '/assets/album-art/90s/NovemberRainGunsNRoses.jpeg',
+      alternatives: ['Sweet Child O\' Mine - Guns N\' Roses', 'Welcome to the Jungle - Guns N\' Roses', 'Paradise City - Guns N\' Roses']
+    },
+    { 
+      id: '26', 
+      title: 'Killing in the Name', 
+      artist: 'Rage Against the Machine', 
+      file: '/songs/90s/KillingInTheNameRageAgainstTheMachine.mp3', 
+      albumArt: '/assets/album-art/90s/KillingInTheNameRageAgainstTheMachine.jpeg',
+      alternatives: ['Bulls on Parade - Rage Against the Machine', 'Guerrilla Radio - Rage Against the Machine', 'Wake Up - Rage Against the Machine']
+    },
+    { 
+      id: '27', 
+      title: 'Enjoy the Silence', 
+      artist: 'Depeche Mode', 
+      file: '/songs/90s/EnjoyTheSilenceDepecheMode.mp3', 
+      albumArt: '/assets/album-art/90s/EnjoyTheSilenceDepecheMode.jpeg',
+      alternatives: ['Personal Jesus - Depeche Mode', 'Policy of Truth - Depeche Mode', 'World in My Eyes - Depeche Mode']
+    },
+    { 
+      id: '28', 
+      title: 'Walking on Broken Glass', 
+      artist: 'Annie Lennox', 
+      file: '/songs/90s/WalkingOnBrokenGlassAnnieLennox.mp3', 
+      albumArt: '/assets/album-art/90s/WalkingOnBrokenGlassAnnieLennox.jpeg',
+      alternatives: ['Why - Annie Lennox', 'Little Bird - Annie Lennox', 'Sweet Dreams - Eurythmics']
+    }
+  ]
+
   const getPlaylistSongs = (playlistName: string): Song[] => {
     switch (playlistName) {
       case '2020s':
@@ -371,6 +601,8 @@ const Game = () => {
         return songs2010s
       case '2000s':
         return songs2000s
+      case '90s':
+        return songs90s
       default:
         return songs2010s // Default to 2010s if playlist not found
     }

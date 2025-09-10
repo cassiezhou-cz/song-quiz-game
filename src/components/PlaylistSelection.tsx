@@ -62,6 +62,14 @@ const PlaylistSelection = () => {
               >
                 <span className="decade">2000s</span>
               </button>
+              
+              <button 
+                className="playlist-button playlist-90s"
+                onClick={() => handlePlaylistSelect('90s')}
+                disabled={selectedPlaylist !== null}
+              >
+                <span className="decade">90s</span>
+              </button>
             </div>
 
             <div className="version-selection">
