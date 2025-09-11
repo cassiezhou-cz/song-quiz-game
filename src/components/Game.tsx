@@ -608,6 +608,135 @@ const Game = () => {
     }
   }
 
+  // Song number mapping based on "Number Association of Songs" document
+  const getSongNumber = (playlistName: string, title: string, artist: string): number => {
+    const songMappings = {
+      '90s': {
+        '(Everything I Do) I Do It for You-Bryan Adams': 1,
+        '1979-The Smashing Pumpkins': 2,
+        'Always Be My Baby-Mariah Carey': 3,
+        'Always-Bon Jovi': 4,
+        'Black-Pearl Jam': 5,
+        'California Love-2Pac': 6,
+        'Come As You Are-Nirvana': 7,
+        'Crazy-Aerosmith': 8,
+        "Don't Speak-No Doubt": 9,
+        'End of the Road-Boyz II Men': 10,
+        'Enjoy the Silence-Depeche Mode': 11,
+        'Fly Away-Lenny Kravitz': 12,
+        'High and Dry-Radiohead': 13,
+        'Ironic-Alanis Morissette': 14,
+        'Killing in the Name-Rage Against the Machine': 15,
+        'Killing Me Softly with His Song-Fugees': 16,
+        'Kiss Me-Sixpence None The Richer': 17,
+        'Loser-Beck': 18,
+        'No Scrubs-TLC': 19,
+        'November Rain-Guns N\' Roses': 20,
+        'Shoop-Salt-N-Pepa': 21,
+        'Torn-Natalie Imbruglia': 22,
+        "U Can't Touch This-MC Hammer": 23,
+        'Under the Bridge-Red Hot Chili Peppers': 24,
+        'Walking on Broken Glass-Annie Lennox': 25,
+        'Wannabe-Spice Girls': 26,
+        'Wonderwall-Oasis': 27,
+        'Zombie-The Cranberries': 28
+      },
+      '2000s': {
+        '1,2 Step-Ciara': 1,
+        'Because of You-Ne-Yo': 2,
+        'Complicated-Avril Lavigne': 3,
+        'Dog Days Are Over-Florence + The Machine': 4,
+        'Drops of Jupiter-Train': 5,
+        'Empire State of Mind-Jay Z (feat. Alicia Keys)': 6,
+        'Fireflies-Owl City': 7,
+        'Gimme More-Britney Spears': 8,
+        'Hey Soul Sister-Train': 9,
+        'I Gotta Feeling-The Black Eyed Peas': 10,
+        'I Want It That Way-Backstreet Boys': 11,
+        'Just Dance-Lady Gaga': 12,
+        'Kids-MGMT': 13,
+        'Last Resort-Papa Roach': 14,
+        'Love Song-Sara Bareilles': 15,
+        'Maneater-Nelly Furtado': 16,
+        'Sexy Back-Justin Timberlake': 17,
+        'Since U Been Gone-Kelly Clarkson': 18,
+        'Temperature-Sean Paul': 19,
+        'The Anthem-Good Charlotte': 20,
+        'The Kill-Thirty Seconds To Mars': 21,
+        'The Middle-Jimmy Eat World': 22,
+        'The Sweet Escape-Gwen Stefani': 23,
+        'Unwritten-Natasha Bedingfield': 24,
+        'Viva La Vida-Coldplay': 25,
+        'When You Were Young-The Killer': 26,
+        'Without Me-Eminem': 27,
+        'Yeah!-Usher': 28
+      },
+      '2010s': {
+        'All of Me-John Legend': 1,
+        'All The Stars-Kendrick': 2,
+        'Blurred Lines-Robin Thicke': 3,
+        'Closer-Chainsmokers': 4,
+        'Everybody Talks-Neon Trees': 5,
+        'Goosebumps-Travis Scott': 6,
+        'Havana-Camila Cabello': 7,
+        'HUMBLE-Kendrick Lamar': 8,
+        'I Gotta Feeling-The Black Eyed Peas': 9,
+        'Just Dance-Lady Gaga': 10,
+        'Lost-Frank Ocean': 11,
+        'Love The Way You Lie-Eminem': 12,
+        'Love Yourself-Justin Bieber': 13,
+        'Low-Flo Rida': 14,
+        'One Dance-Drake': 15,
+        'One Last Time-Ariana Grande': 16,
+        'Only Girl (In The World)-Rihanna': 17,
+        'PILLOWTALK-Zayn': 18,
+        'Put Your Records On-Corrine Bailey Rae': 19,
+        'Shut Up And Dance-Walk The Moon': 20,
+        'Smack That-Akon': 21,
+        'Sunflower-Post Malone': 22,
+        'Super Bass-Nicki Minaj': 23,
+        'Sweater Weather-The Neighborhood': 24,
+        'This Love-Maroon 5': 25,
+        'Uptown Funk-Mark Ronson': 26,
+        'Wake Me Up-Avicii': 27
+      },
+      '2020s': {
+        'Beautiful Mistakes-Maroon 5': 1,
+        'Cardigan-Taylor Swift': 2,
+        'Enemy-Imagine Dragons': 3,
+        'Fast Car-Luke Combs': 4,
+        'Flowers-Miley Cyrus': 5,
+        'Good Luck, Babe-Chappell Roan': 6,
+        'Heat Waves-Glass Animals': 7,
+        'Here With Me-d4vd': 8,
+        'Houdini-Eminem': 9,
+        "I Don't Wanna Wait-David Guetta": 10,
+        'INDUSTRY BABY-Lil Nas X': 11,
+        'Lose Somebody-Kygo': 12,
+        'Made You Look-Meghan Trainor': 13,
+        'Peaches-Justin Bieber': 14,
+        'Smile-Katy Perry': 15,
+        'Snooze-SZA': 16,
+        'Stick Season-Noah Kahan': 17,
+        'Taste-Sabrina Carpenter': 18,
+        'Tattoo-Loreen': 19,
+        'the boy is mine-Ariana Grande': 20,
+        'Too Many Nights-Metro Boomin': 21,
+        'Traitor-Olivia Rodrigo': 22,
+        'Unholy-Sam Smith': 23,
+        'What It Is-Doechii': 24,
+        'Woman-Doja Cat': 25
+      }
+    }
+
+    const playlistMapping = songMappings[playlistName as keyof typeof songMappings]
+    if (!playlistMapping) return 0
+
+    // Create a key from title and artist for lookup
+    const key = `${title}-${artist}`
+    return playlistMapping[key as keyof typeof playlistMapping] || 0
+  }
+
   const generateQuizQuestion = (): QuizQuestion => {
     const playlistSongs = getPlaylistSongs(playlist || '2010s')
     
@@ -1639,8 +1768,8 @@ const Game = () => {
                 </>
               )}
               
-              {/* Hide Your Score vs Opponent Score for Version C (single-player) */}
-              {version !== 'Version C' && (
+              {/* Only show Your Score vs Opponent Score for Version A (has opponent) */}
+              {version === 'Version A' && (
                 <div className="final-scores-container">
                   <div className="player-final-score">
                     <h4>Your Score</h4>
@@ -1910,6 +2039,11 @@ const Game = () => {
                     <span className="toggle-text">Speed Bonus (+10 points)</span>
                   </label>
                 </div>
+                {currentQuestion && (
+                  <div className="song-number-display">
+                    Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
+                  </div>
+                )}
               </div>
             )}
             
@@ -1951,6 +2085,11 @@ const Game = () => {
                     </button>
                   )}
                 </div>
+                {currentQuestion && (
+                  <div className="song-number-display">
+                    Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
+                  </div>
+                )}
               </div>
             )}
             
@@ -1985,6 +2124,11 @@ const Game = () => {
                     20 Points
                   </button>
                 </div>
+                {currentQuestion && (
+                  <div className="song-number-display">
+                    Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
+                  </div>
+                )}
               </div>
             )}
             
