@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { getAvailableSongs, addPlayedSong } from '../utils/songTracker'
 import './Game.css'
 
 interface Song {
@@ -103,8 +104,7 @@ const Game = () => {
     return 0
   }
   
-  // Track used songs to prevent duplicates within the same game
-  const [usedSongIds, setUsedSongIds] = useState<string[]>([])
+  // Note: Song tracking is now handled by persistent localStorage via songTracker utility
   
   // Prevent multiple simultaneous question loading
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
@@ -1147,24 +1147,17 @@ const Game = () => {
 
   const generateQuizQuestion = (): QuizQuestion => {
     const playlistSongs = getPlaylistSongs(playlist || '2010s')
+    const currentPlaylist = playlist || '2010s'
     
-    // Filter out songs that have already been used in this game
-    const availableSongs = playlistSongs.filter(song => !usedSongIds.includes(song.id))
+    // Get available songs using the persistent tracker
+    // This automatically handles resetting when all songs have been played
+    const availableSongs = getAvailableSongs(currentPlaylist, playlistSongs)
     
-    // For Version C, if we've used all songs, reset the list (since it's a rapid-fire mode)
-    // For other versions, if all songs have been used, reset and use all songs again
-    const songsToChooseFrom = availableSongs.length > 0 ? availableSongs : playlistSongs
+    const randomIndex = Math.floor(Math.random() * availableSongs.length)
+    const correctSong = availableSongs[randomIndex] as Song
     
-    // Reset used songs if we're out of unique songs (mainly for Version C)
-    if (availableSongs.length === 0) {
-      setUsedSongIds([])
-    }
-    
-    const randomIndex = Math.floor(Math.random() * songsToChooseFrom.length)
-    const correctSong = songsToChooseFrom[randomIndex]
-    
-    // Add this song to the used list
-    setUsedSongIds(prev => [...prev, correctSong.id])
+    // Mark this song as played in persistent storage
+    addPlayedSong(currentPlaylist, correctSong.id)
     
     // Use curated alternatives for this song
     const wrongAnswers = correctSong.alternatives
@@ -1363,7 +1356,7 @@ const Game = () => {
       return
     }
     
-    setUsedSongIds([]) // Reset used songs when playlist changes
+    // Note: Song tracking persists across playlist changes (only resets on browser refresh)
     
     // Version C: Start timer when game begins
     if (version === 'Version C') {
@@ -1833,7 +1826,7 @@ const Game = () => {
     setOpponentScore(0)
     setQuestionNumber(1)
     setGameComplete(false)
-    setUsedSongIds([]) // Reset used songs for new game
+    // Note: Song tracking persists across new games (only resets on browser refresh)
     setIsLoadingQuestion(false) // Reset loading state
     // Reset opponent points tracking
     setOpponentPointsEarned(0)
