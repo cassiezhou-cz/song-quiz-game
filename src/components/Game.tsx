@@ -31,6 +31,7 @@ const Game = () => {
   // Sound effect refs
   const correctAnswerSfxRef = useRef<HTMLAudioElement>(null)
   const victoryApplauseSfxRef = useRef<HTMLAudioElement>(null)
+  const versionCScoreSfxRef = useRef<HTMLAudioElement>(null) // Version C scoring sound
   
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -91,6 +92,12 @@ const Game = () => {
       active: false
     }
   })
+  
+  // Version C Auto-booster notification state
+  const [autoBoosterNotification, setAutoBoosterNotification] = useState<string | null>(null)
+  const [timerPulse, setTimerPulse] = useState(false)
+  const [consecutiveScores, setConsecutiveScores] = useState(0) // Track consecutive questions with points
+  const [showScoreConfetti, setShowScoreConfetti] = useState(false) // Track confetti animation
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const doublePointsTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -1503,8 +1510,100 @@ const Game = () => {
     const newScore = score + finalPoints
     setScore(newScore)
     
+    // Track consecutive scoring attempts for double points auto-trigger
     if (points > 0) {
-      playCorrectAnswerSfx()
+      const newConsecutiveCount = consecutiveScores + 1
+      setConsecutiveScores(newConsecutiveCount)
+      
+      // Check if player scored on 2 questions in a row and automatically activate double points booster
+      if (newConsecutiveCount >= 2 && boosters.doublePoints.available && !boosters.doublePoints.active) {
+        console.log('🎵 VERSION C: Auto-activating double points booster after 2 consecutive scores!')
+        
+        setBoosters(prev => ({
+          ...prev,
+          doublePoints: {
+            ...prev.doublePoints,
+            available: false,
+            active: true,
+            timeRemaining: 10
+          }
+        }))
+        
+        // Start double points countdown timer
+        let timeLeft = 10
+        const countdown = setInterval(() => {
+          timeLeft -= 1
+          setBoosters(prev => ({
+            ...prev,
+            doublePoints: {
+              ...prev.doublePoints,
+              timeRemaining: timeLeft
+            }
+          }))
+          
+          if (timeLeft <= 0) {
+            clearInterval(countdown)
+            setBoosters(prev => ({
+              ...prev,
+              doublePoints: {
+                ...prev.doublePoints,
+                active: false,
+                timeRemaining: 0
+              }
+            }))
+          }
+        }, 1000)
+        
+        // Show visual notification for auto-activation
+        setAutoBoosterNotification('🔥 DOUBLE POINTS! 2× multiplier activated for 10 seconds!')
+        setTimeout(() => {
+          setAutoBoosterNotification(null)
+        }, 3000) // Clear notification after 3 seconds
+        
+        console.log('🔥 DOUBLE POINTS: Automatically activated after consecutive scores!')
+      }
+    } else {
+      // Reset consecutive count if no points scored
+      setConsecutiveScores(0)
+    }
+    
+    // Check if player reached 30 points and automatically activate bonus time booster
+    if (newScore >= 30 && boosters.bonusTime.available && isTimerRunning) {
+      console.log('🎵 VERSION C: Auto-activating bonus time booster at 30+ points!')
+      setBoosters(prev => ({
+        ...prev,
+        bonusTime: {
+          ...prev.bonusTime,
+          available: false,
+          active: false // This is instant, no ongoing effect
+        }
+      }))
+      setTimeRemaining(prev => prev + 10)
+      
+      // Show visual notification for auto-activation
+      setAutoBoosterNotification('⏰ BONUS TIME! +10 seconds automatically awarded!')
+      setTimeout(() => {
+        setAutoBoosterNotification(null)
+      }, 3000) // Clear notification after 3 seconds
+      
+      // Pulse the timer to make it obvious time was added
+      setTimerPulse(true)
+      setTimeout(() => {
+        setTimerPulse(false)
+      }, 1000) // Remove pulse after 1 second
+      
+      console.log('⏰ BONUS TIME: +10 seconds automatically awarded!')
+    }
+    
+    if (points > 0) {
+      // Play Version C scoring sound effect and show confetti
+      playVersionCScoreSfx()
+      setShowScoreConfetti(true)
+      
+      // Clear confetti after animation
+      setTimeout(() => {
+        setShowScoreConfetti(false)
+      }, 1500) // Clear after 1.5 seconds
     }
     
     // Stop current audio completely
@@ -1846,11 +1945,15 @@ const Game = () => {
     setTimeRemaining(60)
     setIsTimerRunning(false)
     setAllAttemptedSongs([])
-    // Reset Version C boosters
+    // Reset Version C boosters and consecutive tracking
     setBoosters({
       doublePoints: { available: true, active: false, timeRemaining: 0 },
       bonusTime: { available: true, active: false }
     })
+    setConsecutiveScores(0)
+    setAutoBoosterNotification(null)
+    setTimerPulse(false)
+    setShowScoreConfetti(false)
     if (timerRef.current) {
       clearTimeout(timerRef.current)
       timerRef.current = null
@@ -1874,44 +1977,7 @@ const Game = () => {
   }
 
   // Version C Booster Functions
-  const activateDoublePoints = () => {
-    if (!boosters.doublePoints.available || boosters.doublePoints.active) return
-    
-    setBoosters(prev => ({
-      ...prev,
-      doublePoints: {
-        ...prev.doublePoints,
-        available: false,
-        active: true,
-        timeRemaining: 10
-      }
-    }))
-    
-    // Start 10-second countdown for double points
-    let timeLeft = 10
-    const countdown = setInterval(() => {
-      timeLeft -= 1
-      setBoosters(prev => ({
-        ...prev,
-        doublePoints: {
-          ...prev.doublePoints,
-          timeRemaining: timeLeft
-        }
-      }))
-      
-      if (timeLeft <= 0) {
-        clearInterval(countdown)
-        setBoosters(prev => ({
-          ...prev,
-          doublePoints: {
-            ...prev.doublePoints,
-            active: false,
-            timeRemaining: 0
-          }
-        }))
-      }
-    }, 1000)
-  }
+  // Double points booster is now automatic - triggers after 2 consecutive scores
 
   const activateBonusTime = () => {
     if (!boosters.bonusTime.available || !isTimerRunning) return
@@ -1950,6 +2016,15 @@ const Game = () => {
       sfx.currentTime = 0
       sfx.play().catch(error => {
         console.log('SFX: Correct answer sound failed to play:', error)
+      })
+    }
+  }
+
+  const playVersionCScoreSfx = () => {
+    if (versionCScoreSfxRef.current) {
+      versionCScoreSfxRef.current.currentTime = 0
+      versionCScoreSfxRef.current.play().catch(error => {
+        console.log('SFX: Version C score sound failed to play:', error)
       })
     }
   }
@@ -2311,6 +2386,14 @@ const Game = () => {
             <source src="/assets/sfx_sq_applause_correct_answer.ogg" type="audio/ogg" />
             Your browser does not support the audio element.
           </audio>
+          
+          <audio 
+            ref={versionCScoreSfxRef}
+            preload="auto"
+          >
+            <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
+            Your browser does not support the audio element.
+          </audio>
         </div>
       </div>
     )
@@ -2318,6 +2401,13 @@ const Game = () => {
 
   return (
     <div className={`game-container ${version === 'Version B' ? 'version-b' : version === 'Version C' ? 'version-c' : ''}`}>
+      {/* Version C Auto-Booster Notification */}
+      {version === 'Version C' && autoBoosterNotification && (
+        <div className="auto-booster-notification">
+          {autoBoosterNotification}
+        </div>
+      )}
+      
       <div className="game-content">
         <header className="game-header">
           <img 
@@ -2332,7 +2422,7 @@ const Game = () => {
             })()}
             {version === 'Version C' ? (
               <div className={`version-c-timer ${boosters.doublePoints.active ? 'double-points-active' : ''}`}>
-                <div className={`timer-display ${boosters.doublePoints.active ? 'timer-boosted' : ''}`}>
+                <div className={`timer-display ${boosters.doublePoints.active ? 'timer-boosted' : ''} ${timerPulse ? 'timer-pulse' : ''}`}>
                   <div className="timer-label">Time Remaining</div>
                   <div className={`timer-value ${timeRemaining <= 10 ? 'timer-urgent' : ''} ${boosters.doublePoints.active ? 'timer-value-boosted' : ''}`}>
                     {timeRemaining}s
@@ -2655,9 +2745,9 @@ const Game = () => {
           <div className="version-c-boosters-bottom">
             <div className="boosters-container-bottom">
               <button 
-                className={`booster-button-large double-points-booster ${!boosters.doublePoints.available ? 'used' : boosters.doublePoints.active ? 'active' : ''}`}
-                onClick={activateDoublePoints}
-                disabled={!boosters.doublePoints.available}
+                className={`booster-button-large double-points-booster auto-trigger ${!boosters.doublePoints.available ? 'used' : boosters.doublePoints.active ? 'active' : ''}`}
+                disabled={true}
+                title="Automatically activates after 2 consecutive scores"
               >
                 <div className="booster-icon-large">2×</div>
                 <div className="booster-text-large">
@@ -2665,23 +2755,26 @@ const Game = () => {
                   {boosters.doublePoints.active && (
                     <div className="booster-timer-large">{boosters.doublePoints.timeRemaining}s left</div>
                   )}
-                  {!boosters.doublePoints.available && !boosters.doublePoints.active && (
-                    <div className="booster-used-text">Used</div>
+                  {!boosters.doublePoints.available && !boosters.doublePoints.active ? (
+                    <div className="booster-used-text">Activated</div>
+                  ) : (
+                    <div className="booster-subtitle">Auto: 2 in a row</div>
                   )}
                 </div>
               </button>
               
               <button 
-                className={`booster-button-large bonus-time-booster ${!boosters.bonusTime.available ? 'used' : ''}`}
-                onClick={activateBonusTime}
-                disabled={!boosters.bonusTime.available}
+                className={`booster-button-large bonus-time-booster auto-trigger ${!boosters.bonusTime.available ? 'used' : ''}`}
+                disabled={true}
+                title="Automatically activates at 30 points"
               >
                 <div className="booster-icon-large">⏰</div>
                 <div className="booster-text-large">
                   <div className="booster-title">Bonus Time</div>
-                  <div className="booster-subtitle">+10 Seconds</div>
-                  {!boosters.bonusTime.available && (
-                    <div className="booster-used-text">Used</div>
+                  {!boosters.bonusTime.available ? (
+                    <div className="booster-used-text">Activated</div>
+                  ) : (
+                    <div className="booster-subtitle">Auto at 30pts</div>
                   )}
                 </div>
               </button>
@@ -2763,7 +2856,17 @@ const Game = () => {
             </div>
           ) : version === 'Version C' ? (
             <div className="avatar-container score-tracker-container">
-              <div className="version-c-score-tracker">
+              <div className={`version-c-score-tracker ${showScoreConfetti ? 'confetti-active' : ''}`}>
+                {showScoreConfetti && (
+                  <div className="score-confetti-container">
+                    <div className="confetti-particle confetti-1">🎉</div>
+                    <div className="confetti-particle confetti-2">⭐</div>
+                    <div className="confetti-particle confetti-3">🎊</div>
+                    <div className="confetti-particle confetti-4">✨</div>
+                    <div className="confetti-particle confetti-5">🌟</div>
+                    <div className="confetti-particle confetti-6">💫</div>
+                  </div>
+                )}
                 <div className="score-tracker-header">Live Score</div>
                 <div className="live-score-display">
                   <div className="live-score-value">{score}</div>
