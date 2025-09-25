@@ -108,14 +108,17 @@ const Game = () => {
   const [lifelinesUsed, setLifelinesUsed] = useState({
     doublePoints: false,
     skip: false,
-    extraGuess: false,
     letterReveal: false
   })
 
   // Version B 2X Points booster state
   const [isDoublePointsActive, setIsDoublePointsActive] = useState(false)
 
-  
+  // Version B Letter Reveal state
+  const [letterRevealInfo, setLetterRevealInfo] = useState<{
+    type: 'artist' | 'song' | null
+    displayText: string
+  } | null>(null)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1215,6 +1218,7 @@ const Game = () => {
     setSongCorrect(false)
     setIsPartialCredit(false)
     setPointsEarned(0)
+    setLetterRevealInfo(null) // Reset letter reveal info for new question
     // Note: opponentPointsEarned is not reset here to prevent popup display issues
     
     // Version-specific resets
@@ -1368,7 +1372,6 @@ const Game = () => {
       setLifelinesUsed({
         doublePoints: false,
         skip: false,
-        extraGuess: false,
         letterReveal: false
       })
       setIsDoublePointsActive(false)
@@ -1694,14 +1697,13 @@ const Game = () => {
       setIsPlaying(false)
     }
     
-    // Award points to player and update star progress
+    // Award points to player
     const newScore = score + points
     setScore(newScore)
-    setCurrentStars(calculateStars(newScore))
   }
 
   // Version B Lifeline handler
-  const handleLifelineClick = (lifelineType: 'doublePoints' | 'skip' | 'extraGuess' | 'letterReveal') => {
+  const handleLifelineClick = (lifelineType: 'doublePoints' | 'skip' | 'letterReveal') => {
     // Check if lifeline is already used
     if (lifelinesUsed[lifelineType]) {
       return // Do nothing if already used
@@ -1717,9 +1719,79 @@ const Game = () => {
     if (lifelineType === 'doublePoints') {
       setIsDoublePointsActive(true)
       console.log('2X Points booster activated!')
+    } else if (lifelineType === 'skip') {
+      console.log('Skip booster activated!')
+      
+      // Stop current audio immediately
+      const audio = audioRef.current
+      if (audio) {
+        audio.pause()
+        audio.currentTime = 0
+        setIsPlaying(false)
+        setCurrentTime(0)
+      }
+      
+      // Reset any current answer state
+      setSelectedAnswer(null)
+      setShowFeedback(false)
+      setIsCorrect(false)
+      setArtistCorrect(false)
+      setSongCorrect(false)
+      setIsPartialCredit(false)
+      setPointsEarned(0)
+      setLetterRevealInfo(null) // Clear letter reveal info
+      
+      // Generate and start a new question immediately
+      setTimeout(() => {
+        startNewQuestion()
+      }, 100) // Small delay to ensure clean state reset
+    } else if (lifelineType === 'letterReveal') {
+      console.log('Letter Reveal booster activated!')
+      
+      if (currentQuestion) {
+        // Randomly choose to reveal artist or song name
+        const revealArtist = Math.random() < 0.5
+        
+        if (revealArtist) {
+          const artistName = currentQuestion.song.artist
+          // Create display text: first letter + spaces preserved + underscores for other letters
+          const displayText = artistName.split('').map((char, index) => {
+            if (index === 0) {
+              return char.toUpperCase() // First letter revealed
+            } else if (char === ' ') {
+              return ' ' // Preserve spaces
+            } else {
+              return '_' // Other letters as underscores
+            }
+          }).join('')
+          
+          setLetterRevealInfo({
+            type: 'artist',
+            displayText: displayText
+          })
+          console.log(`Revealing artist: ${displayText}`)
+        } else {
+          const songName = currentQuestion.song.title
+          // Create display text: first letter + spaces preserved + underscores for other letters
+          const displayText = songName.split('').map((char, index) => {
+            if (index === 0) {
+              return char.toUpperCase() // First letter revealed
+            } else if (char === ' ') {
+              return ' ' // Preserve spaces
+            } else {
+              return '_' // Other letters as underscores
+            }
+          }).join('')
+          
+          setLetterRevealInfo({
+            type: 'song',
+            displayText: displayText
+          })
+          console.log(`Revealing song: ${displayText}`)
+        }
+      }
     }
 
-    // TODO: Implement other lifeline functionality
     console.log(`Lifeline used: ${lifelineType}`)
   }
 
@@ -1991,10 +2063,10 @@ const Game = () => {
     setLifelinesUsed({
       doublePoints: false,
       skip: false,
-      extraGuess: false,
       letterReveal: false
     })
     setIsDoublePointsActive(false)
+    setLetterRevealInfo(null) // Reset letter reveal info
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
@@ -2462,6 +2534,28 @@ const Game = () => {
                   </div>
                 )}
 
+                {/* Version B Letter Reveal Display */}
+                {version === 'Version B' && letterRevealInfo && (
+                  <div className="letter-reveal-display">
+                    <div className="letter-reveal-content">
+                      <div className={`letter-reveal-label ${letterRevealInfo.type === 'song' ? 'song-label' : 'artist-label'}`}>
+                        {letterRevealInfo.type === 'artist' ? 'Artist Name:' : 'Song Name:'}
+                      </div>
+                      <div className="letter-reveal-text">
+                        {letterRevealInfo.displayText.split('').map((char, index) => (
+                          char === ' ' ? (
+                            <span key={index} className="letter-space"> </span>
+                          ) : char === '_' ? (
+                            <span key={index} className="letter-blank">_</span>
+                          ) : (
+                            <span key={index} className="letter-revealed">{char}</span>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Version B Boosters */}
                 {version === 'Version B' && (
                   <div className="boosters-section">
@@ -2482,13 +2576,6 @@ const Game = () => {
                         <div className="booster-label">Skip</div>
                       </div>
                       <div 
-                        className={`booster-icon ${lifelinesUsed.extraGuess ? 'depleted' : ''}`}
-                        onClick={() => handleLifelineClick('extraGuess')}
-                        style={{ cursor: lifelinesUsed.extraGuess ? 'not-allowed' : 'pointer' }}
-                      >
-                        <div className="booster-label">Extra Guess</div>
-                      </div>
-                      <div 
                         className={`booster-icon ${lifelinesUsed.letterReveal ? 'depleted' : ''}`}
                         onClick={() => handleLifelineClick('letterReveal')}
                         style={{ cursor: lifelinesUsed.letterReveal ? 'not-allowed' : 'pointer' }}
@@ -2498,6 +2585,7 @@ const Game = () => {
                     </div>
                   </div>
                 )}
+
 
                 <div className="progress-bar">
                   <div className="progress-time">
@@ -2937,6 +3025,16 @@ const Game = () => {
           ← Back to Playlists
         </button>
 
+        {/* Version B Restart Button - Debug Only */}
+        {version === 'Version B' && (
+          <button 
+            className="restart-button"
+            onClick={restartGame}
+            title="Restart Version B Session (Debug)"
+          >
+            Restart
+          </button>
+        )}
 
       </div>
     </div>

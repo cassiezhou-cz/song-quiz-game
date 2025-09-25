@@ -578,6 +578,30 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
 }
 
+/* Version B Restart button - Debug only */
+.restart-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: rgba(255, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: 500;
+  z-index: 20;
+}
+
+.restart-button:hover {
+  background: rgba(255, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 0, 0, 0.5);
+}
+
 /* Quiz-specific styles */
 .quiz-options {
   display: flex;
@@ -1044,6 +1068,13 @@
   .back-to-playlists-btn {
     top: 1rem;
     left: 1rem;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .restart-button {
+    bottom: 1rem;
+    right: 1rem;
     padding: 0.7rem 1.2rem;
     font-size: 0.9rem;
   }
@@ -1580,6 +1611,8 @@
   font-weight: 600;
   min-width: 100px;
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 10; /* Higher z-index to ensure clickability */
 }
 
 .score-button:hover {
@@ -2066,6 +2099,71 @@
   }
 }
 
+/* Letter Reveal Display Styles */
+.letter-reveal-display {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem auto;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 5; /* Above content but below interactive elements */
+  max-width: 400px;
+  width: 90%;
+}
+
+.letter-reveal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.letter-reveal-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.letter-reveal-label.song-label {
+  color: #ffd700; /* Yellow for Song Name */
+}
+
+.letter-reveal-label.artist-label {
+  color: #87ceeb; /* Light blue for Artist Name */
+}
+
+.letter-reveal-text {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #4ecdc4;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.letter-blank {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+}
+
+.letter-space {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  margin: 0 0.1rem;
+}
+
+.letter-revealed {
+  color: #4ecdc4;
+  font-weight: 700;
+}
+
 /* Mobile adjustments for boosters */
 @media (max-width: 768px) {
   .boosters-section {
@@ -2092,6 +2190,20 @@
   .booster-label {
     font-size: 10px;
   }
+  
+  .letter-reveal-display {
+    padding: 1rem;
+    margin: 0.8rem 0;
+  }
+  
+  .letter-reveal-label {
+    font-size: 1rem;
+  }
+  
+  .letter-reveal-text {
+    font-size: 1.4rem;
+    letter-spacing: 0.1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2117,6 +2229,20 @@
   
   .booster-label {
     font-size: 9px;
+  }
+  
+  .letter-reveal-display {
+    padding: 0.8rem;
+    margin: 0.6rem 0;
+  }
+  
+  .letter-reveal-label {
+    font-size: 0.9rem;
+  }
+  
+  .letter-reveal-text {
+    font-size: 1.2rem;
+    letter-spacing: 0.05rem;
   }
 }
 
