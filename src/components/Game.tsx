@@ -2407,7 +2407,7 @@ const Game = () => {
                 {/* Version B Boosters */}
                 {version === 'Version B' && (
                   <div className="boosters-section">
-                    <div className="boosters-header">ITEMS</div>
+                    <div className="boosters-header">LIFELINES</div>
                     <div className="boosters-container">
                       <div className="booster-icon" data-booster="1">
                         <div className="booster-label">2X Points</div>
