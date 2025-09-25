@@ -119,6 +119,9 @@ const Game = () => {
     type: 'artist' | 'song' | null
     displayText: string
   } | null>(null)
+
+  // Version B Special Question transition state
+  const [showSpecialQuestionTransition, setShowSpecialQuestionTransition] = useState(false)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1194,18 +1197,9 @@ const Game = () => {
     // Check if this is the special question (question 7) for Version B
     if (version === 'Version B' && questionNum === totalQuestions) {
       console.log('🎵 VERSION B: Starting special question #7')
-      // This is the special question - don't generate a normal quiz question
-      setCurrentQuestion(null) // No song-based question for special question
-      setSelectedAnswer(null)
-      setShowFeedback(false)
-      setIsCorrect(false)
-      setArtistCorrect(false)
-      setSongCorrect(false)
-      setIsPartialCredit(false)
-      setPointsEarned(0)
-      setLetterRevealInfo(null)
-      setIsLoadingQuestion(false)
-      return // Exit early for special question
+      // This is the special question - generate a normal quiz question but with special scoring
+      startNewQuestionInternal()
+      return
     }
 
     startNewQuestionInternal()
@@ -1678,13 +1672,21 @@ const Game = () => {
     
     setSelectedAnswer('manual_score')
     
-    // For Version B, questions 1-6 use 0, 10, 20 scoring 
-    // Question 7 is now a special question with different mechanics
     let artistCorrect = false
     let songCorrect = false
     
-    // Note: Question 7 is now a special question, so this function only handles questions 1-6
-    if (questionNumber < totalQuestions) {
+    // Check if this is the special question (Question 7)
+    if (questionNumber === totalQuestions) {
+      // Special Question: 50-100 points
+      if (points >= 100) {
+        artistCorrect = true
+        songCorrect = true
+      } else if (points >= 50) {
+        // Partial credit for 50 points
+        artistCorrect = false
+        songCorrect = false
+      }
+    } else {
       // Questions 1-6: 0, 10, or 20 points
       if (points >= 20) {
         artistCorrect = true
@@ -2045,12 +2047,31 @@ const Game = () => {
     } else {
       const newQuestionNumber = questionNumber + 1
       console.log('🎵 NEXT: Moving to question', newQuestionNumber)
-      setQuestionNumber(newQuestionNumber)
       
-      // Start new question with proper delay for cleanup
-      setTimeout(() => {
-        startNewQuestionWithNumber(newQuestionNumber)
-      }, 1000)
+      // Check if we're about to start Question 7 (Special Question) in Version B
+      if (version === 'Version B' && questionNumber === 6) {
+        // Show Special Question transition screen
+        setShowSpecialQuestionTransition(true)
+        
+        // After 3 seconds, hide transition and proceed to Question 7
+        setTimeout(() => {
+          setShowSpecialQuestionTransition(false)
+          setQuestionNumber(newQuestionNumber)
+          
+          // Start new question with proper delay for cleanup
+          setTimeout(() => {
+            startNewQuestionWithNumber(newQuestionNumber)
+          }, 1000)
+        }, 3000)
+      } else {
+        // Normal flow for other questions
+        setQuestionNumber(newQuestionNumber)
+        
+        // Start new question with proper delay for cleanup
+        setTimeout(() => {
+          startNewQuestionWithNumber(newQuestionNumber)
+        }, 1000)
+      }
     }
   }
 
@@ -2092,6 +2113,7 @@ const Game = () => {
     })
     setIsDoublePointsActive(false)
     setLetterRevealInfo(null) // Reset letter reveal info
+    setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
@@ -2498,7 +2520,7 @@ const Game = () => {
       )}
       
       <div className="game-content">
-        <header className="game-header">
+        <header className="game-header" style={{ display: showSpecialQuestionTransition ? 'none' : 'flex' }}>
           <img 
             src="/assets/Song Quiz Horizontal logo.png" 
             alt="Song Quiz Logo" 
@@ -2535,125 +2557,119 @@ const Game = () => {
           </div>
         </header>
 
-        <main className="game-main">
+        {/* Version B Special Question Transition Screen */}
+        {version === 'Version B' && showSpecialQuestionTransition && (
+          <div className="special-question-transition-screen">
+            <div className="special-question-transition-content">
+              <div className="special-question-transition-text">SPECIAL QUESTION</div>
+            </div>
+          </div>
+        )}
+
+        <main className="game-main" style={{ display: showSpecialQuestionTransition ? 'none' : 'block' }}>
           <div className="quiz-section">
-            {/* Version B Special Question Screen */}
-            {(() => {
-              console.log('🎵 SPECIAL QUESTION DEBUG:', { 
-                version, 
-                questionNumber, 
-                totalQuestions, 
-                currentQuestion: currentQuestion?.song?.title || 'null',
-                shouldShowSpecial: version === 'Version B' && questionNumber === totalQuestions && !currentQuestion
-              })
-              return null
-            })()}
-            {version === 'Version B' && questionNumber === totalQuestions && !currentQuestion ? (
-              <div className="special-question-screen">
-                <div className="special-question-content">
-                  <h1 className="special-question-title">Special Question!</h1>
+            {!showFeedback && (
+              <div className="audio-controls">
+                <audio
+                  ref={audioRef}
+                  src={currentQuestion?.song?.file}
+                  onEnded={() => setIsPlaying(false)}
+                />
+              </div>
+            )}
+            
+            {/* Animated Sound Bars - hide for Version C */}
+            {version !== 'Version C' && !showFeedback && (
+              <div className={`sound-bars-container ${isPlaying ? 'playing' : ''}`}>
+                <div className="sound-bars">
+                  <div className="sound-bar bar-1"></div>
+                  <div className="sound-bar bar-2"></div>
+                  <div className="sound-bar bar-3"></div>
+                  <div className="sound-bar bar-4"></div>
+                  <div className="sound-bar bar-5"></div>
+                  <div className="sound-bar bar-6"></div>
+                  <div className="sound-bar bar-7"></div>
                 </div>
               </div>
-            ) : (
-              <>
-                {!showFeedback && (
-                  <div className="audio-controls">
-                    <audio
-                      ref={audioRef}
-                      src={currentQuestion?.song?.file}
-                      onEnded={() => setIsPlaying(false)}
-                    />
-                
-                {/* Animated Sound Bars - hide for Version C */}
-                {version !== 'Version C' && (
-                  <div className={`sound-bars-container ${isPlaying ? 'playing' : ''}`}>
-                    <div className="sound-bars">
-                      <div className="sound-bar bar-1"></div>
-                      <div className="sound-bar bar-2"></div>
-                      <div className="sound-bar bar-3"></div>
-                      <div className="sound-bar bar-4"></div>
-                      <div className="sound-bar bar-5"></div>
-                      <div className="sound-bar bar-6"></div>
-                      <div className="sound-bar bar-7"></div>
-                    </div>
-                  </div>
-                )}
+            )}
 
-                {/* Version B Letter Reveal Display */}
-                {version === 'Version B' && letterRevealInfo && (
-                  <div className="letter-reveal-display">
-                    <div className="letter-reveal-content">
-                      <div className={`letter-reveal-label ${letterRevealInfo.type === 'song' ? 'song-label' : 'artist-label'}`}>
-                        {letterRevealInfo.type === 'artist' ? 'Artist Name:' : 'Song Name:'}
-                      </div>
-                      <div className="letter-reveal-text">
-                        {letterRevealInfo.displayText.split('').map((char, index) => (
-                          char === ' ' ? (
-                            <span key={index} className="letter-space"> </span>
-                          ) : char === '_' ? (
-                            <span key={index} className="letter-blank">_</span>
-                          ) : (
-                            <span key={index} className="letter-revealed">{char}</span>
-                          )
-                        ))}
-                      </div>
-                    </div>
+            {/* Version B Letter Reveal Display */}
+            {version === 'Version B' && letterRevealInfo && !showFeedback && (
+              <div className="letter-reveal-display">
+                <div className="letter-reveal-content">
+                  <div className={`letter-reveal-label ${letterRevealInfo.type === 'song' ? 'song-label' : 'artist-label'}`}>
+                    {letterRevealInfo.type === 'artist' ? 'Artist Name:' : 'Song Name:'}
                   </div>
-                )}
-
-                {/* Version B Boosters */}
-                {version === 'Version B' && (
-                  <div className="boosters-section">
-                    <div className="boosters-header">LIFELINES</div>
-                    <div className="boosters-container">
-                      <div 
-                        className={`booster-icon ${lifelinesUsed.doublePoints ? 'depleted' : ''}`}
-                        onClick={() => handleLifelineClick('doublePoints')}
-                        style={{ cursor: lifelinesUsed.doublePoints ? 'not-allowed' : 'pointer' }}
-                      >
-                        <div className="booster-label">2X Points</div>
-                      </div>
-                      <div 
-                        className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
-                        onClick={() => handleLifelineClick('skip')}
-                        style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
-                      >
-                        <div className="booster-label">Skip</div>
-                      </div>
-                      <div 
-                        className={`booster-icon ${lifelinesUsed.letterReveal ? 'depleted' : ''}`}
-                        onClick={() => handleLifelineClick('letterReveal')}
-                        style={{ cursor: lifelinesUsed.letterReveal ? 'not-allowed' : 'pointer' }}
-                      >
-                        <div className="booster-label">Letter Reveal</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-
-                <div className="progress-bar">
-                  <div className="progress-time">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(duration)}</span>
-                  </div>
-                  <div className="progress-track">
-                    <div 
-                      className="progress-fill"
-                      style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                    />
+                  <div className="letter-reveal-text">
+                    {letterRevealInfo.displayText.split('').map((char, index) => (
+                      char === ' ' ? (
+                        <span key={index} className="letter-space"> </span>
+                      ) : char === '_' ? (
+                        <span key={index} className="letter-blank">_</span>
+                      ) : (
+                        <span key={index} className="letter-revealed">{char}</span>
+                      )
+                    ))}
                   </div>
                 </div>
+              </div>
+            )}
 
-                <div className="control-buttons">
-                  <button 
-                    className={`control-btn play-pause-btn ${selectedAnswer ? 'disabled' : ''}`}
-                    onClick={togglePlayPause}
-                    disabled={!!selectedAnswer}
+            {/* Version B Boosters */}
+            {version === 'Version B' && !showFeedback && (
+              <div className="boosters-section">
+                <div className="boosters-header">LIFELINES</div>
+                <div className="boosters-container">
+                  <div 
+                    className={`booster-icon ${lifelinesUsed.doublePoints ? 'depleted' : ''}`}
+                    onClick={() => handleLifelineClick('doublePoints')}
+                    style={{ cursor: lifelinesUsed.doublePoints ? 'not-allowed' : 'pointer' }}
                   >
-                    {isPlaying ? '⏸️' : '▶️'}
-                  </button>
+                    <div className="booster-label">2X Points</div>
+                  </div>
+                  <div 
+                    className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
+                    onClick={() => handleLifelineClick('skip')}
+                    style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
+                  >
+                    <div className="booster-label">Skip</div>
+                  </div>
+                  <div 
+                    className={`booster-icon ${lifelinesUsed.letterReveal ? 'depleted' : ''}`}
+                    onClick={() => handleLifelineClick('letterReveal')}
+                    style={{ cursor: lifelinesUsed.letterReveal ? 'not-allowed' : 'pointer' }}
+                  >
+                    <div className="booster-label">Letter Reveal</div>
+                  </div>
                 </div>
+              </div>
+            )}
+
+
+            {!showFeedback && (
+              <div className="progress-bar">
+                <div className="progress-time">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
+                </div>
+                <div className="progress-track">
+                  <div 
+                    className="progress-fill"
+                    style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {!showFeedback && (
+              <div className="control-buttons">
+                <button 
+                  className={`control-btn play-pause-btn ${selectedAnswer ? 'disabled' : ''}`}
+                  onClick={togglePlayPause}
+                  disabled={!!selectedAnswer}
+                >
+                  {isPlaying ? '⏸️' : '▶️'}
+                </button>
               </div>
             )}
 
@@ -2711,15 +2727,15 @@ const Game = () => {
                   </button>
                   <button
                     className="score-button score-10"
-                    onClick={() => handleVersionBScore(isDoublePointsActive ? 20 : 10)}
+                    onClick={() => handleVersionBScore(isDoublePointsActive ? (questionNumber === totalQuestions ? 100 : 20) : (questionNumber === totalQuestions ? 50 : 10))}
                   >
-                    {isDoublePointsActive ? '20 Points' : '10 Points'}
+                    {isDoublePointsActive ? (questionNumber === totalQuestions ? '100 Points' : '20 Points') : (questionNumber === totalQuestions ? '50 Points' : '10 Points')}
                   </button>
                   <button
                     className="score-button score-20"
-                    onClick={() => handleVersionBScore(isDoublePointsActive ? 40 : 20)}
+                    onClick={() => handleVersionBScore(isDoublePointsActive ? (questionNumber === totalQuestions ? 200 : 40) : (questionNumber === totalQuestions ? 100 : 20))}
                   >
-                    {isDoublePointsActive ? '40 Points' : '20 Points'}
+                    {isDoublePointsActive ? (questionNumber === totalQuestions ? '200 Points' : '40 Points') : (questionNumber === totalQuestions ? '100 Points' : '20 Points')}
                   </button>
                   {/* No special scoring for question 7 since it's now a special question */}
                 </div>
@@ -2871,13 +2887,11 @@ const Game = () => {
                 </button>
               </div>
             )}
-              </>
-            )}
           </div>
         </main>
         
         {/* Version C Boosters - Bottom Left Position */}
-        {version === 'Version C' && !gameComplete && (
+        {version === 'Version C' && !gameComplete && !showSpecialQuestionTransition && (
           <div className="version-c-boosters-bottom">
             <div className="boosters-container-bottom">
               <button 
@@ -3065,7 +3079,7 @@ const Game = () => {
         </button>
 
         {/* Version B Restart Button - Debug Only */}
-        {version === 'Version B' && (
+        {version === 'Version B' && !showSpecialQuestionTransition && (
           <button 
             className="restart-button"
             onClick={restartGame}
