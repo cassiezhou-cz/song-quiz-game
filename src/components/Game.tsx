@@ -104,6 +104,14 @@ const Game = () => {
   // Prevent multiple simultaneous question loading
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
 
+  // Version B Lifelines state
+  const [lifelinesUsed, setLifelinesUsed] = useState({
+    doublePoints: false,
+    skip: false,
+    extraGuess: false,
+    letterReveal: false
+  })
+
   
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
@@ -1352,6 +1360,16 @@ const Game = () => {
     
     // Note: Song tracking persists across playlist changes (only resets on browser refresh)
     
+    // Version B: Reset lifelines when starting a new session
+    if (version === 'Version B') {
+      setLifelinesUsed({
+        doublePoints: false,
+        skip: false,
+        extraGuess: false,
+        letterReveal: false
+      })
+    }
+    
     // Version C: Start timer when game begins
     if (version === 'Version C') {
       setIsTimerRunning(true)
@@ -1671,6 +1689,23 @@ const Game = () => {
     const newScore = score + points
     setScore(newScore)
     setCurrentStars(calculateStars(newScore))
+  }
+
+  // Version B Lifeline handler
+  const handleLifelineClick = (lifelineType: 'doublePoints' | 'skip' | 'extraGuess' | 'letterReveal') => {
+    // Check if lifeline is already used
+    if (lifelinesUsed[lifelineType]) {
+      return // Do nothing if already used
+    }
+
+    // Mark lifeline as used
+    setLifelinesUsed(prev => ({
+      ...prev,
+      [lifelineType]: true
+    }))
+
+    // TODO: Implement actual lifeline functionality
+    console.log(`Lifeline used: ${lifelineType}`)
   }
 
   // Version A manual scoring function
@@ -2409,16 +2444,32 @@ const Game = () => {
                   <div className="boosters-section">
                     <div className="boosters-header">LIFELINES</div>
                     <div className="boosters-container">
-                      <div className="booster-icon" data-booster="1">
+                      <div 
+                        className={`booster-icon ${lifelinesUsed.doublePoints ? 'depleted' : ''}`}
+                        onClick={() => handleLifelineClick('doublePoints')}
+                        style={{ cursor: lifelinesUsed.doublePoints ? 'not-allowed' : 'pointer' }}
+                      >
                         <div className="booster-label">2X Points</div>
                       </div>
-                      <div className="booster-icon" data-booster="2">
+                      <div 
+                        className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
+                        onClick={() => handleLifelineClick('skip')}
+                        style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
+                      >
                         <div className="booster-label">Skip</div>
                       </div>
-                      <div className="booster-icon" data-booster="3">
+                      <div 
+                        className={`booster-icon ${lifelinesUsed.extraGuess ? 'depleted' : ''}`}
+                        onClick={() => handleLifelineClick('extraGuess')}
+                        style={{ cursor: lifelinesUsed.extraGuess ? 'not-allowed' : 'pointer' }}
+                      >
                         <div className="booster-label">Extra Guess</div>
                       </div>
-                      <div className="booster-icon" data-booster="4">
+                      <div 
+                        className={`booster-icon ${lifelinesUsed.letterReveal ? 'depleted' : ''}`}
+                        onClick={() => handleLifelineClick('letterReveal')}
+                        style={{ cursor: lifelinesUsed.letterReveal ? 'not-allowed' : 'pointer' }}
+                      >
                         <div className="booster-label">Letter Reveal</div>
                       </div>
                     </div>
