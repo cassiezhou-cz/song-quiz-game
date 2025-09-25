@@ -1981,6 +1981,21 @@
 }
 
 /* Version B Boosters */
+.boosters-section {
+  margin-bottom: 20px;
+}
+
+.boosters-header {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 .boosters-container {
   display: flex;
   justify-content: center;
@@ -2053,6 +2068,16 @@
 
 /* Mobile adjustments for boosters */
 @media (max-width: 768px) {
+  .boosters-section {
+    margin-bottom: 15px;
+  }
+  
+  .boosters-header {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+  }
+  
   .boosters-container {
     gap: 15px;
     padding: 12px;
@@ -2070,6 +2095,16 @@
 }
 
 @media (max-width: 480px) {
+  .boosters-section {
+    margin-bottom: 12px;
+  }
+  
+  .boosters-header {
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  
   .boosters-container {
     gap: 10px;
     padding: 10px;

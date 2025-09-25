@@ -2406,18 +2406,21 @@ const Game = () => {
 
                 {/* Version B Boosters */}
                 {version === 'Version B' && (
-                  <div className="boosters-container">
-                    <div className="booster-icon" data-booster="1">
-                      <div className="booster-label">2X Points</div>
-                    </div>
-                    <div className="booster-icon" data-booster="2">
-                      <div className="booster-label">Skip</div>
-                    </div>
-                    <div className="booster-icon" data-booster="3">
-                      <div className="booster-label">Extra Guess</div>
-                    </div>
-                    <div className="booster-icon" data-booster="4">
-                      <div className="booster-label">Letter Reveal</div>
+                  <div className="boosters-section">
+                    <div className="boosters-header">ITEMS</div>
+                    <div className="boosters-container">
+                      <div className="booster-icon" data-booster="1">
+                        <div className="booster-label">2X Points</div>
+                      </div>
+                      <div className="booster-icon" data-booster="2">
+                        <div className="booster-label">Skip</div>
+                      </div>
+                      <div className="booster-icon" data-booster="3">
+                        <div className="booster-label">Extra Guess</div>
+                      </div>
+                      <div className="booster-icon" data-booster="4">
+                        <div className="booster-label">Letter Reveal</div>
+                      </div>
                     </div>
                   </div>
                 )}
