@@ -1987,6 +1987,14 @@ const Game = () => {
     })
     setConsecutiveScores(0)
     setAutoBoosterNotification(null)
+    // Reset Version B lifelines
+    setLifelinesUsed({
+      doublePoints: false,
+      skip: false,
+      extraGuess: false,
+      letterReveal: false
+    })
+    setIsDoublePointsActive(false)
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
