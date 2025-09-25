@@ -1682,6 +1682,11 @@ const Game = () => {
     
     setShowFeedback(true)
     
+    // Reset 2X Points booster when feedback is shown (after scoring)
+    if (isDoublePointsActive) {
+      setIsDoublePointsActive(false)
+    }
+    
     // Pause audio
     const audio = audioRef.current
     if (audio) {
@@ -1693,11 +1698,6 @@ const Game = () => {
     const newScore = score + points
     setScore(newScore)
     setCurrentStars(calculateStars(newScore))
-    
-    // Reset 2X Points booster after scoring
-    if (isDoublePointsActive) {
-      setIsDoublePointsActive(false)
-    }
   }
 
   // Version B Lifeline handler
