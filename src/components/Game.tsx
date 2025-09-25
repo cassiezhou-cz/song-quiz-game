@@ -2404,6 +2404,24 @@ const Game = () => {
                   </div>
                 )}
 
+                {/* Version B Boosters */}
+                {version === 'Version B' && (
+                  <div className="boosters-container">
+                    <div className="booster-icon" data-booster="1">
+                      <div className="booster-label">Booster 1</div>
+                    </div>
+                    <div className="booster-icon" data-booster="2">
+                      <div className="booster-label">Booster 2</div>
+                    </div>
+                    <div className="booster-icon" data-booster="3">
+                      <div className="booster-label">Booster 3</div>
+                    </div>
+                    <div className="booster-icon" data-booster="4">
+                      <div className="booster-label">Booster 4</div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="progress-bar">
                   <div className="progress-time">
                     <span>{formatTime(currentTime)}</span>

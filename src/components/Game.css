@@ -1980,6 +1980,110 @@
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
 }
 
+/* Version B Boosters */
+.boosters-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.booster-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.booster-icon:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.booster-icon.active {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+  animation: boosterPulse 2s infinite;
+}
+
+.booster-icon.depleted {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.booster-icon.depleted:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.booster-label {
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  line-height: 1.2;
+}
+
+@keyframes boosterPulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(240, 147, 251, 0.8);
+  }
+}
+
+/* Mobile adjustments for boosters */
+@media (max-width: 768px) {
+  .boosters-container {
+    gap: 15px;
+    padding: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .booster-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .booster-label {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 480px) {
+  .boosters-container {
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .booster-icon {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .booster-label {
+    font-size: 8px;
+  }
+}
+
 /* Mobile adjustments for Version B elements */
 @media (max-width: 768px) {
   .final-score-text {
