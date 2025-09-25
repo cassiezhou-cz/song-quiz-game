@@ -122,6 +122,9 @@ const Game = () => {
 
   // Version B Special Question transition state
   const [showSpecialQuestionTransition, setShowSpecialQuestionTransition] = useState(false)
+  
+  // Version B Special Question tracking
+  const [specialQuestionNumber, setSpecialQuestionNumber] = useState<number | null>(null)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1398,6 +1401,19 @@ const Game = () => {
         letterReveal: false
       })
       setIsDoublePointsActive(false)
+      
+      // Randomly select which question will be special (2-7, excluding Question 1)
+      const randomSpecialQuestion = Math.floor(Math.random() * 6) + 2 // 2-7 instead of 1-7
+      setSpecialQuestionNumber(randomSpecialQuestion)
+      console.log('🎯 VERSION B: Special Question will be Question', randomSpecialQuestion)
+      
+      // Verify the special question number is valid (2-7)
+      if (randomSpecialQuestion < 2 || randomSpecialQuestion > 7) {
+        console.error('❌ ERROR: Invalid special question number:', randomSpecialQuestion)
+        // Fallback to question 7 if there's an issue
+        setSpecialQuestionNumber(7)
+        console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
+      }
     }
     
     // Version C: Start timer when game begins
@@ -1675,8 +1691,9 @@ const Game = () => {
     let artistCorrect = false
     let songCorrect = false
     
-    // Check if this is the special question (Question 7)
-    if (questionNumber === totalQuestions) {
+    // Check if this is the special question
+    if (specialQuestionNumber === questionNumber) {
+      console.log('🎯 SPECIAL QUESTION: Scoring Question', questionNumber, 'with special points:', points)
       // Special Question: 50-100 points
       if (points >= 100) {
         artistCorrect = true
@@ -1687,6 +1704,7 @@ const Game = () => {
         songCorrect = false
       }
     } else {
+      console.log('🎵 NORMAL QUESTION: Scoring Question', questionNumber, 'with normal points:', points)
       // Questions 1-6: 0, 10, or 20 points
       if (points >= 20) {
         artistCorrect = true
@@ -2037,6 +2055,14 @@ const Game = () => {
     if (questionNumber >= totalQuestions) {
       setGameComplete(true)
       
+      // Version B: Verify that special question appeared
+      if (version === 'Version B') {
+        console.log('🎯 VERSION B SESSION COMPLETE: Special Question was Question', specialQuestionNumber)
+        if (specialQuestionNumber === null) {
+          console.error('❌ ERROR: Special Question was not set!')
+        }
+      }
+      
       // Play victory applause SFX if player won
       setTimeout(() => {
         if (score > opponentScore) {
@@ -2048,15 +2074,17 @@ const Game = () => {
       const newQuestionNumber = questionNumber + 1
       console.log('🎵 NEXT: Moving to question', newQuestionNumber)
       
-      // Check if we're about to start Question 7 (Special Question) in Version B
-      if (version === 'Version B' && questionNumber === 6) {
+      // Check if we're about to start a Special Question in Version B
+      if (version === 'Version B' && specialQuestionNumber === newQuestionNumber) {
+        console.log('🎯 SPECIAL QUESTION: Transition screen triggered for Question', newQuestionNumber)
         // Show Special Question transition screen
         setShowSpecialQuestionTransition(true)
         
-        // After 3 seconds, hide transition and proceed to Question 7
+        // After 3 seconds, hide transition and proceed to Special Question
         setTimeout(() => {
           setShowSpecialQuestionTransition(false)
           setQuestionNumber(newQuestionNumber)
+          console.log('🎯 SPECIAL QUESTION: Starting Question', newQuestionNumber, 'with special scoring')
           
           // Start new question with proper delay for cleanup
           setTimeout(() => {
@@ -2064,6 +2092,7 @@ const Game = () => {
           }, 1000)
         }, 3000)
       } else {
+        console.log('🎵 NORMAL QUESTION: Starting Question', newQuestionNumber)
         // Normal flow for other questions
         setQuestionNumber(newQuestionNumber)
         
@@ -2114,6 +2143,7 @@ const Game = () => {
     setIsDoublePointsActive(false)
     setLetterRevealInfo(null) // Reset letter reveal info
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
+    setSpecialQuestionNumber(null) // Reset special question tracking
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
@@ -2557,14 +2587,14 @@ const Game = () => {
           </div>
         </header>
 
-        {/* Version B Special Question Transition Screen */}
-        {version === 'Version B' && showSpecialQuestionTransition && (
-          <div className="special-question-transition-screen">
-            <div className="special-question-transition-content">
-              <div className="special-question-transition-text">SPECIAL QUESTION</div>
-            </div>
+      {/* Version B Special Question Transition Screen */}
+      {version === 'Version B' && showSpecialQuestionTransition && (
+        <div className="special-question-transition-screen">
+          <div className="special-question-transition-content">
+            <div className="special-question-transition-text">SPECIAL QUESTION</div>
           </div>
-        )}
+        </div>
+      )}
 
         <main className="game-main" style={{ display: showSpecialQuestionTransition ? 'none' : 'block' }}>
           <div className="quiz-section">
@@ -2727,15 +2757,15 @@ const Game = () => {
                   </button>
                   <button
                     className="score-button score-10"
-                    onClick={() => handleVersionBScore(isDoublePointsActive ? (questionNumber === totalQuestions ? 100 : 20) : (questionNumber === totalQuestions ? 50 : 10))}
+                    onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumber === questionNumber ? 100 : 20) : (specialQuestionNumber === questionNumber ? 50 : 10))}
                   >
-                    {isDoublePointsActive ? (questionNumber === totalQuestions ? '100 Points' : '20 Points') : (questionNumber === totalQuestions ? '50 Points' : '10 Points')}
+                    {isDoublePointsActive ? (specialQuestionNumber === questionNumber ? '100 Points' : '20 Points') : (specialQuestionNumber === questionNumber ? '50 Points' : '10 Points')}
                   </button>
                   <button
                     className="score-button score-20"
-                    onClick={() => handleVersionBScore(isDoublePointsActive ? (questionNumber === totalQuestions ? 200 : 40) : (questionNumber === totalQuestions ? 100 : 20))}
+                    onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumber === questionNumber ? 200 : 40) : (specialQuestionNumber === questionNumber ? 100 : 20))}
                   >
-                    {isDoublePointsActive ? (questionNumber === totalQuestions ? '200 Points' : '40 Points') : (questionNumber === totalQuestions ? '100 Points' : '20 Points')}
+                    {isDoublePointsActive ? (specialQuestionNumber === questionNumber ? '200 Points' : '40 Points') : (specialQuestionNumber === questionNumber ? '100 Points' : '20 Points')}
                   </button>
                   {/* No special scoring for question 7 since it's now a special question */}
                 </div>
