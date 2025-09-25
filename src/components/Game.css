@@ -578,6 +578,30 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
 }
 
+/* Version B Restart button - Debug only */
+.restart-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: rgba(255, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 0.8rem 1.5rem;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: 500;
+  z-index: 20;
+}
+
+.restart-button:hover {
+  background: rgba(255, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 0, 0, 0.5);
+}
+
 /* Quiz-specific styles */
 .quiz-options {
   display: flex;
@@ -1044,6 +1068,13 @@
   .back-to-playlists-btn {
     top: 1rem;
     left: 1rem;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  
+  .restart-button {
+    bottom: 1rem;
+    right: 1rem;
     padding: 0.7rem 1.2rem;
     font-size: 0.9rem;
   }
@@ -1580,6 +1611,8 @@
   font-weight: 600;
   min-width: 100px;
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 10; /* Higher z-index to ensure clickability */
 }
 
 .score-button:hover {
@@ -1587,19 +1620,6 @@
   border-color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-.score-button.score-negative {
-  border-color: rgba(239, 68, 68, 0.6);
-  background: rgba(239, 68, 68, 0.15);
-  color: #fecaca;
-}
-
-.score-button.score-negative:hover {
-  border-color: #dc2626;
-  background: rgba(239, 68, 68, 0.25);
-  color: #ffffff;
-  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
 }
 
 .score-button.score-0 {
@@ -1972,97 +1992,12 @@
   }
 }
 
-/* Version B Star Progress Styles */
-.star-progress {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.star-display {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.star {
-  font-size: 24px;
-  transition: all 0.3s ease;
-}
-
-.star.filled {
-  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
-  transform: scale(1.1);
-}
-
-.star.empty {
-  opacity: 0.3;
-  filter: grayscale(1);
-}
-
-.score-display {
-  font-size: 14px;
-  color: #6b7280;
-  font-weight: 500;
-}
-
 /* Version B Final Results Styles */
 .version-b-results {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-}
-
-.final-star-rating {
-  margin-top: 20px;
-}
-
-.final-star-rating .star-display {
-  justify-content: center;
-  margin-bottom: 15px;
-}
-
-.final-star {
-  font-size: 48px !important;
-  margin: 0 8px;
-}
-
-.star-message {
-  font-size: 18px;
-  color: #ffffff;
-  margin: 15px 0;
-  font-weight: 500;
-  max-width: 400px;
-}
-
-.final-score-text {
-  font-size: 24px;
-  color: #ffffff;
-  font-weight: 600;
-  margin-top: 10px;
-}
-
-/* Version B Breakdown Styles */
-.version-b-breakdown .breakdown-details {
-  margin-bottom: 15px;
-}
-
-.star-progress-result {
-  padding: 15px;
-  background: rgba(139, 92, 246, 0.1);
-  border-radius: 10px;
-  margin-top: 10px;
-}
-
-.star-progress-result .star-display {
-  font-size: 14px;
-  color: #8b5cf6;
 }
 
 .score-button.score-30 {
@@ -2078,149 +2013,242 @@
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
 }
 
-/* Version B Right-Side Star Progress Indicator */
-.star-container {
+/* Version B Boosters */
+.boosters-section {
+  margin-bottom: 25px;
+}
+
+.boosters-header {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.boosters-container {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin-bottom: 25px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.booster-icon {
+  width: 75px;
+  height: 75px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Position like opponent container */
-  bottom: calc(15% + 150px);
-  right: calc(8% + 30px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.version-b-star-progress {
-  background: rgba(139, 92, 246, 0.95);
-  border-radius: 20px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(139, 92, 246, 0.4);
-  min-width: 160px;
+.booster-icon:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
-.star-progress-header {
+.booster-icon.active {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+  animation: boosterPulse 2s infinite;
+}
+
+.booster-icon.depleted {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.booster-icon.depleted:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.booster-label {
   color: white;
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 15px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  line-height: 1.1;
+  padding: 3px;
+}
+
+@keyframes boosterPulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(240, 147, 251, 0.8);
+  }
+}
+
+/* Letter Reveal Display Styles */
+.letter-reveal-display {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem auto;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 5; /* Above content but below interactive elements */
+  max-width: 400px;
+  width: 90%;
+}
+
+.letter-reveal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.letter-reveal-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.star-display-large {
-  margin-bottom: 15px;
+.letter-reveal-label.song-label {
+  color: #ffd700; /* Yellow for Song Name */
 }
 
-.star-item {
-  margin-bottom: 8px;
+.letter-reveal-label.artist-label {
+  color: #87ceeb; /* Light blue for Artist Name */
+}
+
+.letter-reveal-text {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #4ecdc4;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.2rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 0.1rem;
 }
 
-.star-large {
-  font-size: 28px;
-  transition: all 0.4s ease;
-  display: inline-block;
+.letter-blank {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
 }
 
-.star-large.filled {
-  filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.9));
-  transform: scale(1.2);
-  animation: starPulse 2s ease-in-out infinite;
+.letter-space {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  margin: 0 0.1rem;
 }
 
-.star-large.empty {
-  opacity: 0.4;
-  filter: grayscale(1);
+.letter-revealed {
+  color: #4ecdc4;
+  font-weight: 700;
 }
 
-.star-label {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 12px;
-  font-weight: 600;
-  text-align: right;
-  min-width: 50px;
-}
-
-.current-score-display {
-  border-top: 2px solid rgba(255, 255, 255, 0.2);
-  padding-top: 12px;
-  margin-top: 12px;
-}
-
-.score-label {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 5px;
-}
-
-.score-value {
-  color: white;
-  font-size: 24px;
-  font-weight: 800;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes starPulse {
-  0%, 100% {
-    transform: scale(1.2);
+/* Mobile adjustments for boosters */
+@media (max-width: 768px) {
+  .boosters-section {
+    margin-bottom: 20px;
   }
-  50% {
-    transform: scale(1.3);
+  
+  .boosters-header {
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+  }
+  
+  .boosters-container {
+    gap: 20px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .booster-icon {
+    width: 65px;
+    height: 65px;
+  }
+  
+  .booster-label {
+    font-size: 10px;
+  }
+  
+  .letter-reveal-display {
+    padding: 1rem;
+    margin: 0.8rem 0;
+  }
+  
+  .letter-reveal-label {
+    font-size: 1rem;
+  }
+  
+  .letter-reveal-text {
+    font-size: 1.4rem;
+    letter-spacing: 0.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .boosters-section {
+    margin-bottom: 15px;
+  }
+  
+  .boosters-header {
+    font-size: 14px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  
+  .boosters-container {
+    gap: 15px;
+    padding: 12px;
+  }
+  
+  .booster-icon {
+    width: 55px;
+    height: 55px;
+  }
+  
+  .booster-label {
+    font-size: 9px;
+  }
+  
+  .letter-reveal-display {
+    padding: 0.8rem;
+    margin: 0.6rem 0;
+  }
+  
+  .letter-reveal-label {
+    font-size: 0.9rem;
+  }
+  
+  .letter-reveal-text {
+    font-size: 1.2rem;
+    letter-spacing: 0.05rem;
   }
 }
 
 /* Mobile adjustments for Version B elements */
 @media (max-width: 768px) {
-  .final-star {
-    font-size: 36px !important;
-    margin: 0 4px;
-  }
-  
-  .star-message {
-    font-size: 16px;
-    padding: 0 20px;
-  }
-  
   .final-score-text {
-    font-size: 20px;
-  }
-  
-  .star {
-    font-size: 20px;
-  }
-
-  /* Mobile adjustments for right-side star progress */
-  .star-container {
-    bottom: calc(12% + 150px);
-    right: calc(5% + 30px);
-  }
-
-  .version-b-star-progress {
-    padding: 15px;
-    min-width: 140px;
-  }
-
-  .star-progress-header {
-    font-size: 14px;
-    margin-bottom: 12px;
-  }
-
-  .star-large {
-    font-size: 24px;
-  }
-
-  .star-label {
-    font-size: 11px;
-  }
-
-  .score-value {
     font-size: 20px;
   }
 }

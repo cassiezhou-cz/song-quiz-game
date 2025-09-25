@@ -67,9 +67,6 @@ const Game = () => {
   const [roundStartTime, setRoundStartTime] = useState<number>(0)
   const [speedBonusToggle, setSpeedBonusToggle] = useState(false)
   
-  // Version B specific state
-  const [currentStars, setCurrentStars] = useState(0)
-  
   // Version C specific state
   const [timeRemaining, setTimeRemaining] = useState(60)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
@@ -102,21 +99,26 @@ const Game = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const doublePointsTimerRef = useRef<NodeJS.Timeout | null>(null)
   
-  // Version B star calculation
-  const calculateStars = (totalScore: number): number => {
-    if (totalScore < 20) return 0
-    if (totalScore >= 20 && totalScore <= 49) return 1
-    if (totalScore >= 50 && totalScore <= 99) return 2
-    if (totalScore >= 100) return 3
-    return 0
-  }
-  
   // Note: Song tracking is now handled by persistent localStorage via songTracker utility
   
   // Prevent multiple simultaneous question loading
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false)
 
-  
+  // Version B Lifelines state
+  const [lifelinesUsed, setLifelinesUsed] = useState({
+    doublePoints: false,
+    skip: false,
+    letterReveal: false
+  })
+
+  // Version B 2X Points booster state
+  const [isDoublePointsActive, setIsDoublePointsActive] = useState(false)
+
+  // Version B Letter Reveal state
+  const [letterRevealInfo, setLetterRevealInfo] = useState<{
+    type: 'artist' | 'song' | null
+    displayText: string
+  } | null>(null)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1216,6 +1218,7 @@ const Game = () => {
     setSongCorrect(false)
     setIsPartialCredit(false)
     setPointsEarned(0)
+    setLetterRevealInfo(null) // Reset letter reveal info for new question
     // Note: opponentPointsEarned is not reset here to prevent popup display issues
     
     // Version-specific resets
@@ -1235,8 +1238,7 @@ const Game = () => {
         }, buzzInDelay)
       }
     } else if (version === 'Version B') {
-      // Version B has no opponent mechanics, just update star progress
-      setCurrentStars(calculateStars(score))
+      // Version B has no opponent mechanics
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
       if (!isTimerRunning && timeRemaining === 60) {
@@ -1364,6 +1366,16 @@ const Game = () => {
     }
     
     // Note: Song tracking persists across playlist changes (only resets on browser refresh)
+    
+    // Version B: Reset lifelines when starting a new session
+    if (version === 'Version B') {
+      setLifelinesUsed({
+        doublePoints: false,
+        skip: false,
+        letterReveal: false
+      })
+      setIsDoublePointsActive(false)
+    }
     
     // Version C: Start timer when game begins
     if (version === 'Version C') {
@@ -1637,7 +1649,7 @@ const Game = () => {
     
     setSelectedAnswer('manual_score')
     
-    // For Version B, questions 1-6 use -10, 0, 10, 20 scoring
+    // For Version B, questions 1-6 use 0, 10, 20 scoring
     // Question 7 uses 0, 30 scoring
     let artistCorrect = false
     let songCorrect = false
@@ -1650,12 +1662,12 @@ const Game = () => {
       }
       // For 10 points on Q7 (shouldn't happen, but just in case), don't set any correctness
     } else {
-      // Questions 1-6: -10, 0, 10, or 20 points
+      // Questions 1-6: 0, 10, or 20 points
       if (points >= 20) {
         artistCorrect = true
         songCorrect = true
       }
-      // For 10 points or negative points, don't set artistCorrect or songCorrect - leave them as false
+      // For 10 points or 0 points, don't set artistCorrect or songCorrect - leave them as false
       // This way we won't show ✅ or ❌ indicators, just the song info
     }
     
@@ -1673,6 +1685,11 @@ const Game = () => {
     
     setShowFeedback(true)
     
+    // Reset 2X Points booster when feedback is shown (after scoring)
+    if (isDoublePointsActive) {
+      setIsDoublePointsActive(false)
+    }
+    
     // Pause audio
     const audio = audioRef.current
     if (audio) {
@@ -1680,10 +1697,102 @@ const Game = () => {
       setIsPlaying(false)
     }
     
-    // Award points to player and update star progress
+    // Award points to player
     const newScore = score + points
     setScore(newScore)
-    setCurrentStars(calculateStars(newScore))
+  }
+
+  // Version B Lifeline handler
+  const handleLifelineClick = (lifelineType: 'doublePoints' | 'skip' | 'letterReveal') => {
+    // Check if lifeline is already used
+    if (lifelinesUsed[lifelineType]) {
+      return // Do nothing if already used
+    }
+
+    // Mark lifeline as used
+    setLifelinesUsed(prev => ({
+      ...prev,
+      [lifelineType]: true
+    }))
+
+    // Handle specific lifeline functionality
+    if (lifelineType === 'doublePoints') {
+      setIsDoublePointsActive(true)
+      console.log('2X Points booster activated!')
+    } else if (lifelineType === 'skip') {
+      console.log('Skip booster activated!')
+      
+      // Stop current audio immediately
+      const audio = audioRef.current
+      if (audio) {
+        audio.pause()
+        audio.currentTime = 0
+        setIsPlaying(false)
+        setCurrentTime(0)
+      }
+      
+      // Reset any current answer state
+      setSelectedAnswer(null)
+      setShowFeedback(false)
+      setIsCorrect(false)
+      setArtistCorrect(false)
+      setSongCorrect(false)
+      setIsPartialCredit(false)
+      setPointsEarned(0)
+      setLetterRevealInfo(null) // Clear letter reveal info
+      
+      // Generate and start a new question immediately
+      setTimeout(() => {
+        startNewQuestion()
+      }, 100) // Small delay to ensure clean state reset
+    } else if (lifelineType === 'letterReveal') {
+      console.log('Letter Reveal booster activated!')
+      
+      if (currentQuestion) {
+        // Randomly choose to reveal artist or song name
+        const revealArtist = Math.random() < 0.5
+        
+        if (revealArtist) {
+          const artistName = currentQuestion.song.artist
+          // Create display text: first letter + spaces preserved + underscores for other letters
+          const displayText = artistName.split('').map((char, index) => {
+            if (index === 0) {
+              return char.toUpperCase() // First letter revealed
+            } else if (char === ' ') {
+              return ' ' // Preserve spaces
+            } else {
+              return '_' // Other letters as underscores
+            }
+          }).join('')
+          
+          setLetterRevealInfo({
+            type: 'artist',
+            displayText: displayText
+          })
+          console.log(`Revealing artist: ${displayText}`)
+        } else {
+          const songName = currentQuestion.song.title
+          // Create display text: first letter + spaces preserved + underscores for other letters
+          const displayText = songName.split('').map((char, index) => {
+            if (index === 0) {
+              return char.toUpperCase() // First letter revealed
+            } else if (char === ' ') {
+              return ' ' // Preserve spaces
+            } else {
+              return '_' // Other letters as underscores
+            }
+          }).join('')
+          
+          setLetterRevealInfo({
+            type: 'song',
+            displayText: displayText
+          })
+          console.log(`Revealing song: ${displayText}`)
+        }
+      }
+    }
+
+    console.log(`Lifeline used: ${lifelineType}`)
   }
 
   // Version A manual scoring function
@@ -1939,8 +2048,6 @@ const Game = () => {
     // Reset correctness tracking for percentage calculation
     setQuestionsCorrectness([])
     setOpponentQuestionsCorrectness([])
-    // Reset Version B stars
-    setCurrentStars(0)
     // Reset Version C timer and attempts
     setTimeRemaining(60)
     setIsTimerRunning(false)
@@ -1952,6 +2059,14 @@ const Game = () => {
     })
     setConsecutiveScores(0)
     setAutoBoosterNotification(null)
+    // Reset Version B lifelines
+    setLifelinesUsed({
+      doublePoints: false,
+      skip: false,
+      letterReveal: false
+    })
+    setIsDoublePointsActive(false)
+    setLetterRevealInfo(null) // Reset letter reveal info
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
@@ -2122,40 +2237,8 @@ const Game = () => {
               {/* Version B Final Results */}
               {version === 'Version B' && (
                 <div className="version-b-results">
-                  {currentStars >= 2 && (
-                    <div className="confetti-container">
-                      <div className="confetti-piece confetti-1">🎉</div>
-                      <div className="confetti-piece confetti-2">🎊</div>
-                      <div className="confetti-piece confetti-3">⭐</div>
-                      <div className="confetti-piece confetti-4">🎉</div>
-                      <div className="confetti-piece confetti-5">🎊</div>
-                      <div className="confetti-piece confetti-6">⭐</div>
-                      <div className="confetti-piece confetti-7">🎉</div>
-                      <div className="confetti-piece confetti-8">🎊</div>
-                      <div className="confetti-piece confetti-9">⭐</div>
-                      <div className="confetti-piece confetti-10">🎉</div>
-                    </div>
-                  )}
                   <h3 className="victory-message">Quiz Complete!</h3>
-                  <div className="final-star-rating">
-                    <div className="star-display">
-                      {[1, 2, 3].map((starNum) => (
-                        <span
-                          key={starNum}
-                          className={`star final-star ${currentStars >= starNum ? 'filled' : 'empty'}`}
-                        >
-                          ⭐
-                        </span>
-                      ))}
-                    </div>
-                    <p className="star-message">
-                      {currentStars === 0 && "Keep practicing! Try again to earn your first star!"}
-                      {currentStars === 1 && "Good job! You earned your first star!"}
-                      {currentStars === 2 && "Great work! Two stars - you're getting good at this!"}
-                      {currentStars === 3 && "Amazing! Perfect 3 stars - you're a music quiz master!"}
-                    </p>
-                    <p className="final-score-text">Final Score: {score}</p>
-                  </div>
+                  <p className="final-score-text">Final Score: {score}</p>
                 </div>
               )}
               
@@ -2286,41 +2369,21 @@ const Game = () => {
           
           {/* Competitive Avatars */}
           <div className="avatars">
-            <div className="avatar-container player-container">
-              <img 
-                src="/assets/YourAvatar.png" 
-                alt="Your Avatar" 
-                className="avatar player-avatar"
-              />
-            </div>
-            
-            {/* Version B Star Progress, Version C Score Tracker, or Opponent Avatar */}
-            {version === 'Version B' ? (
-              <div className="avatar-container star-container">
-                <div className="version-b-star-progress">
-                  <div className="star-progress-header">Progress</div>
-                  <div className="star-display-large">
-                    {[1, 2, 3].map((starNum) => (
-                      <div key={starNum} className="star-item">
-                        <span className={`star-large ${currentStars >= starNum ? 'filled' : 'empty'}`}>
-                          ⭐
-                        </span>
-                        <div className="star-label">
-                          {starNum === 1 ? '20+ pts' : starNum === 2 ? '50+ pts' : '100+ pts'}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="current-score-display">
-                    <div className="score-label">Score</div>
-                    <div className="score-value">{score}</div>
-                  </div>
-                </div>
+            {version === 'Version B' ? null : (
+              <div className="avatar-container player-container">
+                <img 
+                  src="/assets/YourAvatar.png" 
+                  alt="Your Avatar" 
+                  className="avatar player-avatar"
+                />
               </div>
-            ) : version === 'Version C' ? (
+            )}
+            
+            {/* Version C Score Tracker, or Opponent Avatar (Version A only) */}
+            {version === 'Version C' ? (
               null
-            ) : (
-              /* Show opponent avatar for Version A */
+            ) : version === 'Version A' ? (
+              /* Show opponent avatar for Version A only */
               <div className="avatar-container opponent-container">
                 {/* Total Score Display Above Opponent Avatar */}
                 {showFeedback && !gameComplete && (
@@ -2366,7 +2429,7 @@ const Game = () => {
                   </div>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
           
 
@@ -2471,6 +2534,59 @@ const Game = () => {
                   </div>
                 )}
 
+                {/* Version B Letter Reveal Display */}
+                {version === 'Version B' && letterRevealInfo && (
+                  <div className="letter-reveal-display">
+                    <div className="letter-reveal-content">
+                      <div className={`letter-reveal-label ${letterRevealInfo.type === 'song' ? 'song-label' : 'artist-label'}`}>
+                        {letterRevealInfo.type === 'artist' ? 'Artist Name:' : 'Song Name:'}
+                      </div>
+                      <div className="letter-reveal-text">
+                        {letterRevealInfo.displayText.split('').map((char, index) => (
+                          char === ' ' ? (
+                            <span key={index} className="letter-space"> </span>
+                          ) : char === '_' ? (
+                            <span key={index} className="letter-blank">_</span>
+                          ) : (
+                            <span key={index} className="letter-revealed">{char}</span>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Version B Boosters */}
+                {version === 'Version B' && (
+                  <div className="boosters-section">
+                    <div className="boosters-header">LIFELINES</div>
+                    <div className="boosters-container">
+                      <div 
+                        className={`booster-icon ${lifelinesUsed.doublePoints ? 'depleted' : ''}`}
+                        onClick={() => handleLifelineClick('doublePoints')}
+                        style={{ cursor: lifelinesUsed.doublePoints ? 'not-allowed' : 'pointer' }}
+                      >
+                        <div className="booster-label">2X Points</div>
+                      </div>
+                      <div 
+                        className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
+                        onClick={() => handleLifelineClick('skip')}
+                        style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
+                      >
+                        <div className="booster-label">Skip</div>
+                      </div>
+                      <div 
+                        className={`booster-icon ${lifelinesUsed.letterReveal ? 'depleted' : ''}`}
+                        onClick={() => handleLifelineClick('letterReveal')}
+                        style={{ cursor: lifelinesUsed.letterReveal ? 'not-allowed' : 'pointer' }}
+                      >
+                        <div className="booster-label">Letter Reveal</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
                 <div className="progress-bar">
                   <div className="progress-time">
                     <span>{formatTime(currentTime)}</span>
@@ -2543,12 +2659,6 @@ const Game = () => {
               <div className="manual-scoring">
                 <div className="score-buttons">
                   <button
-                    className="score-button score-negative"
-                    onClick={() => handleVersionBScore(-10)}
-                  >
-                    -10 Points
-                  </button>
-                  <button
                     className="score-button score-0"
                     onClick={() => handleVersionBScore(0)}
                   >
@@ -2556,23 +2666,23 @@ const Game = () => {
                   </button>
                   <button
                     className="score-button score-10"
-                    onClick={() => handleVersionBScore(10)}
+                    onClick={() => handleVersionBScore(isDoublePointsActive ? 20 : 10)}
                   >
-                    10 Points
+                    {isDoublePointsActive ? '20 Points' : '10 Points'}
                   </button>
                   <button
                     className="score-button score-20"
-                    onClick={() => handleVersionBScore(20)}
+                    onClick={() => handleVersionBScore(isDoublePointsActive ? 40 : 20)}
                   >
-                    20 Points
+                    {isDoublePointsActive ? '40 Points' : '20 Points'}
                   </button>
                   {/* Question 7 gets a 30-point option */}
                   {questionNumber === totalQuestions && (
                     <button
                       className="score-button score-30"
-                      onClick={() => handleVersionBScore(30)}
+                      onClick={() => handleVersionBScore(isDoublePointsActive ? 60 : 30)}
                     >
-                      30 Points
+                      {isDoublePointsActive ? '60 Points' : '30 Points'}
                     </button>
                   )}
                 </div>
@@ -2695,19 +2805,6 @@ const Game = () => {
                         )}
                         {pointsEarned > 0 && <p>Points Earned: {pointsEarned}</p>}
                       </div>
-                      <div className="star-progress-result">
-                        <div className="star-display">
-                          Current Progress: 
-                          {[1, 2, 3].map((starNum) => (
-                            <span
-                              key={starNum}
-                              className={`star ${currentStars >= starNum ? 'filled' : 'empty'}`}
-                            >
-                              ⭐
-                            </span>
-                          ))}
-                        </div>
-                      </div>
                     </div>
                   )}
                   
@@ -2784,77 +2881,56 @@ const Game = () => {
         
         {/* Competitive Avatars */}
         <div className="avatars">
-          <div className="avatar-container player-container">
-            {/* Total Score Display Above Player Avatar */}
-            {showFeedback && (
-              <div className="total-score-display player-total-score">
-                <div className="total-score-value">{score}</div>
-              </div>
-            )}
-            
-            
-            <img 
-              src="/assets/YourAvatar.png" 
-              alt="Your Avatar" 
-              className={`avatar player-avatar ${showFeedback && isCorrect ? 'celebrating' : ''}`}
-            />
-            {showFeedback && isCorrect && (
-              <>
-                <div className="sparkles">
-                  <div className="sparkle sparkle-1">✨</div>
-                  <div className="sparkle sparkle-2">⭐</div>
-                  <div className="sparkle sparkle-3">✨</div>
-                  <div className="sparkle sparkle-4">⭐</div>
-                  <div className="sparkle sparkle-5">✨</div>
+          {version === 'Version B' ? null : (
+            <div className="avatar-container player-container">
+              {/* Total Score Display Above Player Avatar */}
+              {showFeedback && (
+                <div className="total-score-display player-total-score">
+                  <div className="total-score-value">{score}</div>
                 </div>
-                <div className="score-popup player-score-popup">
-                  {version === 'Version A' ? `+${pointsEarned} Points` :
-                   version === 'Version B' ? (
+              )}
+              
+              
+              <img 
+                src="/assets/YourAvatar.png" 
+                alt="Your Avatar" 
+                className={`avatar player-avatar ${showFeedback && isCorrect ? 'celebrating' : ''}`}
+              />
+              {showFeedback && isCorrect && (
+                <>
+                  <div className="sparkles">
+                    <div className="sparkle sparkle-1">✨</div>
+                    <div className="sparkle sparkle-2">⭐</div>
+                    <div className="sparkle sparkle-3">✨</div>
+                    <div className="sparkle sparkle-4">⭐</div>
+                    <div className="sparkle sparkle-5">✨</div>
+                  </div>
+                  <div className="score-popup player-score-popup">
+                    {version === 'Version A' ? `+${pointsEarned} Points` :
+                     version === 'Version B' ? (
+                       pointsEarned === 20 ? 'Perfect! +20 Points' :
+                       pointsEarned === 10 ? 'Correct! +10 Points' :
+                       pointsEarned === 30 ? 'Perfect! +30 Points' :
+                       'Correct! +' + pointsEarned + ' Points'
+                     ) :
                      pointsEarned === 20 ? 'Perfect! +20 Points' :
-                     pointsEarned === 10 ? 'Correct! +10 Points' :
-                     pointsEarned === 30 ? 'Perfect! +30 Points' :
-                     pointsEarned === -10 ? 'Incorrect! -10 Points' :
-                     'Correct! +' + pointsEarned + ' Points'
-                   ) :
-                   pointsEarned === 20 ? 'Perfect! +20 Points' :
-                   pointsEarned === 10 ? (artistCorrect ? 'Artist Correct! +10 Points' : 'Song Correct! +10 Points') :
-                   'Correct! +' + pointsEarned + ' Points'}
+                     pointsEarned === 10 ? (artistCorrect ? 'Artist Correct! +10 Points' : 'Song Correct! +10 Points') :
+                     'Correct! +' + pointsEarned + ' Points'}
+                  </div>
+                </>
+              )}
+              
+              {/* Version A Player Streak Text */}
+              {version === 'Version A' && isOnStreak && (
+                <div className="avatar-streak-text player-streak-text">
+                  🔥 {streak} Streak!
                 </div>
-              </>
-            )}
-            
-            {/* Version A Player Streak Text */}
-            {version === 'Version A' && isOnStreak && (
-              <div className="avatar-streak-text player-streak-text">
-                🔥 {streak} Streak!
-              </div>
-            )}
-          </div>
-          
-          {/* Version B Star Progress, Version C Score Tracker, or Opponent Avatar */}
-          {version === 'Version B' ? (
-            <div className="avatar-container star-container">
-              <div className="version-b-star-progress">
-                <div className="star-progress-header">Progress</div>
-                <div className="star-display-large">
-                  {[1, 2, 3].map((starNum) => (
-                    <div key={starNum} className="star-item">
-                      <span className={`star-large ${currentStars >= starNum ? 'filled' : 'empty'}`}>
-                        ⭐
-                      </span>
-                      <div className="star-label">
-                        {starNum === 1 ? '20+ pts' : starNum === 2 ? '50+ pts' : '100+ pts'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="current-score-display">
-                  <div className="score-label">Score</div>
-                  <div className="score-value">{score}</div>
-                </div>
-              </div>
+              )}
             </div>
-          ) : version === 'Version C' ? (
+          )}
+          
+          {/* Version C Score Tracker, or Opponent Avatar (Version A only) */}
+          {version === 'Version C' ? (
             <div className="avatar-container score-tracker-container">
               <div className={`version-c-score-tracker ${showScoreConfetti ? 'confetti-active' : ''}`}>
                 {showScoreConfetti && (
@@ -2887,8 +2963,8 @@ const Game = () => {
                 </div>
               </div>
             </div>
-          ) : (
-            /* Show opponent avatar for Version A */
+          ) : version === 'Version A' ? (
+            /* Show opponent avatar for Version A only */
             <div className="avatar-container opponent-container">
               {/* Total Score Display Above Opponent Avatar */}
               {showFeedback && !gameComplete && (
@@ -2936,7 +3012,7 @@ const Game = () => {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
           
         </div>
 
@@ -2949,6 +3025,16 @@ const Game = () => {
           ← Back to Playlists
         </button>
 
+        {/* Version B Restart Button - Debug Only */}
+        {version === 'Version B' && (
+          <button 
+            className="restart-button"
+            onClick={restartGame}
+            title="Restart Version B Session (Debug)"
+          >
+            Restart
+          </button>
+        )}
 
       </div>
     </div>
