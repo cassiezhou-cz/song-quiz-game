@@ -1982,34 +1982,34 @@
 
 /* Version B Boosters */
 .boosters-section {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .boosters-header {
   text-align: center;
   color: rgba(255, 255, 255, 0.9);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .boosters-container {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  margin-bottom: 20px;
-  padding: 15px;
+  gap: 25px;
+  margin-bottom: 25px;
+  padding: 20px;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 15px;
   backdrop-filter: blur(10px);
 }
 
 .booster-icon {
-  width: 60px;
-  height: 60px;
+  width: 75px;
+  height: 75px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
   display: flex;
@@ -2049,12 +2049,12 @@
 
 .booster-label {
   color: white;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 600;
   text-align: center;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   line-height: 1.1;
-  padding: 2px;
+  padding: 3px;
 }
 
 @keyframes boosterPulse {
@@ -2069,54 +2069,54 @@
 /* Mobile adjustments for boosters */
 @media (max-width: 768px) {
   .boosters-section {
+    margin-bottom: 20px;
+  }
+  
+  .boosters-header {
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+  }
+  
+  .boosters-container {
+    gap: 20px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .booster-icon {
+    width: 65px;
+    height: 65px;
+  }
+  
+  .booster-label {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .boosters-section {
     margin-bottom: 15px;
   }
   
   .boosters-header {
     font-size: 14px;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     margin-bottom: 10px;
   }
   
   .boosters-container {
     gap: 15px;
     padding: 12px;
-    margin-bottom: 15px;
   }
   
   .booster-icon {
-    width: 50px;
-    height: 50px;
+    width: 55px;
+    height: 55px;
   }
   
   .booster-label {
-    font-size: 8px;
-  }
-}
-
-@media (max-width: 480px) {
-  .boosters-section {
-    margin-bottom: 12px;
-  }
-  
-  .boosters-header {
-    font-size: 12px;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-  }
-  
-  .boosters-container {
-    gap: 10px;
-    padding: 10px;
-  }
-  
-  .booster-icon {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .booster-label {
-    font-size: 7px;
+    font-size: 9px;
   }
 }
 
