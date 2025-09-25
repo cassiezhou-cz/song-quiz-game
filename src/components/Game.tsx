@@ -67,9 +67,6 @@ const Game = () => {
   const [roundStartTime, setRoundStartTime] = useState<number>(0)
   const [speedBonusToggle, setSpeedBonusToggle] = useState(false)
   
-  // Version B specific state
-  const [currentStars, setCurrentStars] = useState(0)
-  
   // Version C specific state
   const [timeRemaining, setTimeRemaining] = useState(60)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
@@ -101,15 +98,6 @@ const Game = () => {
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const doublePointsTimerRef = useRef<NodeJS.Timeout | null>(null)
-  
-  // Version B star calculation
-  const calculateStars = (totalScore: number): number => {
-    if (totalScore < 20) return 0
-    if (totalScore >= 20 && totalScore <= 49) return 1
-    if (totalScore >= 50 && totalScore <= 99) return 2
-    if (totalScore >= 100) return 3
-    return 0
-  }
   
   // Note: Song tracking is now handled by persistent localStorage via songTracker utility
   
@@ -1235,8 +1223,7 @@ const Game = () => {
         }, buzzInDelay)
       }
     } else if (version === 'Version B') {
-      // Version B has no opponent mechanics, just update star progress
-      setCurrentStars(calculateStars(score))
+      // Version B has no opponent mechanics
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
       if (!isTimerRunning && timeRemaining === 60) {
@@ -1637,7 +1624,7 @@ const Game = () => {
     
     setSelectedAnswer('manual_score')
     
-    // For Version B, questions 1-6 use -10, 0, 10, 20 scoring
+    // For Version B, questions 1-6 use 0, 10, 20 scoring
     // Question 7 uses 0, 30 scoring
     let artistCorrect = false
     let songCorrect = false
@@ -1650,12 +1637,12 @@ const Game = () => {
       }
       // For 10 points on Q7 (shouldn't happen, but just in case), don't set any correctness
     } else {
-      // Questions 1-6: -10, 0, 10, or 20 points
+      // Questions 1-6: 0, 10, or 20 points
       if (points >= 20) {
         artistCorrect = true
         songCorrect = true
       }
-      // For 10 points or negative points, don't set artistCorrect or songCorrect - leave them as false
+      // For 10 points or 0 points, don't set artistCorrect or songCorrect - leave them as false
       // This way we won't show ✅ or ❌ indicators, just the song info
     }
     
@@ -1939,8 +1926,6 @@ const Game = () => {
     // Reset correctness tracking for percentage calculation
     setQuestionsCorrectness([])
     setOpponentQuestionsCorrectness([])
-    // Reset Version B stars
-    setCurrentStars(0)
     // Reset Version C timer and attempts
     setTimeRemaining(60)
     setIsTimerRunning(false)
@@ -2122,40 +2107,8 @@ const Game = () => {
               {/* Version B Final Results */}
               {version === 'Version B' && (
                 <div className="version-b-results">
-                  {currentStars >= 2 && (
-                    <div className="confetti-container">
-                      <div className="confetti-piece confetti-1">🎉</div>
-                      <div className="confetti-piece confetti-2">🎊</div>
-                      <div className="confetti-piece confetti-3">⭐</div>
-                      <div className="confetti-piece confetti-4">🎉</div>
-                      <div className="confetti-piece confetti-5">🎊</div>
-                      <div className="confetti-piece confetti-6">⭐</div>
-                      <div className="confetti-piece confetti-7">🎉</div>
-                      <div className="confetti-piece confetti-8">🎊</div>
-                      <div className="confetti-piece confetti-9">⭐</div>
-                      <div className="confetti-piece confetti-10">🎉</div>
-                    </div>
-                  )}
                   <h3 className="victory-message">Quiz Complete!</h3>
-                  <div className="final-star-rating">
-                    <div className="star-display">
-                      {[1, 2, 3].map((starNum) => (
-                        <span
-                          key={starNum}
-                          className={`star final-star ${currentStars >= starNum ? 'filled' : 'empty'}`}
-                        >
-                          ⭐
-                        </span>
-                      ))}
-                    </div>
-                    <p className="star-message">
-                      {currentStars === 0 && "Keep practicing! Try again to earn your first star!"}
-                      {currentStars === 1 && "Good job! You earned your first star!"}
-                      {currentStars === 2 && "Great work! Two stars - you're getting good at this!"}
-                      {currentStars === 3 && "Amazing! Perfect 3 stars - you're a music quiz master!"}
-                    </p>
-                    <p className="final-score-text">Final Score: {score}</p>
-                  </div>
+                  <p className="final-score-text">Final Score: {score}</p>
                 </div>
               )}
               
@@ -2286,41 +2239,21 @@ const Game = () => {
           
           {/* Competitive Avatars */}
           <div className="avatars">
-            <div className="avatar-container player-container">
-              <img 
-                src="/assets/YourAvatar.png" 
-                alt="Your Avatar" 
-                className="avatar player-avatar"
-              />
-            </div>
-            
-            {/* Version B Star Progress, Version C Score Tracker, or Opponent Avatar */}
-            {version === 'Version B' ? (
-              <div className="avatar-container star-container">
-                <div className="version-b-star-progress">
-                  <div className="star-progress-header">Progress</div>
-                  <div className="star-display-large">
-                    {[1, 2, 3].map((starNum) => (
-                      <div key={starNum} className="star-item">
-                        <span className={`star-large ${currentStars >= starNum ? 'filled' : 'empty'}`}>
-                          ⭐
-                        </span>
-                        <div className="star-label">
-                          {starNum === 1 ? '20+ pts' : starNum === 2 ? '50+ pts' : '100+ pts'}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="current-score-display">
-                    <div className="score-label">Score</div>
-                    <div className="score-value">{score}</div>
-                  </div>
-                </div>
+            {version === 'Version B' ? null : (
+              <div className="avatar-container player-container">
+                <img 
+                  src="/assets/YourAvatar.png" 
+                  alt="Your Avatar" 
+                  className="avatar player-avatar"
+                />
               </div>
-            ) : version === 'Version C' ? (
+            )}
+            
+            {/* Version C Score Tracker, or Opponent Avatar (Version A only) */}
+            {version === 'Version C' ? (
               null
-            ) : (
-              /* Show opponent avatar for Version A */
+            ) : version === 'Version A' ? (
+              /* Show opponent avatar for Version A only */
               <div className="avatar-container opponent-container">
                 {/* Total Score Display Above Opponent Avatar */}
                 {showFeedback && !gameComplete && (
@@ -2366,7 +2299,7 @@ const Game = () => {
                   </div>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
           
 
@@ -2543,12 +2476,6 @@ const Game = () => {
               <div className="manual-scoring">
                 <div className="score-buttons">
                   <button
-                    className="score-button score-negative"
-                    onClick={() => handleVersionBScore(-10)}
-                  >
-                    -10 Points
-                  </button>
-                  <button
                     className="score-button score-0"
                     onClick={() => handleVersionBScore(0)}
                   >
@@ -2695,19 +2622,6 @@ const Game = () => {
                         )}
                         {pointsEarned > 0 && <p>Points Earned: {pointsEarned}</p>}
                       </div>
-                      <div className="star-progress-result">
-                        <div className="star-display">
-                          Current Progress: 
-                          {[1, 2, 3].map((starNum) => (
-                            <span
-                              key={starNum}
-                              className={`star ${currentStars >= starNum ? 'filled' : 'empty'}`}
-                            >
-                              ⭐
-                            </span>
-                          ))}
-                        </div>
-                      </div>
                     </div>
                   )}
                   
@@ -2784,77 +2698,56 @@ const Game = () => {
         
         {/* Competitive Avatars */}
         <div className="avatars">
-          <div className="avatar-container player-container">
-            {/* Total Score Display Above Player Avatar */}
-            {showFeedback && (
-              <div className="total-score-display player-total-score">
-                <div className="total-score-value">{score}</div>
-              </div>
-            )}
-            
-            
-            <img 
-              src="/assets/YourAvatar.png" 
-              alt="Your Avatar" 
-              className={`avatar player-avatar ${showFeedback && isCorrect ? 'celebrating' : ''}`}
-            />
-            {showFeedback && isCorrect && (
-              <>
-                <div className="sparkles">
-                  <div className="sparkle sparkle-1">✨</div>
-                  <div className="sparkle sparkle-2">⭐</div>
-                  <div className="sparkle sparkle-3">✨</div>
-                  <div className="sparkle sparkle-4">⭐</div>
-                  <div className="sparkle sparkle-5">✨</div>
+          {version === 'Version B' ? null : (
+            <div className="avatar-container player-container">
+              {/* Total Score Display Above Player Avatar */}
+              {showFeedback && (
+                <div className="total-score-display player-total-score">
+                  <div className="total-score-value">{score}</div>
                 </div>
-                <div className="score-popup player-score-popup">
-                  {version === 'Version A' ? `+${pointsEarned} Points` :
-                   version === 'Version B' ? (
+              )}
+              
+              
+              <img 
+                src="/assets/YourAvatar.png" 
+                alt="Your Avatar" 
+                className={`avatar player-avatar ${showFeedback && isCorrect ? 'celebrating' : ''}`}
+              />
+              {showFeedback && isCorrect && (
+                <>
+                  <div className="sparkles">
+                    <div className="sparkle sparkle-1">✨</div>
+                    <div className="sparkle sparkle-2">⭐</div>
+                    <div className="sparkle sparkle-3">✨</div>
+                    <div className="sparkle sparkle-4">⭐</div>
+                    <div className="sparkle sparkle-5">✨</div>
+                  </div>
+                  <div className="score-popup player-score-popup">
+                    {version === 'Version A' ? `+${pointsEarned} Points` :
+                     version === 'Version B' ? (
+                       pointsEarned === 20 ? 'Perfect! +20 Points' :
+                       pointsEarned === 10 ? 'Correct! +10 Points' :
+                       pointsEarned === 30 ? 'Perfect! +30 Points' :
+                       'Correct! +' + pointsEarned + ' Points'
+                     ) :
                      pointsEarned === 20 ? 'Perfect! +20 Points' :
-                     pointsEarned === 10 ? 'Correct! +10 Points' :
-                     pointsEarned === 30 ? 'Perfect! +30 Points' :
-                     pointsEarned === -10 ? 'Incorrect! -10 Points' :
-                     'Correct! +' + pointsEarned + ' Points'
-                   ) :
-                   pointsEarned === 20 ? 'Perfect! +20 Points' :
-                   pointsEarned === 10 ? (artistCorrect ? 'Artist Correct! +10 Points' : 'Song Correct! +10 Points') :
-                   'Correct! +' + pointsEarned + ' Points'}
+                     pointsEarned === 10 ? (artistCorrect ? 'Artist Correct! +10 Points' : 'Song Correct! +10 Points') :
+                     'Correct! +' + pointsEarned + ' Points'}
+                  </div>
+                </>
+              )}
+              
+              {/* Version A Player Streak Text */}
+              {version === 'Version A' && isOnStreak && (
+                <div className="avatar-streak-text player-streak-text">
+                  🔥 {streak} Streak!
                 </div>
-              </>
-            )}
-            
-            {/* Version A Player Streak Text */}
-            {version === 'Version A' && isOnStreak && (
-              <div className="avatar-streak-text player-streak-text">
-                🔥 {streak} Streak!
-              </div>
-            )}
-          </div>
-          
-          {/* Version B Star Progress, Version C Score Tracker, or Opponent Avatar */}
-          {version === 'Version B' ? (
-            <div className="avatar-container star-container">
-              <div className="version-b-star-progress">
-                <div className="star-progress-header">Progress</div>
-                <div className="star-display-large">
-                  {[1, 2, 3].map((starNum) => (
-                    <div key={starNum} className="star-item">
-                      <span className={`star-large ${currentStars >= starNum ? 'filled' : 'empty'}`}>
-                        ⭐
-                      </span>
-                      <div className="star-label">
-                        {starNum === 1 ? '20+ pts' : starNum === 2 ? '50+ pts' : '100+ pts'}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="current-score-display">
-                  <div className="score-label">Score</div>
-                  <div className="score-value">{score}</div>
-                </div>
-              </div>
+              )}
             </div>
-          ) : version === 'Version C' ? (
+          )}
+          
+          {/* Version C Score Tracker, or Opponent Avatar (Version A only) */}
+          {version === 'Version C' ? (
             <div className="avatar-container score-tracker-container">
               <div className={`version-c-score-tracker ${showScoreConfetti ? 'confetti-active' : ''}`}>
                 {showScoreConfetti && (
@@ -2887,8 +2780,8 @@ const Game = () => {
                 </div>
               </div>
             </div>
-          ) : (
-            /* Show opponent avatar for Version A */
+          ) : version === 'Version A' ? (
+            /* Show opponent avatar for Version A only */
             <div className="avatar-container opponent-container">
               {/* Total Score Display Above Opponent Avatar */}
               {showFeedback && !gameComplete && (
@@ -2936,7 +2829,7 @@ const Game = () => {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
           
         </div>
 
