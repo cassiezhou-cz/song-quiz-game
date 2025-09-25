@@ -1181,12 +1181,41 @@ const Game = () => {
     }
   }
 
-  const startNewQuestion = () => {
+  // Helper function that works with specific question number to avoid state timing issues
+  const startNewQuestionWithNumber = (questionNum: number) => {
+    console.log('🎵 START: Starting question', questionNum, 'for version', version)
+    
     // Prevent multiple simultaneous calls
     if (isLoadingQuestion) {
       return
     }
     setIsLoadingQuestion(true)
+    
+    // Check if this is the special question (question 7) for Version B
+    if (version === 'Version B' && questionNum === totalQuestions) {
+      console.log('🎵 VERSION B: Starting special question #7')
+      // This is the special question - don't generate a normal quiz question
+      setCurrentQuestion(null) // No song-based question for special question
+      setSelectedAnswer(null)
+      setShowFeedback(false)
+      setIsCorrect(false)
+      setArtistCorrect(false)
+      setSongCorrect(false)
+      setIsPartialCredit(false)
+      setPointsEarned(0)
+      setLetterRevealInfo(null)
+      setIsLoadingQuestion(false)
+      return // Exit early for special question
+    }
+
+    startNewQuestionInternal()
+  }
+
+  const startNewQuestion = () => {
+    startNewQuestionWithNumber(questionNumber)
+  }
+
+  const startNewQuestionInternal = () => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1649,19 +1678,13 @@ const Game = () => {
     
     setSelectedAnswer('manual_score')
     
-    // For Version B, questions 1-6 use 0, 10, 20 scoring
-    // Question 7 uses 0, 30 scoring
+    // For Version B, questions 1-6 use 0, 10, 20 scoring 
+    // Question 7 is now a special question with different mechanics
     let artistCorrect = false
     let songCorrect = false
     
-    if (questionNumber === totalQuestions) {
-      // Question 7: 0 or 30 points
-      if (points === 30) {
-        artistCorrect = true
-        songCorrect = true
-      }
-      // For 10 points on Q7 (shouldn't happen, but just in case), don't set any correctness
-    } else {
+    // Note: Question 7 is now a special question, so this function only handles questions 1-6
+    if (questionNumber < totalQuestions) {
       // Questions 1-6: 0, 10, or 20 points
       if (points >= 20) {
         artistCorrect = true
@@ -2020,11 +2043,13 @@ const Game = () => {
         }
       }, 500) // Small delay to allow results to appear first
     } else {
-      setQuestionNumber(prev => prev + 1)
+      const newQuestionNumber = questionNumber + 1
+      console.log('🎵 NEXT: Moving to question', newQuestionNumber)
+      setQuestionNumber(newQuestionNumber)
       
       // Start new question with proper delay for cleanup
       setTimeout(() => {
-        startNewQuestion()
+        startNewQuestionWithNumber(newQuestionNumber)
       }, 1000)
     }
   }
@@ -2204,7 +2229,8 @@ const Game = () => {
   }
 
 
-  if (!currentQuestion) {
+  // Only show loading screen if no current question AND it's not Version B special question
+  if (!currentQuestion && !(version === 'Version B' && questionNumber === totalQuestions)) {
     return (
       <div className="game-loading">
         <div className="loading-content">
@@ -2511,13 +2537,32 @@ const Game = () => {
 
         <main className="game-main">
           <div className="quiz-section">
-            {!showFeedback && (
-              <div className="audio-controls">
-                <audio
-                  ref={audioRef}
-                  src={currentQuestion.song.file}
-                  onEnded={() => setIsPlaying(false)}
-                />
+            {/* Version B Special Question Screen */}
+            {(() => {
+              console.log('🎵 SPECIAL QUESTION DEBUG:', { 
+                version, 
+                questionNumber, 
+                totalQuestions, 
+                currentQuestion: currentQuestion?.song?.title || 'null',
+                shouldShowSpecial: version === 'Version B' && questionNumber === totalQuestions && !currentQuestion
+              })
+              return null
+            })()}
+            {version === 'Version B' && questionNumber === totalQuestions && !currentQuestion ? (
+              <div className="special-question-screen">
+                <div className="special-question-content">
+                  <h1 className="special-question-title">Special Question!</h1>
+                </div>
+              </div>
+            ) : (
+              <>
+                {!showFeedback && (
+                  <div className="audio-controls">
+                    <audio
+                      ref={audioRef}
+                      src={currentQuestion?.song?.file}
+                      onEnded={() => setIsPlaying(false)}
+                    />
                 
                 {/* Animated Sound Bars - hide for Version C */}
                 {version !== 'Version C' && (
@@ -2676,15 +2721,7 @@ const Game = () => {
                   >
                     {isDoublePointsActive ? '40 Points' : '20 Points'}
                   </button>
-                  {/* Question 7 gets a 30-point option */}
-                  {questionNumber === totalQuestions && (
-                    <button
-                      className="score-button score-30"
-                      onClick={() => handleVersionBScore(isDoublePointsActive ? 60 : 30)}
-                    >
-                      {isDoublePointsActive ? '60 Points' : '30 Points'}
-                    </button>
-                  )}
+                  {/* No special scoring for question 7 since it's now a special question */}
                 </div>
                 {currentQuestion && (
                   <div className="song-number-display">
@@ -2833,6 +2870,8 @@ const Game = () => {
                   {questionNumber >= totalQuestions ? 'Finish Quiz' : 'Next Question →'}
                 </button>
               </div>
+            )}
+              </>
             )}
           </div>
         </main>

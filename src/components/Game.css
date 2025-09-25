@@ -2246,6 +2246,114 @@
   }
 }
 
+/* Version B Special Question Screen */
+.special-question-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 2rem;
+}
+
+.special-question-content {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+}
+
+.special-question-title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #4ecdc4;
+  margin: 0 0 1rem 0;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  animation: titlePulse 2s ease-in-out infinite;
+}
+
+.special-question-subtitle {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 2rem 0;
+  font-weight: 600;
+}
+
+.special-question-placeholder {
+  margin-top: 2rem;
+}
+
+.special-question-placeholder p {
+  font-size: 1.3rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 2rem 0;
+  font-weight: 500;
+}
+
+.continue-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.continue-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.continue-btn:active {
+  transform: translateY(0);
+}
+
+@keyframes titlePulse {
+  0%, 100% {
+    transform: scale(1);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    text-shadow: 0 6px 12px rgba(78, 205, 196, 0.5);
+  }
+}
+
+/* Mobile adjustments for special question */
+@media (max-width: 768px) {
+  .special-question-content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .special-question-title {
+    font-size: 2.5rem;
+  }
+  
+  .special-question-subtitle {
+    font-size: 1rem;
+  }
+  
+  .special-question-placeholder p {
+    font-size: 1.1rem;
+  }
+  
+  .continue-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
 /* Mobile adjustments for Version B elements */
 @media (max-width: 768px) {
   .final-score-text {
