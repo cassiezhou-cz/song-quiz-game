@@ -112,6 +112,9 @@ const Game = () => {
     letterReveal: false
   })
 
+  // Version B 2X Points booster state
+  const [isDoublePointsActive, setIsDoublePointsActive] = useState(false)
+
   
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
@@ -1368,6 +1371,7 @@ const Game = () => {
         extraGuess: false,
         letterReveal: false
       })
+      setIsDoublePointsActive(false)
     }
     
     // Version C: Start timer when game begins
@@ -1689,6 +1693,11 @@ const Game = () => {
     const newScore = score + points
     setScore(newScore)
     setCurrentStars(calculateStars(newScore))
+    
+    // Reset 2X Points booster after scoring
+    if (isDoublePointsActive) {
+      setIsDoublePointsActive(false)
+    }
   }
 
   // Version B Lifeline handler
@@ -1704,7 +1713,13 @@ const Game = () => {
       [lifelineType]: true
     }))
 
-    // TODO: Implement actual lifeline functionality
+    // Handle specific lifeline functionality
+    if (lifelineType === 'doublePoints') {
+      setIsDoublePointsActive(true)
+      console.log('2X Points booster activated!')
+    }
+
+    // TODO: Implement other lifeline functionality
     console.log(`Lifeline used: ${lifelineType}`)
   }
 
@@ -2555,23 +2570,23 @@ const Game = () => {
                   </button>
                   <button
                     className="score-button score-10"
-                    onClick={() => handleVersionBScore(10)}
+                    onClick={() => handleVersionBScore(isDoublePointsActive ? 20 : 10)}
                   >
-                    10 Points
+                    {isDoublePointsActive ? '20 Points' : '10 Points'}
                   </button>
                   <button
                     className="score-button score-20"
-                    onClick={() => handleVersionBScore(20)}
+                    onClick={() => handleVersionBScore(isDoublePointsActive ? 40 : 20)}
                   >
-                    20 Points
+                    {isDoublePointsActive ? '40 Points' : '20 Points'}
                   </button>
                   {/* Question 7 gets a 30-point option */}
                   {questionNumber === totalQuestions && (
                     <button
                       className="score-button score-30"
-                      onClick={() => handleVersionBScore(30)}
+                      onClick={() => handleVersionBScore(isDoublePointsActive ? 60 : 30)}
                     >
-                      30 Points
+                      {isDoublePointsActive ? '60 Points' : '30 Points'}
                     </button>
                   )}
                 </div>
