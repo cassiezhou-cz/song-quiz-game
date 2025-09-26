@@ -1267,8 +1267,8 @@ const Game = () => {
   }
 
   // Helper function that works with specific question number to avoid state timing issues
-  const startNewQuestionWithNumber = (questionNum: number) => {
-    console.log('🎵 START: Starting question', questionNum, 'for version', version)
+  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo') => {
+    console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType)
     
     // Prevent multiple simultaneous calls
     if (isLoadingQuestion) {
@@ -1278,9 +1278,9 @@ const Game = () => {
     
     // Check if this is the special question for Version B
     if (version === 'Version B' && specialQuestionNumbers.includes(questionNum)) {
-      console.log('🎵 VERSION B: Starting special question #', questionNum)
+      console.log('🎵 VERSION B: Starting special question #', questionNum, 'with type:', specialType)
       // This is the special question - generate a question from a different playlist
-      startNewQuestionInternal(true, specialQuestionType || 'time-warp') // Pass true and the special type
+      startNewQuestionInternal(true, specialType || 'time-warp') // Use passed specialType
       return
     }
 
@@ -1316,6 +1316,12 @@ const Game = () => {
   
   // Stop lifeline attention animation when starting new question
   stopLifelineAttentionAnimation()
+  
+  // Set the special question type immediately for audio playback
+  if (isSpecialQuestion && specialType) {
+    setSpecialQuestionType(specialType)
+    console.log('🎯 SPECIAL QUESTION: Set type to', specialType, 'for audio playback')
+  }
   
   const question = isSpecialQuestion && specialType ? generateSpecialQuizQuestion(specialType) : generateQuizQuestion()
     setCurrentQuestion(question)
@@ -1358,7 +1364,7 @@ const Game = () => {
     
     // Auto-play the song after audio element has loaded the new source
     // Use multiple attempts to ensure audio plays reliably
-    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3) => {
+    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo') => {
       const audioElement = audioRef.current
       console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
@@ -1385,12 +1391,22 @@ const Game = () => {
         audioElement.src = question.song.file
         console.log(`🎵 AUTOPLAY: Set new source: ${question.song.file}`)
         
+        // Set playback rate immediately after setting source for Slo-Mo special questions
+        if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber) && currentSpecialType === 'slo-mo') {
+          audioElement.playbackRate = 0.3
+          console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) immediately after setting source')
+          console.log('🔍 DEBUG: Playback rate after source set:', audioElement.playbackRate)
+        } else {
+          audioElement.playbackRate = 1.0
+          console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) after setting source')
+        }
+        
         // Add error handler for this attempt
         audioElement.onerror = (error) => {
           console.error(`🎵 AUTOPLAY: Audio loading error on attempt ${attemptNumber}:`, error)
           audioElement.onerror = null
           if (attemptNumber < maxAttempts) {
-            setTimeout(() => attemptAutoPlay(attemptNumber + 1, maxAttempts), 500)
+            setTimeout(() => attemptAutoPlay(attemptNumber + 1, maxAttempts, currentSpecialType), 500)
           } else {
             console.error('🎵 AUTOPLAY: All attempts failed due to loading errors')
             setIsPlaying(false)
@@ -1403,8 +1419,34 @@ const Game = () => {
           // Clear error handler since we're about to play
           audioElement.onerror = null
           
+          // Set playback rate for Slo-Mo special questions
+          console.log('🔍 DEBUG: Auto-play playback rate check:', {
+            version,
+            questionNumber,
+            specialQuestionNumbers,
+            specialQuestionType,
+            currentSpecialType,
+            isVersionB: version === 'Version B',
+            isSpecialQuestion: specialQuestionNumbers.includes(questionNumber),
+            isSloMo: specialQuestionType === 'slo-mo',
+            isSloMoDirect: currentSpecialType === 'slo-mo',
+            currentPlaybackRate: audioElement.playbackRate
+          })
+          
+          // Use the direct currentSpecialType parameter instead of state
+          if (version === 'Version B' && currentSpecialType === 'slo-mo') {
+            audioElement.playbackRate = 0.3
+            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for auto-play (using direct parameter)')
+            console.log('🔍 DEBUG: Actual playback rate after setting:', audioElement.playbackRate)
+          } else {
+            audioElement.playbackRate = 1.0
+            console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) for auto-play')
+            console.log('🔍 DEBUG: Actual playback rate after setting:', audioElement.playbackRate)
+          }
+          
           audioElement.play().then(() => {
             console.log(`🎵 GAME: Audio playback started successfully for ${question.song.title}`)
+            console.log('🔍 DEBUG: Final playback rate when playing:', audioElement.playbackRate)
             setIsPlaying(true)
             setIsLoadingQuestion(false)
           }).catch(error => {
@@ -1456,6 +1498,30 @@ const Game = () => {
           }
           
           audioElement.load() // Force reload
+          
+          // Set playback rate after load for Slo-Mo special questions
+          console.log('🔍 DEBUG: After load playback rate check:', {
+            version,
+            questionNumber,
+            specialQuestionNumbers,
+            specialQuestionType,
+            currentSpecialType,
+            isVersionB: version === 'Version B',
+            isSpecialQuestion: specialQuestionNumbers.includes(questionNumber),
+            isSloMo: specialQuestionType === 'slo-mo',
+            isSloMoDirect: currentSpecialType === 'slo-mo'
+          })
+          
+          // Use the direct currentSpecialType parameter instead of state
+          if (version === 'Version B' && currentSpecialType === 'slo-mo') {
+            audioElement.playbackRate = 0.3
+            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) after load (using direct parameter)')
+            console.log('🔍 DEBUG: Actual playback rate after load setting:', audioElement.playbackRate)
+          } else {
+            audioElement.playbackRate = 1.0
+            console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) after load')
+            console.log('🔍 DEBUG: Actual playback rate after load setting:', audioElement.playbackRate)
+          }
         }
       } else {
         console.log('🎵 GAME: No audio element found')
@@ -1464,7 +1530,7 @@ const Game = () => {
     }
     
     // Start auto-play with a short delay to allow audio element cleanup to complete
-    setTimeout(() => attemptAutoPlay(), 500)
+    setTimeout(() => attemptAutoPlay(1, 3, specialType), 500)
     
   }
 
@@ -1616,6 +1682,15 @@ const Game = () => {
     } else {
       // Ensure audio is ready to play
       const attemptPlay = () => {
+        // Set playback rate for Slo-Mo special questions
+        if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber) && specialQuestionType === 'slo-mo') {
+          audio.playbackRate = 0.3
+          console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play')
+        } else {
+          audio.playbackRate = 1.0
+          console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) for manual play')
+        }
+        
         audio.play().then(() => {
           setIsPlaying(true)
           console.log('🎵 GAME: Manual play started successfully')
@@ -1628,6 +1703,15 @@ const Game = () => {
           audio.load()
           
           setTimeout(() => {
+            // Set playback rate for Slo-Mo special questions (retry)
+            if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber) && specialQuestionType === 'slo-mo') {
+              audio.playbackRate = 0.3
+              console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play retry')
+            } else {
+              audio.playbackRate = 1.0
+              console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) for manual play retry')
+            }
+            
             audio.play().then(() => {
               setIsPlaying(true)
               console.log('🎵 GAME: Manual play retry successful')
@@ -2207,7 +2291,7 @@ const Game = () => {
           
           // Start new question with proper delay for cleanup
           setTimeout(() => {
-            startNewQuestionWithNumber(newQuestionNumber)
+            startNewQuestionWithNumber(newQuestionNumber, specialType)
           }, 1000)
         }, 3000)
       } else {
