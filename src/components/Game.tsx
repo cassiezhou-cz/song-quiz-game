@@ -114,7 +114,7 @@ const Game = () => {
   // Version B Special Question tracking
   const [specialQuestionNumbers, setSpecialQuestionNumbers] = useState<number[]>([])
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
-  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | null>(null)
+  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | null>(null)
   
   // Version B Lifeline attention animation
   const [showLifelineAttention, setShowLifelineAttention] = useState(false)
@@ -1181,7 +1181,7 @@ const Game = () => {
     }
   }
 
-  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo'): QuizQuestion => {
+  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed'): QuizQuestion => {
     const currentPlaylist = playlist || '2010s'
     
     // Get all available playlists except the current one
@@ -1267,7 +1267,7 @@ const Game = () => {
   }
 
   // Helper function that works with specific question number to avoid state timing issues
-  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo') => {
+  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
     console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType)
     
     // Prevent multiple simultaneous calls
@@ -1291,7 +1291,7 @@ const Game = () => {
     startNewQuestionWithNumber(questionNumber)
   }
 
-  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo') => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1364,7 +1364,7 @@ const Game = () => {
     
     // Auto-play the song after audio element has loaded the new source
     // Use multiple attempts to ensure audio plays reliably
-    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo') => {
+    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
       const audioElement = audioRef.current
       console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
@@ -1391,10 +1391,18 @@ const Game = () => {
         audioElement.src = question.song.file
         console.log(`🎵 AUTOPLAY: Set new source: ${question.song.file}`)
         
-        // Set playback rate immediately after setting source for Slo-Mo special questions
-        if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber) && currentSpecialType === 'slo-mo') {
-          audioElement.playbackRate = 0.3
-          console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) immediately after setting source')
+        // Set playback rate immediately after setting source for special questions
+        if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) {
+          if (currentSpecialType === 'slo-mo') {
+            audioElement.playbackRate = 0.3
+            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) immediately after setting source')
+          } else if (currentSpecialType === 'hyperspeed') {
+            audioElement.playbackRate = 2.0
+            console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) immediately after setting source')
+          } else {
+            audioElement.playbackRate = 1.0
+            console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) immediately after setting source')
+          }
           console.log('🔍 DEBUG: Playback rate after source set:', audioElement.playbackRate)
         } else {
           audioElement.playbackRate = 1.0
@@ -1434,9 +1442,17 @@ const Game = () => {
           })
           
           // Use the direct currentSpecialType parameter instead of state
-          if (version === 'Version B' && currentSpecialType === 'slo-mo') {
-            audioElement.playbackRate = 0.3
-            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for auto-play (using direct parameter)')
+          if (version === 'Version B' && currentSpecialType) {
+            if (currentSpecialType === 'slo-mo') {
+              audioElement.playbackRate = 0.3
+              console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for auto-play (using direct parameter)')
+            } else if (currentSpecialType === 'hyperspeed') {
+              audioElement.playbackRate = 2.0
+              console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) for auto-play (using direct parameter)')
+            } else {
+              audioElement.playbackRate = 1.0
+              console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) for auto-play (using direct parameter)')
+            }
             console.log('🔍 DEBUG: Actual playback rate after setting:', audioElement.playbackRate)
           } else {
             audioElement.playbackRate = 1.0
@@ -1513,9 +1529,17 @@ const Game = () => {
           })
           
           // Use the direct currentSpecialType parameter instead of state
-          if (version === 'Version B' && currentSpecialType === 'slo-mo') {
-            audioElement.playbackRate = 0.3
-            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) after load (using direct parameter)')
+          if (version === 'Version B' && currentSpecialType) {
+            if (currentSpecialType === 'slo-mo') {
+              audioElement.playbackRate = 0.3
+              console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) after load (using direct parameter)')
+            } else if (currentSpecialType === 'hyperspeed') {
+              audioElement.playbackRate = 2.0
+              console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) after load (using direct parameter)')
+            } else {
+              audioElement.playbackRate = 1.0
+              console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) after load (using direct parameter)')
+            }
             console.log('🔍 DEBUG: Actual playback rate after load setting:', audioElement.playbackRate)
           } else {
             audioElement.playbackRate = 1.0
@@ -1682,10 +1706,18 @@ const Game = () => {
     } else {
       // Ensure audio is ready to play
       const attemptPlay = () => {
-        // Set playback rate for Slo-Mo special questions
-        if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber) && specialQuestionType === 'slo-mo') {
-          audio.playbackRate = 0.3
-          console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play')
+        // Set playback rate for special questions
+        if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) {
+          if (specialQuestionType === 'slo-mo') {
+            audio.playbackRate = 0.3
+            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play')
+          } else if (specialQuestionType === 'hyperspeed') {
+            audio.playbackRate = 2.0
+            console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) for manual play')
+          } else {
+            audio.playbackRate = 1.0
+            console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) for manual play')
+          }
         } else {
           audio.playbackRate = 1.0
           console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) for manual play')
@@ -1703,10 +1735,18 @@ const Game = () => {
           audio.load()
           
           setTimeout(() => {
-            // Set playback rate for Slo-Mo special questions (retry)
-            if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber) && specialQuestionType === 'slo-mo') {
-              audio.playbackRate = 0.3
-              console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play retry')
+            // Set playback rate for special questions (retry)
+            if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) {
+              if (specialQuestionType === 'slo-mo') {
+                audio.playbackRate = 0.3
+                console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play retry')
+              } else if (specialQuestionType === 'hyperspeed') {
+                audio.playbackRate = 2.0
+                console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) for manual play retry')
+              } else {
+                audio.playbackRate = 1.0
+                console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) for manual play retry')
+              }
             } else {
               audio.playbackRate = 1.0
               console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) for manual play retry')
@@ -2276,7 +2316,14 @@ const Game = () => {
         
         // Select special question type before showing transition
         const randomValue = Math.random()
-        const specialType = randomValue < 0.5 ? 'time-warp' : 'slo-mo'
+        let specialType: 'time-warp' | 'slo-mo' | 'hyperspeed'
+        if (randomValue < 0.33) {
+          specialType = 'time-warp'
+        } else if (randomValue < 0.66) {
+          specialType = 'slo-mo'
+        } else {
+          specialType = 'hyperspeed'
+        }
         setSpecialQuestionType(specialType)
         console.log('🎲 RANDOM SELECTION: Math.random() =', randomValue, 'Type selected:', specialType)
         
@@ -2788,7 +2835,7 @@ const Game = () => {
           <div className="special-question-transition-content">
             <div className="special-question-transition-text">SPECIAL QUESTION</div>
             <div className="genre-portal-text">
-              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : 'Time Warp'}
+              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : specialQuestionType === 'hyperspeed' ? 'Hyperspeed' : 'Time Warp'}
             </div>
           </div>
         </div>
