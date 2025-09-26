@@ -2284,6 +2284,37 @@
   }
 }
 
+/* Version B Lifeline Attention Animation */
+.boosters-section.lifeline-attention {
+  animation: lifelineAttentionPulse 0.5s ease-in-out 4;
+  transform-origin: center;
+}
+
+.boosters-section.lifeline-attention .booster-icon:not(.depleted) {
+  animation: lifelineIconGlow 0.5s ease-in-out 4;
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.8), 0 0 40px rgba(78, 205, 196, 0.6);
+}
+
+@keyframes lifelineAttentionPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes lifelineIconGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(78, 205, 196, 0.8), 0 0 40px rgba(78, 205, 196, 0.6);
+    border-color: #4ecdc4;
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(78, 205, 196, 1), 0 0 60px rgba(78, 205, 196, 0.8), 0 0 80px rgba(78, 205, 196, 0.6);
+    border-color: #ffffff;
+  }
+}
+
 /* Version B Special Question Playlist Display */
 .special-playlist-display {
   position: fixed;
