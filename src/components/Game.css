@@ -2195,6 +2195,19 @@
   transform: translateY(-50%);
 }
 
+.genre-portal-text {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 60px rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  animation: genrePortalGlow 1.5s ease-in-out infinite alternate;
+  margin-top: 1rem;
+  opacity: 0.9;
+  font-family: 'Inter', sans-serif;
+}
+
 @keyframes specialTransitionBackground {
   0% {
     background-position: 0% 50%;
@@ -2249,6 +2262,80 @@
   }
 }
 
+@keyframes genrePortalGlow {
+  0% {
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 60px rgba(255, 255, 255, 0.6);
+    opacity: 0.9;
+  }
+  100% {
+    text-shadow: 0 0 40px rgba(255, 255, 255, 1), 0 0 80px rgba(255, 255, 255, 0.8), 0 0 120px rgba(255, 255, 255, 0.6);
+    opacity: 1;
+  }
+}
+
+@keyframes specialPlaylistGlow {
+  0% {
+    text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 60px rgba(78, 205, 196, 0.6);
+    background-position: 0% 50%;
+  }
+  100% {
+    text-shadow: 0 0 40px rgba(255, 107, 107, 1), 0 0 80px rgba(78, 205, 196, 0.8), 0 0 120px rgba(69, 183, 209, 0.6);
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes specialPlaylistPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Version B Special Question Playlist Display */
+.special-playlist-display {
+  position: fixed;
+  top: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  text-align: center;
+}
+
+.time-warp-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin-bottom: 8px;
+  font-family: 'Inter', sans-serif;
+  opacity: 0.9;
+}
+
+.special-playlist-text {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e53, #4ecdc4, #45b7d1);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 60px rgba(78, 205, 196, 0.6);
+  text-transform: lowercase;
+  letter-spacing: 8px;
+  animation: specialPlaylistGlow 2s ease-in-out infinite alternate, specialPlaylistPulse 1.5s ease-in-out infinite;
+  font-family: 'Inter', sans-serif;
+  padding: 8px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+}
+
 
 /* Mobile adjustments for Special Question transition */
 @media (max-width: 768px) {
@@ -2271,6 +2358,30 @@
   .special-question-transition-text::after {
     right: -30px;
   }
+  
+  /* Genre Portal mobile adjustments */
+  .genre-portal-text {
+    font-size: 1.8rem;
+    letter-spacing: 6px;
+    margin-top: 0.8rem;
+  }
+  
+  /* Special Playlist Display mobile adjustments */
+  .special-playlist-display {
+    top: 130px;
+  }
+  
+  .special-playlist-text {
+    font-size: 1.8rem;
+    letter-spacing: 6px;
+    padding: 6px 16px;
+  }
+  
+  .time-warp-label {
+    font-size: 1rem;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2292,6 +2403,30 @@
   
   .special-question-transition-text::after {
     right: -20px;
+  }
+  
+  /* Genre Portal small mobile adjustments */
+  .genre-portal-text {
+    font-size: 1.4rem;
+    letter-spacing: 4px;
+    margin-top: 0.6rem;
+  }
+  
+  /* Special Playlist Display small mobile adjustments */
+  .special-playlist-display {
+    top: 110px;
+  }
+  
+  .special-playlist-text {
+    font-size: 1.4rem;
+    letter-spacing: 4px;
+    padding: 4px 12px;
+  }
+  
+  .time-warp-label {
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
   }
 }
 

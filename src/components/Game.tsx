@@ -125,6 +125,7 @@ const Game = () => {
   
   // Version B Special Question tracking
   const [specialQuestionNumber, setSpecialQuestionNumber] = useState<number | null>(null)
+  const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1187,6 +1188,46 @@ const Game = () => {
     }
   }
 
+  const generateSpecialQuizQuestion = (): QuizQuestion => {
+    const currentPlaylist = playlist || '2010s'
+    
+    // Get all available playlists except the current one
+    const allPlaylists = ['90s', '2000s', '2010s', '2020s']
+    const otherPlaylists = allPlaylists.filter(p => p !== currentPlaylist)
+    
+    // Randomly select one of the other playlists
+    const randomPlaylistIndex = Math.floor(Math.random() * otherPlaylists.length)
+    const specialPlaylist = otherPlaylists[randomPlaylistIndex]
+    
+    console.log('🎯 SPECIAL QUESTION: Using playlist', specialPlaylist, 'instead of', currentPlaylist)
+    
+    // Store the special playlist for display
+    setSpecialQuestionPlaylist(specialPlaylist)
+    
+    const playlistSongs = getPlaylistSongs(specialPlaylist)
+    
+    // Get available songs from the special playlist
+    const availableSongs = getAvailableSongs(specialPlaylist, playlistSongs)
+    
+    const randomIndex = Math.floor(Math.random() * availableSongs.length)
+    const correctSong = availableSongs[randomIndex] as Song
+    
+    // Mark this song as played in the special playlist's storage
+    addPlayedSong(specialPlaylist, correctSong.id)
+    
+    // Use curated alternatives for this song
+    const wrongAnswers = correctSong.alternatives
+    
+    const correctAnswer = `${correctSong.title} - ${correctSong.artist}`
+    const options = [...wrongAnswers, correctAnswer].sort(() => Math.random() - 0.5)
+    
+    return {
+      song: correctSong,
+      options,
+      correctAnswer
+    }
+  }
+
   // Helper function that works with specific question number to avoid state timing issues
   const startNewQuestionWithNumber = (questionNum: number) => {
     console.log('🎵 START: Starting question', questionNum, 'for version', version)
@@ -1197,11 +1238,11 @@ const Game = () => {
     }
     setIsLoadingQuestion(true)
     
-    // Check if this is the special question (question 7) for Version B
-    if (version === 'Version B' && questionNum === totalQuestions) {
-      console.log('🎵 VERSION B: Starting special question #7')
-      // This is the special question - generate a normal quiz question but with special scoring
-      startNewQuestionInternal()
+    // Check if this is the special question for Version B
+    if (version === 'Version B' && specialQuestionNumber === questionNum) {
+      console.log('🎵 VERSION B: Starting special question #', questionNum)
+      // This is the special question - generate a question from a different playlist
+      startNewQuestionInternal(true) // Pass true to indicate it's a special question
       return
     }
 
@@ -1212,7 +1253,7 @@ const Game = () => {
     startNewQuestionWithNumber(questionNumber)
   }
 
-  const startNewQuestionInternal = () => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false) => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1235,7 +1276,7 @@ const Game = () => {
       audio.load()
     }
     
-    const question = generateQuizQuestion()
+    const question = isSpecialQuestion ? generateSpecialQuizQuestion() : generateQuizQuestion()
     setCurrentQuestion(question)
     setSelectedAnswer(null)
     setShowFeedback(false)
@@ -1405,6 +1446,7 @@ const Game = () => {
       // Randomly select which question will be special (2-7, excluding Question 1)
       const randomSpecialQuestion = Math.floor(Math.random() * 6) + 2 // 2-7 instead of 1-7
       setSpecialQuestionNumber(randomSpecialQuestion)
+      setSpecialQuestionPlaylist(null) // Reset special playlist
       console.log('🎯 VERSION B: Special Question will be Question', randomSpecialQuestion)
       
       // Verify the special question number is valid (2-7)
@@ -2144,6 +2186,7 @@ const Game = () => {
     setLetterRevealInfo(null) // Reset letter reveal info
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setSpecialQuestionNumber(null) // Reset special question tracking
+    setSpecialQuestionPlaylist(null) // Reset special playlist
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
@@ -2592,7 +2635,16 @@ const Game = () => {
         <div className="special-question-transition-screen">
           <div className="special-question-transition-content">
             <div className="special-question-transition-text">SPECIAL QUESTION</div>
+            <div className="genre-portal-text">Time Warp</div>
           </div>
+        </div>
+      )}
+
+      {/* Version B Special Question Playlist Display */}
+      {version === 'Version B' && specialQuestionPlaylist && specialQuestionNumber === questionNumber && !showFeedback && (
+        <div className="special-playlist-display">
+          <div className="time-warp-label">TIME WARP</div>
+          <div className="special-playlist-text">{specialQuestionPlaylist}</div>
         </div>
       )}
 
