@@ -68,7 +68,7 @@ const Game = () => {
   const [speedBonusToggle, setSpeedBonusToggle] = useState(false)
   
   // Version C specific state
-  const [timeRemaining, setTimeRemaining] = useState(60)
+  const [timeRemaining, setTimeRemaining] = useState(30)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   const [allAttemptedSongs, setAllAttemptedSongs] = useState<Array<{
     song: any,
@@ -77,27 +77,15 @@ const Game = () => {
     songCorrect: boolean
   }>>([])
   
-  // Version C Booster state
-  const [boosters, setBoosters] = useState({
-    doublePoints: {
-      available: true,
-      active: false,
-      timeRemaining: 0
-    },
-    bonusTime: {
-      available: true,
-      active: false
-    }
-  })
+  // Version C Booster state removed - now using progressive streak multiplier system
   
   // Version C Auto-booster notification state
   const [autoBoosterNotification, setAutoBoosterNotification] = useState<string | null>(null)
   const [timerPulse, setTimerPulse] = useState(false)
-  const [consecutiveScores, setConsecutiveScores] = useState(0) // Track consecutive questions with points
+  const [versionCStreak, setVersionCStreak] = useState(0) // Track streak for progressive multipliers
   const [showScoreConfetti, setShowScoreConfetti] = useState(false) // Track confetti animation
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const doublePointsTimerRef = useRef<NodeJS.Timeout | null>(null)
   
   // Note: Song tracking is now handled by persistent localStorage via songTracker utility
   
@@ -1270,7 +1258,7 @@ const Game = () => {
       // Version B has no opponent mechanics
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
-      if (!isTimerRunning && timeRemaining === 60) {
+      if (!isTimerRunning && timeRemaining === 30) {
         setIsTimerRunning(true)
       } else if (!isTimerRunning && timeRemaining > 0) {
         setIsTimerRunning(true)
@@ -1409,7 +1397,7 @@ const Game = () => {
     // Version C: Start timer when game begins
     if (version === 'Version C') {
       setIsTimerRunning(true)
-      setTimeRemaining(60)
+      setTimeRemaining(30)
       setAllAttemptedSongs([])
     }
     
@@ -1541,91 +1529,67 @@ const Game = () => {
       songCorrect
     }])
     
-    // Apply double points booster if active
-    let finalPoints = points
-    if (boosters.doublePoints.active && points > 0) {
-      finalPoints = points * 2
+    // Update streak and apply streak multiplier
+    let newStreak = versionCStreak
+    let streakMultiplier = 1
+    let showStreakNotification = false
+    let streakMessage = ""
+    
+    if (points > 0) {
+      // Increase streak for correct answers
+      newStreak = versionCStreak + 1
+      setVersionCStreak(newStreak)
+      
+      // Calculate multiplier based on new streak
+      const previousMultiplier = getStreakMultiplier(versionCStreak)
+      streakMultiplier = getStreakMultiplier(newStreak)
+      
+      // Show notification when multiplier changes
+      if (streakMultiplier > previousMultiplier) {
+        showStreakNotification = true
+        if (streakMultiplier === 2) {
+          streakMessage = '🔥 STREAK! 2× Multiplier Activated!'
+        } else if (streakMultiplier === 3) {
+          streakMessage = '🔥🔥 STREAK! 3× Multiplier Activated!'
+        } else if (streakMultiplier === 4) {
+          streakMessage = '🔥🔥🔥 MAX STREAK! 4× Multiplier!'
+        }
+      }
+      
+      console.log(`🎵 VERSION C: Streak ${newStreak}, Multiplier ${streakMultiplier}×`)
+    } else {
+      // Reset streak on incorrect/missed answers
+      newStreak = 0
+      setVersionCStreak(0)
+      streakMultiplier = 1
+      console.log('🎵 VERSION C: Streak reset to 0')
     }
     
-    // Award points to player
+    // Apply streak multiplier to points
+    const finalPoints = points * streakMultiplier
+    
+    // Award points to player  
     const newScore = score + finalPoints
     setScore(newScore)
     
-    // Track consecutive scoring attempts for double points auto-trigger
-    if (points > 0) {
-      const newConsecutiveCount = consecutiveScores + 1
-      setConsecutiveScores(newConsecutiveCount)
-      
-      // Check if player scored on 2 questions in a row and automatically activate double points booster
-      if (newConsecutiveCount >= 2 && boosters.doublePoints.available && !boosters.doublePoints.active) {
-        console.log('🎵 VERSION C: Auto-activating double points booster after 2 consecutive scores!')
-        
-        setBoosters(prev => ({
-          ...prev,
-          doublePoints: {
-            ...prev.doublePoints,
-            available: false,
-            active: true,
-            timeRemaining: 10
-          }
-        }))
-        
-        // Start double points countdown timer
-        let timeLeft = 10
-        const countdown = setInterval(() => {
-          timeLeft -= 1
-          setBoosters(prev => ({
-            ...prev,
-            doublePoints: {
-              ...prev.doublePoints,
-              timeRemaining: timeLeft
-            }
-          }))
-          
-          if (timeLeft <= 0) {
-            clearInterval(countdown)
-            setBoosters(prev => ({
-              ...prev,
-              doublePoints: {
-                ...prev.doublePoints,
-                active: false,
-                timeRemaining: 0
-              }
-            }))
-          }
-        }, 1000)
-        
-        // Show visual notification for auto-activation
-        setAutoBoosterNotification('🔥 DOUBLE POINTS! 2× multiplier activated for 10 seconds!')
-        setTimeout(() => {
-          setAutoBoosterNotification(null)
-        }, 3000) // Clear notification after 3 seconds
-        
-        console.log('🔥 DOUBLE POINTS: Automatically activated after consecutive scores!')
-      }
-    } else {
-      // Reset consecutive count if no points scored
-      setConsecutiveScores(0)
-    }
-    
-    // Check if player reached 30 points and automatically activate bonus time booster
-    if (newScore >= 30 && boosters.bonusTime.available && isTimerRunning) {
-      console.log('🎵 VERSION C: Auto-activating bonus time booster at 30+ points!')
-      setBoosters(prev => ({
-        ...prev,
-        bonusTime: {
-          ...prev.bonusTime,
-          available: false,
-          active: false // This is instant, no ongoing effect
-        }
-      }))
-      setTimeRemaining(prev => prev + 10)
-      
-      // Show visual notification for auto-activation
-      setAutoBoosterNotification('⏰ BONUS TIME! +10 seconds automatically awarded!')
+    // Show streak progression notification
+    if (showStreakNotification) {
+      setAutoBoosterNotification(streakMessage)
       setTimeout(() => {
         setAutoBoosterNotification(null)
       }, 3000) // Clear notification after 3 seconds
+    }
+    
+    // Give +3 bonus seconds for any points earned
+    if (points > 0 && isTimerRunning) {
+      console.log('🎵 VERSION C: Adding +3 bonus seconds for scoring points!')
+      setTimeRemaining(prev => prev + 3)
+      
+      // Show visual notification for bonus time
+      setAutoBoosterNotification('⏰ +3 Bonus Seconds!')
+      setTimeout(() => {
+        setAutoBoosterNotification(null)
+      }, 2000) // Clear notification after 2 seconds
       
       // Pulse the timer to make it obvious time was added
       setTimerPulse(true)
@@ -1633,7 +1597,7 @@ const Game = () => {
         setTimerPulse(false)
       }, 1000) // Remove pulse after 1 second
       
-      console.log('⏰ BONUS TIME: +10 seconds automatically awarded!')
+      console.log('⏰ BONUS TIME: +3 seconds awarded for scoring!')
     }
     
     if (points > 0) {
@@ -2074,15 +2038,11 @@ const Game = () => {
     setQuestionsCorrectness([])
     setOpponentQuestionsCorrectness([])
     // Reset Version C timer and attempts
-    setTimeRemaining(60)
+    setTimeRemaining(30)
     setIsTimerRunning(false)
     setAllAttemptedSongs([])
-    // Reset Version C boosters and consecutive tracking
-    setBoosters({
-      doublePoints: { available: true, active: false, timeRemaining: 0 },
-      bonusTime: { available: true, active: false }
-    })
-    setConsecutiveScores(0)
+    // Reset Version C streak tracking
+    setVersionCStreak(0)
     setAutoBoosterNotification(null)
     // Reset Version B lifelines
     setLifelinesUsed({
@@ -2116,22 +2076,16 @@ const Game = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  // Version C Booster Functions
-  // Double points booster is now automatic - triggers after 2 consecutive scores
+  // Version C Streak Multiplier Functions
 
-  const activateBonusTime = () => {
-    if (!boosters.bonusTime.available || !isTimerRunning) return
-    
-    setBoosters(prev => ({
-      ...prev,
-      bonusTime: {
-        ...prev.bonusTime,
-        available: false,
-        active: false // This is instant, no ongoing effect
-      }
-    }))
-    
-    setTimeRemaining(prev => prev + 10)
+  // activateBonusTime function removed - bonus time now automatically triggers on any points scored
+
+  // Version C Streak Multiplier Helper Function
+  const getStreakMultiplier = (streak: number): number => {
+    if (streak >= 5) return 4 // Max multiplier at 5+ streak
+    if (streak >= 4) return 3 // 3x multiplier at 4 streak
+    if (streak >= 3) return 2 // 2x multiplier at 3 streak
+    return 1 // No multiplier below 3 streak
   }
 
   // Calculate correct rate based on base correctness (no bonuses)
@@ -2510,21 +2464,23 @@ const Game = () => {
               return null;
             })()}
             {version === 'Version C' ? (
-              <div className={`version-c-timer ${boosters.doublePoints.active ? 'double-points-active' : ''}`}>
-                <div className={`timer-display ${boosters.doublePoints.active ? 'timer-boosted' : ''} ${timerPulse ? 'timer-pulse' : ''}`}>
+              <div className="version-c-timer">
+                <div className={`timer-display ${timerPulse ? 'timer-pulse' : ''}`}>
                   <div className="timer-label">Time Remaining</div>
-                  <div className={`timer-value ${timeRemaining <= 10 ? 'timer-urgent' : ''} ${boosters.doublePoints.active ? 'timer-value-boosted' : ''}`}>
+                  <div className={`timer-value ${timeRemaining <= 10 ? 'timer-urgent' : ''}`}>
                     {timeRemaining}s
                   </div>
-                  {boosters.doublePoints.active && (
-                    <div className="timer-booster-indicator">
-                      2× POINTS ACTIVE
+                  {versionCStreak >= 3 && (
+                    <div 
+                      className="timer-streak-indicator" 
+                      data-multiplier={getStreakMultiplier(versionCStreak)}
+                    >
+                      {getStreakMultiplier(versionCStreak) === 4 ? '🔥🔥🔥 ' : '🔥 '}
+                      {getStreakMultiplier(versionCStreak)}× STREAK ACTIVE
+                      {getStreakMultiplier(versionCStreak) === 4 ? ' 🔥🔥🔥' : ''}
                     </div>
                   )}
                 </div>
-                {boosters.doublePoints.active && (
-                  <div className="timer-glow-effect"></div>
-                )}
               </div>
             ) : (
               <div className="quiz-progress">
@@ -2876,47 +2832,7 @@ const Game = () => {
           </div>
         </main>
         
-        {/* Version C Boosters - Bottom Left Position */}
-        {version === 'Version C' && !gameComplete && (
-          <div className="version-c-boosters-bottom">
-            <div className="boosters-container-bottom">
-              <button 
-                className={`booster-button-large double-points-booster auto-trigger ${!boosters.doublePoints.available ? 'used' : boosters.doublePoints.active ? 'active' : ''}`}
-                disabled={true}
-                title="Automatically activates after 2 consecutive scores"
-              >
-                <div className="booster-icon-large">2×</div>
-                <div className="booster-text-large">
-                  <div className="booster-title">Double Points</div>
-                  {boosters.doublePoints.active && (
-                    <div className="booster-timer-large">{boosters.doublePoints.timeRemaining}s left</div>
-                  )}
-                  {!boosters.doublePoints.available && !boosters.doublePoints.active ? (
-                    <div className="booster-used-text">Activated</div>
-                  ) : (
-                    <div className="booster-subtitle">Auto: 2 in a row</div>
-                  )}
-                </div>
-              </button>
-              
-              <button 
-                className={`booster-button-large bonus-time-booster auto-trigger ${!boosters.bonusTime.available ? 'used' : ''}`}
-                disabled={true}
-                title="Automatically activates at 30 points"
-              >
-                <div className="booster-icon-large">⏰</div>
-                <div className="booster-text-large">
-                  <div className="booster-title">Bonus Time</div>
-                  {!boosters.bonusTime.available ? (
-                    <div className="booster-used-text">Activated</div>
-                  ) : (
-                    <div className="booster-subtitle">Auto at 30pts</div>
-                  )}
-                </div>
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Version C Boosters removed - now using progressive streak multiplier system */}
         
         {/* Competitive Avatars */}
         <div className="avatars">
