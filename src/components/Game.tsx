@@ -114,6 +114,10 @@ const Game = () => {
   // Version B Special Question tracking
   const [specialQuestionNumbers, setSpecialQuestionNumbers] = useState<number[]>([])
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
+  
+  // Version B Lifeline attention animation
+  const [showLifelineAttention, setShowLifelineAttention] = useState(false)
+  const lifelineAttentionTimerRef = useRef<NodeJS.Timeout | null>(null)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1216,6 +1220,47 @@ const Game = () => {
     }
   }
 
+  // Helper function to check if any lifelines are still available
+  const hasAvailableLifelines = () => {
+    return !lifelinesUsed.doublePoints || !lifelinesUsed.skip || !lifelinesUsed.letterReveal
+  }
+
+  // Helper function to start lifeline attention animation
+  const startLifelineAttentionAnimation = () => {
+    if (version !== 'Version B' || !hasAvailableLifelines()) {
+      return
+    }
+
+    // Clear any existing timer
+    if (lifelineAttentionTimerRef.current) {
+      clearTimeout(lifelineAttentionTimerRef.current)
+    }
+
+    // Start animation after 5 seconds
+    lifelineAttentionTimerRef.current = setTimeout(() => {
+      setShowLifelineAttention(true)
+      
+      // Stop animation after 2 seconds
+      setTimeout(() => {
+        setShowLifelineAttention(false)
+        
+        // Schedule next animation if still no answer and lifelines available
+        if (version === 'Version B' && hasAvailableLifelines() && !showFeedback) {
+          startLifelineAttentionAnimation()
+        }
+      }, 2000)
+    }, 5000)
+  }
+
+  // Helper function to stop lifeline attention animation
+  const stopLifelineAttentionAnimation = () => {
+    if (lifelineAttentionTimerRef.current) {
+      clearTimeout(lifelineAttentionTimerRef.current)
+      lifelineAttentionTimerRef.current = null
+    }
+    setShowLifelineAttention(false)
+  }
+
   // Helper function that works with specific question number to avoid state timing issues
   const startNewQuestionWithNumber = (questionNum: number) => {
     console.log('🎵 START: Starting question', questionNum, 'for version', version)
@@ -1259,12 +1304,15 @@ const Game = () => {
       audio.onloadedmetadata = null
       audio.onerror = null
       
-      // Complete reset of audio element for all versions (not just Version C)
-      audio.src = ''
-      audio.load()
-    }
-    
-    const question = isSpecialQuestion ? generateSpecialQuizQuestion() : generateQuizQuestion()
+    // Complete reset of audio element for all versions (not just Version C)
+    audio.src = ''
+    audio.load()
+  }
+  
+  // Stop lifeline attention animation when starting new question
+  stopLifelineAttentionAnimation()
+  
+  const question = isSpecialQuestion ? generateSpecialQuizQuestion() : generateQuizQuestion()
     setCurrentQuestion(question)
     setSelectedAnswer(null)
     setShowFeedback(false)
@@ -1799,6 +1847,9 @@ const Game = () => {
 
   // Version B Lifeline handler
   const handleLifelineClick = (lifelineType: 'doublePoints' | 'skip' | 'letterReveal') => {
+    // Stop lifeline attention animation when any lifeline is used
+    stopLifelineAttentionAnimation()
+    
     // Check if lifeline is already used
     if (lifelinesUsed[lifelineType]) {
       return // Do nothing if already used
@@ -2017,6 +2068,9 @@ const Game = () => {
   }
 
   const handleAnswerSelect = (answer: string) => {
+    // Stop lifeline attention animation when question is answered
+    stopLifelineAttentionAnimation()
+    
     if (selectedAnswer) return // Already answered
     
     setSelectedAnswer(answer)
@@ -2193,6 +2247,7 @@ const Game = () => {
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setSpecialQuestionNumbers([]) // Reset special question tracking
     setSpecialQuestionPlaylist(null) // Reset special playlist
+    stopLifelineAttentionAnimation() // Stop lifeline attention animation
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
@@ -2657,7 +2712,13 @@ const Game = () => {
                 <audio
                   ref={audioRef}
                   src={currentQuestion?.song?.file}
-                  onEnded={() => setIsPlaying(false)}
+                  onEnded={() => {
+                    setIsPlaying(false)
+                    // Start lifeline attention animation for Version B after song ends
+                    if (version === 'Version B') {
+                      startLifelineAttentionAnimation()
+                    }
+                  }}
                 />
               </div>
             )}
@@ -2701,7 +2762,7 @@ const Game = () => {
 
             {/* Version B Boosters */}
             {version === 'Version B' && !showFeedback && (
-              <div className="boosters-section">
+              <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''}`}>
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
                   <div 
