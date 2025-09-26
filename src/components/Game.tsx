@@ -114,6 +114,7 @@ const Game = () => {
   // Version B Special Question tracking
   const [specialQuestionNumbers, setSpecialQuestionNumbers] = useState<number[]>([])
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
+  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | null>(null)
   
   // Version B Lifeline attention animation
   const [showLifelineAttention, setShowLifelineAttention] = useState(false)
@@ -1180,7 +1181,7 @@ const Game = () => {
     }
   }
 
-  const generateSpecialQuizQuestion = (): QuizQuestion => {
+  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo'): QuizQuestion => {
     const currentPlaylist = playlist || '2010s'
     
     // Get all available playlists except the current one
@@ -1191,10 +1192,14 @@ const Game = () => {
     const randomPlaylistIndex = Math.floor(Math.random() * otherPlaylists.length)
     const specialPlaylist = otherPlaylists[randomPlaylistIndex]
     
-    console.log('🎯 SPECIAL QUESTION: Using playlist', specialPlaylist, 'instead of', currentPlaylist)
+    console.log('🎯 SPECIAL QUESTION: Using playlist', specialPlaylist, 'with type', questionType, 'instead of', currentPlaylist)
     
-    // Store the special playlist for display
-    setSpecialQuestionPlaylist(specialPlaylist)
+    // Store the special playlist for display (only for time-warp)
+    if (questionType === 'time-warp') {
+      setSpecialQuestionPlaylist(specialPlaylist)
+    } else {
+      setSpecialQuestionPlaylist(null) // No playlist display for slo-mo
+    }
     
     const playlistSongs = getPlaylistSongs(specialPlaylist)
     
@@ -1275,7 +1280,7 @@ const Game = () => {
     if (version === 'Version B' && specialQuestionNumbers.includes(questionNum)) {
       console.log('🎵 VERSION B: Starting special question #', questionNum)
       // This is the special question - generate a question from a different playlist
-      startNewQuestionInternal(true) // Pass true to indicate it's a special question
+      startNewQuestionInternal(true, specialQuestionType || 'time-warp') // Pass true and the special type
       return
     }
 
@@ -1286,7 +1291,7 @@ const Game = () => {
     startNewQuestionWithNumber(questionNumber)
   }
 
-  const startNewQuestionInternal = (isSpecialQuestion: boolean = false) => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo') => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1312,7 +1317,7 @@ const Game = () => {
   // Stop lifeline attention animation when starting new question
   stopLifelineAttentionAnimation()
   
-  const question = isSpecialQuestion ? generateSpecialQuizQuestion() : generateQuizQuestion()
+  const question = isSpecialQuestion && specialType ? generateSpecialQuizQuestion(specialType) : generateQuizQuestion()
     setCurrentQuestion(question)
     setSelectedAnswer(null)
     setShowFeedback(false)
@@ -1514,6 +1519,7 @@ const Game = () => {
       selectedSpecialQuestions.sort((a, b) => a - b) // Sort in ascending order
       setSpecialQuestionNumbers(selectedSpecialQuestions)
       setSpecialQuestionPlaylist(null) // Reset special playlist
+      setSpecialQuestionType(null) // Reset special question type
       
       console.log(`🎯 VERSION B: ${selectedSpecialQuestions.length} Special Question(s) will be:`, selectedSpecialQuestions)
       
@@ -2183,6 +2189,13 @@ const Game = () => {
       // Check if we're about to start a Special Question in Version B
       if (version === 'Version B' && specialQuestionNumbers.includes(newQuestionNumber)) {
         console.log('🎯 SPECIAL QUESTION: Transition screen triggered for Question', newQuestionNumber)
+        
+        // Select special question type before showing transition
+        const randomValue = Math.random()
+        const specialType = randomValue < 0.5 ? 'time-warp' : 'slo-mo'
+        setSpecialQuestionType(specialType)
+        console.log('🎲 RANDOM SELECTION: Math.random() =', randomValue, 'Type selected:', specialType)
+        
         // Show Special Question transition screen
         setShowSpecialQuestionTransition(true)
         
@@ -2247,6 +2260,7 @@ const Game = () => {
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setSpecialQuestionNumbers([]) // Reset special question tracking
     setSpecialQuestionPlaylist(null) // Reset special playlist
+    setSpecialQuestionType(null) // Reset special question type
     stopLifelineAttentionAnimation() // Stop lifeline attention animation
     setTimerPulse(false)
     setShowScoreConfetti(false)
@@ -2254,10 +2268,7 @@ const Game = () => {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
-    if (doublePointsTimerRef.current) {
-      clearTimeout(doublePointsTimerRef.current)
-      doublePointsTimerRef.current = null
-    }
+    // Note: doublePointsTimerRef was removed, no cleanup needed
     
     startNewQuestion()
   }
@@ -2692,16 +2703,25 @@ const Game = () => {
         <div className="special-question-transition-screen">
           <div className="special-question-transition-content">
             <div className="special-question-transition-text">SPECIAL QUESTION</div>
-            <div className="genre-portal-text">Time Warp</div>
+            <div className="genre-portal-text">
+              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : 'Time Warp'}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Version B Special Question Playlist Display */}
-      {version === 'Version B' && specialQuestionPlaylist && specialQuestionNumbers.includes(questionNumber) && !showFeedback && (
+      {/* Version B Special Question Playlist Display (Time Warp only) */}
+      {version === 'Version B' && specialQuestionNumbers.includes(questionNumber) && !showFeedback && specialQuestionType === 'time-warp' && (
         <div className="special-playlist-display">
           <div className="time-warp-label">TIME WARP</div>
-          <div className="special-playlist-text">{specialQuestionPlaylist}</div>
+          <div className="special-playlist-text">{specialQuestionPlaylist || 'Unknown Playlist'}</div>
+        </div>
+      )}
+
+      {/* Version B Debug Text - Special Question Numbers */}
+      {version === 'Version B' && (
+        <div className="debug-special-questions">
+          Special Questions: {specialQuestionNumbers.length > 0 ? specialQuestionNumbers.join(', ') : 'None'}
         </div>
       )}
 

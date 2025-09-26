@@ -3822,3 +3822,29 @@
     font-size: 3.5rem !important;
   }
 }
+
+/* Version B Debug Text - Special Question Numbers */
+.debug-special-questions {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  z-index: 1000;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+}
+
+@media (max-width: 768px) {
+  .debug-special-questions {
+    top: 15px;
+    right: 15px;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
