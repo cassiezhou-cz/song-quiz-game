@@ -124,7 +124,7 @@ const Game = () => {
   const [showSpecialQuestionTransition, setShowSpecialQuestionTransition] = useState(false)
   
   // Version B Special Question tracking
-  const [specialQuestionNumber, setSpecialQuestionNumber] = useState<number | null>(null)
+  const [specialQuestionNumbers, setSpecialQuestionNumbers] = useState<number[]>([])
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
@@ -1239,7 +1239,7 @@ const Game = () => {
     setIsLoadingQuestion(true)
     
     // Check if this is the special question for Version B
-    if (version === 'Version B' && specialQuestionNumber === questionNum) {
+    if (version === 'Version B' && specialQuestionNumbers.includes(questionNum)) {
       console.log('🎵 VERSION B: Starting special question #', questionNum)
       // This is the special question - generate a question from a different playlist
       startNewQuestionInternal(true) // Pass true to indicate it's a special question
@@ -1443,17 +1443,63 @@ const Game = () => {
       })
       setIsDoublePointsActive(false)
       
-      // Randomly select which question will be special (2-7, excluding Question 1)
-      const randomSpecialQuestion = Math.floor(Math.random() * 6) + 2 // 2-7 instead of 1-7
-      setSpecialQuestionNumber(randomSpecialQuestion)
-      setSpecialQuestionPlaylist(null) // Reset special playlist
-      console.log('🎯 VERSION B: Special Question will be Question', randomSpecialQuestion)
+      // Randomly select 1 or 2 special questions (50% chance for 2)
+      const willHaveTwoSpecialQuestions = Math.random() < 0.5
+      const numSpecialQuestions = willHaveTwoSpecialQuestions ? 2 : 1
       
-      // Verify the special question number is valid (2-7)
-      if (randomSpecialQuestion < 2 || randomSpecialQuestion > 7) {
-        console.error('❌ ERROR: Invalid special question number:', randomSpecialQuestion)
-        // Fallback to question 7 if there's an issue
-        setSpecialQuestionNumber(7)
+      // Generate special question numbers (2-7, excluding Question 1)
+      const availableQuestions = [2, 3, 4, 5, 6, 7]
+      const selectedSpecialQuestions: number[] = []
+      
+      for (let i = 0; i < numSpecialQuestions; i++) {
+        // Filter out questions that would create consecutive special questions
+        const validQuestions = availableQuestions.filter(question => {
+          // Check if this question would be consecutive with any already selected
+          return !selectedSpecialQuestions.some(selected => Math.abs(question - selected) === 1)
+        })
+        
+        // If no valid questions remain, break to avoid infinite loop
+        if (validQuestions.length === 0) {
+          console.warn('⚠️ WARNING: Cannot select more special questions without creating consecutive ones')
+          break
+        }
+        
+        const randomIndex = Math.floor(Math.random() * validQuestions.length)
+        const selectedQuestion = validQuestions[randomIndex]
+        selectedSpecialQuestions.push(selectedQuestion)
+        
+        // Remove the selected question from available questions
+        const originalIndex = availableQuestions.indexOf(selectedQuestion)
+        if (originalIndex > -1) {
+          availableQuestions.splice(originalIndex, 1)
+        }
+      }
+      
+      selectedSpecialQuestions.sort((a, b) => a - b) // Sort in ascending order
+      setSpecialQuestionNumbers(selectedSpecialQuestions)
+      setSpecialQuestionPlaylist(null) // Reset special playlist
+      
+      console.log(`🎯 VERSION B: ${selectedSpecialQuestions.length} Special Question(s) will be:`, selectedSpecialQuestions)
+      
+      // Verify no consecutive special questions
+      const hasConsecutive = selectedSpecialQuestions.some((question, index) => {
+        if (index === 0) return false
+        return question - selectedSpecialQuestions[index - 1] === 1
+      })
+      
+      if (hasConsecutive) {
+        console.error('❌ ERROR: Consecutive special questions detected:', selectedSpecialQuestions)
+        // Fallback to single question 7 if there's an issue
+        setSpecialQuestionNumbers([7])
+        console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
+      }
+      
+      // Verify all special question numbers are valid (2-7)
+      const invalidQuestions = selectedSpecialQuestions.filter(q => q < 2 || q > 7)
+      if (invalidQuestions.length > 0) {
+        console.error('❌ ERROR: Invalid special question numbers:', invalidQuestions)
+        // Fallback to single question 7 if there's an issue
+        setSpecialQuestionNumbers([7])
         console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
       }
     }
@@ -1734,7 +1780,7 @@ const Game = () => {
     let songCorrect = false
     
     // Check if this is the special question
-    if (specialQuestionNumber === questionNumber) {
+    if (specialQuestionNumbers.includes(questionNumber)) {
       console.log('🎯 SPECIAL QUESTION: Scoring Question', questionNumber, 'with special points:', points)
       // Special Question: 50-100 points
       if (points >= 100) {
@@ -2099,9 +2145,9 @@ const Game = () => {
       
       // Version B: Verify that special question appeared
       if (version === 'Version B') {
-        console.log('🎯 VERSION B SESSION COMPLETE: Special Question was Question', specialQuestionNumber)
-        if (specialQuestionNumber === null) {
-          console.error('❌ ERROR: Special Question was not set!')
+        console.log('🎯 VERSION B SESSION COMPLETE: Special Questions were:', specialQuestionNumbers)
+        if (specialQuestionNumbers.length === 0) {
+          console.error('❌ ERROR: No Special Questions were set!')
         }
       }
       
@@ -2117,7 +2163,7 @@ const Game = () => {
       console.log('🎵 NEXT: Moving to question', newQuestionNumber)
       
       // Check if we're about to start a Special Question in Version B
-      if (version === 'Version B' && specialQuestionNumber === newQuestionNumber) {
+      if (version === 'Version B' && specialQuestionNumbers.includes(newQuestionNumber)) {
         console.log('🎯 SPECIAL QUESTION: Transition screen triggered for Question', newQuestionNumber)
         // Show Special Question transition screen
         setShowSpecialQuestionTransition(true)
@@ -2185,7 +2231,7 @@ const Game = () => {
     setIsDoublePointsActive(false)
     setLetterRevealInfo(null) // Reset letter reveal info
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
-    setSpecialQuestionNumber(null) // Reset special question tracking
+    setSpecialQuestionNumbers([]) // Reset special question tracking
     setSpecialQuestionPlaylist(null) // Reset special playlist
     setTimerPulse(false)
     setShowScoreConfetti(false)
@@ -2641,7 +2687,7 @@ const Game = () => {
       )}
 
       {/* Version B Special Question Playlist Display */}
-      {version === 'Version B' && specialQuestionPlaylist && specialQuestionNumber === questionNumber && !showFeedback && (
+      {version === 'Version B' && specialQuestionPlaylist && specialQuestionNumbers.includes(questionNumber) && !showFeedback && (
         <div className="special-playlist-display">
           <div className="time-warp-label">TIME WARP</div>
           <div className="special-playlist-text">{specialQuestionPlaylist}</div>
@@ -2807,18 +2853,18 @@ const Game = () => {
                   >
                     0 Points
                   </button>
-                  <button
-                    className="score-button score-10"
-                    onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumber === questionNumber ? 100 : 20) : (specialQuestionNumber === questionNumber ? 50 : 10))}
-                  >
-                    {isDoublePointsActive ? (specialQuestionNumber === questionNumber ? '100 Points' : '20 Points') : (specialQuestionNumber === questionNumber ? '50 Points' : '10 Points')}
-                  </button>
-                  <button
-                    className="score-button score-20"
-                    onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumber === questionNumber ? 200 : 40) : (specialQuestionNumber === questionNumber ? 100 : 20))}
-                  >
-                    {isDoublePointsActive ? (specialQuestionNumber === questionNumber ? '200 Points' : '40 Points') : (specialQuestionNumber === questionNumber ? '100 Points' : '20 Points')}
-                  </button>
+                <button
+                  className="score-button score-10"
+                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 100 : 20) : (specialQuestionNumbers.includes(questionNumber) ? 50 : 10))}
+                >
+                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points') : (specialQuestionNumbers.includes(questionNumber) ? '50 Points' : '10 Points')}
+                </button>
+                <button
+                  className="score-button score-20"
+                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 200 : 40) : (specialQuestionNumbers.includes(questionNumber) ? 100 : 20))}
+                >
+                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '200 Points' : '40 Points') : (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points')}
+                </button>
                   {/* No special scoring for question 7 since it's now a special question */}
                 </div>
                 {currentQuestion && (

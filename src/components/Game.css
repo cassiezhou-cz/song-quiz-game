@@ -2284,15 +2284,6 @@
   }
 }
 
-@keyframes specialPlaylistPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
 /* Version B Special Question Playlist Display */
 .special-playlist-display {
   position: fixed;
