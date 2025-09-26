@@ -2869,6 +2869,36 @@ const Game = () => {
             <div className="genre-portal-text">
               {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : specialQuestionType === 'hyperspeed' ? 'Hyperspeed' : 'Time Warp'}
             </div>
+            {/* Animated Clock for Time Warp */}
+            {specialQuestionType === 'time-warp' && (
+              <div className="time-warp-clock">
+                <div className="clock-face">
+                  <div className="clock-center"></div>
+                  <div className="clock-hand hour-hand"></div>
+                  <div className="clock-hand minute-hand"></div>
+                  <div className="clock-hand second-hand"></div>
+                  {/* Clock numbers */}
+                  <div className="clock-number clock-12">12</div>
+                  <div className="clock-number clock-3">3</div>
+                  <div className="clock-number clock-6">6</div>
+                  <div className="clock-number clock-9">9</div>
+                </div>
+              </div>
+            )}
+            
+            {/* Animated Snail Emoji for Slo-Mo */}
+            {specialQuestionType === 'slo-mo' && (
+              <div className="slo-mo-snail">
+                <div className="snail-emoji">🐌</div>
+              </div>
+            )}
+            
+            {/* Animated Racecar Emoji for Hyperspeed */}
+            {specialQuestionType === 'hyperspeed' && (
+              <div className="hyperspeed-racecar">
+                <div className="racecar-emoji">🏎️</div>
+              </div>
+            )}
           </div>
         </div>
       )}
