@@ -602,6 +602,56 @@
   box-shadow: 0 8px 25px rgba(255, 0, 0, 0.5);
 }
 
+/* Version B Debug Special Question Buttons */
+.debug-special-buttons {
+  position: fixed;
+  bottom: 6rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.debug-special-button {
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  min-width: 100px;
+  text-align: center;
+}
+
+.debug-special-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.time-warp-debug:hover {
+  background: rgba(78, 205, 196, 0.8);
+  border-color: rgba(78, 205, 196, 0.5);
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
+}
+
+.slo-mo-debug:hover {
+  background: rgba(255, 107, 107, 0.8);
+  border-color: rgba(255, 107, 107, 0.5);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+}
+
+.hyperspeed-debug:hover {
+  background: rgba(255, 215, 0, 0.8);
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+}
+
 /* Quiz-specific styles */
 .quiz-options {
   display: flex;
@@ -1104,6 +1154,18 @@
     right: 1rem;
     padding: 0.7rem 1.2rem;
     font-size: 0.9rem;
+  }
+  
+  .debug-special-buttons {
+    bottom: 5rem;
+    right: 1rem;
+    gap: 0.4rem;
+  }
+  
+  .debug-special-button {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    min-width: 80px;
   }
   
   .final-score {

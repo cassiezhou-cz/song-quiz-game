@@ -2314,18 +2314,24 @@ const Game = () => {
       if (version === 'Version B' && specialQuestionNumbers.includes(newQuestionNumber)) {
         console.log('🎯 SPECIAL QUESTION: Transition screen triggered for Question', newQuestionNumber)
         
-        // Select special question type before showing transition
-        const randomValue = Math.random()
+        // Use existing special question type if set (from debug buttons), otherwise select randomly
         let specialType: 'time-warp' | 'slo-mo' | 'hyperspeed'
-        if (randomValue < 0.33) {
-          specialType = 'time-warp'
-        } else if (randomValue < 0.66) {
-          specialType = 'slo-mo'
+        if (specialQuestionType) {
+          specialType = specialQuestionType
+          console.log('🎯 DEBUG: Using pre-set special question type:', specialType)
         } else {
-          specialType = 'hyperspeed'
+          // Select special question type randomly
+          const randomValue = Math.random()
+          if (randomValue < 0.33) {
+            specialType = 'time-warp'
+          } else if (randomValue < 0.66) {
+            specialType = 'slo-mo'
+          } else {
+            specialType = 'hyperspeed'
+          }
+          setSpecialQuestionType(specialType)
+          console.log('🎲 RANDOM SELECTION: Math.random() =', randomValue, 'Type selected:', specialType)
         }
-        setSpecialQuestionType(specialType)
-        console.log('🎲 RANDOM SELECTION: Math.random() =', randomValue, 'Type selected:', specialType)
         
         // Show Special Question transition screen
         setShowSpecialQuestionTransition(true)
@@ -2335,6 +2341,9 @@ const Game = () => {
           setShowSpecialQuestionTransition(false)
           setQuestionNumber(newQuestionNumber)
           console.log('🎯 SPECIAL QUESTION: Starting Question', newQuestionNumber, 'with special scoring')
+          
+          // Reset special question type after using it
+          setSpecialQuestionType(null)
           
           // Start new question with proper delay for cleanup
           setTimeout(() => {
@@ -2402,6 +2411,29 @@ const Game = () => {
     // Note: doublePointsTimerRef was removed, no cleanup needed
     
     startNewQuestion()
+  }
+
+  // Debug function to force next question to be a specific special question type
+  const handleDebugSpecialQuestion = (specialType: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+    console.log('🐛 DEBUG: Forcing next question to be', specialType, 'Special Question')
+    
+    // Set the next question number as a special question
+    const nextQuestionNumber = questionNumber + 1
+    
+    // Add this question to special question numbers
+    setSpecialQuestionNumbers(prev => {
+      const newNumbers = [...prev]
+      if (!newNumbers.includes(nextQuestionNumber)) {
+        newNumbers.push(nextQuestionNumber)
+        newNumbers.sort((a, b) => a - b)
+      }
+      return newNumbers
+    })
+    
+    // Set the special question type
+    setSpecialQuestionType(specialType)
+    
+    console.log('🐛 DEBUG: Next question', nextQuestionNumber, 'will be', specialType, 'Special Question')
   }
 
   const backToPlaylist = () => {
@@ -3343,6 +3375,33 @@ const Game = () => {
           >
             Restart
           </button>
+        )}
+
+        {/* Version B Special Question Debug Buttons */}
+        {version === 'Version B' && !showSpecialQuestionTransition && (
+          <div className="debug-special-buttons">
+            <button 
+              className="debug-special-button time-warp-debug"
+              onClick={() => handleDebugSpecialQuestion('time-warp')}
+              title="Force next question to be Time Warp Special Question"
+            >
+              Time Warp
+            </button>
+            <button 
+              className="debug-special-button slo-mo-debug"
+              onClick={() => handleDebugSpecialQuestion('slo-mo')}
+              title="Force next question to be Slo-Mo Special Question"
+            >
+              Slo-Mo
+            </button>
+            <button 
+              className="debug-special-button hyperspeed-debug"
+              onClick={() => handleDebugSpecialQuestion('hyperspeed')}
+              title="Force next question to be Hyperspeed Special Question"
+            >
+              Hyperspeed
+            </button>
+          </div>
         )}
 
       </div>
