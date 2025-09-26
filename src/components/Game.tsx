@@ -2881,13 +2881,6 @@ const Game = () => {
         </div>
       )}
 
-      {/* Version B Debug Text - Special Question Numbers */}
-      {version === 'Version B' && (
-        <div className="debug-special-questions">
-          Special Questions: {specialQuestionNumbers.length > 0 ? specialQuestionNumbers.join(', ') : 'None'}
-        </div>
-      )}
-
         <main className="game-main" style={{ display: showSpecialQuestionTransition ? 'none' : 'block' }}>
           <div className="quiz-section">
             {!showFeedback && (
