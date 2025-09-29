@@ -602,6 +602,56 @@
   box-shadow: 0 8px 25px rgba(255, 0, 0, 0.5);
 }
 
+/* Version B Debug Special Question Buttons */
+.debug-special-buttons {
+  position: fixed;
+  bottom: 6rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.debug-special-button {
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  min-width: 100px;
+  text-align: center;
+}
+
+.debug-special-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.time-warp-debug:hover {
+  background: rgba(78, 205, 196, 0.8);
+  border-color: rgba(78, 205, 196, 0.5);
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.5);
+}
+
+.slo-mo-debug:hover {
+  background: rgba(255, 107, 107, 0.8);
+  border-color: rgba(255, 107, 107, 0.5);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+}
+
+.hyperspeed-debug:hover {
+  background: rgba(255, 215, 0, 0.8);
+  border-color: rgba(255, 215, 0, 0.5);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+}
+
 /* Quiz-specific styles */
 .quiz-options {
   display: flex;
@@ -1104,6 +1154,18 @@
     right: 1rem;
     padding: 0.7rem 1.2rem;
     font-size: 0.9rem;
+  }
+  
+  .debug-special-buttons {
+    bottom: 5rem;
+    right: 1rem;
+    gap: 0.4rem;
+  }
+  
+  .debug-special-button {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    min-width: 80px;
   }
   
   .final-score {
@@ -2273,6 +2335,185 @@
   }
 }
 
+/* Time Warp Clock Animation */
+.time-warp-clock {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.clock-face {
+  width: 120px;
+  height: 120px;
+  border: 4px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  position: relative;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.clock-center {
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.clock-hand {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 2px;
+  transform-origin: bottom center;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.hour-hand {
+  width: 4px;
+  height: 35px;
+  top: 25px;
+  left: 58px;
+  animation: clockHourSpin 0.8s linear infinite;
+}
+
+.minute-hand {
+  width: 3px;
+  height: 45px;
+  top: 15px;
+  left: 58.5px;
+  animation: clockMinuteSpin 0.6s linear infinite;
+}
+
+.second-hand {
+  width: 2px;
+  height: 50px;
+  top: 10px;
+  left: 59px;
+  background: #ff6b6b;
+  animation: clockSecondSpin 0.4s linear infinite;
+  box-shadow: 0 0 15px rgba(255, 107, 107, 0.8);
+}
+
+.clock-number {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+  font-size: 14px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.clock-12 {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.clock-3 {
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+}
+
+.clock-6 {
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.clock-9 {
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+}
+
+@keyframes clockHourSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes clockMinuteSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes clockSecondSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Slo-Mo Snail Emoji Animation */
+.slo-mo-snail {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.snail-emoji {
+  font-size: 8rem;
+  animation: snailWiggle 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes snailWiggle {
+  0%, 100% {
+    transform: translateX(0) rotate(0deg) scale(1);
+  }
+  25% {
+    transform: translateX(5px) rotate(2deg) scale(1.05);
+  }
+  50% {
+    transform: translateX(10px) rotate(0deg) scale(1.1);
+  }
+  75% {
+    transform: translateX(5px) rotate(-2deg) scale(1.05);
+  }
+}
+
+/* Hyperspeed Racecar Animation */
+.hyperspeed-racecar {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+}
+
+.racecar-emoji {
+  font-size: 6rem;
+  animation: racecarRun 3s ease-in-out forwards;
+  filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes racecarRun {
+  0% {
+    transform: translateX(400px) scale(1);
+  }
+  100% {
+    transform: translateX(-400px) scale(1);
+  }
+}
 @keyframes specialPlaylistGlow {
   0% {
     text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 60px rgba(78, 205, 196, 0.6);
@@ -2281,6 +2522,37 @@
   100% {
     text-shadow: 0 0 40px rgba(255, 107, 107, 1), 0 0 80px rgba(78, 205, 196, 0.8), 0 0 120px rgba(69, 183, 209, 0.6);
     background-position: 100% 50%;
+  }
+}
+
+/* Version B Lifeline Attention Animation */
+.boosters-section.lifeline-attention {
+  animation: lifelineAttentionPulse 0.5s ease-in-out 4;
+  transform-origin: center;
+}
+
+.boosters-section.lifeline-attention .booster-icon:not(.depleted) {
+  animation: lifelineIconGlow 0.5s ease-in-out 4;
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.8), 0 0 40px rgba(78, 205, 196, 0.6);
+}
+
+@keyframes lifelineAttentionPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes lifelineIconGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(78, 205, 196, 0.8), 0 0 40px rgba(78, 205, 196, 0.6);
+    border-color: #4ecdc4;
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(78, 205, 196, 1), 0 0 60px rgba(78, 205, 196, 0.8), 0 0 80px rgba(78, 205, 196, 0.6);
+    border-color: #ffffff;
   }
 }
 
@@ -2357,6 +2629,68 @@
     margin-top: 0.8rem;
   }
   
+  /* Time Warp Clock mobile adjustments */
+  .time-warp-clock {
+    margin-top: 1.5rem;
+  }
+  
+  .clock-face {
+    width: 100px;
+    height: 100px;
+    border-width: 3px;
+  }
+  
+  .hour-hand {
+    height: 30px;
+    top: 20px;
+    left: 48.5px;
+    width: 3px;
+  }
+  
+  .minute-hand {
+    height: 38px;
+    top: 12px;
+    left: 48.5px;
+    width: 2px;
+  }
+  
+  .second-hand {
+    height: 42px;
+    top: 8px;
+    left: 49px;
+    width: 1px;
+  }
+  
+  .clock-number {
+    font-size: 12px;
+  }
+  
+  .clock-12 {
+    top: 6px;
+  }
+  
+  .clock-3 {
+    right: 6px;
+  }
+  
+  .clock-6 {
+    bottom: 6px;
+  }
+  
+  .clock-9 {
+    left: 6px;
+  }
+  
+  /* Hyperspeed Racecar mobile adjustments */
+  .hyperspeed-racecar {
+    margin-top: 1.5rem;
+    height: 100px;
+  }
+  
+  .racecar-emoji {
+    font-size: 4.5rem;
+  }
+  
   /* Special Playlist Display mobile adjustments */
   .special-playlist-display {
     top: 130px;
@@ -2401,6 +2735,68 @@
     font-size: 1.4rem;
     letter-spacing: 4px;
     margin-top: 0.6rem;
+  }
+  
+  /* Time Warp Clock small mobile adjustments */
+  .time-warp-clock {
+    margin-top: 1rem;
+  }
+  
+  .clock-face {
+    width: 80px;
+    height: 80px;
+    border-width: 2px;
+  }
+  
+  .hour-hand {
+    height: 24px;
+    top: 16px;
+    left: 38px;
+    width: 2px;
+  }
+  
+  .minute-hand {
+    height: 30px;
+    top: 10px;
+    left: 39px;
+    width: 1px;
+  }
+  
+  .second-hand {
+    height: 34px;
+    top: 6px;
+    left: 39.5px;
+    width: 1px;
+  }
+  
+  .clock-number {
+    font-size: 10px;
+  }
+  
+  .clock-12 {
+    top: 4px;
+  }
+  
+  .clock-3 {
+    right: 4px;
+  }
+  
+  .clock-6 {
+    bottom: 4px;
+  }
+  
+  .clock-9 {
+    left: 4px;
+  }
+  
+  /* Hyperspeed Racecar small mobile adjustments */
+  .hyperspeed-racecar {
+    margin-top: 1rem;
+    height: 80px;
+  }
+  
+  .racecar-emoji {
+    font-size: 3.5rem;
   }
   
   /* Special Playlist Display small mobile adjustments */

@@ -114,6 +114,11 @@ const Game = () => {
   // Version B Special Question tracking
   const [specialQuestionNumbers, setSpecialQuestionNumbers] = useState<number[]>([])
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
+  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | null>(null)
+  
+  // Version B Lifeline attention animation
+  const [showLifelineAttention, setShowLifelineAttention] = useState(false)
+  const lifelineAttentionTimerRef = useRef<NodeJS.Timeout | null>(null)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1176,7 +1181,7 @@ const Game = () => {
     }
   }
 
-  const generateSpecialQuizQuestion = (): QuizQuestion => {
+  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed'): QuizQuestion => {
     const currentPlaylist = playlist || '2010s'
     
     // Get all available playlists except the current one
@@ -1187,10 +1192,14 @@ const Game = () => {
     const randomPlaylistIndex = Math.floor(Math.random() * otherPlaylists.length)
     const specialPlaylist = otherPlaylists[randomPlaylistIndex]
     
-    console.log('🎯 SPECIAL QUESTION: Using playlist', specialPlaylist, 'instead of', currentPlaylist)
+    console.log('🎯 SPECIAL QUESTION: Using playlist', specialPlaylist, 'with type', questionType, 'instead of', currentPlaylist)
     
-    // Store the special playlist for display
-    setSpecialQuestionPlaylist(specialPlaylist)
+    // Store the special playlist for display (only for time-warp)
+    if (questionType === 'time-warp') {
+      setSpecialQuestionPlaylist(specialPlaylist)
+    } else {
+      setSpecialQuestionPlaylist(null) // No playlist display for slo-mo
+    }
     
     const playlistSongs = getPlaylistSongs(specialPlaylist)
     
@@ -1216,9 +1225,50 @@ const Game = () => {
     }
   }
 
+  // Helper function to check if any lifelines are still available
+  const hasAvailableLifelines = () => {
+    return !lifelinesUsed.doublePoints || !lifelinesUsed.skip || !lifelinesUsed.letterReveal
+  }
+
+  // Helper function to start lifeline attention animation
+  const startLifelineAttentionAnimation = () => {
+    if (version !== 'Version B' || !hasAvailableLifelines()) {
+      return
+    }
+
+    // Clear any existing timer
+    if (lifelineAttentionTimerRef.current) {
+      clearTimeout(lifelineAttentionTimerRef.current)
+    }
+
+    // Start animation after 5 seconds
+    lifelineAttentionTimerRef.current = setTimeout(() => {
+      setShowLifelineAttention(true)
+      
+      // Stop animation after 2 seconds
+      setTimeout(() => {
+        setShowLifelineAttention(false)
+        
+        // Schedule next animation if still no answer and lifelines available
+        if (version === 'Version B' && hasAvailableLifelines() && !showFeedback) {
+          startLifelineAttentionAnimation()
+        }
+      }, 2000)
+    }, 5000)
+  }
+
+  // Helper function to stop lifeline attention animation
+  const stopLifelineAttentionAnimation = () => {
+    if (lifelineAttentionTimerRef.current) {
+      clearTimeout(lifelineAttentionTimerRef.current)
+      lifelineAttentionTimerRef.current = null
+    }
+    setShowLifelineAttention(false)
+  }
+
   // Helper function that works with specific question number to avoid state timing issues
-  const startNewQuestionWithNumber = (questionNum: number) => {
-    console.log('🎵 START: Starting question', questionNum, 'for version', version)
+  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+    console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType)
     
     // Prevent multiple simultaneous calls
     if (isLoadingQuestion) {
@@ -1228,9 +1278,9 @@ const Game = () => {
     
     // Check if this is the special question for Version B
     if (version === 'Version B' && specialQuestionNumbers.includes(questionNum)) {
-      console.log('🎵 VERSION B: Starting special question #', questionNum)
+      console.log('🎵 VERSION B: Starting special question #', questionNum, 'with type:', specialType)
       // This is the special question - generate a question from a different playlist
-      startNewQuestionInternal(true) // Pass true to indicate it's a special question
+      startNewQuestionInternal(true, specialType || 'time-warp') // Use passed specialType
       return
     }
 
@@ -1241,7 +1291,7 @@ const Game = () => {
     startNewQuestionWithNumber(questionNumber)
   }
 
-  const startNewQuestionInternal = (isSpecialQuestion: boolean = false) => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1259,12 +1309,21 @@ const Game = () => {
       audio.onloadedmetadata = null
       audio.onerror = null
       
-      // Complete reset of audio element for all versions (not just Version C)
-      audio.src = ''
-      audio.load()
-    }
-    
-    const question = isSpecialQuestion ? generateSpecialQuizQuestion() : generateQuizQuestion()
+    // Complete reset of audio element for all versions (not just Version C)
+    audio.src = ''
+    audio.load()
+  }
+  
+  // Stop lifeline attention animation when starting new question
+  stopLifelineAttentionAnimation()
+  
+  // Set the special question type immediately for audio playback
+  if (isSpecialQuestion && specialType) {
+    setSpecialQuestionType(specialType)
+    console.log('🎯 SPECIAL QUESTION: Set type to', specialType, 'for audio playback')
+  }
+  
+  const question = isSpecialQuestion && specialType ? generateSpecialQuizQuestion(specialType) : generateQuizQuestion()
     setCurrentQuestion(question)
     setSelectedAnswer(null)
     setShowFeedback(false)
@@ -1305,7 +1364,7 @@ const Game = () => {
     
     // Auto-play the song after audio element has loaded the new source
     // Use multiple attempts to ensure audio plays reliably
-    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3) => {
+    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
       const audioElement = audioRef.current
       console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
@@ -1332,12 +1391,30 @@ const Game = () => {
         audioElement.src = question.song.file
         console.log(`🎵 AUTOPLAY: Set new source: ${question.song.file}`)
         
+        // Set playback rate immediately after setting source for special questions
+        if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) {
+          if (currentSpecialType === 'slo-mo') {
+            audioElement.playbackRate = 0.3
+            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) immediately after setting source')
+          } else if (currentSpecialType === 'hyperspeed') {
+            audioElement.playbackRate = 2.0
+            console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) immediately after setting source')
+          } else {
+            audioElement.playbackRate = 1.0
+            console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) immediately after setting source')
+          }
+          console.log('🔍 DEBUG: Playback rate after source set:', audioElement.playbackRate)
+        } else {
+          audioElement.playbackRate = 1.0
+          console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) after setting source')
+        }
+        
         // Add error handler for this attempt
         audioElement.onerror = (error) => {
           console.error(`🎵 AUTOPLAY: Audio loading error on attempt ${attemptNumber}:`, error)
           audioElement.onerror = null
           if (attemptNumber < maxAttempts) {
-            setTimeout(() => attemptAutoPlay(attemptNumber + 1, maxAttempts), 500)
+            setTimeout(() => attemptAutoPlay(attemptNumber + 1, maxAttempts, currentSpecialType), 500)
           } else {
             console.error('🎵 AUTOPLAY: All attempts failed due to loading errors')
             setIsPlaying(false)
@@ -1350,8 +1427,42 @@ const Game = () => {
           // Clear error handler since we're about to play
           audioElement.onerror = null
           
+          // Set playback rate for Slo-Mo special questions
+          console.log('🔍 DEBUG: Auto-play playback rate check:', {
+            version,
+            questionNumber,
+            specialQuestionNumbers,
+            specialQuestionType,
+            currentSpecialType,
+            isVersionB: version === 'Version B',
+            isSpecialQuestion: specialQuestionNumbers.includes(questionNumber),
+            isSloMo: specialQuestionType === 'slo-mo',
+            isSloMoDirect: currentSpecialType === 'slo-mo',
+            currentPlaybackRate: audioElement.playbackRate
+          })
+          
+          // Use the direct currentSpecialType parameter instead of state
+          if (version === 'Version B' && currentSpecialType) {
+            if (currentSpecialType === 'slo-mo') {
+              audioElement.playbackRate = 0.3
+              console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for auto-play (using direct parameter)')
+            } else if (currentSpecialType === 'hyperspeed') {
+              audioElement.playbackRate = 2.0
+              console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) for auto-play (using direct parameter)')
+            } else {
+              audioElement.playbackRate = 1.0
+              console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) for auto-play (using direct parameter)')
+            }
+            console.log('🔍 DEBUG: Actual playback rate after setting:', audioElement.playbackRate)
+          } else {
+            audioElement.playbackRate = 1.0
+            console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) for auto-play')
+            console.log('🔍 DEBUG: Actual playback rate after setting:', audioElement.playbackRate)
+          }
+          
           audioElement.play().then(() => {
             console.log(`🎵 GAME: Audio playback started successfully for ${question.song.title}`)
+            console.log('🔍 DEBUG: Final playback rate when playing:', audioElement.playbackRate)
             setIsPlaying(true)
             setIsLoadingQuestion(false)
           }).catch(error => {
@@ -1403,6 +1514,38 @@ const Game = () => {
           }
           
           audioElement.load() // Force reload
+          
+          // Set playback rate after load for Slo-Mo special questions
+          console.log('🔍 DEBUG: After load playback rate check:', {
+            version,
+            questionNumber,
+            specialQuestionNumbers,
+            specialQuestionType,
+            currentSpecialType,
+            isVersionB: version === 'Version B',
+            isSpecialQuestion: specialQuestionNumbers.includes(questionNumber),
+            isSloMo: specialQuestionType === 'slo-mo',
+            isSloMoDirect: currentSpecialType === 'slo-mo'
+          })
+          
+          // Use the direct currentSpecialType parameter instead of state
+          if (version === 'Version B' && currentSpecialType) {
+            if (currentSpecialType === 'slo-mo') {
+              audioElement.playbackRate = 0.3
+              console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) after load (using direct parameter)')
+            } else if (currentSpecialType === 'hyperspeed') {
+              audioElement.playbackRate = 2.0
+              console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) after load (using direct parameter)')
+            } else {
+              audioElement.playbackRate = 1.0
+              console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) after load (using direct parameter)')
+            }
+            console.log('🔍 DEBUG: Actual playback rate after load setting:', audioElement.playbackRate)
+          } else {
+            audioElement.playbackRate = 1.0
+            console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) after load')
+            console.log('🔍 DEBUG: Actual playback rate after load setting:', audioElement.playbackRate)
+          }
         }
       } else {
         console.log('🎵 GAME: No audio element found')
@@ -1411,7 +1554,7 @@ const Game = () => {
     }
     
     // Start auto-play with a short delay to allow audio element cleanup to complete
-    setTimeout(() => attemptAutoPlay(), 500)
+    setTimeout(() => attemptAutoPlay(1, 3, specialType), 500)
     
   }
 
@@ -1466,6 +1609,7 @@ const Game = () => {
       selectedSpecialQuestions.sort((a, b) => a - b) // Sort in ascending order
       setSpecialQuestionNumbers(selectedSpecialQuestions)
       setSpecialQuestionPlaylist(null) // Reset special playlist
+      setSpecialQuestionType(null) // Reset special question type
       
       console.log(`🎯 VERSION B: ${selectedSpecialQuestions.length} Special Question(s) will be:`, selectedSpecialQuestions)
       
@@ -1562,6 +1706,23 @@ const Game = () => {
     } else {
       // Ensure audio is ready to play
       const attemptPlay = () => {
+        // Set playback rate for special questions
+        if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) {
+          if (specialQuestionType === 'slo-mo') {
+            audio.playbackRate = 0.3
+            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play')
+          } else if (specialQuestionType === 'hyperspeed') {
+            audio.playbackRate = 2.0
+            console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) for manual play')
+          } else {
+            audio.playbackRate = 1.0
+            console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) for manual play')
+          }
+        } else {
+          audio.playbackRate = 1.0
+          console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) for manual play')
+        }
+        
         audio.play().then(() => {
           setIsPlaying(true)
           console.log('🎵 GAME: Manual play started successfully')
@@ -1574,6 +1735,23 @@ const Game = () => {
           audio.load()
           
           setTimeout(() => {
+            // Set playback rate for special questions (retry)
+            if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) {
+              if (specialQuestionType === 'slo-mo') {
+                audio.playbackRate = 0.3
+                console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play retry')
+              } else if (specialQuestionType === 'hyperspeed') {
+                audio.playbackRate = 2.0
+                console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) for manual play retry')
+              } else {
+                audio.playbackRate = 1.0
+                console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) for manual play retry')
+              }
+            } else {
+              audio.playbackRate = 1.0
+              console.log('🎵 NORMAL: Set playback rate to 1.0 (100% speed) for manual play retry')
+            }
+            
             audio.play().then(() => {
               setIsPlaying(true)
               console.log('🎵 GAME: Manual play retry successful')
@@ -1799,6 +1977,9 @@ const Game = () => {
 
   // Version B Lifeline handler
   const handleLifelineClick = (lifelineType: 'doublePoints' | 'skip' | 'letterReveal') => {
+    // Stop lifeline attention animation when any lifeline is used
+    stopLifelineAttentionAnimation()
+    
     // Check if lifeline is already used
     if (lifelinesUsed[lifelineType]) {
       return // Do nothing if already used
@@ -2017,6 +2198,9 @@ const Game = () => {
   }
 
   const handleAnswerSelect = (answer: string) => {
+    // Stop lifeline attention animation when question is answered
+    stopLifelineAttentionAnimation()
+    
     if (selectedAnswer) return // Already answered
     
     setSelectedAnswer(answer)
@@ -2129,6 +2313,26 @@ const Game = () => {
       // Check if we're about to start a Special Question in Version B
       if (version === 'Version B' && specialQuestionNumbers.includes(newQuestionNumber)) {
         console.log('🎯 SPECIAL QUESTION: Transition screen triggered for Question', newQuestionNumber)
+        
+        // Use existing special question type if set (from debug buttons), otherwise select randomly
+        let specialType: 'time-warp' | 'slo-mo' | 'hyperspeed'
+        if (specialQuestionType) {
+          specialType = specialQuestionType
+          console.log('🎯 DEBUG: Using pre-set special question type:', specialType)
+        } else {
+          // Select special question type randomly
+          const randomValue = Math.random()
+          if (randomValue < 0.33) {
+            specialType = 'time-warp'
+          } else if (randomValue < 0.66) {
+            specialType = 'slo-mo'
+          } else {
+            specialType = 'hyperspeed'
+          }
+          setSpecialQuestionType(specialType)
+          console.log('🎲 RANDOM SELECTION: Math.random() =', randomValue, 'Type selected:', specialType)
+        }
+        
         // Show Special Question transition screen
         setShowSpecialQuestionTransition(true)
         
@@ -2138,9 +2342,12 @@ const Game = () => {
           setQuestionNumber(newQuestionNumber)
           console.log('🎯 SPECIAL QUESTION: Starting Question', newQuestionNumber, 'with special scoring')
           
+          // Reset special question type after using it
+          setSpecialQuestionType(null)
+          
           // Start new question with proper delay for cleanup
           setTimeout(() => {
-            startNewQuestionWithNumber(newQuestionNumber)
+            startNewQuestionWithNumber(newQuestionNumber, specialType)
           }, 1000)
         }, 3000)
       } else {
@@ -2193,15 +2400,40 @@ const Game = () => {
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setSpecialQuestionNumbers([]) // Reset special question tracking
     setSpecialQuestionPlaylist(null) // Reset special playlist
+    setSpecialQuestionType(null) // Reset special question type
+    stopLifelineAttentionAnimation() // Stop lifeline attention animation
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
-    // doublePointsTimerRef removed - no longer needed with streak multiplier system
+    // doublePointsTimerRef removed for streak multiplier system; no cleanup needed
     
     startNewQuestion()
+  }
+
+  // Debug function to force next question to be a specific special question type
+  const handleDebugSpecialQuestion = (specialType: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+    console.log('🐛 DEBUG: Forcing next question to be', specialType, 'Special Question')
+    
+    // Set the next question number as a special question
+    const nextQuestionNumber = questionNumber + 1
+    
+    // Add this question to special question numbers
+    setSpecialQuestionNumbers(prev => {
+      const newNumbers = [...prev]
+      if (!newNumbers.includes(nextQuestionNumber)) {
+        newNumbers.push(nextQuestionNumber)
+        newNumbers.sort((a, b) => a - b)
+      }
+      return newNumbers
+    })
+    
+    // Set the special question type
+    setSpecialQuestionType(specialType)
+    
+    console.log('🐛 DEBUG: Next question', nextQuestionNumber, 'will be', specialType, 'Special Question')
   }
 
   const backToPlaylist = () => {
@@ -2634,16 +2866,48 @@ const Game = () => {
         <div className="special-question-transition-screen">
           <div className="special-question-transition-content">
             <div className="special-question-transition-text">SPECIAL QUESTION</div>
-            <div className="genre-portal-text">Time Warp</div>
+            <div className="genre-portal-text">
+              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : specialQuestionType === 'hyperspeed' ? 'Hyperspeed' : 'Time Warp'}
+            </div>
+            {/* Animated Clock for Time Warp */}
+            {specialQuestionType === 'time-warp' && (
+              <div className="time-warp-clock">
+                <div className="clock-face">
+                  <div className="clock-center"></div>
+                  <div className="clock-hand hour-hand"></div>
+                  <div className="clock-hand minute-hand"></div>
+                  <div className="clock-hand second-hand"></div>
+                  {/* Clock numbers */}
+                  <div className="clock-number clock-12">12</div>
+                  <div className="clock-number clock-3">3</div>
+                  <div className="clock-number clock-6">6</div>
+                  <div className="clock-number clock-9">9</div>
+                </div>
+              </div>
+            )}
+            
+            {/* Animated Snail Emoji for Slo-Mo */}
+            {specialQuestionType === 'slo-mo' && (
+              <div className="slo-mo-snail">
+                <div className="snail-emoji">🐌</div>
+              </div>
+            )}
+            
+            {/* Animated Racecar Emoji for Hyperspeed */}
+            {specialQuestionType === 'hyperspeed' && (
+              <div className="hyperspeed-racecar">
+                <div className="racecar-emoji">🏎️</div>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Version B Special Question Playlist Display */}
-      {version === 'Version B' && specialQuestionPlaylist && specialQuestionNumbers.includes(questionNumber) && !showFeedback && (
+      {/* Version B Special Question Playlist Display (Time Warp only) */}
+      {version === 'Version B' && specialQuestionNumbers.includes(questionNumber) && !showFeedback && specialQuestionType === 'time-warp' && (
         <div className="special-playlist-display">
           <div className="time-warp-label">TIME WARP</div>
-          <div className="special-playlist-text">{specialQuestionPlaylist}</div>
+          <div className="special-playlist-text">{specialQuestionPlaylist || 'Unknown Playlist'}</div>
         </div>
       )}
 
@@ -2654,7 +2918,13 @@ const Game = () => {
                 <audio
                   ref={audioRef}
                   src={currentQuestion?.song?.file}
-                  onEnded={() => setIsPlaying(false)}
+                  onEnded={() => {
+                    setIsPlaying(false)
+                    // Start lifeline attention animation for Version B after song ends
+                    if (version === 'Version B') {
+                      startLifelineAttentionAnimation()
+                    }
+                  }}
                 />
               </div>
             )}
@@ -2698,7 +2968,7 @@ const Game = () => {
 
             {/* Version B Boosters */}
             {version === 'Version B' && !showFeedback && (
-              <div className="boosters-section">
+              <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''}`}>
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
                   <div 
@@ -3128,6 +3398,33 @@ const Game = () => {
           >
             Restart
           </button>
+        )}
+
+        {/* Version B Special Question Debug Buttons */}
+        {version === 'Version B' && !showSpecialQuestionTransition && (
+          <div className="debug-special-buttons">
+            <button 
+              className="debug-special-button time-warp-debug"
+              onClick={() => handleDebugSpecialQuestion('time-warp')}
+              title="Force next question to be Time Warp Special Question"
+            >
+              Time Warp
+            </button>
+            <button 
+              className="debug-special-button slo-mo-debug"
+              onClick={() => handleDebugSpecialQuestion('slo-mo')}
+              title="Force next question to be Slo-Mo Special Question"
+            >
+              Slo-Mo
+            </button>
+            <button 
+              className="debug-special-button hyperspeed-debug"
+              onClick={() => handleDebugSpecialQuestion('hyperspeed')}
+              title="Force next question to be Hyperspeed Special Question"
+            >
+              Hyperspeed
+            </button>
+          </div>
         )}
 
       </div>
