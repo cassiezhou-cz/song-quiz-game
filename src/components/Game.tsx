@@ -113,6 +113,7 @@ const Game = () => {
   
   // Version B Special Question tracking
   const [specialQuestionNumbers, setSpecialQuestionNumbers] = useState<number[]>([])
+  const [specialQuestionTypes, setSpecialQuestionTypes] = useState<{[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed'}>({})
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
   const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | null>(null)
   
@@ -1611,7 +1612,20 @@ const Game = () => {
       setSpecialQuestionPlaylist(null) // Reset special playlist
       setSpecialQuestionType(null) // Reset special question type
       
+      // Pre-assign types to special questions to ensure variety
+      const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed')[] = ['time-warp', 'slo-mo', 'hyperspeed']
+      const shuffledTypes = [...allTypes].sort(() => Math.random() - 0.5) // Shuffle the types
+      const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed'} = {}
+      
+      selectedSpecialQuestions.forEach((questionNum, index) => {
+        // Cycle through shuffled types to ensure variety
+        assignedTypes[questionNum] = shuffledTypes[index % shuffledTypes.length]
+      })
+      
+      setSpecialQuestionTypes(assignedTypes)
+      
       console.log(`🎯 VERSION B: ${selectedSpecialQuestions.length} Special Question(s) will be:`, selectedSpecialQuestions)
+      console.log(`🎯 VERSION B: Assigned types:`, assignedTypes)
       
       // Verify no consecutive special questions
       const hasConsecutive = selectedSpecialQuestions.some((question, index) => {
@@ -2314,24 +2328,18 @@ const Game = () => {
       if (version === 'Version B' && specialQuestionNumbers.includes(newQuestionNumber)) {
         console.log('🎯 SPECIAL QUESTION: Transition screen triggered for Question', newQuestionNumber)
         
-        // Use existing special question type if set (from debug buttons), otherwise select randomly
-        let specialType: 'time-warp' | 'slo-mo' | 'hyperspeed'
-        if (specialQuestionType) {
-          specialType = specialQuestionType
-          console.log('🎯 DEBUG: Using pre-set special question type:', specialType)
-        } else {
-          // Select special question type randomly
-          const randomValue = Math.random()
-          if (randomValue < 0.33) {
-            specialType = 'time-warp'
-          } else if (randomValue < 0.66) {
-            specialType = 'slo-mo'
-          } else {
-            specialType = 'hyperspeed'
-          }
-          setSpecialQuestionType(specialType)
-          console.log('🎲 RANDOM SELECTION: Math.random() =', randomValue, 'Type selected:', specialType)
+        // Use pre-assigned type for this question to ensure variety
+        const specialType = specialQuestionTypes[newQuestionNumber]
+        console.log('🎯 PRE-ASSIGNED: Using pre-assigned type for Question', newQuestionNumber, ':', specialType)
+        console.log('🎯 PRE-ASSIGNED: All assigned types:', specialQuestionTypes)
+        
+        if (!specialType) {
+          console.error('❌ ERROR: No pre-assigned type found for question', newQuestionNumber)
+          return
         }
+        
+        // Set the special question type for the transition screen
+        setSpecialQuestionType(specialType)
         
         // Show Special Question transition screen
         setShowSpecialQuestionTransition(true)
@@ -2341,9 +2349,6 @@ const Game = () => {
           setShowSpecialQuestionTransition(false)
           setQuestionNumber(newQuestionNumber)
           console.log('🎯 SPECIAL QUESTION: Starting Question', newQuestionNumber, 'with special scoring')
-          
-          // Reset special question type after using it
-          setSpecialQuestionType(null)
           
           // Start new question with proper delay for cleanup
           setTimeout(() => {
@@ -2399,6 +2404,7 @@ const Game = () => {
     setLetterRevealInfo(null) // Reset letter reveal info
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setSpecialQuestionNumbers([]) // Reset special question tracking
+    setSpecialQuestionTypes({}) // Reset special question types
     setSpecialQuestionPlaylist(null) // Reset special playlist
     setSpecialQuestionType(null) // Reset special question type
     stopLifelineAttentionAnimation() // Stop lifeline attention animation
@@ -2817,6 +2823,7 @@ const Game = () => {
       )}
       
       <div className="game-content">
+        
         <header className="game-header" style={{ display: showSpecialQuestionTransition ? 'none' : 'flex' }}>
           <div className="quiz-info">
             {(() => {
