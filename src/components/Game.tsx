@@ -2199,10 +2199,7 @@ const Game = () => {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
-    if (doublePointsTimerRef.current) {
-      clearTimeout(doublePointsTimerRef.current)
-      doublePointsTimerRef.current = null
-    }
+    // doublePointsTimerRef removed - no longer needed with streak multiplier system
     
     startNewQuestion()
   }
@@ -2871,7 +2868,7 @@ const Game = () => {
             )}
             
             {/* Multiple Choice Options for other versions */}
-            {version !== 'Version A' && version !== 'Version B' && version !== 'Version C' && !selectedAnswer && !showFeedback && (
+            {version !== 'Version A' && version !== 'Version B' && version !== 'Version C' && !selectedAnswer && !showFeedback && currentQuestion && (
               <div className="answer-options">
                 <h3>What song is this?</h3>
                 <div className="options-grid">
@@ -2889,7 +2886,7 @@ const Game = () => {
             )}
 
             {/* Results/Feedback Screen - album art with simplified score breakdown */}
-            {showFeedback && (
+            {showFeedback && currentQuestion && (
               <div className="feedback-container">
                 <div className="album-art-display">
                   <img 
