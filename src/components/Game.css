@@ -47,8 +47,12 @@
 }
 
 .game-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
   margin-bottom: 3rem;
+  width: 100%;
 }
 
 .game-logo {
@@ -60,7 +64,11 @@
 }
 
 .quiz-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
+  width: 100%;
 }
 
 .playlist-title {
@@ -77,6 +85,8 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 1rem;
   margin: 0 auto 1rem auto;
+  text-align: center;
+  width: 100%;
 }
 
 .competitive-scores {

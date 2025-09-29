@@ -2575,11 +2575,6 @@ const Game = () => {
       <div className={`game-container ${version === 'Version B' ? 'version-b' : version === 'Version C' ? 'version-c' : ''}`}>
         <div className="game-content">
           <header className="game-header">
-            <img 
-              src="/assets/Song Quiz Horizontal logo.png" 
-              alt="Song Quiz Logo" 
-              className="game-logo"
-            />
           </header>
 
           <main className="game-main">
@@ -2823,11 +2818,6 @@ const Game = () => {
       
       <div className="game-content">
         <header className="game-header" style={{ display: showSpecialQuestionTransition ? 'none' : 'flex' }}>
-          <img 
-            src="/assets/Song Quiz Horizontal logo.png" 
-            alt="Song Quiz Logo" 
-            className="game-logo"
-          />
           <div className="quiz-info">
             {(() => {
               console.log('🕐 TIMER RENDERING CHECK:', { version, isVersionC: version === 'Version C', timeRemaining });
