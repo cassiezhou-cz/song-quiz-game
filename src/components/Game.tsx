@@ -2436,6 +2436,12 @@ const Game = () => {
       return newNumbers
     })
     
+    // Set the special question type for this question
+    setSpecialQuestionTypes(prev => ({
+      ...prev,
+      [nextQuestionNumber]: specialType
+    }))
+    
     // Set the special question type
     setSpecialQuestionType(specialType)
     
@@ -3405,21 +3411,21 @@ const Game = () => {
               onClick={() => handleDebugSpecialQuestion('time-warp')}
               title="Force next question to be Time Warp Special Question"
             >
-              Time Warp
+              TW
             </button>
             <button 
               className="debug-special-button slo-mo-debug"
               onClick={() => handleDebugSpecialQuestion('slo-mo')}
               title="Force next question to be Slo-Mo Special Question"
             >
-              Slo-Mo
+              SM
             </button>
             <button 
               className="debug-special-button hyperspeed-debug"
               onClick={() => handleDebugSpecialQuestion('hyperspeed')}
               title="Force next question to be Hyperspeed Special Question"
             >
-              Hyperspeed
+              HS
             </button>
           </div>
         )}
