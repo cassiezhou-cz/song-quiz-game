@@ -1395,8 +1395,8 @@ const Game = () => {
         // Set playback rate immediately after setting source for special questions
         if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) {
           if (currentSpecialType === 'slo-mo') {
-            audioElement.playbackRate = 0.3
-            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) immediately after setting source')
+            audioElement.playbackRate = 0.6
+            console.log('🎵 SLO-MO: Set playback rate to 0.6 (60% speed) immediately after setting source')
           } else if (currentSpecialType === 'hyperspeed') {
             audioElement.playbackRate = 2.0
             console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) immediately after setting source')
@@ -1445,8 +1445,8 @@ const Game = () => {
           // Use the direct currentSpecialType parameter instead of state
           if (version === 'Version B' && currentSpecialType) {
             if (currentSpecialType === 'slo-mo') {
-              audioElement.playbackRate = 0.3
-              console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for auto-play (using direct parameter)')
+              audioElement.playbackRate = 0.6
+              console.log('🎵 SLO-MO: Set playback rate to 0.6 (60% speed) for auto-play (using direct parameter)')
             } else if (currentSpecialType === 'hyperspeed') {
               audioElement.playbackRate = 2.0
               console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) for auto-play (using direct parameter)')
@@ -1532,8 +1532,8 @@ const Game = () => {
           // Use the direct currentSpecialType parameter instead of state
           if (version === 'Version B' && currentSpecialType) {
             if (currentSpecialType === 'slo-mo') {
-              audioElement.playbackRate = 0.3
-              console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) after load (using direct parameter)')
+              audioElement.playbackRate = 0.6
+              console.log('🎵 SLO-MO: Set playback rate to 0.6 (60% speed) after load (using direct parameter)')
             } else if (currentSpecialType === 'hyperspeed') {
               audioElement.playbackRate = 2.0
               console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) after load (using direct parameter)')
@@ -1723,8 +1723,8 @@ const Game = () => {
         // Set playback rate for special questions
         if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) {
           if (specialQuestionType === 'slo-mo') {
-            audio.playbackRate = 0.3
-            console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play')
+            audio.playbackRate = 0.6
+            console.log('🎵 SLO-MO: Set playback rate to 0.6 (60% speed) for manual play')
           } else if (specialQuestionType === 'hyperspeed') {
             audio.playbackRate = 2.0
             console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) for manual play')
@@ -1752,8 +1752,8 @@ const Game = () => {
             // Set playback rate for special questions (retry)
             if (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) {
               if (specialQuestionType === 'slo-mo') {
-                audio.playbackRate = 0.3
-                console.log('🎵 SLO-MO: Set playback rate to 0.3 (30% speed) for manual play retry')
+                audio.playbackRate = 0.6
+                console.log('🎵 SLO-MO: Set playback rate to 0.6 (60% speed) for manual play retry')
               } else if (specialQuestionType === 'hyperspeed') {
                 audio.playbackRate = 2.0
                 console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) for manual play retry')
