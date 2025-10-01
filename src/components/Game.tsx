@@ -3166,19 +3166,19 @@ const Game = () => {
                     className="score-button score-0"
                     onClick={() => handleVersionBScore(0)}
                   >
-                    0 Points
+                    None
                   </button>
                 <button
                   className="score-button score-10"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 100 : 20) : (specialQuestionNumbers.includes(questionNumber) ? 50 : 10))}
+                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 40 : 20) : (specialQuestionNumbers.includes(questionNumber) ? 20 : 10))}
                 >
-                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points') : (specialQuestionNumbers.includes(questionNumber) ? '50 Points' : '10 Points')}
+                  One
                 </button>
                 <button
                   className="score-button score-20"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 200 : 40) : (specialQuestionNumbers.includes(questionNumber) ? 100 : 20))}
+                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 80 : 40) : (specialQuestionNumbers.includes(questionNumber) ? 40 : 20))}
                 >
-                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '200 Points' : '40 Points') : (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points')}
+                  Both
                 </button>
                   {/* No special scoring for question 7 since it's now a special question */}
                 </div>
