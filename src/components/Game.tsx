@@ -59,6 +59,7 @@ const Game = () => {
   // Version B floating points animation
   const [showFloatingPoints, setShowFloatingPoints] = useState(false)
   const [floatingPointsValue, setFloatingPointsValue] = useState(0)
+  const [isFloatingPointsSpecial, setIsFloatingPointsSpecial] = useState(false)
   const totalQuestions = 7
 
   // Version A specific state
@@ -2029,6 +2030,7 @@ const Game = () => {
       playCorrectAnswerSfx()
       // Trigger floating points animation
       setFloatingPointsValue(points)
+      setIsFloatingPointsSpecial(specialQuestionNumbers.includes(questionNumber))
       setShowFloatingPoints(true)
     }
     
@@ -3210,7 +3212,10 @@ const Game = () => {
             {/* Version B Floating Points Animation */}
             {version === 'Version B' && showFloatingPoints && (
               <div className="floating-points">
-                +{floatingPointsValue}
+                {isFloatingPointsSpecial && (
+                  <div className="floating-points-special">Special Question 2X</div>
+                )}
+                <div className="floating-points-value">+{floatingPointsValue}</div>
               </div>
             )}
             
