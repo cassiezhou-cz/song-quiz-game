@@ -60,6 +60,10 @@ const Game = () => {
   const [showFloatingPoints, setShowFloatingPoints] = useState(false)
   const [floatingPointsValue, setFloatingPointsValue] = useState(0)
   const [isFloatingPointsSpecial, setIsFloatingPointsSpecial] = useState(false)
+  const [isFloatingPointsTimeBonus, setIsFloatingPointsTimeBonus] = useState(false)
+  
+  // Version B time bonus tracking
+  const [questionStartTime, setQuestionStartTime] = useState<number>(0)
   const totalQuestions = 7
 
   // Version A specific state
@@ -1371,6 +1375,8 @@ const Game = () => {
       }
       setVersionBTimeRemaining(20)
       setVersionBTimerRunning(true)
+      // Track question start time for time bonus
+      setQuestionStartTime(Date.now())
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
       if (!isTimerRunning && timeRemaining === 30) {
@@ -1992,6 +1998,16 @@ const Game = () => {
 
     setSelectedAnswer('manual_score')
     
+    // Check for time bonus (answered within 7 seconds)
+    const elapsedTime = Date.now() - questionStartTime
+    const hasTimeBonus = points > 0 && elapsedTime <= 7000
+    let finalPoints = points
+    
+    if (hasTimeBonus) {
+      finalPoints = points * 2
+      console.log('⏱️ TIME BONUS: Answered in', (elapsedTime / 1000).toFixed(1), 'seconds! Points doubled from', points, 'to', finalPoints)
+    }
+    
     let artistCorrect = false
     let songCorrect = false
     
@@ -2020,17 +2036,18 @@ const Game = () => {
     
     setArtistCorrect(artistCorrect)
     setSongCorrect(songCorrect)
-    setIsCorrect(points > 0) // Player gets credit for positive points only
-    setPointsEarned(points)
+    setIsCorrect(finalPoints > 0) // Player gets credit for positive points only
+    setPointsEarned(finalPoints)
     
     // Record base correctness for percentage calculation (Version B)
     setQuestionsCorrectness(prev => [...prev, { artistCorrect, songCorrect }])
     
-    if (points > 0) {
+    if (finalPoints > 0) {
       playCorrectAnswerSfx()
       // Trigger floating points animation
-      setFloatingPointsValue(points)
+      setFloatingPointsValue(finalPoints)
       setIsFloatingPointsSpecial(specialQuestionNumbers.includes(questionNumber))
+      setIsFloatingPointsTimeBonus(hasTimeBonus)
       setShowFloatingPoints(true)
     }
     
@@ -3214,6 +3231,9 @@ const Game = () => {
               <div className="floating-points">
                 {isFloatingPointsSpecial && (
                   <div className="floating-points-special">Special Question 2X</div>
+                )}
+                {isFloatingPointsTimeBonus && (
+                  <div className="floating-points-time-bonus">Time Bonus 2X</div>
                 )}
                 <div className="floating-points-value">+{floatingPointsValue}</div>
               </div>

@@ -4224,6 +4224,17 @@
   text-transform: uppercase;
 }
 
+.floating-points-time-bonus {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #00d4ff;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
+               0 0 30px rgba(0, 212, 255, 0.6),
+               0 0 45px rgba(0, 212, 255, 0.4);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .floating-points-value {
   font-size: 4rem;
   font-weight: bold;
