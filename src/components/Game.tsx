@@ -1998,9 +1998,9 @@ const Game = () => {
 
     setSelectedAnswer('manual_score')
     
-    // Check for time bonus (answered within 7 seconds)
+    // Check for time bonus (answered within 5 seconds)
     const elapsedTime = Date.now() - questionStartTime
-    const hasTimeBonus = points > 0 && elapsedTime <= 7000
+    const hasTimeBonus = points > 0 && elapsedTime <= 5000
     let finalPoints = points
     
     if (hasTimeBonus) {
@@ -2966,8 +2966,8 @@ const Game = () => {
               <div className="version-b-timer">
                 <div className="timer-display">
                   <div className="timer-label">Time Remaining</div>
-                  <div className={`timer-value ${versionBTimeRemaining <= 10 ? 'timer-urgent' : ''}`}>
-                    {versionBTimeRemaining}s
+                  <div className={`timer-value ${versionBTimeRemaining >= 15 ? 'timer-bonus' : versionBTimeRemaining <= 5 ? 'timer-urgent' : ''}`}>
+                    {versionBTimeRemaining}
                   </div>
                 </div>
               </div>
@@ -2975,8 +2975,8 @@ const Game = () => {
             <div className="version-b-timer">
               <div className="timer-display">
                 <div className="timer-label">Time Remaining</div>
-                <div className={`timer-value ${versionBTimeRemaining <= 10 ? 'timer-urgent' : ''}`}>
-                  {versionBTimeRemaining}s
+                <div className={`timer-value ${versionBTimeRemaining >= 15 ? 'timer-bonus' : versionBTimeRemaining <= 5 ? 'timer-urgent' : ''}`}>
+                  {versionBTimeRemaining}
                 </div>
               </div>
             </div>

@@ -3138,11 +3138,21 @@
   min-width: 120px;
 }
 
+.timer-value.timer-bonus {
+  background: linear-gradient(135deg, #00ff88, #00d4a0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: bonusPulse 1.5s ease-in-out infinite;
+}
+
 .timer-value.timer-urgent {
   background: linear-gradient(135deg, #ff6b6b, #ee5a24);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: urgentPulse 1s ease-in-out infinite;
+  transform: scale(1.3);
+  transform-origin: center;
+  transition: transform 0.3s ease-out;
 }
 
 .attempts-counter {
@@ -3165,6 +3175,17 @@
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   font-weight: 500;
+}
+
+@keyframes bonusPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.8));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 15px rgba(0, 255, 136, 1));
+  }
 }
 
 @keyframes urgentPulse {
