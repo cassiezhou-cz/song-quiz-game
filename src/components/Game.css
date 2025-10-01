@@ -4198,3 +4198,63 @@
   }
 }
 
+/* Version B Floating Points Animation */
+.floating-points {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: none;
+  animation: floatUp 2s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.floating-points-special {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffd700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.8),
+               0 0 30px rgba(255, 215, 0, 0.6),
+               0 0 45px rgba(255, 215, 0, 0.4);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.floating-points-time-bonus {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #00d4ff;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
+               0 0 30px rgba(0, 212, 255, 0.6),
+               0 0 45px rgba(0, 212, 255, 0.4);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.floating-points-value {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #00ff88;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.8),
+               0 0 40px rgba(0, 255, 136, 0.6),
+               0 0 60px rgba(0, 255, 136, 0.4);
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-100px);
+  }
+}
+
