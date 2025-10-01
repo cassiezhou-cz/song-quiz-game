@@ -55,6 +55,10 @@ const Game = () => {
   const [opponentCorrect, setOpponentCorrect] = useState(false)
   const [opponentPointsEarned, setOpponentPointsEarned] = useState(0)
   const [gameComplete, setGameComplete] = useState(false)
+  
+  // Version B floating points animation
+  const [showFloatingPoints, setShowFloatingPoints] = useState(false)
+  const [floatingPointsValue, setFloatingPointsValue] = useState(0)
   const totalQuestions = 7
 
   // Version A specific state
@@ -1731,6 +1735,16 @@ const Game = () => {
     }
   }, [version, versionBTimerRunning, versionBTimeRemaining, showFeedback, selectedAnswer])
 
+  // Auto-hide floating points animation after delay
+  useEffect(() => {
+    if (showFloatingPoints) {
+      const timer = setTimeout(() => {
+        setShowFloatingPoints(false)
+      }, 2000) // Hide after 2 seconds
+      
+      return () => clearTimeout(timer)
+    }
+  }, [showFloatingPoints])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -2013,6 +2027,9 @@ const Game = () => {
     
     if (points > 0) {
       playCorrectAnswerSfx()
+      // Trigger floating points animation
+      setFloatingPointsValue(points)
+      setShowFloatingPoints(true)
     }
     
     setShowFeedback(true)
@@ -3187,6 +3204,13 @@ const Game = () => {
                     Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
                   </div>
                 )}
+              </div>
+            )}
+            
+            {/* Version B Floating Points Animation */}
+            {version === 'Version B' && showFloatingPoints && (
+              <div className="floating-points">
+                +{floatingPointsValue}
               </div>
             )}
             
