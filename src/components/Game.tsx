@@ -70,6 +70,10 @@ const Game = () => {
   // Version C specific state
   const [timeRemaining, setTimeRemaining] = useState(30)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
+  
+  // Version B per-question timer state
+  const [versionBTimeRemaining, setVersionBTimeRemaining] = useState(20)
+  const [versionBTimerRunning, setVersionBTimerRunning] = useState(false)
   const [allAttemptedSongs, setAllAttemptedSongs] = useState<Array<{
     song: any,
     pointsEarned: number,
@@ -86,6 +90,8 @@ const Game = () => {
   const [showScoreConfetti, setShowScoreConfetti] = useState(false) // Track confetti animation
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  // Separate timer ref for Version B per-question timer
+  const versionBTimerRef = useRef<NodeJS.Timeout | null>(null)
   
   // Note: Song tracking is now handled by persistent localStorage via songTracker utility
   
@@ -1353,7 +1359,13 @@ const Game = () => {
         }, buzzInDelay)
       }
     } else if (version === 'Version B') {
-      // Version B has no opponent mechanics
+      // Version B: start per-question 30s timer
+      if (versionBTimerRef.current) {
+        clearTimeout(versionBTimerRef.current)
+        versionBTimerRef.current = null
+      }
+      setVersionBTimeRemaining(20)
+      setVersionBTimerRunning(true)
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
       if (!isTimerRunning && timeRemaining === 30) {
@@ -1693,6 +1705,32 @@ const Game = () => {
     }
   }, [version, isTimerRunning, timeRemaining])
 
+  // Version B per-question timer effect
+  useEffect(() => {
+    if (version === 'Version B' && versionBTimerRunning && versionBTimeRemaining > 0 && !showFeedback) {
+      versionBTimerRef.current = setTimeout(() => {
+        setVersionBTimeRemaining(prev => {
+          if (prev <= 1) {
+            // Time's up for this question → auto-score 0 and show feedback
+            setVersionBTimerRunning(false)
+            if (!selectedAnswer) {
+              handleVersionBScore(0)
+            }
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    
+    return () => {
+      if (versionBTimerRef.current) {
+        clearTimeout(versionBTimerRef.current)
+        versionBTimerRef.current = null
+      }
+    }
+  }, [version, versionBTimerRunning, versionBTimeRemaining, showFeedback, selectedAnswer])
+
 
   useEffect(() => {
     const audio = audioRef.current
@@ -1930,6 +1968,13 @@ const Game = () => {
   const handleVersionBScore = (points: number) => {
     if (selectedAnswer) return // Already answered
     
+    // Stop Version B timer on scoring
+    if (versionBTimerRef.current) {
+      clearTimeout(versionBTimerRef.current)
+      versionBTimerRef.current = null
+    }
+    setVersionBTimerRunning(false)
+
     setSelectedAnswer('manual_score')
     
     let artistCorrect = false
@@ -2044,10 +2089,12 @@ const Game = () => {
         
         if (revealArtist) {
           const artistName = currentQuestion.song.artist
-          // Create display text: first letter + spaces preserved + underscores for other letters
+          // Create display text: first letter + last letter + spaces preserved + underscores for other letters
           const displayText = artistName.split('').map((char, index) => {
             if (index === 0) {
               return char.toUpperCase() // First letter revealed
+            } else if (index === artistName.length - 1) {
+              return char.toUpperCase() // Last letter revealed
             } else if (char === ' ') {
               return ' ' // Preserve spaces
             } else {
@@ -2062,10 +2109,12 @@ const Game = () => {
           console.log(`Revealing artist: ${displayText}`)
         } else {
           const songName = currentQuestion.song.title
-          // Create display text: first letter + spaces preserved + underscores for other letters
+          // Create display text: first letter + last letter + spaces preserved + underscores for other letters
           const displayText = songName.split('').map((char, index) => {
             if (index === 0) {
               return char.toUpperCase() // First letter revealed
+            } else if (index === songName.length - 1) {
+              return char.toUpperCase() // Last letter revealed
             } else if (char === ' ') {
               return ' ' // Preserve spaces
             } else {
@@ -2390,6 +2439,16 @@ const Game = () => {
     // Reset Version C timer and attempts
     setTimeRemaining(30)
     setIsTimerRunning(false)
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    if (versionBTimerRef.current) {
+      clearTimeout(versionBTimerRef.current)
+      versionBTimerRef.current = null
+    }
+    setVersionBTimeRemaining(20)
+    setVersionBTimerRunning(false)
     setAllAttemptedSongs([])
     // Reset Version C streak tracking
     setVersionCStreak(0)
@@ -2451,6 +2510,18 @@ const Game = () => {
   const backToPlaylist = () => {
     navigate('/')
   }
+
+  // Stop Version B timer whenever feedback is shown
+  useEffect(() => {
+    if (version !== 'Version B') return
+    if (showFeedback) {
+      if (versionBTimerRef.current) {
+        clearTimeout(versionBTimerRef.current)
+        versionBTimerRef.current = null
+      }
+      setVersionBTimerRunning(false)
+    }
+  }, [version, showFeedback])
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
@@ -2855,7 +2926,25 @@ const Game = () => {
                   )}
                 </div>
               </div>
-            ) : (
+            ) : version === 'Version B' ? (
+              <div className="version-b-timer">
+                <div className="timer-display">
+                  <div className="timer-label">Time Remaining</div>
+                  <div className={`timer-value ${versionBTimeRemaining <= 10 ? 'timer-urgent' : ''}`}>
+                    {versionBTimeRemaining}s
+                  </div>
+                </div>
+              </div>
+          ) : version === 'Version B' ? (
+            <div className="version-b-timer">
+              <div className="timer-display">
+                <div className="timer-label">Time Remaining</div>
+                <div className={`timer-value ${versionBTimeRemaining <= 10 ? 'timer-urgent' : ''}`}>
+                  {versionBTimeRemaining}s
+                </div>
+              </div>
+            </div>
+          ) : (
               <div className="quiz-progress">
                 <span>Question {questionNumber} of {totalQuestions}</span>
               </div>
@@ -3077,19 +3166,19 @@ const Game = () => {
                     className="score-button score-0"
                     onClick={() => handleVersionBScore(0)}
                   >
-                    0 Points
+                    None
                   </button>
                 <button
                   className="score-button score-10"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 100 : 20) : (specialQuestionNumbers.includes(questionNumber) ? 50 : 10))}
+                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 40 : 20) : (specialQuestionNumbers.includes(questionNumber) ? 20 : 10))}
                 >
-                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points') : (specialQuestionNumbers.includes(questionNumber) ? '50 Points' : '10 Points')}
+                  One
                 </button>
                 <button
                   className="score-button score-20"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 200 : 40) : (specialQuestionNumbers.includes(questionNumber) ? 100 : 20))}
+                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 80 : 40) : (specialQuestionNumbers.includes(questionNumber) ? 40 : 20))}
                 >
-                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '200 Points' : '40 Points') : (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points')}
+                  Both
                 </button>
                   {/* No special scoring for question 7 since it's now a special question */}
                 </div>
