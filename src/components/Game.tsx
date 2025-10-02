@@ -3255,6 +3255,24 @@ const Game = () => {
                 <div className="racecar-emoji">🏎️</div>
               </div>
             )}
+            
+            {/* Floating Question Marks for Song Trivia */}
+            {specialQuestionType === 'song-trivia' && (
+              <div className="song-trivia-animation">
+                <div className="floating-question-mark qm-1">?</div>
+                <div className="floating-question-mark qm-2">?</div>
+                <div className="floating-question-mark qm-3">?</div>
+                <div className="floating-question-mark qm-4">?</div>
+                <div className="floating-question-mark qm-5">?</div>
+                <div className="floating-question-mark qm-6">?</div>
+                <div className="floating-question-mark qm-7">?</div>
+                <div className="floating-question-mark qm-8">?</div>
+                <div className="floating-question-mark qm-9">?</div>
+                <div className="floating-question-mark qm-10">?</div>
+                <div className="floating-question-mark qm-11">?</div>
+                <div className="floating-question-mark qm-12">?</div>
+              </div>
+            )}
           </div>
         </div>
       )}

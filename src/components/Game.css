@@ -2602,6 +2602,56 @@
     transform: translateX(-400px) scale(1);
   }
 }
+
+/* Song Trivia Floating Question Marks */
+.song-trivia-animation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.floating-question-mark {
+  position: absolute;
+  font-size: 4rem;
+  font-weight: bold;
+  color: rgba(78, 205, 196, 0.9);
+  text-shadow: 0 0 20px rgba(78, 205, 196, 0.8), 0 0 40px rgba(102, 126, 234, 0.6);
+  animation: floatAndFade 3s ease-out forwards;
+}
+
+/* Position each question mark differently */
+.qm-1 { left: 10%; top: 20%; animation-delay: 0s; font-size: 3rem; }
+.qm-2 { left: 85%; top: 15%; animation-delay: 0.3s; font-size: 5rem; }
+.qm-3 { left: 25%; top: 60%; animation-delay: 0.6s; font-size: 4rem; }
+.qm-4 { left: 70%; top: 50%; animation-delay: 0.2s; font-size: 3.5rem; }
+.qm-5 { left: 50%; top: 30%; animation-delay: 0.8s; font-size: 6rem; }
+.qm-6 { left: 15%; top: 80%; animation-delay: 0.4s; font-size: 4.5rem; }
+.qm-7 { left: 90%; top: 70%; animation-delay: 1s; font-size: 3rem; }
+.qm-8 { left: 40%; top: 10%; animation-delay: 0.5s; font-size: 5.5rem; }
+.qm-9 { left: 60%; top: 85%; animation-delay: 0.7s; font-size: 4rem; }
+.qm-10 { left: 5%; top: 45%; animation-delay: 0.9s; font-size: 3.5rem; }
+.qm-11 { left: 75%; top: 25%; animation-delay: 0.1s; font-size: 4.5rem; }
+.qm-12 { left: 35%; top: 70%; animation-delay: 1.1s; font-size: 5rem; }
+
+@keyframes floatAndFade {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5) rotate(0deg);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-50px) scale(1) rotate(15deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-150px) scale(1.2) rotate(-10deg);
+  }
+}
+
 @keyframes specialPlaylistGlow {
   0% {
     text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 60px rgba(78, 205, 196, 0.6);
@@ -2821,6 +2871,24 @@
     font-size: 4.5rem;
   }
   
+  /* Song Trivia Animation mobile adjustments */
+  .floating-question-mark {
+    font-size: 3rem;
+  }
+  
+  .qm-1 { font-size: 2.5rem; }
+  .qm-2 { font-size: 4rem; }
+  .qm-3 { font-size: 3rem; }
+  .qm-4 { font-size: 2.8rem; }
+  .qm-5 { font-size: 4.5rem; }
+  .qm-6 { font-size: 3.5rem; }
+  .qm-7 { font-size: 2.5rem; }
+  .qm-8 { font-size: 4.2rem; }
+  .qm-9 { font-size: 3rem; }
+  .qm-10 { font-size: 2.8rem; }
+  .qm-11 { font-size: 3.5rem; }
+  .qm-12 { font-size: 4rem; }
+  
   /* Special Playlist Display mobile adjustments */
   .special-playlist-display {
     top: 130px;
@@ -2928,6 +2996,24 @@
   .racecar-emoji {
     font-size: 3.5rem;
   }
+  
+  /* Song Trivia Animation small mobile adjustments */
+  .floating-question-mark {
+    font-size: 2.5rem;
+  }
+  
+  .qm-1 { font-size: 2rem; }
+  .qm-2 { font-size: 3.5rem; }
+  .qm-3 { font-size: 2.5rem; }
+  .qm-4 { font-size: 2.3rem; }
+  .qm-5 { font-size: 4rem; }
+  .qm-6 { font-size: 3rem; }
+  .qm-7 { font-size: 2rem; }
+  .qm-8 { font-size: 3.7rem; }
+  .qm-9 { font-size: 2.5rem; }
+  .qm-10 { font-size: 2.3rem; }
+  .qm-11 { font-size: 3rem; }
+  .qm-12 { font-size: 3.5rem; }
   
   /* Special Playlist Display small mobile adjustments */
   .special-playlist-display {
