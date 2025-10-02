@@ -2116,6 +2116,8 @@
 /* Version B Boosters */
 .boosters-section {
   margin-bottom: 25px;
+  position: relative;
+  z-index: 10;
 }
 
 .boosters-header {
@@ -2896,6 +2898,70 @@
 .letter-revealed {
   color: #4ecdc4;
   font-weight: 700;
+}
+
+/* Multiple Choice Display Styles */
+.multiple-choice-display {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem auto;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 5;
+  max-width: 600px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.multiple-choice-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.multiple-choice-label {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+}
+
+.multiple-choice-label.song-label {
+  color: #ffd700;
+}
+
+.multiple-choice-label.artist-label {
+  color: #87ceeb;
+}
+
+.multiple-choice-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.multiple-choice-option {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(78, 205, 196, 0.3);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  word-wrap: break-word;
 }
 
 /* Mobile adjustments for boosters */
