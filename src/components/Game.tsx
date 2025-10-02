@@ -82,7 +82,7 @@ const Game = () => {
   const [speedBonusToggle, setSpeedBonusToggle] = useState(false)
   
   // Version C specific state
-  const [timeRemaining, setTimeRemaining] = useState(30)
+  const [timeRemaining, setTimeRemaining] = useState(60)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   
   // Version B per-question timer state
@@ -102,6 +102,7 @@ const Game = () => {
   const [timerPulse, setTimerPulse] = useState(false)
   const [versionCStreak, setVersionCStreak] = useState(0) // Track streak for progressive multipliers
   const [showScoreConfetti, setShowScoreConfetti] = useState(false) // Track confetti animation
+  const [showVersionCFeedback, setShowVersionCFeedback] = useState(false) // Track answer feedback display
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Separate timer ref for Version B per-question timer
@@ -1498,7 +1499,7 @@ const Game = () => {
       }
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
-      if (!isTimerRunning && timeRemaining === 30) {
+      if (!isTimerRunning && timeRemaining === 60) {
         setIsTimerRunning(true)
       } else if (!isTimerRunning && timeRemaining > 0) {
         setIsTimerRunning(true)
@@ -1809,7 +1810,7 @@ const Game = () => {
     // Version C: Start timer when game begins
     if (version === 'Version C') {
       setIsTimerRunning(true)
-      setTimeRemaining(30)
+      setTimeRemaining(60)
       setAllAttemptedSongs([])
     }
     
@@ -2062,13 +2063,13 @@ const Game = () => {
       }, 3000) // Clear notification after 3 seconds
     }
     
-    // Give +3 bonus seconds for any points earned
+    // Give +5 bonus seconds for any points earned
     if (points > 0 && isTimerRunning) {
-      console.log('🎵 VERSION C: Adding +3 bonus seconds for scoring points!')
-      setTimeRemaining(prev => prev + 3)
+      console.log('🎵 VERSION C: Adding +5 bonus seconds for scoring points!')
+      setTimeRemaining(prev => prev + 5)
       
       // Show visual notification for bonus time
-      setAutoBoosterNotification('⏰ +3 Bonus Seconds!')
+      setAutoBoosterNotification('⏰ +5 Bonus Seconds!')
       setTimeout(() => {
         setAutoBoosterNotification(null)
       }, 2000) // Clear notification after 2 seconds
@@ -2079,7 +2080,7 @@ const Game = () => {
         setTimerPulse(false)
       }, 1000) // Remove pulse after 1 second
       
-      console.log('⏰ BONUS TIME: +3 seconds awarded for scoring!')
+      console.log('⏰ BONUS TIME: +5 seconds awarded for scoring!')
     }
     
     if (points > 0) {
@@ -2107,15 +2108,18 @@ const Game = () => {
       audio.oncanplaythrough = null
     }
     
-    // Reset selected answer for next question
-    setSelectedAnswer(null)
+    // Show feedback with correct answer
+    setShowVersionCFeedback(true)
     
-    // For Version C, immediately move to next song (very short delay to allow state updates)
+    // Hide feedback and move to next question after a brief display
     setTimeout(() => {
+      setShowVersionCFeedback(false)
+      setSelectedAnswer(null)
+      
       console.log('🎵 VERSION C: Moving to next question after scoring', points, 'points')
       console.log('🎵 VERSION C: Current timer running:', isTimerRunning, 'Time remaining:', timeRemaining)
       startNewQuestion()
-    }, 200) // Reduced delay for faster progression
+    }, 2000) // Show feedback for 2 seconds
   }
 
   // Version B manual scoring function
@@ -2649,7 +2653,7 @@ const Game = () => {
     setQuestionsCorrectness([])
     setOpponentQuestionsCorrectness([])
     // Reset Version C timer and attempts
-    setTimeRemaining(30)
+    setTimeRemaining(60)
     setIsTimerRunning(false)
     if (timerRef.current) {
       clearTimeout(timerRef.current)
@@ -2915,10 +2919,6 @@ const Game = () => {
                       <div className="stat-item">
                         <div className="stat-value">{allAttemptedSongs.filter(song => song.pointsEarned > 0).length}</div>
                         <div className="stat-label">Songs Scored</div>
-                      </div>
-                      <div className="stat-item">
-                        <div className="stat-value">{allAttemptedSongs.length > 0 ? Math.round((score / (allAttemptedSongs.length * 20)) * 100) : 0}%</div>
-                        <div className="stat-label">Accuracy</div>
                       </div>
                     </div>
                   </div>
@@ -3407,7 +3407,7 @@ const Game = () => {
             )}
 
 
-            {!showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
+            {!showFeedback && !showVersionCFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="progress-bar">
                 <div className="progress-time">
                   <span>{formatTime(currentTime)}</span>
@@ -3422,7 +3422,7 @@ const Game = () => {
               </div>
             )}
 
-            {!showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
+            {!showFeedback && !showVersionCFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="control-buttons">
                 <button 
                   className={`control-btn play-pause-btn ${selectedAnswer ? 'disabled' : ''}`}
@@ -3526,7 +3526,7 @@ const Game = () => {
               console.log('🎯 VERSION C SCORING BUTTONS CHECK:', { version, isVersionC: version === 'Version C', selectedAnswer, showFeedback });
               return null;
             })()}
-            {version === 'Version C' && !selectedAnswer && !showFeedback && (
+            {version === 'Version C' && !selectedAnswer && !showFeedback && !showVersionCFeedback && (
               <div className="manual-scoring version-c-scoring">
                 <div className="rapid-fire-header">
                   <div className="rapid-fire-title">⚡ Rapid Fire Mode</div>
@@ -3537,7 +3537,7 @@ const Game = () => {
                     className="score-button score-0"
                     onClick={() => handleVersionCScore(0)}
                   >
-                    0 Points
+                    Skip
                   </button>
                   <button
                     className="score-button score-10"
@@ -3557,6 +3557,23 @@ const Game = () => {
                     Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
                   </div>
                 )}
+              </div>
+            )}
+            
+            {/* Version C Answer Feedback */}
+            {version === 'Version C' && showVersionCFeedback && currentQuestion && (
+              <div className="version-c-answer-feedback">
+                <div className="answer-feedback-title">Correct Answer:</div>
+                <div className="answer-feedback-content">
+                  <div className="answer-feedback-item">
+                    <span className="answer-feedback-label">Artist:</span>
+                    <span className="answer-feedback-value">{currentQuestion.song.artist}</span>
+                  </div>
+                  <div className="answer-feedback-item">
+                    <span className="answer-feedback-label">Song:</span>
+                    <span className="answer-feedback-value">{currentQuestion.song.title}</span>
+                  </div>
+                </div>
               </div>
             )}
             
