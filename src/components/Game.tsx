@@ -109,19 +109,14 @@ const Game = () => {
 
   // Version B Lifelines state
   const [lifelinesUsed, setLifelinesUsed] = useState({
-    doublePoints: false,
     skip: false,
-    letterReveal: false
+    artistLetterReveal: false,
+    songLetterReveal: false
   })
 
-  // Version B 2X Points booster state
-  const [isDoublePointsActive, setIsDoublePointsActive] = useState(false)
-
   // Version B Letter Reveal state
-  const [letterRevealInfo, setLetterRevealInfo] = useState<{
-    type: 'artist' | 'song' | null
-    displayText: string
-  } | null>(null)
+  const [artistLetterRevealText, setArtistLetterRevealText] = useState<string | null>(null)
+  const [songLetterRevealText, setSongLetterRevealText] = useState<string | null>(null)
 
   // Version B Special Question transition state
   const [showSpecialQuestionTransition, setShowSpecialQuestionTransition] = useState(false)
@@ -1243,7 +1238,7 @@ const Game = () => {
 
   // Helper function to check if any lifelines are still available
   const hasAvailableLifelines = () => {
-    return !lifelinesUsed.doublePoints || !lifelinesUsed.skip || !lifelinesUsed.letterReveal
+    return !lifelinesUsed.skip || !lifelinesUsed.artistLetterReveal || !lifelinesUsed.songLetterReveal
   }
 
   // Helper function to start lifeline attention animation
@@ -1348,7 +1343,8 @@ const Game = () => {
     setSongCorrect(false)
     setIsPartialCredit(false)
     setPointsEarned(0)
-    setLetterRevealInfo(null) // Reset letter reveal info for new question
+    setArtistLetterRevealText(null) // Reset letter reveal info for new question
+    setSongLetterRevealText(null)
     // Note: opponentPointsEarned is not reset here to prevent popup display issues
     
     // Version-specific resets
@@ -1592,11 +1588,10 @@ const Game = () => {
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
       setLifelinesUsed({
-        doublePoints: false,
         skip: false,
-        letterReveal: false
+        artistLetterReveal: false,
+        songLetterReveal: false
       })
-      setIsDoublePointsActive(false)
       
       // Randomly select 1 or 2 special questions (50% chance for 2)
       const willHaveTwoSpecialQuestions = Math.random() < 0.5
@@ -2053,11 +2048,6 @@ const Game = () => {
     
     setShowFeedback(true)
     
-    // Reset 2X Points booster when feedback is shown (after scoring)
-    if (isDoublePointsActive) {
-      setIsDoublePointsActive(false)
-    }
-    
     // Pause audio
     const audio = audioRef.current
     if (audio) {
@@ -2071,7 +2061,7 @@ const Game = () => {
   }
 
   // Version B Lifeline handler
-  const handleLifelineClick = (lifelineType: 'doublePoints' | 'skip' | 'letterReveal') => {
+  const handleLifelineClick = (lifelineType: 'skip' | 'artistLetterReveal' | 'songLetterReveal') => {
     // Stop lifeline attention animation when any lifeline is used
     stopLifelineAttentionAnimation()
     
@@ -2087,10 +2077,7 @@ const Game = () => {
     }))
 
     // Handle specific lifeline functionality
-    if (lifelineType === 'doublePoints') {
-      setIsDoublePointsActive(true)
-      console.log('2X Points booster activated!')
-    } else if (lifelineType === 'skip') {
+    if (lifelineType === 'skip') {
       console.log('Skip booster activated!')
       
       // Stop current audio immediately
@@ -2110,60 +2097,54 @@ const Game = () => {
       setSongCorrect(false)
       setIsPartialCredit(false)
       setPointsEarned(0)
-      setLetterRevealInfo(null) // Clear letter reveal info
+      setArtistLetterRevealText(null) // Clear letter reveal info
+      setSongLetterRevealText(null)
       
       // Generate and start a new question immediately
       setTimeout(() => {
         startNewQuestion()
       }, 100) // Small delay to ensure clean state reset
-    } else if (lifelineType === 'letterReveal') {
-      console.log('Letter Reveal booster activated!')
+    } else if (lifelineType === 'artistLetterReveal') {
+      console.log('Artist Letter Reveal booster activated!')
       
       if (currentQuestion) {
-        // Randomly choose to reveal artist or song name
-        const revealArtist = Math.random() < 0.5
+        const artistName = currentQuestion.song.artist
+        // Create display text: first letter + last letter + spaces preserved + underscores for other letters
+        const displayText = artistName.split('').map((char, index) => {
+          if (index === 0) {
+            return char.toUpperCase() // First letter revealed
+          } else if (index === artistName.length - 1) {
+            return char.toUpperCase() // Last letter revealed
+          } else if (char === ' ') {
+            return ' ' // Preserve spaces
+          } else {
+            return '_' // Other letters as underscores
+          }
+        }).join('')
         
-        if (revealArtist) {
-          const artistName = currentQuestion.song.artist
-          // Create display text: first letter + last letter + spaces preserved + underscores for other letters
-          const displayText = artistName.split('').map((char, index) => {
-            if (index === 0) {
-              return char.toUpperCase() // First letter revealed
-            } else if (index === artistName.length - 1) {
-              return char.toUpperCase() // Last letter revealed
-            } else if (char === ' ') {
-              return ' ' // Preserve spaces
-            } else {
-              return '_' // Other letters as underscores
-            }
-          }).join('')
-          
-          setLetterRevealInfo({
-            type: 'artist',
-            displayText: displayText
-          })
-          console.log(`Revealing artist: ${displayText}`)
-        } else {
-          const songName = currentQuestion.song.title
-          // Create display text: first letter + last letter + spaces preserved + underscores for other letters
-          const displayText = songName.split('').map((char, index) => {
-            if (index === 0) {
-              return char.toUpperCase() // First letter revealed
-            } else if (index === songName.length - 1) {
-              return char.toUpperCase() // Last letter revealed
-            } else if (char === ' ') {
-              return ' ' // Preserve spaces
-            } else {
-              return '_' // Other letters as underscores
-            }
-          }).join('')
-          
-          setLetterRevealInfo({
-            type: 'song',
-            displayText: displayText
-          })
-          console.log(`Revealing song: ${displayText}`)
-        }
+        setArtistLetterRevealText(displayText)
+        console.log(`Revealing artist: ${displayText}`)
+      }
+    } else if (lifelineType === 'songLetterReveal') {
+      console.log('Song Letter Reveal booster activated!')
+      
+      if (currentQuestion) {
+        const songName = currentQuestion.song.title
+        // Create display text: first letter + last letter + spaces preserved + underscores for other letters
+        const displayText = songName.split('').map((char, index) => {
+          if (index === 0) {
+            return char.toUpperCase() // First letter revealed
+          } else if (index === songName.length - 1) {
+            return char.toUpperCase() // Last letter revealed
+          } else if (char === ' ') {
+            return ' ' // Preserve spaces
+          } else {
+            return '_' // Other letters as underscores
+          }
+        }).join('')
+        
+        setSongLetterRevealText(displayText)
+        console.log(`Revealing song: ${displayText}`)
       }
     }
 
@@ -2491,12 +2472,12 @@ const Game = () => {
     setAutoBoosterNotification(null)
     // Reset Version B lifelines
     setLifelinesUsed({
-      doublePoints: false,
       skip: false,
-      letterReveal: false
+      artistLetterReveal: false,
+      songLetterReveal: false
     })
-    setIsDoublePointsActive(false)
-    setLetterRevealInfo(null) // Reset letter reveal info
+    setArtistLetterRevealText(null) // Reset letter reveal info
+    setSongLetterRevealText(null)
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setSpecialQuestionNumbers([]) // Reset special question tracking
     setSpecialQuestionTypes({}) // Reset special question types
@@ -3073,24 +3054,44 @@ const Game = () => {
             )}
 
             {/* Version B Letter Reveal Display */}
-            {version === 'Version B' && letterRevealInfo && !showFeedback && (
+            {version === 'Version B' && (artistLetterRevealText || songLetterRevealText) && !showFeedback && (
               <div className="letter-reveal-display">
-                <div className="letter-reveal-content">
-                  <div className={`letter-reveal-label ${letterRevealInfo.type === 'song' ? 'song-label' : 'artist-label'}`}>
-                    {letterRevealInfo.type === 'artist' ? 'Artist Name:' : 'Song Name:'}
+                {artistLetterRevealText && (
+                  <div className="letter-reveal-content">
+                    <div className="letter-reveal-label artist-label">
+                      Artist Name:
+                    </div>
+                    <div className="letter-reveal-text">
+                      {artistLetterRevealText.split('').map((char, index) => (
+                        char === ' ' ? (
+                          <span key={index} className="letter-space"> </span>
+                        ) : char === '_' ? (
+                          <span key={index} className="letter-blank">_</span>
+                        ) : (
+                          <span key={index} className="letter-revealed">{char}</span>
+                        )
+                      ))}
+                    </div>
                   </div>
-                  <div className="letter-reveal-text">
-                    {letterRevealInfo.displayText.split('').map((char, index) => (
-                      char === ' ' ? (
-                        <span key={index} className="letter-space"> </span>
-                      ) : char === '_' ? (
-                        <span key={index} className="letter-blank">_</span>
-                      ) : (
-                        <span key={index} className="letter-revealed">{char}</span>
-                      )
-                    ))}
+                )}
+                {songLetterRevealText && (
+                  <div className="letter-reveal-content">
+                    <div className="letter-reveal-label song-label">
+                      Song Name:
+                    </div>
+                    <div className="letter-reveal-text">
+                      {songLetterRevealText.split('').map((char, index) => (
+                        char === ' ' ? (
+                          <span key={index} className="letter-space"> </span>
+                        ) : char === '_' ? (
+                          <span key={index} className="letter-blank">_</span>
+                        ) : (
+                          <span key={index} className="letter-revealed">{char}</span>
+                        )
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -3100,13 +3101,6 @@ const Game = () => {
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
                   <div 
-                    className={`booster-icon ${lifelinesUsed.doublePoints ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('doublePoints')}
-                    style={{ cursor: lifelinesUsed.doublePoints ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">2X Points</div>
-                  </div>
-                  <div 
                     className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
                     onClick={() => handleLifelineClick('skip')}
                     style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
@@ -3114,11 +3108,18 @@ const Game = () => {
                     <div className="booster-label">Skip</div>
                   </div>
                   <div 
-                    className={`booster-icon ${lifelinesUsed.letterReveal ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('letterReveal')}
-                    style={{ cursor: lifelinesUsed.letterReveal ? 'not-allowed' : 'pointer' }}
+                    className={`booster-icon ${lifelinesUsed.artistLetterReveal ? 'depleted' : ''}`}
+                    onClick={() => handleLifelineClick('artistLetterReveal')}
+                    style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
                   >
-                    <div className="booster-label">Letter Reveal</div>
+                    <div className="booster-label">Artist Letter Reveal</div>
+                  </div>
+                  <div 
+                    className={`booster-icon ${lifelinesUsed.songLetterReveal ? 'depleted' : ''}`}
+                    onClick={() => handleLifelineClick('songLetterReveal')}
+                    style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
+                  >
+                    <div className="booster-label">Song Letter Reveal</div>
                   </div>
                 </div>
               </div>
@@ -3206,13 +3207,13 @@ const Game = () => {
                   </button>
                 <button
                   className="score-button score-10"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 40 : 20) : (specialQuestionNumbers.includes(questionNumber) ? 20 : 10))}
+                  onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10)}
                 >
                   One
                 </button>
                 <button
                   className="score-button score-20"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 80 : 40) : (specialQuestionNumbers.includes(questionNumber) ? 40 : 20))}
+                  onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20)}
                 >
                   Both
                 </button>
