@@ -55,6 +55,15 @@ const Game = () => {
   const [opponentCorrect, setOpponentCorrect] = useState(false)
   const [opponentPointsEarned, setOpponentPointsEarned] = useState(0)
   const [gameComplete, setGameComplete] = useState(false)
+  
+  // Version B floating points animation
+  const [showFloatingPoints, setShowFloatingPoints] = useState(false)
+  const [floatingPointsValue, setFloatingPointsValue] = useState(0)
+  const [isFloatingPointsSpecial, setIsFloatingPointsSpecial] = useState(false)
+  const [isFloatingPointsTimeBonus, setIsFloatingPointsTimeBonus] = useState(false)
+  
+  // Version B time bonus tracking
+  const [questionStartTime, setQuestionStartTime] = useState<number>(0)
   const totalQuestions = 7
 
   // Version A specific state
@@ -70,6 +79,10 @@ const Game = () => {
   // Version C specific state
   const [timeRemaining, setTimeRemaining] = useState(30)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
+  
+  // Version B per-question timer state
+  const [versionBTimeRemaining, setVersionBTimeRemaining] = useState(20)
+  const [versionBTimerRunning, setVersionBTimerRunning] = useState(false)
   const [allAttemptedSongs, setAllAttemptedSongs] = useState<Array<{
     song: any,
     pointsEarned: number,
@@ -86,6 +99,8 @@ const Game = () => {
   const [showScoreConfetti, setShowScoreConfetti] = useState(false) // Track confetti animation
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  // Separate timer ref for Version B per-question timer
+  const versionBTimerRef = useRef<NodeJS.Timeout | null>(null)
   
   // Note: Song tracking is now handled by persistent localStorage via songTracker utility
   
@@ -94,19 +109,14 @@ const Game = () => {
 
   // Version B Lifelines state
   const [lifelinesUsed, setLifelinesUsed] = useState({
-    doublePoints: false,
     skip: false,
-    letterReveal: false
+    artistLetterReveal: false,
+    songLetterReveal: false
   })
 
-  // Version B 2X Points booster state
-  const [isDoublePointsActive, setIsDoublePointsActive] = useState(false)
-
   // Version B Letter Reveal state
-  const [letterRevealInfo, setLetterRevealInfo] = useState<{
-    type: 'artist' | 'song' | null
-    displayText: string
-  } | null>(null)
+  const [artistLetterRevealText, setArtistLetterRevealText] = useState<string | null>(null)
+  const [songLetterRevealText, setSongLetterRevealText] = useState<string | null>(null)
 
   // Version B Special Question transition state
   const [showSpecialQuestionTransition, setShowSpecialQuestionTransition] = useState(false)
@@ -1228,7 +1238,7 @@ const Game = () => {
 
   // Helper function to check if any lifelines are still available
   const hasAvailableLifelines = () => {
-    return !lifelinesUsed.doublePoints || !lifelinesUsed.skip || !lifelinesUsed.letterReveal
+    return !lifelinesUsed.skip || !lifelinesUsed.artistLetterReveal || !lifelinesUsed.songLetterReveal
   }
 
   // Helper function to start lifeline attention animation
@@ -1333,7 +1343,8 @@ const Game = () => {
     setSongCorrect(false)
     setIsPartialCredit(false)
     setPointsEarned(0)
-    setLetterRevealInfo(null) // Reset letter reveal info for new question
+    setArtistLetterRevealText(null) // Reset letter reveal info for new question
+    setSongLetterRevealText(null)
     // Note: opponentPointsEarned is not reset here to prevent popup display issues
     
     // Version-specific resets
@@ -1353,7 +1364,15 @@ const Game = () => {
         }, buzzInDelay)
       }
     } else if (version === 'Version B') {
-      // Version B has no opponent mechanics
+      // Version B: start per-question 30s timer
+      if (versionBTimerRef.current) {
+        clearTimeout(versionBTimerRef.current)
+        versionBTimerRef.current = null
+      }
+      setVersionBTimeRemaining(20)
+      setVersionBTimerRunning(true)
+      // Track question start time for time bonus
+      setQuestionStartTime(Date.now())
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
       if (!isTimerRunning && timeRemaining === 30) {
@@ -1569,11 +1588,10 @@ const Game = () => {
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
       setLifelinesUsed({
-        doublePoints: false,
         skip: false,
-        letterReveal: false
+        artistLetterReveal: false,
+        songLetterReveal: false
       })
-      setIsDoublePointsActive(false)
       
       // Randomly select 1 or 2 special questions (50% chance for 2)
       const willHaveTwoSpecialQuestions = Math.random() < 0.5
@@ -1693,6 +1711,42 @@ const Game = () => {
     }
   }, [version, isTimerRunning, timeRemaining])
 
+  // Version B per-question timer effect
+  useEffect(() => {
+    if (version === 'Version B' && versionBTimerRunning && versionBTimeRemaining > 0 && !showFeedback) {
+      versionBTimerRef.current = setTimeout(() => {
+        setVersionBTimeRemaining(prev => {
+          if (prev <= 1) {
+            // Time's up for this question → auto-score 0 and show feedback
+            setVersionBTimerRunning(false)
+            if (!selectedAnswer) {
+              handleVersionBScore(0)
+            }
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    
+    return () => {
+      if (versionBTimerRef.current) {
+        clearTimeout(versionBTimerRef.current)
+        versionBTimerRef.current = null
+      }
+    }
+  }, [version, versionBTimerRunning, versionBTimeRemaining, showFeedback, selectedAnswer])
+
+  // Auto-hide floating points animation after delay
+  useEffect(() => {
+    if (showFloatingPoints) {
+      const timer = setTimeout(() => {
+        setShowFloatingPoints(false)
+      }, 2000) // Hide after 2 seconds
+      
+      return () => clearTimeout(timer)
+    }
+  }, [showFloatingPoints])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -1930,7 +1984,24 @@ const Game = () => {
   const handleVersionBScore = (points: number) => {
     if (selectedAnswer) return // Already answered
     
+    // Stop Version B timer on scoring
+    if (versionBTimerRef.current) {
+      clearTimeout(versionBTimerRef.current)
+      versionBTimerRef.current = null
+    }
+    setVersionBTimerRunning(false)
+
     setSelectedAnswer('manual_score')
+    
+    // Check for time bonus (answered within 5 seconds)
+    const elapsedTime = Date.now() - questionStartTime
+    const hasTimeBonus = points > 0 && elapsedTime <= 5000
+    let finalPoints = points
+    
+    if (hasTimeBonus) {
+      finalPoints = points * 2
+      console.log('⏱️ TIME BONUS: Answered in', (elapsedTime / 1000).toFixed(1), 'seconds! Points doubled from', points, 'to', finalPoints)
+    }
     
     let artistCorrect = false
     let songCorrect = false
@@ -1960,22 +2031,22 @@ const Game = () => {
     
     setArtistCorrect(artistCorrect)
     setSongCorrect(songCorrect)
-    setIsCorrect(points > 0) // Player gets credit for positive points only
-    setPointsEarned(points)
+    setIsCorrect(finalPoints > 0) // Player gets credit for positive points only
+    setPointsEarned(finalPoints)
     
     // Record base correctness for percentage calculation (Version B)
     setQuestionsCorrectness(prev => [...prev, { artistCorrect, songCorrect }])
     
-    if (points > 0) {
+    if (finalPoints > 0) {
       playCorrectAnswerSfx()
+      // Trigger floating points animation
+      setFloatingPointsValue(finalPoints)
+      setIsFloatingPointsSpecial(specialQuestionNumbers.includes(questionNumber))
+      setIsFloatingPointsTimeBonus(hasTimeBonus)
+      setShowFloatingPoints(true)
     }
     
     setShowFeedback(true)
-    
-    // Reset 2X Points booster when feedback is shown (after scoring)
-    if (isDoublePointsActive) {
-      setIsDoublePointsActive(false)
-    }
     
     // Pause audio
     const audio = audioRef.current
@@ -1990,7 +2061,7 @@ const Game = () => {
   }
 
   // Version B Lifeline handler
-  const handleLifelineClick = (lifelineType: 'doublePoints' | 'skip' | 'letterReveal') => {
+  const handleLifelineClick = (lifelineType: 'skip' | 'artistLetterReveal' | 'songLetterReveal') => {
     // Stop lifeline attention animation when any lifeline is used
     stopLifelineAttentionAnimation()
     
@@ -2006,10 +2077,7 @@ const Game = () => {
     }))
 
     // Handle specific lifeline functionality
-    if (lifelineType === 'doublePoints') {
-      setIsDoublePointsActive(true)
-      console.log('2X Points booster activated!')
-    } else if (lifelineType === 'skip') {
+    if (lifelineType === 'skip') {
       console.log('Skip booster activated!')
       
       // Stop current audio immediately
@@ -2029,56 +2097,54 @@ const Game = () => {
       setSongCorrect(false)
       setIsPartialCredit(false)
       setPointsEarned(0)
-      setLetterRevealInfo(null) // Clear letter reveal info
+      setArtistLetterRevealText(null) // Clear letter reveal info
+      setSongLetterRevealText(null)
       
       // Generate and start a new question immediately
       setTimeout(() => {
         startNewQuestion()
       }, 100) // Small delay to ensure clean state reset
-    } else if (lifelineType === 'letterReveal') {
-      console.log('Letter Reveal booster activated!')
+    } else if (lifelineType === 'artistLetterReveal') {
+      console.log('Artist Letter Reveal booster activated!')
       
       if (currentQuestion) {
-        // Randomly choose to reveal artist or song name
-        const revealArtist = Math.random() < 0.5
+        const artistName = currentQuestion.song.artist
+        // Create display text: first letter + last letter + spaces preserved + underscores for other letters
+        const displayText = artistName.split('').map((char, index) => {
+          if (index === 0) {
+            return char.toUpperCase() // First letter revealed
+          } else if (index === artistName.length - 1) {
+            return char.toUpperCase() // Last letter revealed
+          } else if (char === ' ') {
+            return ' ' // Preserve spaces
+          } else {
+            return '_' // Other letters as underscores
+          }
+        }).join('')
         
-        if (revealArtist) {
-          const artistName = currentQuestion.song.artist
-          // Create display text: first letter + spaces preserved + underscores for other letters
-          const displayText = artistName.split('').map((char, index) => {
-            if (index === 0) {
-              return char.toUpperCase() // First letter revealed
-            } else if (char === ' ') {
-              return ' ' // Preserve spaces
-            } else {
-              return '_' // Other letters as underscores
-            }
-          }).join('')
-          
-          setLetterRevealInfo({
-            type: 'artist',
-            displayText: displayText
-          })
-          console.log(`Revealing artist: ${displayText}`)
-        } else {
-          const songName = currentQuestion.song.title
-          // Create display text: first letter + spaces preserved + underscores for other letters
-          const displayText = songName.split('').map((char, index) => {
-            if (index === 0) {
-              return char.toUpperCase() // First letter revealed
-            } else if (char === ' ') {
-              return ' ' // Preserve spaces
-            } else {
-              return '_' // Other letters as underscores
-            }
-          }).join('')
-          
-          setLetterRevealInfo({
-            type: 'song',
-            displayText: displayText
-          })
-          console.log(`Revealing song: ${displayText}`)
-        }
+        setArtistLetterRevealText(displayText)
+        console.log(`Revealing artist: ${displayText}`)
+      }
+    } else if (lifelineType === 'songLetterReveal') {
+      console.log('Song Letter Reveal booster activated!')
+      
+      if (currentQuestion) {
+        const songName = currentQuestion.song.title
+        // Create display text: first letter + last letter + spaces preserved + underscores for other letters
+        const displayText = songName.split('').map((char, index) => {
+          if (index === 0) {
+            return char.toUpperCase() // First letter revealed
+          } else if (index === songName.length - 1) {
+            return char.toUpperCase() // Last letter revealed
+          } else if (char === ' ') {
+            return ' ' // Preserve spaces
+          } else {
+            return '_' // Other letters as underscores
+          }
+        }).join('')
+        
+        setSongLetterRevealText(displayText)
+        console.log(`Revealing song: ${displayText}`)
       }
     }
 
@@ -2390,18 +2456,28 @@ const Game = () => {
     // Reset Version C timer and attempts
     setTimeRemaining(30)
     setIsTimerRunning(false)
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    if (versionBTimerRef.current) {
+      clearTimeout(versionBTimerRef.current)
+      versionBTimerRef.current = null
+    }
+    setVersionBTimeRemaining(20)
+    setVersionBTimerRunning(false)
     setAllAttemptedSongs([])
     // Reset Version C streak tracking
     setVersionCStreak(0)
     setAutoBoosterNotification(null)
     // Reset Version B lifelines
     setLifelinesUsed({
-      doublePoints: false,
       skip: false,
-      letterReveal: false
+      artistLetterReveal: false,
+      songLetterReveal: false
     })
-    setIsDoublePointsActive(false)
-    setLetterRevealInfo(null) // Reset letter reveal info
+    setArtistLetterRevealText(null) // Reset letter reveal info
+    setSongLetterRevealText(null)
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setSpecialQuestionNumbers([]) // Reset special question tracking
     setSpecialQuestionTypes({}) // Reset special question types
@@ -2451,6 +2527,18 @@ const Game = () => {
   const backToPlaylist = () => {
     navigate('/')
   }
+
+  // Stop Version B timer whenever feedback is shown
+  useEffect(() => {
+    if (version !== 'Version B') return
+    if (showFeedback) {
+      if (versionBTimerRef.current) {
+        clearTimeout(versionBTimerRef.current)
+        versionBTimerRef.current = null
+      }
+      setVersionBTimerRunning(false)
+    }
+  }, [version, showFeedback])
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
@@ -2855,7 +2943,25 @@ const Game = () => {
                   )}
                 </div>
               </div>
-            ) : (
+            ) : version === 'Version B' ? (
+              <div className="version-b-timer">
+                <div className="timer-display">
+                  <div className="timer-label">Time Remaining</div>
+                  <div className={`timer-value ${versionBTimeRemaining >= 15 ? 'timer-bonus' : versionBTimeRemaining <= 5 ? 'timer-urgent' : ''}`}>
+                    {versionBTimeRemaining}
+                  </div>
+                </div>
+              </div>
+          ) : version === 'Version B' ? (
+            <div className="version-b-timer">
+              <div className="timer-display">
+                <div className="timer-label">Time Remaining</div>
+                <div className={`timer-value ${versionBTimeRemaining >= 15 ? 'timer-bonus' : versionBTimeRemaining <= 5 ? 'timer-urgent' : ''}`}>
+                  {versionBTimeRemaining}
+                </div>
+              </div>
+            </div>
+          ) : (
               <div className="quiz-progress">
                 <span>Question {questionNumber} of {totalQuestions}</span>
               </div>
@@ -2948,24 +3054,44 @@ const Game = () => {
             )}
 
             {/* Version B Letter Reveal Display */}
-            {version === 'Version B' && letterRevealInfo && !showFeedback && (
+            {version === 'Version B' && (artistLetterRevealText || songLetterRevealText) && !showFeedback && (
               <div className="letter-reveal-display">
-                <div className="letter-reveal-content">
-                  <div className={`letter-reveal-label ${letterRevealInfo.type === 'song' ? 'song-label' : 'artist-label'}`}>
-                    {letterRevealInfo.type === 'artist' ? 'Artist Name:' : 'Song Name:'}
+                {artistLetterRevealText && (
+                  <div className="letter-reveal-content">
+                    <div className="letter-reveal-label artist-label">
+                      Artist Name:
+                    </div>
+                    <div className="letter-reveal-text">
+                      {artistLetterRevealText.split('').map((char, index) => (
+                        char === ' ' ? (
+                          <span key={index} className="letter-space"> </span>
+                        ) : char === '_' ? (
+                          <span key={index} className="letter-blank">_</span>
+                        ) : (
+                          <span key={index} className="letter-revealed">{char}</span>
+                        )
+                      ))}
+                    </div>
                   </div>
-                  <div className="letter-reveal-text">
-                    {letterRevealInfo.displayText.split('').map((char, index) => (
-                      char === ' ' ? (
-                        <span key={index} className="letter-space"> </span>
-                      ) : char === '_' ? (
-                        <span key={index} className="letter-blank">_</span>
-                      ) : (
-                        <span key={index} className="letter-revealed">{char}</span>
-                      )
-                    ))}
+                )}
+                {songLetterRevealText && (
+                  <div className="letter-reveal-content">
+                    <div className="letter-reveal-label song-label">
+                      Song Name:
+                    </div>
+                    <div className="letter-reveal-text">
+                      {songLetterRevealText.split('').map((char, index) => (
+                        char === ' ' ? (
+                          <span key={index} className="letter-space"> </span>
+                        ) : char === '_' ? (
+                          <span key={index} className="letter-blank">_</span>
+                        ) : (
+                          <span key={index} className="letter-revealed">{char}</span>
+                        )
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -2975,13 +3101,6 @@ const Game = () => {
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
                   <div 
-                    className={`booster-icon ${lifelinesUsed.doublePoints ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('doublePoints')}
-                    style={{ cursor: lifelinesUsed.doublePoints ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">2X Points</div>
-                  </div>
-                  <div 
                     className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
                     onClick={() => handleLifelineClick('skip')}
                     style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
@@ -2989,11 +3108,18 @@ const Game = () => {
                     <div className="booster-label">Skip</div>
                   </div>
                   <div 
-                    className={`booster-icon ${lifelinesUsed.letterReveal ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('letterReveal')}
-                    style={{ cursor: lifelinesUsed.letterReveal ? 'not-allowed' : 'pointer' }}
+                    className={`booster-icon ${lifelinesUsed.artistLetterReveal ? 'depleted' : ''}`}
+                    onClick={() => handleLifelineClick('artistLetterReveal')}
+                    style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
                   >
-                    <div className="booster-label">Letter Reveal</div>
+                    <div className="booster-label">Artist Letter Reveal</div>
+                  </div>
+                  <div 
+                    className={`booster-icon ${lifelinesUsed.songLetterReveal ? 'depleted' : ''}`}
+                    onClick={() => handleLifelineClick('songLetterReveal')}
+                    style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
+                  >
+                    <div className="booster-label">Song Letter Reveal</div>
                   </div>
                 </div>
               </div>
@@ -3077,19 +3203,19 @@ const Game = () => {
                     className="score-button score-0"
                     onClick={() => handleVersionBScore(0)}
                   >
-                    0 Points
+                    None
                   </button>
                 <button
                   className="score-button score-10"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 100 : 20) : (specialQuestionNumbers.includes(questionNumber) ? 50 : 10))}
+                  onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10)}
                 >
-                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points') : (specialQuestionNumbers.includes(questionNumber) ? '50 Points' : '10 Points')}
+                  One
                 </button>
                 <button
                   className="score-button score-20"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 200 : 40) : (specialQuestionNumbers.includes(questionNumber) ? 100 : 20))}
+                  onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20)}
                 >
-                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '200 Points' : '40 Points') : (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points')}
+                  Both
                 </button>
                   {/* No special scoring for question 7 since it's now a special question */}
                 </div>
@@ -3098,6 +3224,19 @@ const Game = () => {
                     Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
                   </div>
                 )}
+              </div>
+            )}
+            
+            {/* Version B Floating Points Animation */}
+            {version === 'Version B' && showFloatingPoints && (
+              <div className="floating-points">
+                {isFloatingPointsSpecial && (
+                  <div className="floating-points-special">Special Question 2X</div>
+                )}
+                {isFloatingPointsTimeBonus && (
+                  <div className="floating-points-time-bonus">Time Bonus 2X</div>
+                )}
+                <div className="floating-points-value">+{floatingPointsValue}</div>
               </div>
             )}
             
