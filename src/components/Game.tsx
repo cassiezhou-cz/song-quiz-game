@@ -150,6 +150,7 @@ const Game = () => {
   
   // Version B Lifeline entrance animation (for first question)
   const [showLifelineEntrance, setShowLifelineEntrance] = useState(false)
+  const hasShownLifelineEntrance = useRef(false)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1535,9 +1536,10 @@ const Game = () => {
       // Track question start time for time bonus
       setQuestionStartTime(Date.now())
       
-      // Trigger lifeline entrance animation on first question
-      if (questionNumber === 1) {
+      // Trigger lifeline entrance animation on first question only (once per session)
+      if (questionNumber === 1 && !hasShownLifelineEntrance.current) {
         setShowLifelineEntrance(true)
+        hasShownLifelineEntrance.current = true
         // Remove animation class after animation completes
         setTimeout(() => {
           setShowLifelineEntrance(false)
@@ -1773,6 +1775,9 @@ const Game = () => {
         multipleChoiceArtist: false,
         multipleChoiceSong: false
       })
+      
+      // Reset lifeline entrance animation flag for new session
+      hasShownLifelineEntrance.current = false
       
       // Randomly select 1 or 2 special questions (50% chance for 2)
       const willHaveTwoSpecialQuestions = Math.random() < 0.5
@@ -2732,6 +2737,7 @@ const Game = () => {
     setSpecialQuestionType(null) // Reset special question type
     setUsedTriviaSongIds([]) // Reset used trivia songs tracking
     stopLifelineAttentionAnimation() // Stop lifeline attention animation
+    hasShownLifelineEntrance.current = false // Reset lifeline entrance animation flag
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
