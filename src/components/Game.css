@@ -3006,6 +3006,87 @@
   word-wrap: break-word;
 }
 
+/* Version B Song Trivia Display Styles */
+.song-trivia-display {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(102, 126, 234, 0.15));
+  border: 3px solid rgba(78, 205, 196, 0.6);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem auto;
+  text-align: center;
+  backdrop-filter: blur(15px);
+  position: relative;
+  z-index: 5;
+  max-width: 700px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(78, 205, 196, 0.3);
+}
+
+.song-trivia-question {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  line-height: 1.4;
+}
+
+.song-trivia-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.song-trivia-option-button {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(102, 126, 234, 0.2));
+  border: 2px solid rgba(78, 205, 196, 0.5);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  word-wrap: break-word;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.song-trivia-option-button:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.4), rgba(102, 126, 234, 0.4));
+  border-color: rgba(78, 205, 196, 0.8);
+  box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
+}
+
+.song-trivia-option-button:active {
+  transform: translateY(-1px);
+}
+
+/* Mobile adjustments for Song Trivia */
+@media (max-width: 768px) {
+  .song-trivia-display {
+    padding: 1.5rem;
+    margin: 1.5rem auto;
+  }
+  
+  .song-trivia-question {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .song-trivia-options {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .song-trivia-option-button {
+    padding: 1.2rem 0.8rem;
+    font-size: 1.1rem;
+  }
+}
+
 /* Mobile adjustments for boosters */
 @media (max-width: 768px) {
   .boosters-section {

@@ -11,12 +11,17 @@ interface Song {
   albumArt: string
   alternatives: string[]
   artistAlternatives?: string[] // Alternative spellings/pronunciations for artist names
+  triviaQuestion?: string // Song Trivia question text
+  triviaOptions?: string[] // Song Trivia answer options (4 total: 3 wrong, 1 correct)
+  triviaCorrectAnswer?: string // Correct answer for Song Trivia
 }
 
 interface QuizQuestion {
   song: Song
   options: string[]
   correctAnswer: string
+  isSongTrivia?: boolean // Flag to indicate this is a Song Trivia question
+  triviaQuestionText?: string // The trivia question to display
 }
 
 
@@ -133,9 +138,9 @@ const Game = () => {
   
   // Version B Special Question tracking
   const [specialQuestionNumbers, setSpecialQuestionNumbers] = useState<number[]>([])
-  const [specialQuestionTypes, setSpecialQuestionTypes] = useState<{[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed'}>({})
+  const [specialQuestionTypes, setSpecialQuestionTypes] = useState<{[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia'}>({})
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
-  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | null>(null)
+  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | null>(null)
   
   // Version B Lifeline attention animation
   const [showLifelineAttention, setShowLifelineAttention] = useState(false)
@@ -151,7 +156,10 @@ const Game = () => {
       artist: 'John Legend', 
       file: '/songs/2010s/AllofMeJohnLegend.mp3', 
       albumArt: '/assets/album-art/2010s/AllOfMeJohnLegend.jpeg',
-      alternatives: ['When I Was Your Man - Bruno Mars', 'Stay With Me - Sam Smith', 'Thinking Out Loud - Ed Sheeran']
+      alternatives: ['When I Was Your Man - Bruno Mars', 'Stay With Me - Sam Smith', 'Thinking Out Loud - Ed Sheeran'],
+      triviaQuestion: 'What year was "All of Me" by John Legend released?',
+      triviaOptions: ['2011', '2012', '2013', '2014'],
+      triviaCorrectAnswer: '2013'
     },
     { 
       id: '2', 
@@ -177,7 +185,10 @@ const Game = () => {
       file: '/songs/2010s/CloserChainsmokers.mp3', 
       albumArt: '/assets/album-art/2010s/CloserChainsmokers.jpeg',
       alternatives: ['It Ain\'t Me - Kygo & Selena Gomez', 'Faded - Zedd feat. Alessia Cara', 'Paris - Lauv'],
-      artistAlternatives: ['Chainsmokers', 'Chain Smokers', 'Chainsmockers']
+      artistAlternatives: ['Chainsmokers', 'Chain Smokers', 'Chainsmockers'],
+      triviaQuestion: 'Which female artist is featured on "Closer" by The Chainsmokers?',
+      triviaOptions: ['Selena Gomez', 'Halsey', 'Daya', 'Bebe Rexha'],
+      triviaCorrectAnswer: 'Halsey'
     },
     { 
       id: '5', 
@@ -210,7 +221,10 @@ const Game = () => {
       file: '/songs/2010s/HUMBLEKendrickLamar.mp3', 
       albumArt: '/assets/album-art/2010s/HUMBLEKendrickLamar.jpeg',
       alternatives: ['Mask Off - Future', 'Bad and Boujee - Migos feat. Lil Uzi Vert', 'Alright - J. Cole'],
-      artistAlternatives: ['Kendrick Lamarr', 'Kendrick', 'Lamar']
+      artistAlternatives: ['Kendrick Lamarr', 'Kendrick', 'Lamar'],
+      triviaQuestion: 'Which album features "HUMBLE." by Kendrick Lamar?',
+      triviaOptions: ['good kid, m.A.A.d city', 'To Pimp a Butterfly', 'DAMN.', 'Mr. Morale & The Big Steppers'],
+      triviaCorrectAnswer: 'DAMN.'
     },
     { 
       id: '9', 
@@ -226,7 +240,10 @@ const Game = () => {
       artist: 'Lady Gaga', 
       file: '/songs/2010s/JustDanceLadyGaga.mp3', 
       albumArt: '/assets/album-art/2010s/JustDanceLadyGaga.jpeg',
-      alternatives: ['Poker Face - Lady Gaga', 'Bad Romance - Lady Gaga', 'Paparazzi - Lady Gaga']
+      alternatives: ['Poker Face - Lady Gaga', 'Bad Romance - Lady Gaga', 'Paparazzi - Lady Gaga'],
+      triviaQuestion: '"Just Dance" was Lady Gaga\'s debut single. What year was it released?',
+      triviaOptions: ['2007', '2008', '2009', '2010'],
+      triviaCorrectAnswer: '2008'
     },
     { 
       id: '11', 
@@ -267,7 +284,10 @@ const Game = () => {
       artist: 'Drake', 
       file: '/songs/2010s/OneDanceDrake.mp3', 
       albumArt: '/assets/album-art/2010s/OneDanceDrake.jpeg',
-      alternatives: ['Joanna - Afro B', 'On the Low - Burna Boy', 'Toast - Koffee']
+      alternatives: ['Joanna - Afro B', 'On the Low - Burna Boy', 'Toast - Koffee'],
+      triviaQuestion: 'Which album by Drake features "One Dance"?',
+      triviaOptions: ['Nothing Was the Same', 'If You\'re Reading This It\'s Too Late', 'Views', 'Scorpion'],
+      triviaCorrectAnswer: 'Views'
     },
     { 
       id: '16', 
@@ -392,7 +412,10 @@ const Game = () => {
       artist: 'Avril Lavigne', 
       file: '/songs/2000s/ComplicatedAvrilLavigne.mp3', 
       albumArt: '/assets/album-art/2000s/ComplicatedAvrilLavigne.jpeg',
-      alternatives: ['Sk8er Boi - Avril Lavigne', 'My Happy Ending - Avril Lavigne', 'I\'m with You - Avril Lavigne']
+      alternatives: ['Sk8er Boi - Avril Lavigne', 'My Happy Ending - Avril Lavigne', 'I\'m with You - Avril Lavigne'],
+      triviaQuestion: 'What year was Avril Lavigne\'s "Complicated" released?',
+      triviaOptions: ['2001', '2002', '2003', '2004'],
+      triviaCorrectAnswer: '2002'
     },
     { 
       id: '4', 
@@ -416,7 +439,10 @@ const Game = () => {
       artist: 'Jay Z (feat. Alicia Keys)', 
       file: '/songs/2000s/EmpireStateOfMindJayZ.mp3', 
       albumArt: '/assets/album-art/2000s/EmpireStateOfMindJayZ.jpeg',
-      alternatives: ['Run This Town - Jay-Z, Rihanna & Kanye West', '99 Problems - Jay-Z', 'Izzo (H.O.V.A.) - Jay-Z']
+      alternatives: ['Run This Town - Jay-Z, Rihanna & Kanye West', '99 Problems - Jay-Z', 'Izzo (H.O.V.A.) - Jay-Z'],
+      triviaQuestion: 'Which city is celebrated in "Empire State of Mind"?',
+      triviaOptions: ['Los Angeles', 'Chicago', 'New York', 'Miami'],
+      triviaCorrectAnswer: 'New York'
     },
     { 
       id: '7', 
@@ -432,7 +458,10 @@ const Game = () => {
       artist: 'Britney Spears', 
       file: '/songs/2000s/GimmeMoreBritneySpears.mp3', 
       albumArt: '/assets/album-art/2000s/GimmeMoreBritneySpears.jpeg',
-      alternatives: ['Toxic - Britney Spears', 'Circus - Britney Spears', 'Womanizer - Britney Spears']
+      alternatives: ['Toxic - Britney Spears', 'Circus - Britney Spears', 'Womanizer - Britney Spears'],
+      triviaQuestion: 'Which album features "Gimme More" by Britney Spears?',
+      triviaOptions: ['In the Zone', 'Blackout', 'Circus', 'Femme Fatale'],
+      triviaCorrectAnswer: 'Blackout'
     },
     { 
       id: '9', 
@@ -456,7 +485,10 @@ const Game = () => {
       artist: 'Backstreet Boys', 
       file: '/songs/2000s/IWantItThatWayBackstreetBoys.mp3', 
       albumArt: '/assets/album-art/2000s/IWantItThatWayBackstreetBoys.jpeg',
-      alternatives: ['Everybody - Backstreet Boys', 'As Long As You Love Me - Backstreet Boys', 'Quit Playing Games - Backstreet Boys']
+      alternatives: ['Everybody - Backstreet Boys', 'As Long As You Love Me - Backstreet Boys', 'Quit Playing Games - Backstreet Boys'],
+      triviaQuestion: 'What year was "I Want It That Way" released?',
+      triviaOptions: ['1997', '1998', '1999', '2000'],
+      triviaCorrectAnswer: '1999'
     },
     { 
       id: '12', 
@@ -496,7 +528,10 @@ const Game = () => {
       artist: 'Nelly Furtado', 
       file: '/songs/2000s/ManeaterNellyFurtado.mp3', 
       albumArt: '/assets/album-art/2000s/ManeaterNellyFurtado.jpeg',
-      alternatives: ['Promiscuous - Nelly Furtado feat. Timbaland', 'Say It Right - Nelly Furtado', 'I\'m Like a Bird - Nelly Furtado']
+      alternatives: ['Promiscuous - Nelly Furtado feat. Timbaland', 'Say It Right - Nelly Furtado', 'I\'m Like a Bird - Nelly Furtado'],
+      triviaQuestion: 'Which album features "Maneater" by Nelly Furtado?',
+      triviaOptions: ['Whoa, Nelly!', 'Folklore', 'Loose', 'The Spirit Indestructible'],
+      triviaCorrectAnswer: 'Loose'
     },
     { 
       id: '17', 
@@ -612,7 +647,10 @@ const Game = () => {
       artist: 'Taylor Swift', 
       file: '/songs/2020s/cardiganTaylorSwift.mp3', 
       albumArt: '/assets/album-art/2020s/CardiganTaylorSwift.jpeg',
-      alternatives: ['folklore - Taylor Swift', 'willow - Taylor Swift', 'betty - Taylor Swift']
+      alternatives: ['folklore - Taylor Swift', 'willow - Taylor Swift', 'betty - Taylor Swift'],
+      triviaQuestion: 'Which album features "cardigan" by Taylor Swift?',
+      triviaOptions: ['Lover', 'folklore', 'evermore', 'Midnights'],
+      triviaCorrectAnswer: 'folklore'
     },
     { 
       id: '3', 
@@ -636,7 +674,10 @@ const Game = () => {
       artist: 'Miley Cyrus', 
       file: '/songs/2020s/FlowersMileyCyrus.mp3', 
       albumArt: '/assets/album-art/2020s/FlowersMileyCyrus.jpeg',
-      alternatives: ['Party in the U.S.A. - Miley Cyrus', 'Wrecking Ball - Miley Cyrus', 'The Climb - Miley Cyrus']
+      alternatives: ['Party in the U.S.A. - Miley Cyrus', 'Wrecking Ball - Miley Cyrus', 'The Climb - Miley Cyrus'],
+      triviaQuestion: 'What year was "Flowers" by Miley Cyrus released?',
+      triviaOptions: ['2021', '2022', '2023', '2024'],
+      triviaCorrectAnswer: '2023'
     },
     { 
       id: '6', 
@@ -653,7 +694,10 @@ const Game = () => {
       artist: 'Glass Animals', 
       file: '/songs/2020s/HeatWavesGlassAnimals.mp3', 
       albumArt: '/assets/album-art/2020s/HeatWavesGlassAnimals.jpeg',
-      alternatives: ['The Other Side of Paradise - Glass Animals', 'Your Love (Déjà Vu) - Glass Animals', 'Tokyo Drifting - Glass Animals']
+      alternatives: ['The Other Side of Paradise - Glass Animals', 'Your Love (Déjà Vu) - Glass Animals', 'Tokyo Drifting - Glass Animals'],
+      triviaQuestion: 'Which album features "Heat Waves" by Glass Animals?',
+      triviaOptions: ['ZABA', 'How to Be a Human Being', 'Dreamland', 'I Love You So F***ing Much'],
+      triviaCorrectAnswer: 'Dreamland'
     },
     { 
       id: '8', 
@@ -686,7 +730,10 @@ const Game = () => {
       artist: 'Lil Nas X', 
       file: '/songs/2020s/INDUSTRYBABYLilNasX.mp3', 
       albumArt: '/assets/album-art/2020s/INDUSTRYBABYLilNasX.jpeg',
-      alternatives: ['Old Town Road - Lil Nas X feat. Billy Ray Cyrus', 'Montero (Call Me By Your Name) - Lil Nas X', 'Panini - Lil Nas X']
+      alternatives: ['Old Town Road - Lil Nas X feat. Billy Ray Cyrus', 'Montero (Call Me By Your Name) - Lil Nas X', 'Panini - Lil Nas X'],
+      triviaQuestion: 'Which artist is featured on "Industry Baby" with Lil Nas X?',
+      triviaOptions: ['Travis Scott', 'Jack Harlow', 'DaBaby', 'Megan Thee Stallion'],
+      triviaCorrectAnswer: 'Jack Harlow'
     },
     { 
       id: '12', 
@@ -710,7 +757,10 @@ const Game = () => {
       artist: 'Justin Bieber', 
       file: '/songs/2020s/PeachesJustinBieber.mp3', 
       albumArt: '/assets/album-art/2020s/PeachesJustinBieber.jpeg',
-      alternatives: ['Sorry - Justin Bieber', 'Love Yourself - Justin Bieber', 'What Do You Mean? - Justin Bieber']
+      alternatives: ['Sorry - Justin Bieber', 'Love Yourself - Justin Bieber', 'What Do You Mean? - Justin Bieber'],
+      triviaQuestion: 'What year was "Peaches" by Justin Bieber released?',
+      triviaOptions: ['2019', '2020', '2021', '2022'],
+      triviaCorrectAnswer: '2021'
     },
     { 
       id: '15', 
@@ -812,7 +862,10 @@ const Game = () => {
       artist: 'Oasis', 
       file: '/songs/90s/WonderwallOasis.mp3', 
       albumArt: '/assets/album-art/90s/WonderwallOasis.jpeg',
-      alternatives: ['Champagne Supernova - Oasis', 'Creep - Radiohead', 'Mr. Brightside - The Killers']
+      alternatives: ['Champagne Supernova - Oasis', 'Creep - Radiohead', 'Mr. Brightside - The Killers'],
+      triviaQuestion: 'Which album features "Wonderwall" by Oasis?',
+      triviaOptions: ['Definitely Maybe', '(What\'s the Story) Morning Glory?', 'Be Here Now', 'The Masterplan'],
+      triviaCorrectAnswer: '(What\'s the Story) Morning Glory?'
     },
     { 
       id: '2', 
@@ -820,7 +873,10 @@ const Game = () => {
       artist: 'Nirvana', 
       file: '/songs/90s/ComeAsYouAreNirvana.mp3', 
       albumArt: '/assets/album-art/90s/ComeAsYouAreNirvana.jpeg',
-      alternatives: ['Smells Like Teen Spirit - Nirvana', 'Black - Pearl Jam', 'Alive - Pearl Jam']
+      alternatives: ['Smells Like Teen Spirit - Nirvana', 'Black - Pearl Jam', 'Alive - Pearl Jam'],
+      triviaQuestion: 'Which album features "Come As You Are" by Nirvana?',
+      triviaOptions: ['Bleach', 'Nevermind', 'In Utero', 'MTV Unplugged in New York'],
+      triviaCorrectAnswer: 'Nevermind'
     },
     { 
       id: '3', 
@@ -845,7 +901,10 @@ const Game = () => {
       artist: 'Spice Girls', 
       file: '/songs/90s/WannabeSpiceGirls.mp3', 
       albumArt: '/assets/album-art/90s/WannabeSpiceGirls.jpeg',
-      alternatives: ['Say You\'ll Be There - Spice Girls', 'MMMBop - Hanson', 'I Want It That Way - Backstreet Boys']
+      alternatives: ['Say You\'ll Be There - Spice Girls', 'MMMBop - Hanson', 'I Want It That Way - Backstreet Boys'],
+      triviaQuestion: 'What year was "Wannabe" by Spice Girls released?',
+      triviaOptions: ['1995', '1996', '1997', '1998'],
+      triviaCorrectAnswer: '1996'
     },
     { 
       id: '6', 
@@ -853,7 +912,10 @@ const Game = () => {
       artist: 'The Smashing Pumpkins', 
       file: '/songs/90s/1979TheSmashingPumpkins.mp3', 
       albumArt: '/assets/album-art/90s/1979TheSmashingPumpkins.jpeg',
-      alternatives: ['Tonight, Tonight - The Smashing Pumpkins', 'Zero - The Smashing Pumpkins', 'Bullet with Butterfly Wings - The Smashing Pumpkins']
+      alternatives: ['Tonight, Tonight - The Smashing Pumpkins', 'Zero - The Smashing Pumpkins', 'Bullet with Butterfly Wings - The Smashing Pumpkins'],
+      triviaQuestion: 'Which album features "1979" by The Smashing Pumpkins?',
+      triviaOptions: ['Siamese Dream', 'Mellon Collie and the Infinite Sadness', 'Adore', 'Machina/The Machines of God'],
+      triviaCorrectAnswer: 'Mellon Collie and the Infinite Sadness'
     },
     { 
       id: '7', 
@@ -877,7 +939,10 @@ const Game = () => {
       artist: 'Alanis Morissette', 
       file: '/songs/90s/ironicAlanisMorissette.mp3', 
       albumArt: '/assets/album-art/90s/ironicAlanisMorissette.jpeg',
-      alternatives: ['You Oughta Know - Alanis Morissette', 'Hand in My Pocket - Alanis Morissette', 'You Learn - Alanis Morissette']
+      alternatives: ['You Oughta Know - Alanis Morissette', 'Hand in My Pocket - Alanis Morissette', 'You Learn - Alanis Morissette'],
+      triviaQuestion: 'Which album features "Ironic" by Alanis Morissette?',
+      triviaOptions: ['Jagged Little Pill', 'Supposed Former Infatuation Junkie', 'Under Rug Swept', 'Havoc and Bright Lights'],
+      triviaCorrectAnswer: 'Jagged Little Pill'
     },
     { 
       id: '10', 
@@ -1205,9 +1270,42 @@ const Game = () => {
     }
   }
 
-  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed'): QuizQuestion => {
+  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia'): QuizQuestion => {
     const currentPlaylist = playlist || '2010s'
     
+    // Song Trivia uses current playlist, other types use different playlists
+    if (questionType === 'song-trivia') {
+      console.log('🎯 SONG TRIVIA: Generating trivia question from current playlist', currentPlaylist)
+      
+      const playlistSongs = getPlaylistSongs(currentPlaylist)
+      
+      // Filter songs that have trivia questions
+      const songsWithTrivia = playlistSongs.filter(song => 
+        song.triviaQuestion && song.triviaOptions && song.triviaCorrectAnswer
+      )
+      
+      if (songsWithTrivia.length === 0) {
+        console.error('❌ No songs with trivia questions found in playlist', currentPlaylist)
+        // Fallback to regular question generation
+        return generateQuizQuestion()
+      }
+      
+      // Select a random song with trivia
+      const randomIndex = Math.floor(Math.random() * songsWithTrivia.length)
+      const triviaSong = songsWithTrivia[randomIndex] as Song
+      
+      console.log('🎯 SONG TRIVIA: Selected song', triviaSong.title, 'by', triviaSong.artist)
+      
+      return {
+        song: triviaSong,
+        options: triviaSong.triviaOptions!,
+        correctAnswer: triviaSong.triviaCorrectAnswer!,
+        isSongTrivia: true,
+        triviaQuestionText: triviaSong.triviaQuestion!
+      }
+    }
+    
+    // For other special question types (time-warp, slo-mo, hyperspeed)
     // Get all available playlists except the current one
     const allPlaylists = ['90s', '2000s', '2010s', '2020s']
     const otherPlaylists = allPlaylists.filter(p => p !== currentPlaylist)
@@ -1292,7 +1390,7 @@ const Game = () => {
   }
 
   // Helper function that works with specific question number to avoid state timing issues
-  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
     console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType)
     
     // Prevent multiple simultaneous calls
@@ -1316,7 +1414,7 @@ const Game = () => {
     startNewQuestionWithNumber(questionNumber)
   }
 
-  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1409,7 +1507,14 @@ const Game = () => {
     
     // Auto-play the song after audio element has loaded the new source
     // Use multiple attempts to ensure audio plays reliably
-    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
+      // Skip audio playback for Song Trivia questions
+      if (currentSpecialType === 'song-trivia' || question.isSongTrivia) {
+        console.log('🎯 SONG TRIVIA: Skipping audio playback - trivia question mode')
+        setIsLoadingQuestion(false)
+        return
+      }
+      
       const audioElement = audioRef.current
       console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
@@ -2590,7 +2695,7 @@ const Game = () => {
   }
 
   // Debug function to force next question to be a specific special question type
-  const handleDebugSpecialQuestion = (specialType: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+  const handleDebugSpecialQuestion = (specialType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
     console.log('🐛 DEBUG: Forcing next question to be', specialType, 'Special Question')
     
     // Set the next question number as a special question
@@ -3070,7 +3175,7 @@ const Game = () => {
           <div className="special-question-transition-content">
             <div className="special-question-transition-text">SPECIAL QUESTION</div>
             <div className="genre-portal-text">
-              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : specialQuestionType === 'hyperspeed' ? 'Hyperspeed' : 'Time Warp'}
+              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : specialQuestionType === 'hyperspeed' ? 'Hyperspeed' : specialQuestionType === 'song-trivia' ? 'Song Trivia' : 'Time Warp'}
             </div>
             {/* Animated Clock for Time Warp */}
             {specialQuestionType === 'time-warp' && (
@@ -3143,6 +3248,30 @@ const Game = () => {
                   <div className="sound-bar bar-5"></div>
                   <div className="sound-bar bar-6"></div>
                   <div className="sound-bar bar-7"></div>
+                </div>
+              </div>
+            )}
+
+            {/* Version B Song Trivia Display */}
+            {version === 'Version B' && currentQuestion && currentQuestion.isSongTrivia && !showFeedback && (
+              <div className="song-trivia-display">
+                <div className="song-trivia-question">
+                  {currentQuestion.triviaQuestionText}
+                </div>
+                <div className="song-trivia-options">
+                  {currentQuestion.options.map((option, index) => (
+                    <button
+                      key={index}
+                      className="song-trivia-option-button"
+                      onClick={() => {
+                        // For Song Trivia, award 40 points for correct, 0 for incorrect
+                        const isCorrect = option === currentQuestion.correctAnswer
+                        handleVersionBScore(isCorrect ? 40 : 0)
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -3278,7 +3407,7 @@ const Game = () => {
             )}
 
 
-            {!showFeedback && (
+            {!showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="progress-bar">
                 <div className="progress-time">
                   <span>{formatTime(currentTime)}</span>
@@ -3293,7 +3422,7 @@ const Game = () => {
               </div>
             )}
 
-            {!showFeedback && (
+            {!showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="control-buttons">
                 <button 
                   className={`control-btn play-pause-btn ${selectedAnswer ? 'disabled' : ''}`}
@@ -3348,7 +3477,7 @@ const Game = () => {
             )}
             
             {/* Version B Manual Scoring */}
-            {version === 'Version B' && !selectedAnswer && !showFeedback && (
+            {version === 'Version B' && !selectedAnswer && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="manual-scoring">
                 <div className="score-buttons">
                   <button
@@ -3717,6 +3846,13 @@ const Game = () => {
               title="Force next question to be Hyperspeed Special Question"
             >
               HS
+            </button>
+            <button 
+              className="debug-special-button song-trivia-debug"
+              onClick={() => handleDebugSpecialQuestion('song-trivia')}
+              title="Force next question to be Song Trivia Special Question"
+            >
+              ST
             </button>
           </div>
         )}
