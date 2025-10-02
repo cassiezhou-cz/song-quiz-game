@@ -111,12 +111,18 @@ const Game = () => {
   const [lifelinesUsed, setLifelinesUsed] = useState({
     skip: false,
     artistLetterReveal: false,
-    songLetterReveal: false
+    songLetterReveal: false,
+    multipleChoiceArtist: false,
+    multipleChoiceSong: false
   })
 
   // Version B Letter Reveal state
   const [artistLetterRevealText, setArtistLetterRevealText] = useState<string | null>(null)
   const [songLetterRevealText, setSongLetterRevealText] = useState<string | null>(null)
+
+  // Version B Multiple Choice state
+  const [artistMultipleChoiceOptions, setArtistMultipleChoiceOptions] = useState<string[] | null>(null)
+  const [songMultipleChoiceOptions, setSongMultipleChoiceOptions] = useState<string[] | null>(null)
 
   // Version B Special Question transition state
   const [showSpecialQuestionTransition, setShowSpecialQuestionTransition] = useState(false)
@@ -1238,7 +1244,7 @@ const Game = () => {
 
   // Helper function to check if any lifelines are still available
   const hasAvailableLifelines = () => {
-    return !lifelinesUsed.skip || !lifelinesUsed.artistLetterReveal || !lifelinesUsed.songLetterReveal
+    return !lifelinesUsed.skip || !lifelinesUsed.artistLetterReveal || !lifelinesUsed.songLetterReveal || !lifelinesUsed.multipleChoiceArtist || !lifelinesUsed.multipleChoiceSong
   }
 
   // Helper function to start lifeline attention animation
@@ -1345,6 +1351,8 @@ const Game = () => {
     setPointsEarned(0)
     setArtistLetterRevealText(null) // Reset letter reveal info for new question
     setSongLetterRevealText(null)
+    setArtistMultipleChoiceOptions(null) // Reset multiple choice options for new question
+    setSongMultipleChoiceOptions(null)
     // Note: opponentPointsEarned is not reset here to prevent popup display issues
     
     // Version-specific resets
@@ -1590,7 +1598,9 @@ const Game = () => {
       setLifelinesUsed({
         skip: false,
         artistLetterReveal: false,
-        songLetterReveal: false
+        songLetterReveal: false,
+        multipleChoiceArtist: false,
+        multipleChoiceSong: false
       })
       
       // Randomly select 1 or 2 special questions (50% chance for 2)
@@ -2061,7 +2071,7 @@ const Game = () => {
   }
 
   // Version B Lifeline handler
-  const handleLifelineClick = (lifelineType: 'skip' | 'artistLetterReveal' | 'songLetterReveal') => {
+  const handleLifelineClick = (lifelineType: 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong') => {
     // Stop lifeline attention animation when any lifeline is used
     stopLifelineAttentionAnimation()
     
@@ -2099,6 +2109,8 @@ const Game = () => {
       setPointsEarned(0)
       setArtistLetterRevealText(null) // Clear letter reveal info
       setSongLetterRevealText(null)
+      setArtistMultipleChoiceOptions(null) // Clear multiple choice options
+      setSongMultipleChoiceOptions(null)
       
       // Generate and start a new question immediately
       setTimeout(() => {
@@ -2145,6 +2157,61 @@ const Game = () => {
         
         setSongLetterRevealText(displayText)
         console.log(`Revealing song: ${displayText}`)
+      }
+    } else if (lifelineType === 'multipleChoiceArtist') {
+      console.log('Multiple Choice Artist booster activated!')
+      
+      if (currentQuestion) {
+        // Get current playlist songs
+        let playlistSongs: Song[] = []
+        if (playlist === '2010s') playlistSongs = songs2010s
+        else if (playlist === '2000s') playlistSongs = songs2000s
+        else if (playlist === '2020s') playlistSongs = songs2020s
+        else if (playlist === '90s') playlistSongs = songs90s
+        
+        const correctArtist = currentQuestion.song.artist
+        
+        // Get all unique artists from the playlist (excluding the correct one)
+        const allArtists = Array.from(new Set(playlistSongs.map(s => s.artist)))
+          .filter(artist => artist !== correctArtist)
+        
+        // Shuffle and pick 3 random incorrect artists
+        const shuffled = allArtists.sort(() => Math.random() - 0.5)
+        const incorrectArtists = shuffled.slice(0, 3)
+        
+        // Combine correct and incorrect, then shuffle
+        const options = [correctArtist, ...incorrectArtists].sort(() => Math.random() - 0.5)
+        
+        setArtistMultipleChoiceOptions(options)
+        console.log(`Showing artist options: ${options.join(', ')}`)
+      }
+    } else if (lifelineType === 'multipleChoiceSong') {
+      console.log('Multiple Choice Song booster activated!')
+      
+      if (currentQuestion) {
+        // Get current playlist songs
+        let playlistSongs: Song[] = []
+        if (playlist === '2010s') playlistSongs = songs2010s
+        else if (playlist === '2000s') playlistSongs = songs2000s
+        else if (playlist === '2020s') playlistSongs = songs2020s
+        else if (playlist === '90s') playlistSongs = songs90s
+        
+        const correctSong = currentQuestion.song.title
+        
+        // Get all unique song titles from the playlist (excluding the correct one)
+        const allSongs = playlistSongs
+          .map(s => s.title)
+          .filter(title => title !== correctSong)
+        
+        // Shuffle and pick 3 random incorrect songs
+        const shuffled = allSongs.sort(() => Math.random() - 0.5)
+        const incorrectSongs = shuffled.slice(0, 3)
+        
+        // Combine correct and incorrect, then shuffle
+        const options = [correctSong, ...incorrectSongs].sort(() => Math.random() - 0.5)
+        
+        setSongMultipleChoiceOptions(options)
+        console.log(`Showing song options: ${options.join(', ')}`)
       }
     }
 
@@ -2474,10 +2541,14 @@ const Game = () => {
     setLifelinesUsed({
       skip: false,
       artistLetterReveal: false,
-      songLetterReveal: false
+      songLetterReveal: false,
+      multipleChoiceArtist: false,
+      multipleChoiceSong: false
     })
     setArtistLetterRevealText(null) // Reset letter reveal info
     setSongLetterRevealText(null)
+    setArtistMultipleChoiceOptions(null) // Reset multiple choice options
+    setSongMultipleChoiceOptions(null)
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setSpecialQuestionNumbers([]) // Reset special question tracking
     setSpecialQuestionTypes({}) // Reset special question types
@@ -3095,6 +3166,40 @@ const Game = () => {
               </div>
             )}
 
+            {/* Version B Multiple Choice Display */}
+            {version === 'Version B' && (artistMultipleChoiceOptions || songMultipleChoiceOptions) && !showFeedback && (
+              <div className="multiple-choice-display">
+                {artistMultipleChoiceOptions && (
+                  <div className="multiple-choice-section">
+                    <div className="multiple-choice-label artist-label">
+                      Which Artist?
+                    </div>
+                    <div className="multiple-choice-options">
+                      {artistMultipleChoiceOptions.map((option, index) => (
+                        <div key={index} className="multiple-choice-option">
+                          {option}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {songMultipleChoiceOptions && (
+                  <div className="multiple-choice-section">
+                    <div className="multiple-choice-label song-label">
+                      Which Song?
+                    </div>
+                    <div className="multiple-choice-options">
+                      {songMultipleChoiceOptions.map((option, index) => (
+                        <div key={index} className="multiple-choice-option">
+                          {option}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Version B Boosters */}
             {version === 'Version B' && !showFeedback && (
               <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''}`}>
@@ -3120,6 +3225,20 @@ const Game = () => {
                     style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
                   >
                     <div className="booster-label">Song Letter Reveal</div>
+                  </div>
+                  <div 
+                    className={`booster-icon ${lifelinesUsed.multipleChoiceArtist ? 'depleted' : ''}`}
+                    onClick={() => handleLifelineClick('multipleChoiceArtist')}
+                    style={{ cursor: lifelinesUsed.multipleChoiceArtist ? 'not-allowed' : 'pointer' }}
+                  >
+                    <div className="booster-label">Multiple Choice: Artist</div>
+                  </div>
+                  <div 
+                    className={`booster-icon ${lifelinesUsed.multipleChoiceSong ? 'depleted' : ''}`}
+                    onClick={() => handleLifelineClick('multipleChoiceSong')}
+                    style={{ cursor: lifelinesUsed.multipleChoiceSong ? 'not-allowed' : 'pointer' }}
+                  >
+                    <div className="booster-label">Multiple Choice: Song</div>
                   </div>
                 </div>
               </div>
