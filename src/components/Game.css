@@ -1377,6 +1377,31 @@
   color: #ffffff;
 }
 
+/* Version B Song Trivia Results Styles */
+.trivia-question-text {
+  font-size: 1.3rem !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  margin-bottom: 1rem !important;
+  background: rgba(78, 205, 196, 0.1) !important;
+  border-left: 4px solid rgba(78, 205, 196, 0.6) !important;
+  padding: 1rem !important;
+}
+
+.trivia-correct-answer {
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  background: rgba(78, 205, 196, 0.15) !important;
+  padding: 1rem !important;
+  border-radius: 8px !important;
+}
+
+.trivia-correct-answer strong {
+  color: #4ecdc4 !important;
+  font-size: 1.25rem !important;
+}
+
 /* Feedback Container Styles */
 .feedback-container {
   position: fixed;
