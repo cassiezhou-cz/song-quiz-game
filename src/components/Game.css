@@ -2568,6 +2568,48 @@
   }
 }
 
+/* Version B Lifeline Entrance Animation (First Question) */
+.boosters-section.lifeline-entrance {
+  animation: lifelineEntrance 1.5s ease-out forwards;
+}
+
+.boosters-section.lifeline-entrance .booster-icon {
+  animation: lifelineIconEntrance 1.5s ease-out forwards;
+}
+
+@keyframes lifelineEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes lifelineIconEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotateY(180deg);
+    box-shadow: 0 0 0 rgba(78, 205, 196, 0);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.2) rotateY(0deg);
+    box-shadow: 0 0 40px rgba(78, 205, 196, 1), 0 0 80px rgba(78, 205, 196, 0.8), 0 0 120px rgba(78, 205, 196, 0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotateY(0deg);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+}
+
 /* Version B Special Question Playlist Display */
 .special-playlist-display {
   position: fixed;

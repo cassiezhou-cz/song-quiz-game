@@ -140,6 +140,9 @@ const Game = () => {
   // Version B Lifeline attention animation
   const [showLifelineAttention, setShowLifelineAttention] = useState(false)
   const lifelineAttentionTimerRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Version B Lifeline entrance animation (for first question)
+  const [showLifelineEntrance, setShowLifelineEntrance] = useState(false)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1386,6 +1389,15 @@ const Game = () => {
       setVersionBTimerRunning(true)
       // Track question start time for time bonus
       setQuestionStartTime(Date.now())
+      
+      // Trigger lifeline entrance animation on first question
+      if (questionNumber === 1) {
+        setShowLifelineEntrance(true)
+        // Remove animation class after animation completes
+        setTimeout(() => {
+          setShowLifelineEntrance(false)
+        }, 1500) // Match animation duration
+      }
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
       if (!isTimerRunning && timeRemaining === 30) {
@@ -3213,7 +3225,7 @@ const Game = () => {
 
             {/* Version B Boosters */}
             {version === 'Version B' && !showFeedback && (
-              <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''}`}>
+              <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''} ${showLifelineEntrance ? 'lifeline-entrance' : ''}`}>
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
                   {availableLifelines.includes('skip') && (
