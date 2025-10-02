@@ -1555,13 +1555,6 @@ const Game = () => {
     // Auto-play the song after audio element has loaded the new source
     // Use multiple attempts to ensure audio plays reliably
     const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
-      // Skip audio playback for Song Trivia questions
-      if (currentSpecialType === 'song-trivia' || question.isSongTrivia) {
-        console.log('🎯 SONG TRIVIA: Skipping audio playback - trivia question mode')
-        setIsLoadingQuestion(false)
-        return
-      }
-      
       const audioElement = audioRef.current
       console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
@@ -1596,6 +1589,9 @@ const Game = () => {
           } else if (currentSpecialType === 'hyperspeed') {
             audioElement.playbackRate = 2.0
             console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) immediately after setting source')
+          } else if (currentSpecialType === 'song-trivia') {
+            audioElement.playbackRate = 1.0
+            console.log('🎯 SONG TRIVIA: Set playback rate to 1.0 (100% speed) - playing song once')
           } else {
             audioElement.playbackRate = 1.0
             console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) immediately after setting source')
@@ -1817,9 +1813,10 @@ const Game = () => {
       setUsedTriviaSongIds([]) // Reset used trivia songs when starting new playlist
       
       // Pre-assign types to special questions to ensure variety
-      const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed')[] = ['time-warp', 'slo-mo', 'hyperspeed']
+      // Note: Currently only using 'hyperspeed' and 'song-trivia' (slo-mo and time-warp disabled)
+      const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia')[] = ['hyperspeed', 'song-trivia']
       const shuffledTypes = [...allTypes].sort(() => Math.random() - 0.5) // Shuffle the types
-      const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed'} = {}
+      const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia'} = {}
       
       selectedSpecialQuestions.forEach((questionNum, index) => {
         // Cycle through shuffled types to ensure variety
