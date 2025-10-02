@@ -116,6 +116,10 @@ const Game = () => {
     multipleChoiceSong: false
   })
 
+  // Version B Available Lifelines (randomly selected 3 out of 5)
+  type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
+  const [availableLifelines, setAvailableLifelines] = useState<LifelineType[]>([])
+
   // Version B Letter Reveal state
   const [artistLetterRevealText, setArtistLetterRevealText] = useState<string | null>(null)
   const [songLetterRevealText, setSongLetterRevealText] = useState<string | null>(null)
@@ -1244,7 +1248,8 @@ const Game = () => {
 
   // Helper function to check if any lifelines are still available
   const hasAvailableLifelines = () => {
-    return !lifelinesUsed.skip || !lifelinesUsed.artistLetterReveal || !lifelinesUsed.songLetterReveal || !lifelinesUsed.multipleChoiceArtist || !lifelinesUsed.multipleChoiceSong
+    // Check only the lifelines that are available in this session
+    return availableLifelines.some(lifeline => !lifelinesUsed[lifeline])
   }
 
   // Helper function to start lifeline attention animation
@@ -1595,6 +1600,12 @@ const Game = () => {
     
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
+      // Randomly select 3 lifelines out of 5
+      const allLifelines: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+      const shuffled = [...allLifelines].sort(() => Math.random() - 0.5)
+      const selectedLifelines = shuffled.slice(0, 3)
+      setAvailableLifelines(selectedLifelines)
+      
       setLifelinesUsed({
         skip: false,
         artistLetterReveal: false,
@@ -3205,41 +3216,51 @@ const Game = () => {
               <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''}`}>
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
-                  <div 
-                    className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('skip')}
-                    style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">Skip</div>
-                  </div>
-                  <div 
-                    className={`booster-icon ${lifelinesUsed.artistLetterReveal ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('artistLetterReveal')}
-                    style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">Artist Letter Reveal</div>
-                  </div>
-                  <div 
-                    className={`booster-icon ${lifelinesUsed.songLetterReveal ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('songLetterReveal')}
-                    style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">Song Letter Reveal</div>
-                  </div>
-                  <div 
-                    className={`booster-icon ${lifelinesUsed.multipleChoiceArtist ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('multipleChoiceArtist')}
-                    style={{ cursor: lifelinesUsed.multipleChoiceArtist ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">Multiple Choice: Artist</div>
-                  </div>
-                  <div 
-                    className={`booster-icon ${lifelinesUsed.multipleChoiceSong ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('multipleChoiceSong')}
-                    style={{ cursor: lifelinesUsed.multipleChoiceSong ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">Multiple Choice: Song</div>
-                  </div>
+                  {availableLifelines.includes('skip') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('skip')}
+                      style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Skip</div>
+                    </div>
+                  )}
+                  {availableLifelines.includes('artistLetterReveal') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.artistLetterReveal ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('artistLetterReveal')}
+                      style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Artist Letter Reveal</div>
+                    </div>
+                  )}
+                  {availableLifelines.includes('songLetterReveal') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.songLetterReveal ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('songLetterReveal')}
+                      style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Song Letter Reveal</div>
+                    </div>
+                  )}
+                  {availableLifelines.includes('multipleChoiceArtist') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.multipleChoiceArtist ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('multipleChoiceArtist')}
+                      style={{ cursor: lifelinesUsed.multipleChoiceArtist ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Multiple Choice: Artist</div>
+                    </div>
+                  )}
+                  {availableLifelines.includes('multipleChoiceSong') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.multipleChoiceSong ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('multipleChoiceSong')}
+                      style={{ cursor: lifelinesUsed.multipleChoiceSong ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Multiple Choice: Song</div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
