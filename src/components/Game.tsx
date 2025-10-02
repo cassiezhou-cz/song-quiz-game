@@ -11,12 +11,17 @@ interface Song {
   albumArt: string
   alternatives: string[]
   artistAlternatives?: string[] // Alternative spellings/pronunciations for artist names
+  triviaQuestion?: string // Song Trivia question text
+  triviaOptions?: string[] // Song Trivia answer options (4 total: 3 wrong, 1 correct)
+  triviaCorrectAnswer?: string // Correct answer for Song Trivia
 }
 
 interface QuizQuestion {
   song: Song
   options: string[]
   correctAnswer: string
+  isSongTrivia?: boolean // Flag to indicate this is a Song Trivia question
+  triviaQuestionText?: string // The trivia question to display
 }
 
 
@@ -55,6 +60,15 @@ const Game = () => {
   const [opponentCorrect, setOpponentCorrect] = useState(false)
   const [opponentPointsEarned, setOpponentPointsEarned] = useState(0)
   const [gameComplete, setGameComplete] = useState(false)
+  
+  // Version B floating points animation
+  const [showFloatingPoints, setShowFloatingPoints] = useState(false)
+  const [floatingPointsValue, setFloatingPointsValue] = useState(0)
+  const [isFloatingPointsSpecial, setIsFloatingPointsSpecial] = useState(false)
+  const [isFloatingPointsTimeBonus, setIsFloatingPointsTimeBonus] = useState(false)
+  
+  // Version B time bonus tracking
+  const [questionStartTime, setQuestionStartTime] = useState<number>(0)
   const totalQuestions = 7
 
   // Version A specific state
@@ -70,6 +84,10 @@ const Game = () => {
   // Version C specific state
   const [timeRemaining, setTimeRemaining] = useState(60)
   const [isTimerRunning, setIsTimerRunning] = useState(false)
+  
+  // Version B per-question timer state
+  const [versionBTimeRemaining, setVersionBTimeRemaining] = useState(20)
+  const [versionBTimerRunning, setVersionBTimerRunning] = useState(false)
   const [allAttemptedSongs, setAllAttemptedSongs] = useState<Array<{
     song: any,
     pointsEarned: number,
@@ -87,6 +105,8 @@ const Game = () => {
   const [showVersionCFeedback, setShowVersionCFeedback] = useState(false) // Track answer feedback display
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  // Separate timer ref for Version B per-question timer
+  const versionBTimerRef = useRef<NodeJS.Timeout | null>(null)
   
   // Note: Song tracking is now handled by persistent localStorage via songTracker utility
   
@@ -95,32 +115,40 @@ const Game = () => {
 
   // Version B Lifelines state
   const [lifelinesUsed, setLifelinesUsed] = useState({
-    doublePoints: false,
     skip: false,
-    letterReveal: false
+    artistLetterReveal: false,
+    songLetterReveal: false,
+    multipleChoiceArtist: false,
+    multipleChoiceSong: false
   })
 
-  // Version B 2X Points booster state
-  const [isDoublePointsActive, setIsDoublePointsActive] = useState(false)
+  // Version B Available Lifelines (randomly selected 3 out of 5)
+  type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
+  const [availableLifelines, setAvailableLifelines] = useState<LifelineType[]>([])
 
   // Version B Letter Reveal state
-  const [letterRevealInfo, setLetterRevealInfo] = useState<{
-    type: 'artist' | 'song' | null
-    displayText: string
-  } | null>(null)
+  const [artistLetterRevealText, setArtistLetterRevealText] = useState<string | null>(null)
+  const [songLetterRevealText, setSongLetterRevealText] = useState<string | null>(null)
+
+  // Version B Multiple Choice state
+  const [artistMultipleChoiceOptions, setArtistMultipleChoiceOptions] = useState<string[] | null>(null)
+  const [songMultipleChoiceOptions, setSongMultipleChoiceOptions] = useState<string[] | null>(null)
 
   // Version B Special Question transition state
   const [showSpecialQuestionTransition, setShowSpecialQuestionTransition] = useState(false)
   
   // Version B Special Question tracking
   const [specialQuestionNumbers, setSpecialQuestionNumbers] = useState<number[]>([])
-  const [specialQuestionTypes, setSpecialQuestionTypes] = useState<{[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed'}>({})
+  const [specialQuestionTypes, setSpecialQuestionTypes] = useState<{[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia'}>({})
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
-  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | null>(null)
+  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | null>(null)
   
   // Version B Lifeline attention animation
   const [showLifelineAttention, setShowLifelineAttention] = useState(false)
   const lifelineAttentionTimerRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Version B Lifeline entrance animation (for first question)
+  const [showLifelineEntrance, setShowLifelineEntrance] = useState(false)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -129,7 +157,10 @@ const Game = () => {
       artist: 'John Legend', 
       file: '/songs/2010s/AllofMeJohnLegend.mp3', 
       albumArt: '/assets/album-art/2010s/AllOfMeJohnLegend.jpeg',
-      alternatives: ['When I Was Your Man - Bruno Mars', 'Stay With Me - Sam Smith', 'Thinking Out Loud - Ed Sheeran']
+      alternatives: ['When I Was Your Man - Bruno Mars', 'Stay With Me - Sam Smith', 'Thinking Out Loud - Ed Sheeran'],
+      triviaQuestion: 'What year was "All of Me" by John Legend released?',
+      triviaOptions: ['2011', '2012', '2013', '2014'],
+      triviaCorrectAnswer: '2013'
     },
     { 
       id: '2', 
@@ -155,7 +186,10 @@ const Game = () => {
       file: '/songs/2010s/CloserChainsmokers.mp3', 
       albumArt: '/assets/album-art/2010s/CloserChainsmokers.jpeg',
       alternatives: ['It Ain\'t Me - Kygo & Selena Gomez', 'Faded - Zedd feat. Alessia Cara', 'Paris - Lauv'],
-      artistAlternatives: ['Chainsmokers', 'Chain Smokers', 'Chainsmockers']
+      artistAlternatives: ['Chainsmokers', 'Chain Smokers', 'Chainsmockers'],
+      triviaQuestion: 'Which female artist is featured on "Closer" by The Chainsmokers?',
+      triviaOptions: ['Selena Gomez', 'Halsey', 'Daya', 'Bebe Rexha'],
+      triviaCorrectAnswer: 'Halsey'
     },
     { 
       id: '5', 
@@ -188,7 +222,10 @@ const Game = () => {
       file: '/songs/2010s/HUMBLEKendrickLamar.mp3', 
       albumArt: '/assets/album-art/2010s/HUMBLEKendrickLamar.jpeg',
       alternatives: ['Mask Off - Future', 'Bad and Boujee - Migos feat. Lil Uzi Vert', 'Alright - J. Cole'],
-      artistAlternatives: ['Kendrick Lamarr', 'Kendrick', 'Lamar']
+      artistAlternatives: ['Kendrick Lamarr', 'Kendrick', 'Lamar'],
+      triviaQuestion: 'Which album features "HUMBLE." by Kendrick Lamar?',
+      triviaOptions: ['good kid, m.A.A.d city', 'To Pimp a Butterfly', 'DAMN.', 'Mr. Morale & The Big Steppers'],
+      triviaCorrectAnswer: 'DAMN.'
     },
     { 
       id: '9', 
@@ -204,7 +241,10 @@ const Game = () => {
       artist: 'Lady Gaga', 
       file: '/songs/2010s/JustDanceLadyGaga.mp3', 
       albumArt: '/assets/album-art/2010s/JustDanceLadyGaga.jpeg',
-      alternatives: ['Poker Face - Lady Gaga', 'Bad Romance - Lady Gaga', 'Paparazzi - Lady Gaga']
+      alternatives: ['Poker Face - Lady Gaga', 'Bad Romance - Lady Gaga', 'Paparazzi - Lady Gaga'],
+      triviaQuestion: '"Just Dance" was Lady Gaga\'s debut single. What year was it released?',
+      triviaOptions: ['2007', '2008', '2009', '2010'],
+      triviaCorrectAnswer: '2008'
     },
     { 
       id: '11', 
@@ -245,7 +285,10 @@ const Game = () => {
       artist: 'Drake', 
       file: '/songs/2010s/OneDanceDrake.mp3', 
       albumArt: '/assets/album-art/2010s/OneDanceDrake.jpeg',
-      alternatives: ['Joanna - Afro B', 'On the Low - Burna Boy', 'Toast - Koffee']
+      alternatives: ['Joanna - Afro B', 'On the Low - Burna Boy', 'Toast - Koffee'],
+      triviaQuestion: 'Which album by Drake features "One Dance"?',
+      triviaOptions: ['Nothing Was the Same', 'If You\'re Reading This It\'s Too Late', 'Views', 'Scorpion'],
+      triviaCorrectAnswer: 'Views'
     },
     { 
       id: '16', 
@@ -370,7 +413,10 @@ const Game = () => {
       artist: 'Avril Lavigne', 
       file: '/songs/2000s/ComplicatedAvrilLavigne.mp3', 
       albumArt: '/assets/album-art/2000s/ComplicatedAvrilLavigne.jpeg',
-      alternatives: ['Sk8er Boi - Avril Lavigne', 'My Happy Ending - Avril Lavigne', 'I\'m with You - Avril Lavigne']
+      alternatives: ['Sk8er Boi - Avril Lavigne', 'My Happy Ending - Avril Lavigne', 'I\'m with You - Avril Lavigne'],
+      triviaQuestion: 'What year was Avril Lavigne\'s "Complicated" released?',
+      triviaOptions: ['2001', '2002', '2003', '2004'],
+      triviaCorrectAnswer: '2002'
     },
     { 
       id: '4', 
@@ -394,7 +440,10 @@ const Game = () => {
       artist: 'Jay Z (feat. Alicia Keys)', 
       file: '/songs/2000s/EmpireStateOfMindJayZ.mp3', 
       albumArt: '/assets/album-art/2000s/EmpireStateOfMindJayZ.jpeg',
-      alternatives: ['Run This Town - Jay-Z, Rihanna & Kanye West', '99 Problems - Jay-Z', 'Izzo (H.O.V.A.) - Jay-Z']
+      alternatives: ['Run This Town - Jay-Z, Rihanna & Kanye West', '99 Problems - Jay-Z', 'Izzo (H.O.V.A.) - Jay-Z'],
+      triviaQuestion: 'Which city is celebrated in "Empire State of Mind"?',
+      triviaOptions: ['Los Angeles', 'Chicago', 'New York', 'Miami'],
+      triviaCorrectAnswer: 'New York'
     },
     { 
       id: '7', 
@@ -410,7 +459,10 @@ const Game = () => {
       artist: 'Britney Spears', 
       file: '/songs/2000s/GimmeMoreBritneySpears.mp3', 
       albumArt: '/assets/album-art/2000s/GimmeMoreBritneySpears.jpeg',
-      alternatives: ['Toxic - Britney Spears', 'Circus - Britney Spears', 'Womanizer - Britney Spears']
+      alternatives: ['Toxic - Britney Spears', 'Circus - Britney Spears', 'Womanizer - Britney Spears'],
+      triviaQuestion: 'Which album features "Gimme More" by Britney Spears?',
+      triviaOptions: ['In the Zone', 'Blackout', 'Circus', 'Femme Fatale'],
+      triviaCorrectAnswer: 'Blackout'
     },
     { 
       id: '9', 
@@ -434,7 +486,10 @@ const Game = () => {
       artist: 'Backstreet Boys', 
       file: '/songs/2000s/IWantItThatWayBackstreetBoys.mp3', 
       albumArt: '/assets/album-art/2000s/IWantItThatWayBackstreetBoys.jpeg',
-      alternatives: ['Everybody - Backstreet Boys', 'As Long As You Love Me - Backstreet Boys', 'Quit Playing Games - Backstreet Boys']
+      alternatives: ['Everybody - Backstreet Boys', 'As Long As You Love Me - Backstreet Boys', 'Quit Playing Games - Backstreet Boys'],
+      triviaQuestion: 'What year was "I Want It That Way" released?',
+      triviaOptions: ['1997', '1998', '1999', '2000'],
+      triviaCorrectAnswer: '1999'
     },
     { 
       id: '12', 
@@ -474,7 +529,10 @@ const Game = () => {
       artist: 'Nelly Furtado', 
       file: '/songs/2000s/ManeaterNellyFurtado.mp3', 
       albumArt: '/assets/album-art/2000s/ManeaterNellyFurtado.jpeg',
-      alternatives: ['Promiscuous - Nelly Furtado feat. Timbaland', 'Say It Right - Nelly Furtado', 'I\'m Like a Bird - Nelly Furtado']
+      alternatives: ['Promiscuous - Nelly Furtado feat. Timbaland', 'Say It Right - Nelly Furtado', 'I\'m Like a Bird - Nelly Furtado'],
+      triviaQuestion: 'Which album features "Maneater" by Nelly Furtado?',
+      triviaOptions: ['Whoa, Nelly!', 'Folklore', 'Loose', 'The Spirit Indestructible'],
+      triviaCorrectAnswer: 'Loose'
     },
     { 
       id: '17', 
@@ -590,7 +648,10 @@ const Game = () => {
       artist: 'Taylor Swift', 
       file: '/songs/2020s/cardiganTaylorSwift.mp3', 
       albumArt: '/assets/album-art/2020s/CardiganTaylorSwift.jpeg',
-      alternatives: ['folklore - Taylor Swift', 'willow - Taylor Swift', 'betty - Taylor Swift']
+      alternatives: ['folklore - Taylor Swift', 'willow - Taylor Swift', 'betty - Taylor Swift'],
+      triviaQuestion: 'Which album features "cardigan" by Taylor Swift?',
+      triviaOptions: ['Lover', 'folklore', 'evermore', 'Midnights'],
+      triviaCorrectAnswer: 'folklore'
     },
     { 
       id: '3', 
@@ -614,7 +675,10 @@ const Game = () => {
       artist: 'Miley Cyrus', 
       file: '/songs/2020s/FlowersMileyCyrus.mp3', 
       albumArt: '/assets/album-art/2020s/FlowersMileyCyrus.jpeg',
-      alternatives: ['Party in the U.S.A. - Miley Cyrus', 'Wrecking Ball - Miley Cyrus', 'The Climb - Miley Cyrus']
+      alternatives: ['Party in the U.S.A. - Miley Cyrus', 'Wrecking Ball - Miley Cyrus', 'The Climb - Miley Cyrus'],
+      triviaQuestion: 'What year was "Flowers" by Miley Cyrus released?',
+      triviaOptions: ['2021', '2022', '2023', '2024'],
+      triviaCorrectAnswer: '2023'
     },
     { 
       id: '6', 
@@ -631,7 +695,10 @@ const Game = () => {
       artist: 'Glass Animals', 
       file: '/songs/2020s/HeatWavesGlassAnimals.mp3', 
       albumArt: '/assets/album-art/2020s/HeatWavesGlassAnimals.jpeg',
-      alternatives: ['The Other Side of Paradise - Glass Animals', 'Your Love (Déjà Vu) - Glass Animals', 'Tokyo Drifting - Glass Animals']
+      alternatives: ['The Other Side of Paradise - Glass Animals', 'Your Love (Déjà Vu) - Glass Animals', 'Tokyo Drifting - Glass Animals'],
+      triviaQuestion: 'Which album features "Heat Waves" by Glass Animals?',
+      triviaOptions: ['ZABA', 'How to Be a Human Being', 'Dreamland', 'I Love You So F***ing Much'],
+      triviaCorrectAnswer: 'Dreamland'
     },
     { 
       id: '8', 
@@ -664,7 +731,10 @@ const Game = () => {
       artist: 'Lil Nas X', 
       file: '/songs/2020s/INDUSTRYBABYLilNasX.mp3', 
       albumArt: '/assets/album-art/2020s/INDUSTRYBABYLilNasX.jpeg',
-      alternatives: ['Old Town Road - Lil Nas X feat. Billy Ray Cyrus', 'Montero (Call Me By Your Name) - Lil Nas X', 'Panini - Lil Nas X']
+      alternatives: ['Old Town Road - Lil Nas X feat. Billy Ray Cyrus', 'Montero (Call Me By Your Name) - Lil Nas X', 'Panini - Lil Nas X'],
+      triviaQuestion: 'Which artist is featured on "Industry Baby" with Lil Nas X?',
+      triviaOptions: ['Travis Scott', 'Jack Harlow', 'DaBaby', 'Megan Thee Stallion'],
+      triviaCorrectAnswer: 'Jack Harlow'
     },
     { 
       id: '12', 
@@ -688,7 +758,10 @@ const Game = () => {
       artist: 'Justin Bieber', 
       file: '/songs/2020s/PeachesJustinBieber.mp3', 
       albumArt: '/assets/album-art/2020s/PeachesJustinBieber.jpeg',
-      alternatives: ['Sorry - Justin Bieber', 'Love Yourself - Justin Bieber', 'What Do You Mean? - Justin Bieber']
+      alternatives: ['Sorry - Justin Bieber', 'Love Yourself - Justin Bieber', 'What Do You Mean? - Justin Bieber'],
+      triviaQuestion: 'What year was "Peaches" by Justin Bieber released?',
+      triviaOptions: ['2019', '2020', '2021', '2022'],
+      triviaCorrectAnswer: '2021'
     },
     { 
       id: '15', 
@@ -790,7 +863,10 @@ const Game = () => {
       artist: 'Oasis', 
       file: '/songs/90s/WonderwallOasis.mp3', 
       albumArt: '/assets/album-art/90s/WonderwallOasis.jpeg',
-      alternatives: ['Champagne Supernova - Oasis', 'Creep - Radiohead', 'Mr. Brightside - The Killers']
+      alternatives: ['Champagne Supernova - Oasis', 'Creep - Radiohead', 'Mr. Brightside - The Killers'],
+      triviaQuestion: 'Which album features "Wonderwall" by Oasis?',
+      triviaOptions: ['Definitely Maybe', '(What\'s the Story) Morning Glory?', 'Be Here Now', 'The Masterplan'],
+      triviaCorrectAnswer: '(What\'s the Story) Morning Glory?'
     },
     { 
       id: '2', 
@@ -798,7 +874,10 @@ const Game = () => {
       artist: 'Nirvana', 
       file: '/songs/90s/ComeAsYouAreNirvana.mp3', 
       albumArt: '/assets/album-art/90s/ComeAsYouAreNirvana.jpeg',
-      alternatives: ['Smells Like Teen Spirit - Nirvana', 'Black - Pearl Jam', 'Alive - Pearl Jam']
+      alternatives: ['Smells Like Teen Spirit - Nirvana', 'Black - Pearl Jam', 'Alive - Pearl Jam'],
+      triviaQuestion: 'Which album features "Come As You Are" by Nirvana?',
+      triviaOptions: ['Bleach', 'Nevermind', 'In Utero', 'MTV Unplugged in New York'],
+      triviaCorrectAnswer: 'Nevermind'
     },
     { 
       id: '3', 
@@ -823,7 +902,10 @@ const Game = () => {
       artist: 'Spice Girls', 
       file: '/songs/90s/WannabeSpiceGirls.mp3', 
       albumArt: '/assets/album-art/90s/WannabeSpiceGirls.jpeg',
-      alternatives: ['Say You\'ll Be There - Spice Girls', 'MMMBop - Hanson', 'I Want It That Way - Backstreet Boys']
+      alternatives: ['Say You\'ll Be There - Spice Girls', 'MMMBop - Hanson', 'I Want It That Way - Backstreet Boys'],
+      triviaQuestion: 'What year was "Wannabe" by Spice Girls released?',
+      triviaOptions: ['1995', '1996', '1997', '1998'],
+      triviaCorrectAnswer: '1996'
     },
     { 
       id: '6', 
@@ -831,7 +913,10 @@ const Game = () => {
       artist: 'The Smashing Pumpkins', 
       file: '/songs/90s/1979TheSmashingPumpkins.mp3', 
       albumArt: '/assets/album-art/90s/1979TheSmashingPumpkins.jpeg',
-      alternatives: ['Tonight, Tonight - The Smashing Pumpkins', 'Zero - The Smashing Pumpkins', 'Bullet with Butterfly Wings - The Smashing Pumpkins']
+      alternatives: ['Tonight, Tonight - The Smashing Pumpkins', 'Zero - The Smashing Pumpkins', 'Bullet with Butterfly Wings - The Smashing Pumpkins'],
+      triviaQuestion: 'Which album features "1979" by The Smashing Pumpkins?',
+      triviaOptions: ['Siamese Dream', 'Mellon Collie and the Infinite Sadness', 'Adore', 'Machina/The Machines of God'],
+      triviaCorrectAnswer: 'Mellon Collie and the Infinite Sadness'
     },
     { 
       id: '7', 
@@ -855,7 +940,10 @@ const Game = () => {
       artist: 'Alanis Morissette', 
       file: '/songs/90s/ironicAlanisMorissette.mp3', 
       albumArt: '/assets/album-art/90s/ironicAlanisMorissette.jpeg',
-      alternatives: ['You Oughta Know - Alanis Morissette', 'Hand in My Pocket - Alanis Morissette', 'You Learn - Alanis Morissette']
+      alternatives: ['You Oughta Know - Alanis Morissette', 'Hand in My Pocket - Alanis Morissette', 'You Learn - Alanis Morissette'],
+      triviaQuestion: 'Which album features "Ironic" by Alanis Morissette?',
+      triviaOptions: ['Jagged Little Pill', 'Supposed Former Infatuation Junkie', 'Under Rug Swept', 'Havoc and Bright Lights'],
+      triviaCorrectAnswer: 'Jagged Little Pill'
     },
     { 
       id: '10', 
@@ -1183,9 +1271,42 @@ const Game = () => {
     }
   }
 
-  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed'): QuizQuestion => {
+  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia'): QuizQuestion => {
     const currentPlaylist = playlist || '2010s'
     
+    // Song Trivia uses current playlist, other types use different playlists
+    if (questionType === 'song-trivia') {
+      console.log('🎯 SONG TRIVIA: Generating trivia question from current playlist', currentPlaylist)
+      
+      const playlistSongs = getPlaylistSongs(currentPlaylist)
+      
+      // Filter songs that have trivia questions
+      const songsWithTrivia = playlistSongs.filter(song => 
+        song.triviaQuestion && song.triviaOptions && song.triviaCorrectAnswer
+      )
+      
+      if (songsWithTrivia.length === 0) {
+        console.error('❌ No songs with trivia questions found in playlist', currentPlaylist)
+        // Fallback to regular question generation
+        return generateQuizQuestion()
+      }
+      
+      // Select a random song with trivia
+      const randomIndex = Math.floor(Math.random() * songsWithTrivia.length)
+      const triviaSong = songsWithTrivia[randomIndex] as Song
+      
+      console.log('🎯 SONG TRIVIA: Selected song', triviaSong.title, 'by', triviaSong.artist)
+      
+      return {
+        song: triviaSong,
+        options: triviaSong.triviaOptions!,
+        correctAnswer: triviaSong.triviaCorrectAnswer!,
+        isSongTrivia: true,
+        triviaQuestionText: triviaSong.triviaQuestion!
+      }
+    }
+    
+    // For other special question types (time-warp, slo-mo, hyperspeed)
     // Get all available playlists except the current one
     const allPlaylists = ['90s', '2000s', '2010s', '2020s']
     const otherPlaylists = allPlaylists.filter(p => p !== currentPlaylist)
@@ -1229,7 +1350,8 @@ const Game = () => {
 
   // Helper function to check if any lifelines are still available
   const hasAvailableLifelines = () => {
-    return !lifelinesUsed.doublePoints || !lifelinesUsed.skip || !lifelinesUsed.letterReveal
+    // Check only the lifelines that are available in this session
+    return availableLifelines.some(lifeline => !lifelinesUsed[lifeline])
   }
 
   // Helper function to start lifeline attention animation
@@ -1269,7 +1391,7 @@ const Game = () => {
   }
 
   // Helper function that works with specific question number to avoid state timing issues
-  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
     console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType)
     
     // Prevent multiple simultaneous calls
@@ -1293,7 +1415,7 @@ const Game = () => {
     startNewQuestionWithNumber(questionNumber)
   }
 
-  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1334,7 +1456,10 @@ const Game = () => {
     setSongCorrect(false)
     setIsPartialCredit(false)
     setPointsEarned(0)
-    setLetterRevealInfo(null) // Reset letter reveal info for new question
+    setArtistLetterRevealText(null) // Reset letter reveal info for new question
+    setSongLetterRevealText(null)
+    setArtistMultipleChoiceOptions(null) // Reset multiple choice options for new question
+    setSongMultipleChoiceOptions(null)
     // Note: opponentPointsEarned is not reset here to prevent popup display issues
     
     // Version-specific resets
@@ -1354,7 +1479,24 @@ const Game = () => {
         }, buzzInDelay)
       }
     } else if (version === 'Version B') {
-      // Version B has no opponent mechanics
+      // Version B: start per-question 30s timer
+      if (versionBTimerRef.current) {
+        clearTimeout(versionBTimerRef.current)
+        versionBTimerRef.current = null
+      }
+      setVersionBTimeRemaining(20)
+      setVersionBTimerRunning(true)
+      // Track question start time for time bonus
+      setQuestionStartTime(Date.now())
+      
+      // Trigger lifeline entrance animation on first question
+      if (questionNumber === 1) {
+        setShowLifelineEntrance(true)
+        // Remove animation class after animation completes
+        setTimeout(() => {
+          setShowLifelineEntrance(false)
+        }, 1500) // Match animation duration
+      }
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
       if (!isTimerRunning && timeRemaining === 60) {
@@ -1366,7 +1508,14 @@ const Game = () => {
     
     // Auto-play the song after audio element has loaded the new source
     // Use multiple attempts to ensure audio plays reliably
-    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
+      // Skip audio playback for Song Trivia questions
+      if (currentSpecialType === 'song-trivia' || question.isSongTrivia) {
+        console.log('🎯 SONG TRIVIA: Skipping audio playback - trivia question mode')
+        setIsLoadingQuestion(false)
+        return
+      }
+      
       const audioElement = audioRef.current
       console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
@@ -1569,12 +1718,19 @@ const Game = () => {
     
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
+      // Randomly select 3 lifelines out of 5
+      const allLifelines: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+      const shuffled = [...allLifelines].sort(() => Math.random() - 0.5)
+      const selectedLifelines = shuffled.slice(0, 3)
+      setAvailableLifelines(selectedLifelines)
+      
       setLifelinesUsed({
-        doublePoints: false,
         skip: false,
-        letterReveal: false
+        artistLetterReveal: false,
+        songLetterReveal: false,
+        multipleChoiceArtist: false,
+        multipleChoiceSong: false
       })
-      setIsDoublePointsActive(false)
       
       // Randomly select 1 or 2 special questions (50% chance for 2)
       const willHaveTwoSpecialQuestions = Math.random() < 0.5
@@ -1694,6 +1850,42 @@ const Game = () => {
     }
   }, [version, isTimerRunning, timeRemaining])
 
+  // Version B per-question timer effect
+  useEffect(() => {
+    if (version === 'Version B' && versionBTimerRunning && versionBTimeRemaining > 0 && !showFeedback) {
+      versionBTimerRef.current = setTimeout(() => {
+        setVersionBTimeRemaining(prev => {
+          if (prev <= 1) {
+            // Time's up for this question → auto-score 0 and show feedback
+            setVersionBTimerRunning(false)
+            if (!selectedAnswer) {
+              handleVersionBScore(0)
+            }
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    
+    return () => {
+      if (versionBTimerRef.current) {
+        clearTimeout(versionBTimerRef.current)
+        versionBTimerRef.current = null
+      }
+    }
+  }, [version, versionBTimerRunning, versionBTimeRemaining, showFeedback, selectedAnswer])
+
+  // Auto-hide floating points animation after delay
+  useEffect(() => {
+    if (showFloatingPoints) {
+      const timer = setTimeout(() => {
+        setShowFloatingPoints(false)
+      }, 2000) // Hide after 2 seconds
+      
+      return () => clearTimeout(timer)
+    }
+  }, [showFloatingPoints])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -1934,7 +2126,24 @@ const Game = () => {
   const handleVersionBScore = (points: number) => {
     if (selectedAnswer) return // Already answered
     
+    // Stop Version B timer on scoring
+    if (versionBTimerRef.current) {
+      clearTimeout(versionBTimerRef.current)
+      versionBTimerRef.current = null
+    }
+    setVersionBTimerRunning(false)
+
     setSelectedAnswer('manual_score')
+    
+    // Check for time bonus (answered within 5 seconds)
+    const elapsedTime = Date.now() - questionStartTime
+    const hasTimeBonus = points > 0 && elapsedTime <= 5000
+    let finalPoints = points
+    
+    if (hasTimeBonus) {
+      finalPoints = points * 2
+      console.log('⏱️ TIME BONUS: Answered in', (elapsedTime / 1000).toFixed(1), 'seconds! Points doubled from', points, 'to', finalPoints)
+    }
     
     let artistCorrect = false
     let songCorrect = false
@@ -1964,22 +2173,22 @@ const Game = () => {
     
     setArtistCorrect(artistCorrect)
     setSongCorrect(songCorrect)
-    setIsCorrect(points > 0) // Player gets credit for positive points only
-    setPointsEarned(points)
+    setIsCorrect(finalPoints > 0) // Player gets credit for positive points only
+    setPointsEarned(finalPoints)
     
     // Record base correctness for percentage calculation (Version B)
     setQuestionsCorrectness(prev => [...prev, { artistCorrect, songCorrect }])
     
-    if (points > 0) {
+    if (finalPoints > 0) {
       playCorrectAnswerSfx()
+      // Trigger floating points animation
+      setFloatingPointsValue(finalPoints)
+      setIsFloatingPointsSpecial(specialQuestionNumbers.includes(questionNumber))
+      setIsFloatingPointsTimeBonus(hasTimeBonus)
+      setShowFloatingPoints(true)
     }
     
     setShowFeedback(true)
-    
-    // Reset 2X Points booster when feedback is shown (after scoring)
-    if (isDoublePointsActive) {
-      setIsDoublePointsActive(false)
-    }
     
     // Pause audio
     const audio = audioRef.current
@@ -1994,7 +2203,7 @@ const Game = () => {
   }
 
   // Version B Lifeline handler
-  const handleLifelineClick = (lifelineType: 'doublePoints' | 'skip' | 'letterReveal') => {
+  const handleLifelineClick = (lifelineType: 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong') => {
     // Stop lifeline attention animation when any lifeline is used
     stopLifelineAttentionAnimation()
     
@@ -2010,10 +2219,7 @@ const Game = () => {
     }))
 
     // Handle specific lifeline functionality
-    if (lifelineType === 'doublePoints') {
-      setIsDoublePointsActive(true)
-      console.log('2X Points booster activated!')
-    } else if (lifelineType === 'skip') {
+    if (lifelineType === 'skip') {
       console.log('Skip booster activated!')
       
       // Stop current audio immediately
@@ -2033,56 +2239,111 @@ const Game = () => {
       setSongCorrect(false)
       setIsPartialCredit(false)
       setPointsEarned(0)
-      setLetterRevealInfo(null) // Clear letter reveal info
+      setArtistLetterRevealText(null) // Clear letter reveal info
+      setSongLetterRevealText(null)
+      setArtistMultipleChoiceOptions(null) // Clear multiple choice options
+      setSongMultipleChoiceOptions(null)
       
       // Generate and start a new question immediately
       setTimeout(() => {
         startNewQuestion()
       }, 100) // Small delay to ensure clean state reset
-    } else if (lifelineType === 'letterReveal') {
-      console.log('Letter Reveal booster activated!')
+    } else if (lifelineType === 'artistLetterReveal') {
+      console.log('Artist Letter Reveal booster activated!')
       
       if (currentQuestion) {
-        // Randomly choose to reveal artist or song name
-        const revealArtist = Math.random() < 0.5
+        const artistName = currentQuestion.song.artist
+        // Create display text: first letter + last letter + spaces preserved + underscores for other letters
+        const displayText = artistName.split('').map((char, index) => {
+          if (index === 0) {
+            return char.toUpperCase() // First letter revealed
+          } else if (index === artistName.length - 1) {
+            return char.toUpperCase() // Last letter revealed
+          } else if (char === ' ') {
+            return ' ' // Preserve spaces
+          } else {
+            return '_' // Other letters as underscores
+          }
+        }).join('')
         
-        if (revealArtist) {
-          const artistName = currentQuestion.song.artist
-          // Create display text: first letter + spaces preserved + underscores for other letters
-          const displayText = artistName.split('').map((char, index) => {
-            if (index === 0) {
-              return char.toUpperCase() // First letter revealed
-            } else if (char === ' ') {
-              return ' ' // Preserve spaces
-            } else {
-              return '_' // Other letters as underscores
-            }
-          }).join('')
-          
-          setLetterRevealInfo({
-            type: 'artist',
-            displayText: displayText
-          })
-          console.log(`Revealing artist: ${displayText}`)
-        } else {
-          const songName = currentQuestion.song.title
-          // Create display text: first letter + spaces preserved + underscores for other letters
-          const displayText = songName.split('').map((char, index) => {
-            if (index === 0) {
-              return char.toUpperCase() // First letter revealed
-            } else if (char === ' ') {
-              return ' ' // Preserve spaces
-            } else {
-              return '_' // Other letters as underscores
-            }
-          }).join('')
-          
-          setLetterRevealInfo({
-            type: 'song',
-            displayText: displayText
-          })
-          console.log(`Revealing song: ${displayText}`)
-        }
+        setArtistLetterRevealText(displayText)
+        console.log(`Revealing artist: ${displayText}`)
+      }
+    } else if (lifelineType === 'songLetterReveal') {
+      console.log('Song Letter Reveal booster activated!')
+      
+      if (currentQuestion) {
+        const songName = currentQuestion.song.title
+        // Create display text: first letter + last letter + spaces preserved + underscores for other letters
+        const displayText = songName.split('').map((char, index) => {
+          if (index === 0) {
+            return char.toUpperCase() // First letter revealed
+          } else if (index === songName.length - 1) {
+            return char.toUpperCase() // Last letter revealed
+          } else if (char === ' ') {
+            return ' ' // Preserve spaces
+          } else {
+            return '_' // Other letters as underscores
+          }
+        }).join('')
+        
+        setSongLetterRevealText(displayText)
+        console.log(`Revealing song: ${displayText}`)
+      }
+    } else if (lifelineType === 'multipleChoiceArtist') {
+      console.log('Multiple Choice Artist booster activated!')
+      
+      if (currentQuestion) {
+        // Get current playlist songs
+        let playlistSongs: Song[] = []
+        if (playlist === '2010s') playlistSongs = songs2010s
+        else if (playlist === '2000s') playlistSongs = songs2000s
+        else if (playlist === '2020s') playlistSongs = songs2020s
+        else if (playlist === '90s') playlistSongs = songs90s
+        
+        const correctArtist = currentQuestion.song.artist
+        
+        // Get all unique artists from the playlist (excluding the correct one)
+        const allArtists = Array.from(new Set(playlistSongs.map(s => s.artist)))
+          .filter(artist => artist !== correctArtist)
+        
+        // Shuffle and pick 3 random incorrect artists
+        const shuffled = allArtists.sort(() => Math.random() - 0.5)
+        const incorrectArtists = shuffled.slice(0, 3)
+        
+        // Combine correct and incorrect, then shuffle
+        const options = [correctArtist, ...incorrectArtists].sort(() => Math.random() - 0.5)
+        
+        setArtistMultipleChoiceOptions(options)
+        console.log(`Showing artist options: ${options.join(', ')}`)
+      }
+    } else if (lifelineType === 'multipleChoiceSong') {
+      console.log('Multiple Choice Song booster activated!')
+      
+      if (currentQuestion) {
+        // Get current playlist songs
+        let playlistSongs: Song[] = []
+        if (playlist === '2010s') playlistSongs = songs2010s
+        else if (playlist === '2000s') playlistSongs = songs2000s
+        else if (playlist === '2020s') playlistSongs = songs2020s
+        else if (playlist === '90s') playlistSongs = songs90s
+        
+        const correctSong = currentQuestion.song.title
+        
+        // Get all unique song titles from the playlist (excluding the correct one)
+        const allSongs = playlistSongs
+          .map(s => s.title)
+          .filter(title => title !== correctSong)
+        
+        // Shuffle and pick 3 random incorrect songs
+        const shuffled = allSongs.sort(() => Math.random() - 0.5)
+        const incorrectSongs = shuffled.slice(0, 3)
+        
+        // Combine correct and incorrect, then shuffle
+        const options = [correctSong, ...incorrectSongs].sort(() => Math.random() - 0.5)
+        
+        setSongMultipleChoiceOptions(options)
+        console.log(`Showing song options: ${options.join(', ')}`)
       }
     }
 
@@ -2394,18 +2655,32 @@ const Game = () => {
     // Reset Version C timer and attempts
     setTimeRemaining(60)
     setIsTimerRunning(false)
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    if (versionBTimerRef.current) {
+      clearTimeout(versionBTimerRef.current)
+      versionBTimerRef.current = null
+    }
+    setVersionBTimeRemaining(20)
+    setVersionBTimerRunning(false)
     setAllAttemptedSongs([])
     // Reset Version C streak tracking
     setVersionCStreak(0)
     setAutoBoosterNotification(null)
     // Reset Version B lifelines
     setLifelinesUsed({
-      doublePoints: false,
       skip: false,
-      letterReveal: false
+      artistLetterReveal: false,
+      songLetterReveal: false,
+      multipleChoiceArtist: false,
+      multipleChoiceSong: false
     })
-    setIsDoublePointsActive(false)
-    setLetterRevealInfo(null) // Reset letter reveal info
+    setArtistLetterRevealText(null) // Reset letter reveal info
+    setSongLetterRevealText(null)
+    setArtistMultipleChoiceOptions(null) // Reset multiple choice options
+    setSongMultipleChoiceOptions(null)
     setShowSpecialQuestionTransition(false) // Reset Special Question transition
     setSpecialQuestionNumbers([]) // Reset special question tracking
     setSpecialQuestionTypes({}) // Reset special question types
@@ -2424,7 +2699,7 @@ const Game = () => {
   }
 
   // Debug function to force next question to be a specific special question type
-  const handleDebugSpecialQuestion = (specialType: 'time-warp' | 'slo-mo' | 'hyperspeed') => {
+  const handleDebugSpecialQuestion = (specialType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
     console.log('🐛 DEBUG: Forcing next question to be', specialType, 'Special Question')
     
     // Set the next question number as a special question
@@ -2455,6 +2730,18 @@ const Game = () => {
   const backToPlaylist = () => {
     navigate('/')
   }
+
+  // Stop Version B timer whenever feedback is shown
+  useEffect(() => {
+    if (version !== 'Version B') return
+    if (showFeedback) {
+      if (versionBTimerRef.current) {
+        clearTimeout(versionBTimerRef.current)
+        versionBTimerRef.current = null
+      }
+      setVersionBTimerRunning(false)
+    }
+  }, [version, showFeedback])
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60)
@@ -2855,7 +3142,25 @@ const Game = () => {
                   )}
                 </div>
               </div>
-            ) : (
+            ) : version === 'Version B' ? (
+              <div className="version-b-timer">
+                <div className="timer-display">
+                  <div className="timer-label">Time Remaining</div>
+                  <div className={`timer-value ${versionBTimeRemaining >= 15 ? 'timer-bonus' : versionBTimeRemaining <= 5 ? 'timer-urgent' : ''}`}>
+                    {versionBTimeRemaining}
+                  </div>
+                </div>
+              </div>
+          ) : version === 'Version B' ? (
+            <div className="version-b-timer">
+              <div className="timer-display">
+                <div className="timer-label">Time Remaining</div>
+                <div className={`timer-value ${versionBTimeRemaining >= 15 ? 'timer-bonus' : versionBTimeRemaining <= 5 ? 'timer-urgent' : ''}`}>
+                  {versionBTimeRemaining}
+                </div>
+              </div>
+            </div>
+          ) : (
               <div className="quiz-progress">
                 <span>Question {questionNumber} of {totalQuestions}</span>
               </div>
@@ -2870,7 +3175,7 @@ const Game = () => {
           <div className="special-question-transition-content">
             <div className="special-question-transition-text">SPECIAL QUESTION</div>
             <div className="genre-portal-text">
-              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : specialQuestionType === 'hyperspeed' ? 'Hyperspeed' : 'Time Warp'}
+              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : specialQuestionType === 'hyperspeed' ? 'Hyperspeed' : specialQuestionType === 'song-trivia' ? 'Song Trivia' : 'Time Warp'}
             </div>
             {/* Animated Clock for Time Warp */}
             {specialQuestionType === 'time-warp' && (
@@ -2947,60 +3252,162 @@ const Game = () => {
               </div>
             )}
 
-            {/* Version B Letter Reveal Display */}
-            {version === 'Version B' && letterRevealInfo && !showFeedback && (
-              <div className="letter-reveal-display">
-                <div className="letter-reveal-content">
-                  <div className={`letter-reveal-label ${letterRevealInfo.type === 'song' ? 'song-label' : 'artist-label'}`}>
-                    {letterRevealInfo.type === 'artist' ? 'Artist Name:' : 'Song Name:'}
-                  </div>
-                  <div className="letter-reveal-text">
-                    {letterRevealInfo.displayText.split('').map((char, index) => (
-                      char === ' ' ? (
-                        <span key={index} className="letter-space"> </span>
-                      ) : char === '_' ? (
-                        <span key={index} className="letter-blank">_</span>
-                      ) : (
-                        <span key={index} className="letter-revealed">{char}</span>
-                      )
-                    ))}
-                  </div>
+            {/* Version B Song Trivia Display */}
+            {version === 'Version B' && currentQuestion && currentQuestion.isSongTrivia && !showFeedback && (
+              <div className="song-trivia-display">
+                <div className="song-trivia-question">
+                  {currentQuestion.triviaQuestionText}
                 </div>
+                <div className="song-trivia-options">
+                  {currentQuestion.options.map((option, index) => (
+                    <button
+                      key={index}
+                      className="song-trivia-option-button"
+                      onClick={() => {
+                        // For Song Trivia, award 40 points for correct, 0 for incorrect
+                        const isCorrect = option === currentQuestion.correctAnswer
+                        handleVersionBScore(isCorrect ? 40 : 0)
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Version B Letter Reveal Display */}
+            {version === 'Version B' && (artistLetterRevealText || songLetterRevealText) && !showFeedback && (
+              <div className="letter-reveal-display">
+                {artistLetterRevealText && (
+                  <div className="letter-reveal-content">
+                    <div className="letter-reveal-label artist-label">
+                      Artist Name:
+                    </div>
+                    <div className="letter-reveal-text">
+                      {artistLetterRevealText.split('').map((char, index) => (
+                        char === ' ' ? (
+                          <span key={index} className="letter-space"> </span>
+                        ) : char === '_' ? (
+                          <span key={index} className="letter-blank">_</span>
+                        ) : (
+                          <span key={index} className="letter-revealed">{char}</span>
+                        )
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {songLetterRevealText && (
+                  <div className="letter-reveal-content">
+                    <div className="letter-reveal-label song-label">
+                      Song Name:
+                    </div>
+                    <div className="letter-reveal-text">
+                      {songLetterRevealText.split('').map((char, index) => (
+                        char === ' ' ? (
+                          <span key={index} className="letter-space"> </span>
+                        ) : char === '_' ? (
+                          <span key={index} className="letter-blank">_</span>
+                        ) : (
+                          <span key={index} className="letter-revealed">{char}</span>
+                        )
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Version B Multiple Choice Display */}
+            {version === 'Version B' && (artistMultipleChoiceOptions || songMultipleChoiceOptions) && !showFeedback && (
+              <div className="multiple-choice-display">
+                {artistMultipleChoiceOptions && (
+                  <div className="multiple-choice-section">
+                    <div className="multiple-choice-label artist-label">
+                      Which Artist?
+                    </div>
+                    <div className="multiple-choice-options">
+                      {artistMultipleChoiceOptions.map((option, index) => (
+                        <div key={index} className="multiple-choice-option">
+                          {option}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {songMultipleChoiceOptions && (
+                  <div className="multiple-choice-section">
+                    <div className="multiple-choice-label song-label">
+                      Which Song?
+                    </div>
+                    <div className="multiple-choice-options">
+                      {songMultipleChoiceOptions.map((option, index) => (
+                        <div key={index} className="multiple-choice-option">
+                          {option}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Version B Boosters */}
             {version === 'Version B' && !showFeedback && (
-              <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''}`}>
+              <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''} ${showLifelineEntrance ? 'lifeline-entrance' : ''}`}>
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
-                  <div 
-                    className={`booster-icon ${lifelinesUsed.doublePoints ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('doublePoints')}
-                    style={{ cursor: lifelinesUsed.doublePoints ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">2X Points</div>
-                  </div>
-                  <div 
-                    className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('skip')}
-                    style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">Skip</div>
-                  </div>
-                  <div 
-                    className={`booster-icon ${lifelinesUsed.letterReveal ? 'depleted' : ''}`}
-                    onClick={() => handleLifelineClick('letterReveal')}
-                    style={{ cursor: lifelinesUsed.letterReveal ? 'not-allowed' : 'pointer' }}
-                  >
-                    <div className="booster-label">Letter Reveal</div>
-                  </div>
+                  {availableLifelines.includes('skip') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('skip')}
+                      style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Skip</div>
+                    </div>
+                  )}
+                  {availableLifelines.includes('artistLetterReveal') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.artistLetterReveal ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('artistLetterReveal')}
+                      style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Artist Letter Reveal</div>
+                    </div>
+                  )}
+                  {availableLifelines.includes('songLetterReveal') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.songLetterReveal ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('songLetterReveal')}
+                      style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Song Letter Reveal</div>
+                    </div>
+                  )}
+                  {availableLifelines.includes('multipleChoiceArtist') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.multipleChoiceArtist ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('multipleChoiceArtist')}
+                      style={{ cursor: lifelinesUsed.multipleChoiceArtist ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Multiple Choice: Artist</div>
+                    </div>
+                  )}
+                  {availableLifelines.includes('multipleChoiceSong') && (
+                    <div 
+                      className={`booster-icon ${lifelinesUsed.multipleChoiceSong ? 'depleted' : ''}`}
+                      onClick={() => handleLifelineClick('multipleChoiceSong')}
+                      style={{ cursor: lifelinesUsed.multipleChoiceSong ? 'not-allowed' : 'pointer' }}
+                    >
+                      <div className="booster-label">Multiple Choice: Song</div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
 
-            {!showFeedback && !showVersionCFeedback && (
+            {!showFeedback && !showVersionCFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="progress-bar">
                 <div className="progress-time">
                   <span>{formatTime(currentTime)}</span>
@@ -3015,7 +3422,7 @@ const Game = () => {
               </div>
             )}
 
-            {!showFeedback && !showVersionCFeedback && (
+            {!showFeedback && !showVersionCFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="control-buttons">
                 <button 
                   className={`control-btn play-pause-btn ${selectedAnswer ? 'disabled' : ''}`}
@@ -3070,26 +3477,26 @@ const Game = () => {
             )}
             
             {/* Version B Manual Scoring */}
-            {version === 'Version B' && !selectedAnswer && !showFeedback && (
+            {version === 'Version B' && !selectedAnswer && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="manual-scoring">
                 <div className="score-buttons">
                   <button
                     className="score-button score-0"
                     onClick={() => handleVersionBScore(0)}
                   >
-                    0 Points
+                    None
                   </button>
                 <button
                   className="score-button score-10"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 100 : 20) : (specialQuestionNumbers.includes(questionNumber) ? 50 : 10))}
+                  onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10)}
                 >
-                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points') : (specialQuestionNumbers.includes(questionNumber) ? '50 Points' : '10 Points')}
+                  One
                 </button>
                 <button
                   className="score-button score-20"
-                  onClick={() => handleVersionBScore(isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? 200 : 40) : (specialQuestionNumbers.includes(questionNumber) ? 100 : 20))}
+                  onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20)}
                 >
-                  {isDoublePointsActive ? (specialQuestionNumbers.includes(questionNumber) ? '200 Points' : '40 Points') : (specialQuestionNumbers.includes(questionNumber) ? '100 Points' : '20 Points')}
+                  Both
                 </button>
                   {/* No special scoring for question 7 since it's now a special question */}
                 </div>
@@ -3098,6 +3505,19 @@ const Game = () => {
                     Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
                   </div>
                 )}
+              </div>
+            )}
+            
+            {/* Version B Floating Points Animation */}
+            {version === 'Version B' && showFloatingPoints && (
+              <div className="floating-points">
+                {isFloatingPointsSpecial && (
+                  <div className="floating-points-special">Special Question 2X</div>
+                )}
+                {isFloatingPointsTimeBonus && (
+                  <div className="floating-points-time-bonus">Time Bonus 2X</div>
+                )}
+                <div className="floating-points-value">+{floatingPointsValue}</div>
               </div>
             )}
             
@@ -3443,6 +3863,13 @@ const Game = () => {
               title="Force next question to be Hyperspeed Special Question"
             >
               HS
+            </button>
+            <button 
+              className="debug-special-button song-trivia-debug"
+              onClick={() => handleDebugSpecialQuestion('song-trivia')}
+              title="Force next question to be Song Trivia Special Question"
+            >
+              ST
             </button>
           </div>
         )}

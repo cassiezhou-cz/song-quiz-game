@@ -2167,6 +2167,8 @@
 /* Version B Boosters */
 .boosters-section {
   margin-bottom: 25px;
+  position: relative;
+  z-index: 10;
 }
 
 .boosters-header {
@@ -2617,6 +2619,48 @@
   }
 }
 
+/* Version B Lifeline Entrance Animation (First Question) */
+.boosters-section.lifeline-entrance {
+  animation: lifelineEntrance 1.5s ease-out forwards;
+}
+
+.boosters-section.lifeline-entrance .booster-icon {
+  animation: lifelineIconEntrance 1.5s ease-out forwards;
+}
+
+@keyframes lifelineEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes lifelineIconEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotateY(180deg);
+    box-shadow: 0 0 0 rgba(78, 205, 196, 0);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.2) rotateY(0deg);
+    box-shadow: 0 0 40px rgba(78, 205, 196, 1), 0 0 80px rgba(78, 205, 196, 0.8), 0 0 120px rgba(78, 205, 196, 0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotateY(0deg);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+}
+
 /* Version B Special Question Playlist Display */
 .special-playlist-display {
   position: fixed;
@@ -2889,8 +2933,13 @@
   backdrop-filter: blur(10px);
   position: relative;
   z-index: 5; /* Above content but below interactive elements */
-  max-width: 400px;
+  max-width: 500px;
   width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .letter-reveal-content {
@@ -2898,6 +2947,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.8rem;
+  width: 100%;
 }
 
 .letter-reveal-label {
@@ -2941,6 +2991,151 @@
 .letter-revealed {
   color: #4ecdc4;
   font-weight: 700;
+}
+
+/* Multiple Choice Display Styles */
+.multiple-choice-display {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem auto;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 5;
+  max-width: 600px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.multiple-choice-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.multiple-choice-label {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+}
+
+.multiple-choice-label.song-label {
+  color: #ffd700;
+}
+
+.multiple-choice-label.artist-label {
+  color: #87ceeb;
+}
+
+.multiple-choice-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.multiple-choice-option {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(78, 205, 196, 0.3);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  word-wrap: break-word;
+}
+
+/* Version B Song Trivia Display Styles */
+.song-trivia-display {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.15), rgba(102, 126, 234, 0.15));
+  border: 3px solid rgba(78, 205, 196, 0.6);
+  border-radius: 16px;
+  padding: 2rem;
+  margin: 2rem auto;
+  text-align: center;
+  backdrop-filter: blur(15px);
+  position: relative;
+  z-index: 5;
+  max-width: 700px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(78, 205, 196, 0.3);
+}
+
+.song-trivia-question {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  line-height: 1.4;
+}
+
+.song-trivia-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.song-trivia-option-button {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(102, 126, 234, 0.2));
+  border: 2px solid rgba(78, 205, 196, 0.5);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  word-wrap: break-word;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.song-trivia-option-button:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.4), rgba(102, 126, 234, 0.4));
+  border-color: rgba(78, 205, 196, 0.8);
+  box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
+}
+
+.song-trivia-option-button:active {
+  transform: translateY(-1px);
+}
+
+/* Mobile adjustments for Song Trivia */
+@media (max-width: 768px) {
+  .song-trivia-display {
+    padding: 1.5rem;
+    margin: 1.5rem auto;
+  }
+  
+  .song-trivia-question {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .song-trivia-options {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .song-trivia-option-button {
+    padding: 1.2rem 0.8rem;
+    font-size: 1.1rem;
+  }
 }
 
 /* Mobile adjustments for boosters */
@@ -3202,12 +3397,22 @@
   min-width: 120px;
 }
 
+.timer-value.timer-bonus {
+  background: linear-gradient(135deg, #00ff88, #00d4a0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: bonusPulse 1.5s ease-in-out infinite;
+}
+
 .timer-value.timer-urgent {
   background: linear-gradient(135deg, #ff6b6b, #ee5a24);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: urgentPulse 1s ease-in-out infinite;
+  transform: scale(1.3);
+  transform-origin: center;
+  transition: transform 0.3s ease-out;
 }
 
 .attempts-counter {
@@ -3230,6 +3435,17 @@
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   font-weight: 500;
+}
+
+@keyframes bonusPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.8));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 15px rgba(0, 255, 136, 1));
+  }
 }
 
 @keyframes urgentPulse {
@@ -4358,6 +4574,66 @@
   .player-final-score .score-display,
   .opponent-final-score .score-display {
     font-size: 3.5rem !important;
+  }
+}
+
+/* Version B Floating Points Animation */
+.floating-points {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: none;
+  animation: floatUp 2s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.floating-points-special {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffd700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.8),
+               0 0 30px rgba(255, 215, 0, 0.6),
+               0 0 45px rgba(255, 215, 0, 0.4);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.floating-points-time-bonus {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #00d4ff;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
+               0 0 30px rgba(0, 212, 255, 0.6),
+               0 0 45px rgba(0, 212, 255, 0.4);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.floating-points-value {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #00ff88;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.8),
+               0 0 40px rgba(0, 255, 136, 0.6),
+               0 0 60px rgba(0, 255, 136, 0.4);
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(-100px);
   }
 }
 
