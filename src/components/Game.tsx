@@ -2022,11 +2022,14 @@ const Game = () => {
       versionBTimerRef.current = setTimeout(() => {
         setVersionBTimeRemaining(prev => {
           if (prev <= 1) {
-            // Time's up for this question → auto-score 0 and show feedback
+            // Time's up - set to 0 and let the bar animation complete
             setVersionBTimerRunning(false)
-            if (!selectedAnswer) {
-              handleVersionBScore(0)
-            }
+            // Wait for the bar animation to reach 0% before auto-scoring
+            setTimeout(() => {
+              if (!selectedAnswer) {
+                handleVersionBScore(0)
+              }
+            }, 1000) // Match the CSS transition duration
             return 0
           }
           return prev - 1
@@ -3312,10 +3315,13 @@ const Game = () => {
               </div>
             ) : version === 'Version B' && !(showFeedback && currentQuestion && currentQuestion.isFinishTheLyric) ? (
               <div className="version-b-timer">
-                <div className="timer-display">
+                <div className="timer-spectrometer">
                   <div className="timer-label">Time Remaining</div>
-                  <div className={`timer-value ${versionBTimeRemaining >= 15 ? 'timer-bonus' : versionBTimeRemaining <= 5 ? 'timer-urgent' : ''}`}>
-                    {versionBTimeRemaining}
+                  <div className="spectrometer-container">
+                    <div 
+                      className={`spectrometer-bar ${versionBTimeRemaining >= 15 ? 'spectrometer-bonus' : versionBTimeRemaining <= 5 ? 'spectrometer-urgent' : 'spectrometer-normal'}`}
+                      style={{ width: `${(versionBTimeRemaining / 20) * 100}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
