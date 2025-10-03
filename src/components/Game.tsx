@@ -3353,7 +3353,7 @@ const Game = () => {
           <div className="special-question-transition-content">
             <div className="special-question-transition-text">SPECIAL QUESTION</div>
             <div className="genre-portal-text">
-              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : specialQuestionType === 'hyperspeed' ? 'Hyperspeed' : specialQuestionType === 'song-trivia' ? 'Song Trivia' : 'Time Warp'}
+              {specialQuestionType === 'slo-mo' ? 'Slo-Mo' : specialQuestionType === 'hyperspeed' ? 'Hyperspeed' : specialQuestionType === 'song-trivia' ? 'Song Trivia' : specialQuestionType === 'finish-the-lyric' ? 'Finish The Lyric' : 'Time Warp'}
             </div>
             {/* Animated Clock for Time Warp */}
             {specialQuestionType === 'time-warp' && (
