@@ -3255,7 +3255,7 @@ const Game = () => {
                   )}
                 </div>
               </div>
-            ) : version === 'Version B' ? (
+            ) : version === 'Version B' && !(showFeedback && currentQuestion && currentQuestion.isFinishTheLyric) ? (
               <div className="version-b-timer">
                 <div className="timer-display">
                   <div className="timer-label">Time Remaining</div>
@@ -3264,15 +3264,6 @@ const Game = () => {
                   </div>
                 </div>
               </div>
-          ) : version === 'Version B' ? (
-            <div className="version-b-timer">
-              <div className="timer-display">
-                <div className="timer-label">Time Remaining</div>
-                <div className={`timer-value ${versionBTimeRemaining >= 15 ? 'timer-bonus' : versionBTimeRemaining <= 5 ? 'timer-urgent' : ''}`}>
-                  {versionBTimeRemaining}
-                </div>
-              </div>
-            </div>
           ) : (
               <div className="quiz-progress">
                 <span>Question {questionNumber} of {totalQuestions}</span>
