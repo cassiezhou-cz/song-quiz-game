@@ -3774,8 +3774,8 @@ const Game = () => {
                   {version === 'Version B' && (
                     <div className="version-b-breakdown">
                       <div className="breakdown-details artist-title-section">
-                        {/* For 10 points with no specific correctness, don't show indicators */}
-                        {pointsEarned === 10 && !artistCorrect && !songCorrect ? (
+                        {/* For 10 points with no specific correctness or Finish The Lyric, don't show indicators */}
+                        {(pointsEarned === 10 && !artistCorrect && !songCorrect) || currentQuestion.isFinishTheLyric ? (
                           <>
                             <p>Artist: {currentQuestion.song.artist}</p>
                             <p>Song: {currentQuestion.song.title}</p>
