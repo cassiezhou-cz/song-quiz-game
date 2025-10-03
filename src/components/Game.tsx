@@ -3531,7 +3531,7 @@ const Game = () => {
             )}
 
             {/* Version B Boosters */}
-            {version === 'Version B' && !showFeedback && (
+            {version === 'Version B' && !showFeedback && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
               <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''} ${showLifelineEntrance ? 'lifeline-entrance' : ''}`}>
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
