@@ -1373,7 +1373,7 @@ const Game = () => {
         title: lyricSong.title,
         artist: lyricSong.artist,
         file: lyricSong.file,
-        albumArt: '', // No album art needed for lyric questions
+        albumArt: `/assets/album-art/2010s/Finish The Lyric/${lyricSong.id}.jpeg`,
         alternatives: []
       }
       
