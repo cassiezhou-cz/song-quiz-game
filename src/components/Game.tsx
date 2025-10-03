@@ -4083,20 +4083,18 @@ const Game = () => {
           ← Back to Playlists
         </button>
 
-        {/* Version B Restart Button - Debug Only */}
+        {/* Version B Debug Controls - Debug Only */}
         {version === 'Version B' && !showSpecialQuestionTransition && (
-          <button 
-            className="restart-button"
-            onClick={restartGame}
-            title="Restart Version B Session (Debug)"
-          >
-            Restart
-          </button>
-        )}
-
-        {/* Version B Special Question Debug Buttons */}
-        {version === 'Version B' && !showSpecialQuestionTransition && (
-          <div className="debug-special-buttons">
+          <div className="debug-controls-container">
+            <div className="debug-label">DEBUG</div>
+            <button 
+              className="restart-button"
+              onClick={restartGame}
+              title="Restart Version B Session (Debug)"
+            >
+              Restart
+            </button>
+            <div className="debug-special-buttons">
             <button 
               className="debug-special-button time-warp-debug"
               onClick={() => handleDebugSpecialQuestion('time-warp')}
@@ -4132,6 +4130,7 @@ const Game = () => {
             >
               FTL
             </button>
+            </div>
           </div>
         )}
 
