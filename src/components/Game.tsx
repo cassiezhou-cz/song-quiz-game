@@ -3549,7 +3549,7 @@ const Game = () => {
                       onClick={() => handleLifelineClick('artistLetterReveal')}
                       style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
                     >
-                      <div className="booster-label">Artist Letter Reveal</div>
+                      <div className="booster-label">Letter Reveal: Artist</div>
                     </div>
                   )}
                   {availableLifelines.includes('songLetterReveal') && (
@@ -3558,7 +3558,7 @@ const Game = () => {
                       onClick={() => handleLifelineClick('songLetterReveal')}
                       style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
                     >
-                      <div className="booster-label">Song Letter Reveal</div>
+                      <div className="booster-label">Letter Reveal: Song</div>
                     </div>
                   )}
                   {availableLifelines.includes('multipleChoiceArtist') && (
