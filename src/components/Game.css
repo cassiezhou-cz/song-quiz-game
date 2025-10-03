@@ -1875,6 +1875,158 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Finish The Lyric Styles */
+.finish-the-lyric-container {
+  margin: 2rem auto;
+  max-width: 700px;
+  padding: 2rem;
+  background: rgba(138, 43, 226, 0.15);
+  border: 3px solid rgba(138, 43, 226, 0.5);
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.finish-the-lyric-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.finish-the-lyric-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 10px rgba(138, 43, 226, 0.6);
+}
+
+.finish-the-lyric-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 600;
+}
+
+.finish-the-lyric-prompt {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.lyric-prompt-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.lyric-prompt-text {
+  font-size: 1.3rem;
+  color: #ffffff;
+  font-weight: 600;
+  line-height: 1.6;
+  font-style: italic;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.finish-the-lyric-input-container {
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
+}
+
+.lyric-input {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  border: 2px solid rgba(138, 43, 226, 0.5);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1a1a1a;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.lyric-input:focus {
+  outline: none;
+  border-color: rgba(138, 43, 226, 0.8);
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2);
+}
+
+.lyric-input::placeholder {
+  color: rgba(0, 0, 0, 0.4);
+  font-style: italic;
+}
+
+.lyric-submit-button {
+  padding: 1.2rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(135deg, #8a2be2, #9370db);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(138, 43, 226, 0.4);
+}
+
+.lyric-submit-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #9370db, #8a2be2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(138, 43, 226, 0.6);
+}
+
+.lyric-submit-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.lyric-submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #666, #888);
+  box-shadow: none;
+}
+
+/* Mobile adjustments for Finish The Lyric */
+@media (max-width: 768px) {
+  .finish-the-lyric-container {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .finish-the-lyric-title {
+    font-size: 1.4rem;
+  }
+  
+  .finish-the-lyric-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .lyric-prompt-text {
+    font-size: 1.1rem;
+  }
+  
+  .lyric-input {
+    font-size: 1rem;
+    padding: 0.9rem 1.2rem;
+  }
+  
+  .lyric-submit-button {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
 .opponent-buzzed {
   background: rgba(255, 107, 107, 0.2);
   border: 1px solid rgba(255, 107, 107, 0.4);
