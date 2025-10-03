@@ -85,6 +85,53 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       lyricAnswer: "Lucky for you, that's what I like",
       acceptableAnswers: ["Lucky for you, that's what I like"]
     }
+  ],
+  '2020s': [
+    {
+      id: 'AllTooWellTaylorSwift',
+      title: 'All Too Well',
+      artist: 'Taylor Swift',
+      file: '/songs/2020s/Finish The Lyric/AllTooWellTaylorSwift.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: "But I'm not fine at all",
+      acceptableAnswers: ["But I'm not fine at all"]
+    },
+    {
+      id: 'Anti-HeroTaylorSwift',
+      title: 'Anti-Hero',
+      artist: 'Taylor Swift',
+      file: '/songs/2020s/Finish The Lyric/Anti-HeroTaylorSwift.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'At teatime, everybody agrees',
+      acceptableAnswers: ['At teatime, everybody agrees']
+    },
+    {
+      id: 'GhostJustinBieber',
+      title: 'Ghost',
+      artist: 'Justin Bieber',
+      file: '/songs/2020s/Finish The Lyric/GhostJustinBieber.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: "And if you can't be next to me",
+      acceptableAnswers: ["And if you can't be next to me"]
+    },
+    {
+      id: 'MadeYouLookMeghanTrainor',
+      title: 'Made You Look',
+      artist: 'Meghan Trainor',
+      file: '/songs/2020s/Finish The Lyric/MadeYouLookMeghanTrainor.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'Yeah I look good in my Versace dress',
+      acceptableAnswers: ['Yeah I look good in my Versace dress']
+    },
+    {
+      id: 'VampireOliviaRodrigo',
+      title: 'Vampire',
+      artist: 'Olivia Rodrigo',
+      file: '/songs/2020s/Finish The Lyric/VampireOliviaRodrigo.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'As you sunk your teeth into me',
+      acceptableAnswers: ['As you sunk your teeth into me']
+    }
   ]
 }
 
