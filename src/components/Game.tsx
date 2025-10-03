@@ -1676,12 +1676,6 @@ const Game = () => {
     // Auto-play the song after audio element has loaded the new source
     // Use multiple attempts to ensure audio plays reliably
     const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric') => {
-      // Skip audio playback for Song Trivia questions
-      if (currentSpecialType === 'song-trivia' || question.isSongTrivia) {
-        console.log('🎯 SONG TRIVIA: Skipping audio playback - trivia question mode')
-        setIsLoadingQuestion(false)
-        return
-      }
       const audioElement = audioRef.current
       console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
