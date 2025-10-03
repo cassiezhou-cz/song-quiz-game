@@ -217,6 +217,7 @@ const Game = () => {
   const [specialQuestionTypes, setSpecialQuestionTypes] = useState<{[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'}>({})
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
   const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric' | null>(null)
+  const [usedTriviaSongIds, setUsedTriviaSongIds] = useState<string[]>([])
   
   // Version B Lifeline attention animation
   const [showLifelineAttention, setShowLifelineAttention] = useState(false)
@@ -224,6 +225,7 @@ const Game = () => {
   
   // Version B Lifeline entrance animation (for first question)
   const [showLifelineEntrance, setShowLifelineEntrance] = useState(false)
+  const hasShownLifelineEntrance = useRef(false)
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -233,9 +235,9 @@ const Game = () => {
       file: '/songs/2010s/AllofMeJohnLegend.mp3', 
       albumArt: '/assets/album-art/2010s/AllOfMeJohnLegend.jpeg',
       alternatives: ['When I Was Your Man - Bruno Mars', 'Stay With Me - Sam Smith', 'Thinking Out Loud - Ed Sheeran'],
-      triviaQuestion: 'What year was "All of Me" by John Legend released?',
-      triviaOptions: ['2011', '2012', '2013', '2014'],
-      triviaCorrectAnswer: '2013'
+      triviaQuestion: 'John Legend wrote "All of Me" about which famous model and TV personality?',
+      triviaOptions: ['Chrissy Teigen', 'Gigi Hadid', 'Heidi Klum', 'Tyra Banks'],
+      triviaCorrectAnswer: 'Chrissy Teigen'
     },
     { 
       id: '2', 
@@ -280,7 +282,10 @@ const Game = () => {
       artist: 'Travis Scott', 
       file: '/songs/2010s/GoosebumpsTravisScott.mp3', 
       albumArt: '/assets/album-art/2010s/GoosebumpsTravisScott.jpeg',
-      alternatives: ['Lucid Dreams - Juice WRLD', 'Life Goes On - Lil Baby feat. Gunna & Lil Uzi Vert', 'Psycho - Post Malone feat. Ty Dolla $ign']
+      alternatives: ['Lucid Dreams - Juice WRLD', 'Life Goes On - Lil Baby feat. Gunna & Lil Uzi Vert', 'Psycho - Post Malone feat. Ty Dolla $ign'],
+      triviaQuestion: 'Which rapper is featured on "Goosebumps" by Travis Scott?',
+      triviaOptions: ['Kendrick Lamar', 'Drake', 'Quavo', 'Offset'],
+      triviaCorrectAnswer: 'Kendrick Lamar'
     },
     { 
       id: '7', 
@@ -316,10 +321,7 @@ const Game = () => {
       artist: 'Lady Gaga', 
       file: '/songs/2010s/JustDanceLadyGaga.mp3', 
       albumArt: '/assets/album-art/2010s/JustDanceLadyGaga.jpeg',
-      alternatives: ['Poker Face - Lady Gaga', 'Bad Romance - Lady Gaga', 'Paparazzi - Lady Gaga'],
-      triviaQuestion: '"Just Dance" was Lady Gaga\'s debut single. What year was it released?',
-      triviaOptions: ['2007', '2008', '2009', '2010'],
-      triviaCorrectAnswer: '2008'
+      alternatives: ['Poker Face - Lady Gaga', 'Bad Romance - Lady Gaga', 'Paparazzi - Lady Gaga']
     },
     { 
       id: '11', 
@@ -403,7 +405,10 @@ const Game = () => {
       artist: 'Walk the Moon', 
       file: '/songs/2010s/ShupUpAndDance.mp3', 
       albumArt: '/assets/album-art/2010s/ShutUpAndDance.jpeg',
-      alternatives: ['Fireflies - Owl City', 'Safe and Sound - Capital Cities', 'Cool Kids - Echosmith']
+      alternatives: ['Fireflies - Owl City', 'Safe and Sound - Capital Cities', 'Cool Kids - Echosmith'],
+      triviaQuestion: 'What city is the band Walk the Moon originally from?',
+      triviaOptions: ['Nashville', 'Cincinnati', 'Portland', 'Austin'],
+      triviaCorrectAnswer: 'Cincinnati'
     },
     { 
       id: '21', 
@@ -472,7 +477,10 @@ const Game = () => {
       artist: 'Ciara', 
       file: '/songs/2000s/1,2StepCiara.mp3', 
       albumArt: '/assets/album-art/2000s/1,2StepCiara.jpeg',
-      alternatives: ['Goodies - Ciara feat. Petey Pablo', 'Oh - Ciara feat. Ludacris', 'Get Up - Ciara feat. Chamillionaire']
+      alternatives: ['Goodies - Ciara feat. Petey Pablo', 'Oh - Ciara feat. Ludacris', 'Get Up - Ciara feat. Chamillionaire'],
+      triviaQuestion: 'Which rapper is featured on "1,2 Step" by Ciara?',
+      triviaOptions: ['Ludacris', 'Missy Elliott', 'Lil Jon', 'T.I.'],
+      triviaCorrectAnswer: 'Missy Elliott'
     },
     { 
       id: '2', 
@@ -488,10 +496,7 @@ const Game = () => {
       artist: 'Avril Lavigne', 
       file: '/songs/2000s/ComplicatedAvrilLavigne.mp3', 
       albumArt: '/assets/album-art/2000s/ComplicatedAvrilLavigne.jpeg',
-      alternatives: ['Sk8er Boi - Avril Lavigne', 'My Happy Ending - Avril Lavigne', 'I\'m with You - Avril Lavigne'],
-      triviaQuestion: 'What year was Avril Lavigne\'s "Complicated" released?',
-      triviaOptions: ['2001', '2002', '2003', '2004'],
-      triviaCorrectAnswer: '2002'
+      alternatives: ['Sk8er Boi - Avril Lavigne', 'My Happy Ending - Avril Lavigne', 'I\'m with You - Avril Lavigne']
     },
     { 
       id: '4', 
@@ -507,7 +512,10 @@ const Game = () => {
       artist: 'Train', 
       file: '/songs/2000s/DropsOfJupiterTrain.mp3', 
       albumArt: '/assets/album-art/2000s/DropsOfJupiterTrain.jpeg',
-      alternatives: ['Hey Soul Sister - Train', 'Drive By - Train', 'Meet Virginia - Train']
+      alternatives: ['Hey Soul Sister - Train', 'Drive By - Train', 'Meet Virginia - Train'],
+      triviaQuestion: '"Drops of Jupiter" won a Grammy Award for which category?',
+      triviaOptions: ['Song of the Year', 'Best Rock Song', 'Record of the Year', 'Best Pop Performance'],
+      triviaCorrectAnswer: 'Best Rock Song'
     },
     { 
       id: '6', 
@@ -526,7 +534,10 @@ const Game = () => {
       artist: 'Owl City', 
       file: '/songs/2000s/FirefliesOwlCity.mp3', 
       albumArt: '/assets/album-art/2000s/FirefliesOwlCity.jpeg',
-      alternatives: ['Vanilla Twilight - Owl City', 'Hello Seattle - Owl City', 'The Saltwater Room - Owl City']
+      alternatives: ['Vanilla Twilight - Owl City', 'Hello Seattle - Owl City', 'The Saltwater Room - Owl City'],
+      triviaQuestion: 'Owl City is primarily the solo project of which artist?',
+      triviaOptions: ['Adam Young', 'Tyler Joseph', 'Brendon Urie', 'Patrick Stump'],
+      triviaCorrectAnswer: 'Adam Young'
     },
     { 
       id: '8', 
@@ -561,10 +572,7 @@ const Game = () => {
       artist: 'Backstreet Boys', 
       file: '/songs/2000s/IWantItThatWayBackstreetBoys.mp3', 
       albumArt: '/assets/album-art/2000s/IWantItThatWayBackstreetBoys.jpeg',
-      alternatives: ['Everybody - Backstreet Boys', 'As Long As You Love Me - Backstreet Boys', 'Quit Playing Games - Backstreet Boys'],
-      triviaQuestion: 'What year was "I Want It That Way" released?',
-      triviaOptions: ['1997', '1998', '1999', '2000'],
-      triviaCorrectAnswer: '1999'
+      alternatives: ['Everybody - Backstreet Boys', 'As Long As You Love Me - Backstreet Boys', 'Quit Playing Games - Backstreet Boys']
     },
     { 
       id: '12', 
@@ -750,10 +758,7 @@ const Game = () => {
       artist: 'Miley Cyrus', 
       file: '/songs/2020s/FlowersMileyCyrus.mp3', 
       albumArt: '/assets/album-art/2020s/FlowersMileyCyrus.jpeg',
-      alternatives: ['Party in the U.S.A. - Miley Cyrus', 'Wrecking Ball - Miley Cyrus', 'The Climb - Miley Cyrus'],
-      triviaQuestion: 'What year was "Flowers" by Miley Cyrus released?',
-      triviaOptions: ['2021', '2022', '2023', '2024'],
-      triviaCorrectAnswer: '2023'
+      alternatives: ['Party in the U.S.A. - Miley Cyrus', 'Wrecking Ball - Miley Cyrus', 'The Climb - Miley Cyrus']
     },
     { 
       id: '6', 
@@ -762,7 +767,10 @@ const Game = () => {
       file: '/songs/2020s/GoodLuckBabeChappellRoan.mp3', 
       albumArt: '/assets/album-art/2020s/GoodLuckBabeChappellRoan.jpeg',
       alternatives: ['Pink Pony Club - Chappell Roan', 'Red Wine Supernova - Chappell Roan', 'HOT TO GO! - Chappell Roan'],
-      artistAlternatives: ['Chapel Roan', 'Chapelle Roan', 'Chappel Roan']
+      artistAlternatives: ['Chapel Roan', 'Chapelle Roan', 'Chappel Roan'],
+      triviaQuestion: 'What is Chappell Roan\'s debut studio album called?',
+      triviaOptions: ['The Rise and Fall of a Midwest Princess', 'Pink Pony Club', 'Midwest Magic', 'Naked in Manhattan'],
+      triviaCorrectAnswer: 'The Rise and Fall of a Midwest Princess'
     },
     { 
       id: '7', 
@@ -790,7 +798,10 @@ const Game = () => {
       artist: 'Eminem', 
       file: '/songs/2020s/HoudiniEminem.mp3', 
       albumArt: '/assets/album-art/2020s/HoudiniEminem.jpeg',
-      alternatives: ['Lose Yourself - Eminem', 'Till I Collapse - Eminem', 'The Real Slim Shady - Eminem']
+      alternatives: ['Lose Yourself - Eminem', 'Till I Collapse - Eminem', 'The Real Slim Shady - Eminem'],
+      triviaQuestion: '"Houdini" samples which classic Eminem song?',
+      triviaOptions: ['My Name Is', 'Without Me', 'The Real Slim Shady', 'Just Lose It'],
+      triviaCorrectAnswer: 'Without Me'
     },
     { 
       id: '10', 
@@ -833,10 +844,7 @@ const Game = () => {
       artist: 'Justin Bieber', 
       file: '/songs/2020s/PeachesJustinBieber.mp3', 
       albumArt: '/assets/album-art/2020s/PeachesJustinBieber.jpeg',
-      alternatives: ['Sorry - Justin Bieber', 'Love Yourself - Justin Bieber', 'What Do You Mean? - Justin Bieber'],
-      triviaQuestion: 'What year was "Peaches" by Justin Bieber released?',
-      triviaOptions: ['2019', '2020', '2021', '2022'],
-      triviaCorrectAnswer: '2021'
+      alternatives: ['Sorry - Justin Bieber', 'Love Yourself - Justin Bieber', 'What Do You Mean? - Justin Bieber']
     },
     { 
       id: '15', 
@@ -960,7 +968,10 @@ const Game = () => {
       artist: 'TLC', 
       file: '/songs/90s/NoScrubsTLC.mp3', 
       albumArt: '/assets/album-art/90s/NoScrubsTLC.jpeg',
-      alternatives: ['Waterfalls - TLC', 'What\'s Up? - 4 Non Blondes', 'I Will Always Love You - Whitney Houston']
+      alternatives: ['Waterfalls - TLC', 'What\'s Up? - 4 Non Blondes', 'I Will Always Love You - Whitney Houston'],
+      triviaQuestion: 'How many members were in the R&B group TLC?',
+      triviaOptions: ['2', '3', '4', '5'],
+      triviaCorrectAnswer: '3'
     },
     { 
       id: '4', 
@@ -969,7 +980,10 @@ const Game = () => {
       file: '/songs/90s/CaliforniaLove2Pac.mp3', 
       albumArt: '/assets/album-art/90s/CaliforniaLove2Pac.jpeg',
       alternatives: ['Changes - 2Pac', 'Juicy - The Notorious B.I.G.', 'Gangsta\'s Paradise - Coolio'],
-      artistAlternatives: ['Tupac', '2-Pac', 'Tupac Shakur', 'Two Pac']
+      artistAlternatives: ['Tupac', '2-Pac', 'Tupac Shakur', 'Two Pac'],
+      triviaQuestion: 'Which legendary producer is featured on "California Love" with 2Pac?',
+      triviaOptions: ['Dr. Dre', 'Snoop Dogg', 'Ice Cube', 'Eminem'],
+      triviaCorrectAnswer: 'Dr. Dre'
     },
     { 
       id: '5', 
@@ -977,10 +991,7 @@ const Game = () => {
       artist: 'Spice Girls', 
       file: '/songs/90s/WannabeSpiceGirls.mp3', 
       albumArt: '/assets/album-art/90s/WannabeSpiceGirls.jpeg',
-      alternatives: ['Say You\'ll Be There - Spice Girls', 'MMMBop - Hanson', 'I Want It That Way - Backstreet Boys'],
-      triviaQuestion: 'What year was "Wannabe" by Spice Girls released?',
-      triviaOptions: ['1995', '1996', '1997', '1998'],
-      triviaCorrectAnswer: '1996'
+      alternatives: ['Say You\'ll Be There - Spice Girls', 'MMMBop - Hanson', 'I Want It That Way - Backstreet Boys']
     },
     { 
       id: '6', 
@@ -1393,22 +1404,58 @@ const Game = () => {
       
       const playlistSongs = getPlaylistSongs(currentPlaylist)
       
-      // Filter songs that have trivia questions
+      // Filter songs that have trivia questions AND haven't been used yet
       const songsWithTrivia = playlistSongs.filter(song => 
-        song.triviaQuestion && song.triviaOptions && song.triviaCorrectAnswer
+        song.triviaQuestion && song.triviaOptions && song.triviaCorrectAnswer &&
+        !usedTriviaSongIds.includes(song.id)
       )
       
+      console.log('🎯 SONG TRIVIA: Available unused trivia songs:', songsWithTrivia.length)
+      
       if (songsWithTrivia.length === 0) {
-        console.error('❌ No songs with trivia questions found in playlist', currentPlaylist)
-        // Fallback to regular question generation
-        return generateQuizQuestion()
+        console.error('❌ No unused trivia questions found in playlist', currentPlaylist)
+        // If all trivia questions have been used, reset and allow reuse
+        console.log('🔄 SONG TRIVIA: Resetting used trivia songs for this playlist')
+        setUsedTriviaSongIds([])
+        
+        // Get all songs with trivia (ignoring used status since we just reset)
+        const allSongsWithTrivia = playlistSongs.filter(song => 
+          song.triviaQuestion && song.triviaOptions && song.triviaCorrectAnswer
+        )
+        
+        if (allSongsWithTrivia.length === 0) {
+          console.error('❌ No songs with trivia questions found in playlist', currentPlaylist)
+          // Fallback to regular question generation
+          return generateQuizQuestion()
+        }
+        
+        // Select from reset pool
+        const randomIndex = Math.floor(Math.random() * allSongsWithTrivia.length)
+        const triviaSong = allSongsWithTrivia[randomIndex] as Song
+        
+        // Mark as used
+        setUsedTriviaSongIds([triviaSong.id])
+        
+        console.log('🎯 SONG TRIVIA: Selected song (after reset)', triviaSong.title, 'by', triviaSong.artist)
+        
+        return {
+          song: triviaSong,
+          options: triviaSong.triviaOptions!,
+          correctAnswer: triviaSong.triviaCorrectAnswer!,
+          isSongTrivia: true,
+          triviaQuestionText: triviaSong.triviaQuestion!
+        }
       }
       
-      // Select a random song with trivia
+      // Select a random song with trivia from unused ones
       const randomIndex = Math.floor(Math.random() * songsWithTrivia.length)
       const triviaSong = songsWithTrivia[randomIndex] as Song
       
+      // Mark this song as used
+      setUsedTriviaSongIds(prev => [...prev, triviaSong.id])
+      
       console.log('🎯 SONG TRIVIA: Selected song', triviaSong.title, 'by', triviaSong.artist)
+      console.log('🎯 SONG TRIVIA: Total used trivia songs:', usedTriviaSongIds.length + 1)
       
       return {
         song: triviaSong,
@@ -1602,9 +1649,10 @@ const Game = () => {
       // Track question start time for time bonus
       setQuestionStartTime(Date.now())
       
-      // Trigger lifeline entrance animation on first question
-      if (questionNumber === 1) {
+      // Trigger lifeline entrance animation on first question only (once per session)
+      if (questionNumber === 1 && !hasShownLifelineEntrance.current) {
         setShowLifelineEntrance(true)
+        hasShownLifelineEntrance.current = true
         // Remove animation class after animation completes
         setTimeout(() => {
           setShowLifelineEntrance(false)
@@ -1628,7 +1676,6 @@ const Game = () => {
         setIsLoadingQuestion(false)
         return
       }
-      
       const audioElement = audioRef.current
       console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
@@ -1664,8 +1711,9 @@ const Game = () => {
             audioElement.playbackRate = 2.0
             console.log('🎵 HYPERSPEED: Set playback rate to 2.0 (200% speed) immediately after setting source')
           } else {
+            // Time-warp and finish-the-lyric use normal speed
             audioElement.playbackRate = 1.0
-            console.log('🎵 TIME-WARP: Set playback rate to 1.0 (100% speed) immediately after setting source')
+            console.log('🎵 NORMAL SPEED: Set playback rate to 1.0 (100% speed) immediately after setting source')
           }
           console.log('🔍 DEBUG: Playback rate after source set:', audioElement.playbackRate)
         } else {
@@ -1845,6 +1893,9 @@ const Game = () => {
         multipleChoiceSong: false
       })
       
+      // Reset lifeline entrance animation flag for new session
+      hasShownLifelineEntrance.current = false
+      
       // Randomly select 1 or 2 special questions (50% chance for 2)
       const willHaveTwoSpecialQuestions = Math.random() < 0.5
       const numSpecialQuestions = willHaveTwoSpecialQuestions ? 2 : 1
@@ -1881,11 +1932,13 @@ const Game = () => {
       setSpecialQuestionNumbers(selectedSpecialQuestions)
       setSpecialQuestionPlaylist(null) // Reset special playlist
       setSpecialQuestionType(null) // Reset special question type
+      setUsedTriviaSongIds([]) // Reset used trivia songs when starting new playlist
       
       // Pre-assign types to special questions to ensure variety
-      const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'finish-the-lyric')[] = ['time-warp', 'slo-mo', 'hyperspeed', 'finish-the-lyric']
+      // Note: Using 'hyperspeed', 'song-trivia', and 'finish-the-lyric'
+      const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['hyperspeed', 'song-trivia', 'finish-the-lyric']
       const shuffledTypes = [...allTypes].sort(() => Math.random() - 0.5) // Shuffle the types
-      const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'finish-the-lyric'} = {}
+      const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'} = {}
       
       selectedSpecialQuestions.forEach((questionNum, index) => {
         // Cycle through shuffled types to ensure variety
@@ -2799,7 +2852,9 @@ const Game = () => {
     setSpecialQuestionTypes({}) // Reset special question types
     setSpecialQuestionPlaylist(null) // Reset special playlist
     setSpecialQuestionType(null) // Reset special question type
+    setUsedTriviaSongIds([]) // Reset used trivia songs tracking
     stopLifelineAttentionAnimation() // Stop lifeline attention animation
+    hasShownLifelineEntrance.current = false // Reset lifeline entrance animation flag
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
@@ -3311,6 +3366,24 @@ const Game = () => {
                 <div className="racecar-emoji">🏎️</div>
               </div>
             )}
+            
+            {/* Floating Question Marks for Song Trivia */}
+            {specialQuestionType === 'song-trivia' && (
+              <div className="song-trivia-animation">
+                <div className="floating-question-mark qm-1">?</div>
+                <div className="floating-question-mark qm-2">?</div>
+                <div className="floating-question-mark qm-3">?</div>
+                <div className="floating-question-mark qm-4">?</div>
+                <div className="floating-question-mark qm-5">?</div>
+                <div className="floating-question-mark qm-6">?</div>
+                <div className="floating-question-mark qm-7">?</div>
+                <div className="floating-question-mark qm-8">?</div>
+                <div className="floating-question-mark qm-9">?</div>
+                <div className="floating-question-mark qm-10">?</div>
+                <div className="floating-question-mark qm-11">?</div>
+                <div className="floating-question-mark qm-12">?</div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -3457,7 +3530,7 @@ const Game = () => {
             )}
 
             {/* Version B Boosters */}
-            {version === 'Version B' && !showFeedback && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
+            {version === 'Version B' && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
               <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''} ${showLifelineEntrance ? 'lifeline-entrance' : ''}`}>
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
@@ -3776,13 +3849,31 @@ const Game = () => {
                               </p>
                             )}
                           </>
+                        ) : currentQuestion.isSongTrivia ? (
+                          <>
+                            <p className="trivia-question-text">{currentQuestion.triviaQuestionText}</p>
+                            <p className="trivia-correct-answer">
+                              {pointsEarned > 0 ? '✅' : '❌'} Correct Answer: <strong>{currentQuestion.correctAnswer}</strong>
+                            </p>
+                            {pointsEarned > 0 && <p>Points Earned: {pointsEarned}</p>}
+                          </>
                         ) : (
                           <>
-                            <p>{artistCorrect ? '✅' : '❌'} Artist: {currentQuestion.song.artist}</p>
-                            <p>{songCorrect ? '✅' : '❌'} Song: {currentQuestion.song.title}</p>
+                            {/* Regular questions: Show artist and song */}
+                            {pointsEarned === 10 && !artistCorrect && !songCorrect ? (
+                              <>
+                                <p>Artist: {currentQuestion.song.artist}</p>
+                                <p>Song: {currentQuestion.song.title}</p>
+                              </>
+                            ) : (
+                              <>
+                                <p>{artistCorrect ? '✅' : '❌'} Artist: {currentQuestion.song.artist}</p>
+                                <p>{songCorrect ? '✅' : '❌'} Song: {currentQuestion.song.title}</p>
+                              </>
+                            )}
+                            {pointsEarned > 0 && <p>Points Earned: {pointsEarned}</p>}
                           </>
                         )}
-                        {pointsEarned > 0 && <p>Points Earned: {pointsEarned}</p>}
                       </div>
                     </div>
                   )}
