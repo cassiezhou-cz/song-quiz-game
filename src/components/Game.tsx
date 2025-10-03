@@ -224,9 +224,6 @@ const Game = () => {
   
   // Version B Lifeline entrance animation (for first question)
   const [showLifelineEntrance, setShowLifelineEntrance] = useState(false)
-  
-  // Version B Finish The Lyric state
-  const [lyricInput, setLyricInput] = useState('')
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1572,7 +1569,6 @@ const Game = () => {
     setSongCorrect(false)
     setIsPartialCredit(false)
     setPointsEarned(0)
-    setLyricInput('') // Reset lyric input for Finish The Lyric questions
     setArtistLetterRevealText(null) // Reset letter reveal info for new question
     setSongLetterRevealText(null)
     setArtistMultipleChoiceOptions(null) // Reset multiple choice options for new question
@@ -2239,66 +2235,6 @@ const Game = () => {
     }, 2000) // Show feedback for 2 seconds
   }
 
-  // Finish The Lyric answer submission handler
-  const handleFinishTheLyricSubmit = () => {
-    if (selectedAnswer || !currentQuestion) return // Already answered or no question
-    
-    // Stop Version B timer on submission
-    if (versionBTimerRef.current) {
-      clearTimeout(versionBTimerRef.current)
-      versionBTimerRef.current = null
-    }
-    setVersionBTimerRunning(false)
-    
-    const userAnswer = lyricInput.trim().toLowerCase()
-    const correctAnswer = (currentQuestion.lyricAnswer || '').toLowerCase()
-    
-    // Check if answer is correct (exact match or close match)
-    const isCorrect = userAnswer === correctAnswer
-    
-    // Award 30 points for correct, 0 for incorrect
-    const points = isCorrect ? 30 : 0
-    
-    console.log('🎯 FINISH THE LYRIC: User answered:', userAnswer, 'Correct answer:', correctAnswer, 'Points:', points)
-    
-    setSelectedAnswer('lyric_submitted')
-    
-    let artistCorrect = false
-    let songCorrect = false
-    
-    if (isCorrect) {
-      artistCorrect = true
-      songCorrect = true
-    }
-    
-    setArtistCorrect(artistCorrect)
-    setSongCorrect(songCorrect)
-    setIsCorrect(isCorrect)
-    setPointsEarned(points)
-    
-    // Record base correctness for percentage calculation
-    setQuestionsCorrectness(prev => [...prev, { artistCorrect, songCorrect }])
-    
-    // Update score
-    setScore(prevScore => prevScore + points)
-    
-    // Trigger floating points animation
-    setFloatingPointsValue(points)
-    setIsFloatingPointsSpecial(true)
-    setIsFloatingPointsTimeBonus(false)
-    setShowFloatingPoints(true)
-    
-    // Show feedback
-    setShowFeedback(true)
-    
-    // Pause audio
-    const audio = audioRef.current
-    if (audio) {
-      audio.pause()
-      setIsPlaying(false)
-    }
-  }
-
   // Version B manual scoring function
   const handleVersionBScore = (points: number) => {
     if (selectedAnswer) return // Already answered
@@ -2416,7 +2352,6 @@ const Game = () => {
       setSongCorrect(false)
       setIsPartialCredit(false)
       setPointsEarned(0)
-      setLyricInput('') // Reset lyric input for Finish The Lyric questions
       setArtistLetterRevealText(null) // Clear letter reveal info
       setSongLetterRevealText(null)
       setArtistMultipleChoiceOptions(null) // Clear multiple choice options
@@ -3697,27 +3632,21 @@ const Game = () => {
                   <div className="lyric-prompt-label">Complete this line:</div>
                   <div className="lyric-prompt-text">{currentQuestion.lyricPrompt}</div>
                 </div>
-                <div className="finish-the-lyric-input-container">
-                  <input
-                    type="text"
-                    className="lyric-input"
-                    placeholder="Type your answer here..."
-                    value={lyricInput}
-                    onChange={(e) => setLyricInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && lyricInput.trim()) {
-                        handleFinishTheLyricSubmit()
-                      }
-                    }}
-                    autoFocus
-                  />
-                  <button
-                    className="lyric-submit-button"
-                    onClick={handleFinishTheLyricSubmit}
-                    disabled={!lyricInput.trim()}
-                  >
-                    Submit Answer
-                  </button>
+                <div className="manual-scoring">
+                  <div className="score-buttons">
+                    <button
+                      className="score-button score-0"
+                      onClick={() => handleVersionBScore(0)}
+                    >
+                      0 Points
+                    </button>
+                    <button
+                      className="score-button score-20"
+                      onClick={() => handleVersionBScore(30)}
+                    >
+                      30 Points
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
