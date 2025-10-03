@@ -3678,6 +3678,85 @@
   transition: transform 0.3s ease-out;
 }
 
+/* Version B Spectrometer Timer Styles */
+.timer-spectrometer {
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 20px 40px;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  min-width: 300px;
+}
+
+.spectrometer-container {
+  width: 100%;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.spectrometer-bar {
+  height: 100%;
+  transition: width 1s linear, background 0.3s ease;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  position: relative;
+}
+
+.spectrometer-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 20px 20px 0 0;
+}
+
+.spectrometer-bar.spectrometer-normal {
+  background: linear-gradient(90deg, #4ecdc4, #44a08d);
+}
+
+.spectrometer-bar.spectrometer-bonus {
+  background: linear-gradient(90deg, #00ff88, #00d4a0);
+  animation: spectrometerBonusGlow 1.5s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+.spectrometer-bar.spectrometer-urgent {
+  background: linear-gradient(90deg, #ff6b6b, #ee5a24);
+  animation: spectrometerUrgentGlow 1s ease-in-out infinite;
+  height: 130%;
+  transform-origin: center;
+  box-shadow: 0 0 30px rgba(255, 107, 107, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+/* Spectrometer-specific animations that don't interfere with width transition */
+@keyframes spectrometerBonusGlow {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 8px rgba(0, 255, 136, 0.8));
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 15px rgba(0, 255, 136, 1));
+  }
+}
+
+@keyframes spectrometerUrgentGlow {
+  0%, 100% {
+    filter: brightness(1) drop-shadow(0 0 10px rgba(255, 107, 107, 0.8));
+  }
+  50% {
+    filter: brightness(1.3) drop-shadow(0 0 20px rgba(255, 107, 107, 1));
+  }
+}
+
 .attempts-counter {
   color: rgba(255, 255, 255, 0.9);
   font-size: 16px;
@@ -4679,6 +4758,16 @@
   .timer-value {
     font-size: 36px;
     min-width: 100px;
+  }
+
+  /* Mobile spectrometer timer */
+  .timer-spectrometer {
+    padding: 15px 25px;
+    min-width: 250px;
+  }
+
+  .spectrometer-container {
+    height: 30px;
   }
   
   .attempts-counter-right {
