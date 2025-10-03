@@ -2899,6 +2899,28 @@ const Game = () => {
   }
 
   const backToPlaylist = () => {
+    // Stop and cleanup audio before navigating away
+    const audio = audioRef.current
+    if (audio) {
+      console.log('🎵 BACK TO PLAYLIST: Stopping and cleaning up audio')
+      audio.pause()
+      audio.currentTime = 0
+      audio.src = '' // Clear the audio source to fully stop playback
+      audio.load() // Reset the audio element
+      setIsPlaying(false)
+      setCurrentTime(0)
+    }
+    
+    // Clear any running timers
+    if (versionBTimerRef.current) {
+      clearTimeout(versionBTimerRef.current)
+      versionBTimerRef.current = null
+    }
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    
     navigate('/')
   }
 
