@@ -28,7 +28,7 @@ interface FinishTheLyricSong {
   acceptableAnswers?: string[] // Alternative acceptable answers
 }
 
-// TODO: Add actual lyric prompts and answers - placeholders used here
+// User-provided lyrics - user is responsible for ensuring rights to use
 const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
   '2010s': [
     {
@@ -36,54 +36,54 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       title: 'Call Me Maybe',
       artist: 'Carly Rae Jepsen',
       file: '/songs/2010s/Finish The Lyric/CallMeMaybeCarlyRaeJepsen.mp3',
-      lyricPrompt: '[Add lyric prompt here]',
-      lyricAnswer: '[Add answer here]',
-      acceptableAnswers: ['[Add variations here]']
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'I took no time with the fall',
+      acceptableAnswers: ['I took no time with the fall']
     },
     {
       id: 'GladYouCameTheWanted',
       title: 'Glad You Came',
       artist: 'The Wanted',
       file: '/songs/2010s/Finish The Lyric/GladYouCameTheWanted.mp3',
-      lyricPrompt: '[Add lyric prompt here]',
-      lyricAnswer: '[Add answer here]',
-      acceptableAnswers: ['[Add variations here]']
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'The sun goes down, the stars come out',
+      acceptableAnswers: ['The sun goes down, the stars come out']
     },
     {
       id: 'OceanEyesBillieEilish',
       title: 'Ocean Eyes',
       artist: 'Billie Eilish',
       file: '/songs/2010s/Finish The Lyric/OceanEyesBillieEilish.mp3',
-      lyricPrompt: '[Add lyric prompt here]',
-      lyricAnswer: '[Add answer here]',
-      acceptableAnswers: ['[Add variations here]']
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'Fifteen flares inside those ocean eyes',
+      acceptableAnswers: ['Fifteen flares inside those ocean eyes']
     },
     {
       id: 'RaiseYourGlassPink',
       title: 'Raise Your Glass',
       artist: 'Pink',
       file: '/songs/2010s/Finish The Lyric/RaiseYourGlassPink.mp3',
-      lyricPrompt: '[Add lyric prompt here]',
-      lyricAnswer: '[Add answer here]',
-      acceptableAnswers: ['[Add variations here]']
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'And nitty-gritty, dirty, little freaks',
+      acceptableAnswers: ['And nitty-gritty, dirty, little freaks']
     },
     {
       id: 'SymphonyCleanBandit',
       title: 'Symphony',
       artist: 'Clean Bandit',
       file: '/songs/2010s/Finish The Lyric/SymphonyCleanBandit.mp3',
-      lyricPrompt: '[Add lyric prompt here]',
-      lyricAnswer: '[Add answer here]',
-      acceptableAnswers: ['[Add variations here]']
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'I just wanna be part of your symphony',
+      acceptableAnswers: ['I just wanna be part of your symphony']
     },
     {
       id: "That'sWhatILikeBrunoMars",
       title: "That's What I Like",
       artist: 'Bruno Mars',
       file: "/songs/2010s/Finish The Lyric/That'sWhatILikeBrunoMars.mp3",
-      lyricPrompt: '[Add lyric prompt here]',
-      lyricAnswer: '[Add answer here]',
-      acceptableAnswers: ['[Add variations here]']
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: "Lucky for you, that's what I like",
+      acceptableAnswers: ["Lucky for you, that's what I like"]
     }
   ]
 }
@@ -3779,6 +3779,11 @@ const Game = () => {
                           <>
                             <p>Artist: {currentQuestion.song.artist}</p>
                             <p>Song: {currentQuestion.song.title}</p>
+                            {currentQuestion.isFinishTheLyric && currentQuestion.lyricAnswer && (
+                              <p style={{ marginTop: '1rem', fontStyle: 'italic', color: '#4ecdc4' }}>
+                                Correct Lyric: "{currentQuestion.lyricAnswer}"
+                              </p>
+                            )}
                           </>
                         ) : (
                           <>
