@@ -1438,9 +1438,12 @@ const Game = () => {
         
         console.log('🎯 SONG TRIVIA: Selected song (after reset)', triviaSong.title, 'by', triviaSong.artist)
         
+        // Shuffle options to randomize answer positions
+        const shuffledOptions = [...triviaSong.triviaOptions!].sort(() => Math.random() - 0.5)
+        
         return {
           song: triviaSong,
-          options: triviaSong.triviaOptions!,
+          options: shuffledOptions,
           correctAnswer: triviaSong.triviaCorrectAnswer!,
           isSongTrivia: true,
           triviaQuestionText: triviaSong.triviaQuestion!
@@ -1457,9 +1460,12 @@ const Game = () => {
       console.log('🎯 SONG TRIVIA: Selected song', triviaSong.title, 'by', triviaSong.artist)
       console.log('🎯 SONG TRIVIA: Total used trivia songs:', usedTriviaSongIds.length + 1)
       
+      // Shuffle options to randomize answer positions
+      const shuffledOptions = [...triviaSong.triviaOptions!].sort(() => Math.random() - 0.5)
+      
       return {
         song: triviaSong,
-        options: triviaSong.triviaOptions!,
+        options: shuffledOptions,
         correctAnswer: triviaSong.triviaCorrectAnswer!,
         isSongTrivia: true,
         triviaQuestionText: triviaSong.triviaQuestion!
