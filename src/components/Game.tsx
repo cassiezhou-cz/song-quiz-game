@@ -16,12 +16,87 @@ interface Song {
   triviaCorrectAnswer?: string // Correct answer for Song Trivia
 }
 
+// IMPORTANT: Replace these placeholders with actual lyrics at your own discretion
+// You are responsible for ensuring you have rights to use any song lyrics
+interface FinishTheLyricSong {
+  id: string
+  title: string
+  artist: string
+  file: string
+  lyricPrompt: string // The partial lyric line to display
+  lyricAnswer: string // The correct completion (what user should type)
+  acceptableAnswers?: string[] // Alternative acceptable answers
+}
+
+// TODO: Add actual lyric prompts and answers - placeholders used here
+const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
+  '2010s': [
+    {
+      id: 'CallMeMaybeCarlyRaeJepsen',
+      title: 'Call Me Maybe',
+      artist: 'Carly Rae Jepsen',
+      file: '/songs/2010s/Finish The Lyric/CallMeMaybeCarlyRaeJepsen.mp3',
+      lyricPrompt: '[Add lyric prompt here]',
+      lyricAnswer: '[Add answer here]',
+      acceptableAnswers: ['[Add variations here]']
+    },
+    {
+      id: 'GladYouCameTheWanted',
+      title: 'Glad You Came',
+      artist: 'The Wanted',
+      file: '/songs/2010s/Finish The Lyric/GladYouCameTheWanted.mp3',
+      lyricPrompt: '[Add lyric prompt here]',
+      lyricAnswer: '[Add answer here]',
+      acceptableAnswers: ['[Add variations here]']
+    },
+    {
+      id: 'OceanEyesBillieEilish',
+      title: 'Ocean Eyes',
+      artist: 'Billie Eilish',
+      file: '/songs/2010s/Finish The Lyric/OceanEyesBillieEilish.mp3',
+      lyricPrompt: '[Add lyric prompt here]',
+      lyricAnswer: '[Add answer here]',
+      acceptableAnswers: ['[Add variations here]']
+    },
+    {
+      id: 'RaiseYourGlassPink',
+      title: 'Raise Your Glass',
+      artist: 'Pink',
+      file: '/songs/2010s/Finish The Lyric/RaiseYourGlassPink.mp3',
+      lyricPrompt: '[Add lyric prompt here]',
+      lyricAnswer: '[Add answer here]',
+      acceptableAnswers: ['[Add variations here]']
+    },
+    {
+      id: 'SymphonyCleanBandit',
+      title: 'Symphony',
+      artist: 'Clean Bandit',
+      file: '/songs/2010s/Finish The Lyric/SymphonyCleanBandit.mp3',
+      lyricPrompt: '[Add lyric prompt here]',
+      lyricAnswer: '[Add answer here]',
+      acceptableAnswers: ['[Add variations here]']
+    },
+    {
+      id: "That'sWhatILikeBrunoMars",
+      title: "That's What I Like",
+      artist: 'Bruno Mars',
+      file: "/songs/2010s/Finish The Lyric/That'sWhatILikeBrunoMars.mp3",
+      lyricPrompt: '[Add lyric prompt here]',
+      lyricAnswer: '[Add answer here]',
+      acceptableAnswers: ['[Add variations here]']
+    }
+  ]
+}
+
 interface QuizQuestion {
   song: Song
   options: string[]
   correctAnswer: string
   isSongTrivia?: boolean // Flag to indicate this is a Song Trivia question
   triviaQuestionText?: string // The trivia question to display
+  isFinishTheLyric?: boolean // Flag to indicate this is a Finish The Lyric question
+  lyricPrompt?: string // The lyric line to complete
+  lyricAnswer?: string // The correct completion of the lyric
 }
 
 
@@ -139,9 +214,9 @@ const Game = () => {
   
   // Version B Special Question tracking
   const [specialQuestionNumbers, setSpecialQuestionNumbers] = useState<number[]>([])
-  const [specialQuestionTypes, setSpecialQuestionTypes] = useState<{[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia'}>({})
+  const [specialQuestionTypes, setSpecialQuestionTypes] = useState<{[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'}>({})
   const [specialQuestionPlaylist, setSpecialQuestionPlaylist] = useState<string | null>(null)
-  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | null>(null)
+  const [specialQuestionType, setSpecialQuestionType] = useState<'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric' | null>(null)
   
   // Version B Lifeline attention animation
   const [showLifelineAttention, setShowLifelineAttention] = useState(false)
@@ -149,6 +224,9 @@ const Game = () => {
   
   // Version B Lifeline entrance animation (for first question)
   const [showLifelineEntrance, setShowLifelineEntrance] = useState(false)
+  
+  // Version B Finish The Lyric state
+  const [lyricInput, setLyricInput] = useState('')
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1271,8 +1349,46 @@ const Game = () => {
     }
   }
 
-  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia'): QuizQuestion => {
+  const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'): QuizQuestion => {
     const currentPlaylist = playlist || '2010s'
+    
+    // Finish The Lyric uses a special song pool from the current playlist
+    if (questionType === 'finish-the-lyric') {
+      console.log('🎯 FINISH THE LYRIC: Generating lyric question from current playlist', currentPlaylist)
+      
+      const lyricSongs = finishTheLyricSongs[currentPlaylist]
+      
+      if (!lyricSongs || lyricSongs.length === 0) {
+        console.error('❌ No Finish The Lyric songs found for playlist', currentPlaylist)
+        // Fallback to regular question generation
+        return generateQuizQuestion()
+      }
+      
+      // Select a random lyric song
+      const randomIndex = Math.floor(Math.random() * lyricSongs.length)
+      const lyricSong = lyricSongs[randomIndex]
+      
+      console.log('🎯 FINISH THE LYRIC: Selected song', lyricSong.title, 'by', lyricSong.artist)
+      
+      // Convert FinishTheLyricSong to regular Song format for audio playback
+      const songForPlayback: Song = {
+        id: lyricSong.id,
+        title: lyricSong.title,
+        artist: lyricSong.artist,
+        file: lyricSong.file,
+        albumArt: '', // No album art needed for lyric questions
+        alternatives: []
+      }
+      
+      return {
+        song: songForPlayback,
+        options: [], // No multiple choice options for lyric questions
+        correctAnswer: lyricSong.lyricAnswer,
+        isFinishTheLyric: true,
+        lyricPrompt: lyricSong.lyricPrompt,
+        lyricAnswer: lyricSong.lyricAnswer
+      }
+    }
     
     // Song Trivia uses current playlist, other types use different playlists
     if (questionType === 'song-trivia') {
@@ -1391,7 +1507,7 @@ const Game = () => {
   }
 
   // Helper function that works with specific question number to avoid state timing issues
-  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
+  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric') => {
     console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType)
     
     // Prevent multiple simultaneous calls
@@ -1415,7 +1531,7 @@ const Game = () => {
     startNewQuestionWithNumber(questionNumber)
   }
 
-  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric') => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1456,6 +1572,7 @@ const Game = () => {
     setSongCorrect(false)
     setIsPartialCredit(false)
     setPointsEarned(0)
+    setLyricInput('') // Reset lyric input for Finish The Lyric questions
     setArtistLetterRevealText(null) // Reset letter reveal info for new question
     setSongLetterRevealText(null)
     setArtistMultipleChoiceOptions(null) // Reset multiple choice options for new question
@@ -1508,7 +1625,7 @@ const Game = () => {
     
     // Auto-play the song after audio element has loaded the new source
     // Use multiple attempts to ensure audio plays reliably
-    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
+    const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric') => {
       // Skip audio playback for Song Trivia questions
       if (currentSpecialType === 'song-trivia' || question.isSongTrivia) {
         console.log('🎯 SONG TRIVIA: Skipping audio playback - trivia question mode')
@@ -1770,9 +1887,9 @@ const Game = () => {
       setSpecialQuestionType(null) // Reset special question type
       
       // Pre-assign types to special questions to ensure variety
-      const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed')[] = ['time-warp', 'slo-mo', 'hyperspeed']
+      const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'finish-the-lyric')[] = ['time-warp', 'slo-mo', 'hyperspeed', 'finish-the-lyric']
       const shuffledTypes = [...allTypes].sort(() => Math.random() - 0.5) // Shuffle the types
-      const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed'} = {}
+      const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'finish-the-lyric'} = {}
       
       selectedSpecialQuestions.forEach((questionNum, index) => {
         // Cycle through shuffled types to ensure variety
@@ -2122,6 +2239,66 @@ const Game = () => {
     }, 2000) // Show feedback for 2 seconds
   }
 
+  // Finish The Lyric answer submission handler
+  const handleFinishTheLyricSubmit = () => {
+    if (selectedAnswer || !currentQuestion) return // Already answered or no question
+    
+    // Stop Version B timer on submission
+    if (versionBTimerRef.current) {
+      clearTimeout(versionBTimerRef.current)
+      versionBTimerRef.current = null
+    }
+    setVersionBTimerRunning(false)
+    
+    const userAnswer = lyricInput.trim().toLowerCase()
+    const correctAnswer = (currentQuestion.lyricAnswer || '').toLowerCase()
+    
+    // Check if answer is correct (exact match or close match)
+    const isCorrect = userAnswer === correctAnswer
+    
+    // Award 30 points for correct, 0 for incorrect
+    const points = isCorrect ? 30 : 0
+    
+    console.log('🎯 FINISH THE LYRIC: User answered:', userAnswer, 'Correct answer:', correctAnswer, 'Points:', points)
+    
+    setSelectedAnswer('lyric_submitted')
+    
+    let artistCorrect = false
+    let songCorrect = false
+    
+    if (isCorrect) {
+      artistCorrect = true
+      songCorrect = true
+    }
+    
+    setArtistCorrect(artistCorrect)
+    setSongCorrect(songCorrect)
+    setIsCorrect(isCorrect)
+    setPointsEarned(points)
+    
+    // Record base correctness for percentage calculation
+    setQuestionsCorrectness(prev => [...prev, { artistCorrect, songCorrect }])
+    
+    // Update score
+    setScore(prevScore => prevScore + points)
+    
+    // Trigger floating points animation
+    setFloatingPointsValue(points)
+    setIsFloatingPointsSpecial(true)
+    setIsFloatingPointsTimeBonus(false)
+    setShowFloatingPoints(true)
+    
+    // Show feedback
+    setShowFeedback(true)
+    
+    // Pause audio
+    const audio = audioRef.current
+    if (audio) {
+      audio.pause()
+      setIsPlaying(false)
+    }
+  }
+
   // Version B manual scoring function
   const handleVersionBScore = (points: number) => {
     if (selectedAnswer) return // Already answered
@@ -2239,6 +2416,7 @@ const Game = () => {
       setSongCorrect(false)
       setIsPartialCredit(false)
       setPointsEarned(0)
+      setLyricInput('') // Reset lyric input for Finish The Lyric questions
       setArtistLetterRevealText(null) // Clear letter reveal info
       setSongLetterRevealText(null)
       setArtistMultipleChoiceOptions(null) // Clear multiple choice options
@@ -2699,7 +2877,7 @@ const Game = () => {
   }
 
   // Debug function to force next question to be a specific special question type
-  const handleDebugSpecialQuestion = (specialType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia') => {
+  const handleDebugSpecialQuestion = (specialType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric') => {
     console.log('🐛 DEBUG: Forcing next question to be', specialType, 'Special Question')
     
     // Set the next question number as a special question
@@ -3477,7 +3655,7 @@ const Game = () => {
             )}
             
             {/* Version B Manual Scoring */}
-            {version === 'Version B' && !selectedAnswer && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
+            {version === 'Version B' && !selectedAnswer && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
               <div className="manual-scoring">
                 <div className="score-buttons">
                   <button
@@ -3505,6 +3683,42 @@ const Game = () => {
                     Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
                   </div>
                 )}
+              </div>
+            )}
+            
+            {/* Finish The Lyric UI */}
+            {version === 'Version B' && currentQuestion && currentQuestion.isFinishTheLyric && !selectedAnswer && !showFeedback && (
+              <div className="finish-the-lyric-container">
+                <div className="finish-the-lyric-header">
+                  <div className="finish-the-lyric-title">🎤 FINISH THE LYRIC</div>
+                  <div className="finish-the-lyric-subtitle">Complete the line to earn 30 points!</div>
+                </div>
+                <div className="finish-the-lyric-prompt">
+                  <div className="lyric-prompt-label">Complete this line:</div>
+                  <div className="lyric-prompt-text">{currentQuestion.lyricPrompt}</div>
+                </div>
+                <div className="finish-the-lyric-input-container">
+                  <input
+                    type="text"
+                    className="lyric-input"
+                    placeholder="Type your answer here..."
+                    value={lyricInput}
+                    onChange={(e) => setLyricInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && lyricInput.trim()) {
+                        handleFinishTheLyricSubmit()
+                      }
+                    }}
+                    autoFocus
+                  />
+                  <button
+                    className="lyric-submit-button"
+                    onClick={handleFinishTheLyricSubmit}
+                    disabled={!lyricInput.trim()}
+                  >
+                    Submit Answer
+                  </button>
+                </div>
               </div>
             )}
             
@@ -3870,6 +4084,13 @@ const Game = () => {
               title="Force next question to be Song Trivia Special Question"
             >
               ST
+            </button>
+            <button 
+              className="debug-special-button finish-the-lyric-debug"
+              onClick={() => handleDebugSpecialQuestion('finish-the-lyric')}
+              title="Force next question to be Finish The Lyric Special Question"
+            >
+              FTL
             </button>
           </div>
         )}
