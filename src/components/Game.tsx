@@ -3628,10 +3628,6 @@ const Game = () => {
                   <div className="finish-the-lyric-title">🎤 FINISH THE LYRIC</div>
                   <div className="finish-the-lyric-subtitle">Complete the line to earn 30 points!</div>
                 </div>
-                <div className="finish-the-lyric-prompt">
-                  <div className="lyric-prompt-label">Complete this line:</div>
-                  <div className="lyric-prompt-text">{currentQuestion.lyricPrompt}</div>
-                </div>
                 <div className="manual-scoring">
                   <div className="score-buttons">
                     <button
