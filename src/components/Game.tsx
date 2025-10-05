@@ -1597,9 +1597,12 @@ const Game = () => {
         
         console.log('🎯 SONG TRIVIA: Selected song (after reset)', triviaSong.title, 'by', triviaSong.artist)
         
+        // Shuffle options to randomize answer positions
+        const shuffledOptions = [...triviaSong.triviaOptions!].sort(() => Math.random() - 0.5)
+        
         return {
           song: triviaSong,
-          options: triviaSong.triviaOptions!,
+          options: shuffledOptions,
           correctAnswer: triviaSong.triviaCorrectAnswer!,
           isSongTrivia: true,
           triviaQuestionText: triviaSong.triviaQuestion!
@@ -1616,9 +1619,12 @@ const Game = () => {
       console.log('🎯 SONG TRIVIA: Selected song', triviaSong.title, 'by', triviaSong.artist)
       console.log('🎯 SONG TRIVIA: Total used trivia songs:', usedTriviaSongIds.length + 1)
       
+      // Shuffle options to randomize answer positions
+      const shuffledOptions = [...triviaSong.triviaOptions!].sort(() => Math.random() - 0.5)
+      
       return {
         song: triviaSong,
-        options: triviaSong.triviaOptions!,
+        options: shuffledOptions,
         correctAnswer: triviaSong.triviaCorrectAnswer!,
         isSongTrivia: true,
         triviaQuestionText: triviaSong.triviaQuestion!
@@ -1829,12 +1835,6 @@ const Game = () => {
     // Auto-play the song after audio element has loaded the new source
     // Use multiple attempts to ensure audio plays reliably
     const attemptAutoPlay = (attemptNumber = 1, maxAttempts = 3, currentSpecialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric') => {
-      // Skip audio playback for Song Trivia questions
-      if (currentSpecialType === 'song-trivia' || question.isSongTrivia) {
-        console.log('🎯 SONG TRIVIA: Skipping audio playback - trivia question mode')
-        setIsLoadingQuestion(false)
-        return
-      }
       const audioElement = audioRef.current
       console.log(`🎵 GAME: Auto-play attempt ${attemptNumber}/${maxAttempts} for ${version}:`, {
         hasAudioElement: !!audioElement,
@@ -2181,11 +2181,14 @@ const Game = () => {
       versionBTimerRef.current = setTimeout(() => {
         setVersionBTimeRemaining(prev => {
           if (prev <= 1) {
-            // Time's up for this question → auto-score 0 and show feedback
+            // Time's up - set to 0 and let the bar animation complete
             setVersionBTimerRunning(false)
-            if (!selectedAnswer) {
-              handleVersionBScore(0)
-            }
+            // Wait for the bar animation to reach 0% before auto-scoring
+            setTimeout(() => {
+              if (!selectedAnswer) {
+                handleVersionBScore(0)
+              }
+            }, 1000) // Match the CSS transition duration
             return 0
           }
           return prev - 1
@@ -3055,6 +3058,28 @@ const Game = () => {
   }
 
   const backToPlaylist = () => {
+    // Stop and cleanup audio before navigating away
+    const audio = audioRef.current
+    if (audio) {
+      console.log('🎵 BACK TO PLAYLIST: Stopping and cleaning up audio')
+      audio.pause()
+      audio.currentTime = 0
+      audio.src = '' // Clear the audio source to fully stop playback
+      audio.load() // Reset the audio element
+      setIsPlaying(false)
+      setCurrentTime(0)
+    }
+    
+    // Clear any running timers
+    if (versionBTimerRef.current) {
+      clearTimeout(versionBTimerRef.current)
+      versionBTimerRef.current = null
+    }
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    
     navigate('/')
   }
 
@@ -3471,10 +3496,13 @@ const Game = () => {
               </div>
             ) : version === 'Version B' && !(showFeedback && currentQuestion && currentQuestion.isFinishTheLyric) ? (
               <div className="version-b-timer">
-                <div className="timer-display">
+                <div className="timer-spectrometer">
                   <div className="timer-label">Time Remaining</div>
-                  <div className={`timer-value ${versionBTimeRemaining >= 15 ? 'timer-bonus' : versionBTimeRemaining <= 5 ? 'timer-urgent' : ''}`}>
-                    {versionBTimeRemaining}
+                  <div className="spectrometer-container">
+                    <div 
+                      className={`spectrometer-bar ${versionBTimeRemaining >= 15 ? 'spectrometer-bonus' : versionBTimeRemaining <= 5 ? 'spectrometer-urgent' : 'spectrometer-normal'}`}
+                      style={{ width: `${(versionBTimeRemaining / 20) * 100}%` }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -3708,7 +3736,7 @@ const Game = () => {
                       onClick={() => handleLifelineClick('artistLetterReveal')}
                       style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
                     >
-                      <div className="booster-label">Artist Letter Reveal</div>
+                      <div className="booster-label">Letter Reveal: Artist</div>
                     </div>
                   )}
                   {availableLifelines.includes('songLetterReveal') && (
@@ -3717,7 +3745,7 @@ const Game = () => {
                       onClick={() => handleLifelineClick('songLetterReveal')}
                       style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
                     >
-                      <div className="booster-label">Song Letter Reveal</div>
+                      <div className="booster-label">Letter Reveal: Song</div>
                     </div>
                   )}
                   {availableLifelines.includes('multipleChoiceArtist') && (
@@ -4214,20 +4242,18 @@ const Game = () => {
           ← Back to Playlists
         </button>
 
-        {/* Version B Restart Button - Debug Only */}
+        {/* Version B Debug Controls - Debug Only */}
         {version === 'Version B' && !showSpecialQuestionTransition && (
-          <button 
-            className="restart-button"
-            onClick={restartGame}
-            title="Restart Version B Session (Debug)"
-          >
-            Restart
-          </button>
-        )}
-
-        {/* Version B Special Question Debug Buttons */}
-        {version === 'Version B' && !showSpecialQuestionTransition && (
-          <div className="debug-special-buttons">
+          <div className="debug-controls-container">
+            <div className="debug-label">DEBUG</div>
+            <button 
+              className="restart-button"
+              onClick={restartGame}
+              title="Restart Version B Session (Debug)"
+            >
+              Restart
+            </button>
+            <div className="debug-special-buttons">
             <button 
               className="debug-special-button time-warp-debug"
               onClick={() => handleDebugSpecialQuestion('time-warp')}
@@ -4263,6 +4289,7 @@ const Game = () => {
             >
               FTL
             </button>
+            </div>
           </div>
         )}
 
