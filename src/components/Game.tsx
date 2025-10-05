@@ -86,6 +86,118 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       acceptableAnswers: ["Lucky for you, that's what I like"]
     }
   ],
+  '90s': [
+    {
+      id: 'BabyOneMoreTimeBritneySpears',
+      title: 'Baby One More Time',
+      artist: 'Britney Spears',
+      file: '/songs/90s/Finish The Lyric/BabyOneMoreTimeBritneySpears.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'The reason I breathe is you',
+      acceptableAnswers: ['The reason I breathe is you']
+    },
+    {
+      id: 'FlyAwayLennyKravitz',
+      title: 'Fly Away',
+      artist: 'Lenny Kravitz',
+      file: '/songs/90s/Finish The Lyric/FlyAwayLennyKravitz.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'I wanna fly away, yeah, yeah, yeah',
+      acceptableAnswers: ['I wanna fly away, yeah, yeah, yeah']
+    },
+    {
+      id: 'Man!IFeelLikeAWomanShaniaTwain',
+      title: 'Man! I Feel Like a Woman',
+      artist: 'Shania Twain',
+      file: '/songs/90s/Finish The Lyric/Man!IFeelLikeAWomanShaniaTwain.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'Is the prerogative to have a little fun',
+      acceptableAnswers: ['Is the prerogative to have a little fun']
+    },
+    {
+      id: 'NoDiggityBlackstreet',
+      title: 'No Diggity',
+      artist: 'Blackstreet',
+      file: '/songs/90s/Finish The Lyric/NoDiggityBlackstreet.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'Cover much grounds, got game by the pound',
+      acceptableAnswers: ['Cover much grounds, got game by the pound']
+    },
+    {
+      id: 'SmellsLikeTeenSpiritNirvana',
+      title: 'Smells Like Teen Spirit',
+      artist: 'Nirvana',
+      file: '/songs/90s/Finish The Lyric/SmellsLikeTeenSpiritNirvana.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: "With the lights out, it's less dangerous",
+      acceptableAnswers: ["With the lights out, it's less dangerous"]
+    },
+    {
+      id: 'ZombiesTheCranberries',
+      title: 'Zombies',
+      artist: 'The Cranberries',
+      file: '/songs/90s/Finish The Lyric/ZombiesTheCranberries.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'Who are we, mistaken?',
+      acceptableAnswers: ['Who are we, mistaken?']
+    }
+  ],
+  '2000s': [
+    {
+      id: 'AllStarSmashMouth',
+      title: 'All Star',
+      artist: 'Smash Mouth',
+      file: '/songs/2000s/Finish The Lyric/AllStarSmashMouth.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'Only shooting stars break the mold',
+      acceptableAnswers: ['Only shooting stars break the mold']
+    },
+    {
+      id: 'BadRomanceLadyGaga',
+      title: 'Bad Romance',
+      artist: 'Lady Gaga',
+      file: '/songs/2000s/Finish The Lyric/BadRomanceLadyGaga.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'I want your drama, the touch of your hand',
+      acceptableAnswers: ['I want your drama, the touch of your hand']
+    },
+    {
+      id: 'ByeByeByeNSYNC',
+      title: 'Bye Bye Bye',
+      artist: 'NSYNC',
+      file: '/songs/2000s/Finish The Lyric/ByeByeByeNSYNC.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'I wanna see you out that door',
+      acceptableAnswers: ['I wanna see you out that door']
+    },
+    {
+      id: 'HeySoulSisterTrain',
+      title: 'Hey Soul Sister',
+      artist: 'Train',
+      file: '/songs/2000s/Finish The Lyric/HeySoulSisterTrain.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'Hey, soul sister',
+      acceptableAnswers: ['Hey, soul sister']
+    },
+    {
+      id: 'Oops!IDidItAgainBritneySpears',
+      title: 'Oops! I Did It Again',
+      artist: 'Britney Spears',
+      file: '/songs/2000s/Finish The Lyric/Oops!IDidItAgainBritneySpears.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: "Oops, you think I'm in love, that I'm sent from above. I'm not that innocent.",
+      acceptableAnswers: ["Oops, you think I'm in love, that I'm sent from above. I'm not that innocent."]
+    },
+    {
+      id: 'ValerieAmyWinehouse',
+      title: 'Valerie',
+      artist: 'Amy Winehouse',
+      file: '/songs/2000s/Finish The Lyric/ValerieAmyWinehouse.mp3',
+      lyricPrompt: 'Finish the lyric',
+      lyricAnswer: 'Put your house on up for sale?',
+      acceptableAnswers: ['Put your house on up for sale?']
+    }
+  ],
   '2020s': [
     {
       id: 'AllTooWellTaylorSwift',
