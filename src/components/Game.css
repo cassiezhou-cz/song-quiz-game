@@ -3662,6 +3662,18 @@
   padding: 10px 0;
 }
 
+/* Version C now uses the same spectrometer timer style as Version B */
+.version-c-timer .timer-spectrometer {
+  text-align: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 20px 40px;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  min-width: 300px;
+}
+
 .timer-display {
   text-align: center;
   background: rgba(0, 0, 0, 0.8);
@@ -3698,6 +3710,7 @@
 .timer-value.timer-bonus {
   background: linear-gradient(135deg, #00ff88, #00d4a0);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: bonusPulse 1.5s ease-in-out infinite;
 }
@@ -4795,8 +4808,9 @@
     min-width: 100px;
   }
 
-  /* Mobile spectrometer timer */
-  .timer-spectrometer {
+  /* Mobile spectrometer timer for both Version B and Version C */
+  .timer-spectrometer,
+  .version-c-timer .timer-spectrometer {
     padding: 15px 25px;
     min-width: 250px;
   }

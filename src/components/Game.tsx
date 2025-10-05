@@ -3477,10 +3477,13 @@ const Game = () => {
             })()}
             {version === 'Version C' ? (
               <div className="version-c-timer">
-                <div className={`timer-display ${timerPulse ? 'timer-pulse' : ''}`}>
-                  <div className="timer-label">Time Remaining</div>
-                  <div className={`timer-value ${timeRemaining <= 10 ? 'timer-urgent' : ''}`}>
-                    {timeRemaining}s
+                <div className="timer-spectrometer">
+                  <div className="timer-label">Time Remaining: {timeRemaining} Second{timeRemaining !== 1 ? 's' : ''}</div>
+                  <div className="spectrometer-container">
+                    <div 
+                      className={`spectrometer-bar ${timeRemaining >= 45 ? 'spectrometer-bonus' : timeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'}`}
+                      style={{ width: `${(timeRemaining / 60) * 100}%` }}
+                    ></div>
                   </div>
                   {versionCStreak >= 3 && (
                     <div 
@@ -3933,13 +3936,29 @@ const Game = () => {
                     className="score-button score-10"
                     onClick={() => handleVersionCScore(10)}
                   >
-                    10 Points
+                    {getStreakMultiplier(versionCStreak) > 1 ? (
+                      <>
+                        {getStreakMultiplier(versionCStreak) === 4 ? '🔥🔥🔥 ' : 
+                         getStreakMultiplier(versionCStreak) === 3 ? '🔥🔥 ' : '🔥 '}
+                        {10 * getStreakMultiplier(versionCStreak)} Points
+                      </>
+                    ) : (
+                      '10 Points'
+                    )}
                   </button>
                   <button
                     className="score-button score-20"
                     onClick={() => handleVersionCScore(20)}
                   >
-                    20 Points
+                    {getStreakMultiplier(versionCStreak) > 1 ? (
+                      <>
+                        {getStreakMultiplier(versionCStreak) === 4 ? '🔥🔥🔥 ' : 
+                         getStreakMultiplier(versionCStreak) === 3 ? '🔥🔥 ' : '🔥 '}
+                        {20 * getStreakMultiplier(versionCStreak)} Points
+                      </>
+                    ) : (
+                      '20 Points'
+                    )}
                   </button>
                 </div>
                 {currentQuestion && (
