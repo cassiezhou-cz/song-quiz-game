@@ -4318,7 +4318,51 @@
   padding-top: 10px;
 }
 
-/* Version C Answer Feedback */
+/* Version C Layout Container */
+.version-c-layout {
+  position: fixed;
+  top: 70%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  z-index: 90;
+  width: 90%;
+  max-width: 800px;
+}
+
+/* Version C Answer Feedback - Right Side Positioning */
+.version-c-answer-feedback-right {
+  position: fixed;
+  bottom: calc(30% - 150px); /* Position much lower to avoid overlap */
+  right: calc(8% - 50px); /* Align with Live Score box */
+  background: rgba(78, 205, 196, 0.15);
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(78, 205, 196, 0.4);
+  border-radius: 15px;
+  padding: 15px 20px;
+  width: 200px;
+  max-width: 250px;
+  animation: feedbackSlideInRight 0.3s ease-out;
+  z-index: 95;
+}
+
+/* Version C Answer Feedback - Sidebar Style (legacy) */
+.version-c-answer-feedback-sidebar {
+  background: rgba(78, 205, 196, 0.15);
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(78, 205, 196, 0.4);
+  border-radius: 15px;
+  padding: 20px 25px;
+  width: 100%;
+  max-width: 400px;
+  animation: feedbackSlideIn 0.3s ease-out;
+  margin-top: 10px;
+}
+
+/* Legacy Version C Answer Feedback (kept for compatibility) */
 .version-c-answer-feedback {
   position: fixed;
   top: 68%;
@@ -4385,6 +4429,17 @@
   to {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes feedbackSlideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
   }
 }
 
@@ -4905,6 +4960,46 @@
   
   .booster-subtitle {
     font-size: 11px;
+  }
+  
+  /* Mobile responsive for Version C layout */
+  .version-c-layout {
+    width: 95%;
+    max-width: 500px;
+    gap: 15px;
+    top: 75%; /* Move down further on mobile for better spacing */
+  }
+  
+  .version-c-answer-feedback-sidebar {
+    padding: 15px 20px;
+    max-width: 100%;
+    margin-top: 5px;
+  }
+  
+  .version-c-answer-feedback-sidebar .answer-feedback-title {
+    font-size: 16px;
+  }
+  
+  .version-c-answer-feedback-sidebar .answer-feedback-value {
+    font-size: 16px;
+  }
+  
+  /* Mobile responsive for right-side answer feedback */
+  .version-c-answer-feedback-right {
+    bottom: calc(27% - 120px); /* Position much lower on mobile */
+    right: calc(5% - 30px); /* Align with mobile Live Score position */
+    width: 160px;
+    max-width: 180px;
+    padding: 12px 15px;
+  }
+  
+  .version-c-answer-feedback-right .answer-feedback-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  
+  .version-c-answer-feedback-right .answer-feedback-value {
+    font-size: 14px;
   }
   
   .booster-timer-large {

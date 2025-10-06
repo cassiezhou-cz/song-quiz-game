@@ -2391,24 +2391,33 @@ const Game = () => {
       }, 3000) // Clear notification after 3 seconds
     }
     
-    // Give +5 bonus seconds for any points earned
+    // Give bonus seconds based on base points earned (before multiplier)
     if (points > 0 && isTimerRunning) {
-      console.log('🎵 VERSION C: Adding +5 bonus seconds for scoring points!')
-      setTimeRemaining(prev => prev + 5)
+      let bonusSeconds = 0
+      if (points >= 20) {
+        bonusSeconds = 6 // 20 points button gives +6 seconds
+      } else if (points >= 10) {
+        bonusSeconds = 3 // 10 points button gives +3 seconds
+      }
       
-      // Show visual notification for bonus time
-      setAutoBoosterNotification('⏰ +5 Bonus Seconds!')
-      setTimeout(() => {
-        setAutoBoosterNotification(null)
-      }, 2000) // Clear notification after 2 seconds
-      
-      // Pulse the timer to make it obvious time was added
-      setTimerPulse(true)
-      setTimeout(() => {
-        setTimerPulse(false)
-      }, 1000) // Remove pulse after 1 second
-      
-      console.log('⏰ BONUS TIME: +5 seconds awarded for scoring!')
+      if (bonusSeconds > 0) {
+        console.log(`🎵 VERSION C: Adding +${bonusSeconds} bonus seconds for ${points} points!`)
+        setTimeRemaining(prev => prev + bonusSeconds)
+        
+        // Show visual notification for bonus time
+        setAutoBoosterNotification(`⏰ +${bonusSeconds} Bonus Seconds!`)
+        setTimeout(() => {
+          setAutoBoosterNotification(null)
+        }, 2000) // Clear notification after 2 seconds
+        
+        // Pulse the timer to make it obvious time was added
+        setTimerPulse(true)
+        setTimeout(() => {
+          setTimerPulse(false)
+        }, 1000) // Remove pulse after 1 second
+        
+        console.log(`⏰ BONUS TIME: +${bonusSeconds} seconds awarded for ${points} points!`)
+      }
     }
     
     if (points > 0) {
@@ -2439,14 +2448,15 @@ const Game = () => {
     // Show feedback with correct answer
     setShowVersionCFeedback(true)
     
-    // Hide feedback and move to next question after a brief display
+    // Start next question immediately for rapid-fire gameplay
+    setSelectedAnswer(null)
+    console.log('🎵 VERSION C: Moving to next question immediately after scoring', points, 'points')
+    console.log('🎵 VERSION C: Current timer running:', isTimerRunning, 'Time remaining:', timeRemaining)
+    startNewQuestion()
+    
+    // Hide feedback after a brief display (but don't wait for this to start next song)
     setTimeout(() => {
       setShowVersionCFeedback(false)
-      setSelectedAnswer(null)
-      
-      console.log('🎵 VERSION C: Moving to next question after scoring', points, 'points')
-      console.log('🎵 VERSION C: Current timer running:', isTimerRunning, 'Time remaining:', timeRemaining)
-      startNewQuestion()
     }, 2000) // Show feedback for 2 seconds
   }
 
@@ -3604,7 +3614,7 @@ const Game = () => {
               </div>
             )}
             
-            {/* Animated Sound Bars - hide for Version C */}
+            {/* Animated Sound Bars - hidden for Version C */}
             {version !== 'Version C' && !showFeedback && (
               <div className={`sound-bars-container ${isPlaying ? 'playing' : ''}`}>
                 <div className="sound-bars">
@@ -3789,12 +3799,12 @@ const Game = () => {
               </div>
             )}
 
-            {!showFeedback && !showVersionCFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
+            {(version === 'Version C' || (!showFeedback && !showVersionCFeedback)) && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="control-buttons">
                 <button 
-                  className={`control-btn play-pause-btn ${selectedAnswer ? 'disabled' : ''}`}
+                  className={`control-btn play-pause-btn ${version !== 'Version C' && selectedAnswer ? 'disabled' : ''}`}
                   onClick={togglePlayPause}
-                  disabled={!!selectedAnswer}
+                  disabled={version !== 'Version C' && !!selectedAnswer}
                 >
                   {isPlaying ? '⏸️' : '▶️'}
                 </button>
@@ -3919,59 +3929,62 @@ const Game = () => {
               console.log('🎯 VERSION C SCORING BUTTONS CHECK:', { version, isVersionC: version === 'Version C', selectedAnswer, showFeedback });
               return null;
             })()}
-            {version === 'Version C' && !selectedAnswer && !showFeedback && !showVersionCFeedback && (
-              <div className="manual-scoring version-c-scoring">
-                <div className="rapid-fire-header">
-                  <div className="rapid-fire-title">⚡ Rapid Fire Mode</div>
-                  <div className="rapid-fire-instruction">Score and move to next song instantly!</div>
-                </div>
-                <div className="score-buttons">
-                  <button
-                    className="score-button score-0"
-                    onClick={() => handleVersionCScore(0)}
-                  >
-                    Skip
-                  </button>
-                  <button
-                    className="score-button score-10"
-                    onClick={() => handleVersionCScore(10)}
-                  >
-                    {getStreakMultiplier(versionCStreak) > 1 ? (
-                      <>
-                        {getStreakMultiplier(versionCStreak) === 4 ? '🔥🔥🔥 ' : 
-                         getStreakMultiplier(versionCStreak) === 3 ? '🔥🔥 ' : '🔥 '}
-                        {10 * getStreakMultiplier(versionCStreak)} Points
-                      </>
-                    ) : (
-                      '10 Points'
-                    )}
-                  </button>
-                  <button
-                    className="score-button score-20"
-                    onClick={() => handleVersionCScore(20)}
-                  >
-                    {getStreakMultiplier(versionCStreak) > 1 ? (
-                      <>
-                        {getStreakMultiplier(versionCStreak) === 4 ? '🔥🔥🔥 ' : 
-                         getStreakMultiplier(versionCStreak) === 3 ? '🔥🔥 ' : '🔥 '}
-                        {20 * getStreakMultiplier(versionCStreak)} Points
-                      </>
-                    ) : (
-                      '20 Points'
-                    )}
-                  </button>
-                </div>
-                {currentQuestion && (
-                  <div className="song-number-display">
-                    Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
+            {version === 'Version C' && (
+              <div className="version-c-layout">
+                <div className="manual-scoring version-c-scoring">
+                  <div className="rapid-fire-header">
+                    <div className="rapid-fire-title">⚡ Rapid Fire Mode</div>
+                    <div className="rapid-fire-instruction">Score and move to next song instantly!</div>
                   </div>
-                )}
+                  <div className="score-buttons">
+                    <button
+                      className="score-button score-0"
+                      onClick={() => handleVersionCScore(0)}
+                    >
+                      Skip
+                    </button>
+                    <button
+                      className="score-button score-10"
+                      onClick={() => handleVersionCScore(10)}
+                    >
+                      {getStreakMultiplier(versionCStreak) > 1 ? (
+                        <>
+                          {getStreakMultiplier(versionCStreak) === 4 ? '🔥🔥🔥 ' : 
+                           getStreakMultiplier(versionCStreak) === 3 ? '🔥🔥 ' : '🔥 '}
+                          {10 * getStreakMultiplier(versionCStreak)} Points
+                        </>
+                      ) : (
+                        '10 Points'
+                      )}
+                    </button>
+                    <button
+                      className="score-button score-20"
+                      onClick={() => handleVersionCScore(20)}
+                    >
+                      {getStreakMultiplier(versionCStreak) > 1 ? (
+                        <>
+                          {getStreakMultiplier(versionCStreak) === 4 ? '🔥🔥🔥 ' : 
+                           getStreakMultiplier(versionCStreak) === 3 ? '🔥🔥 ' : '🔥 '}
+                          {20 * getStreakMultiplier(versionCStreak)} Points
+                        </>
+                      ) : (
+                        '20 Points'
+                      )}
+                    </button>
+                  </div>
+                  {currentQuestion && (
+                    <div className="song-number-display">
+                      Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
+                    </div>
+                  )}
+                </div>
+                
               </div>
             )}
             
-            {/* Version C Answer Feedback */}
+            {/* Version C Answer Feedback - positioned on right side below Live Score */}
             {version === 'Version C' && showVersionCFeedback && currentQuestion && (
-              <div className="version-c-answer-feedback">
+              <div className="version-c-answer-feedback-right">
                 <div className="answer-feedback-title">Correct Answer:</div>
                 <div className="answer-feedback-content">
                   <div className="answer-feedback-item">
