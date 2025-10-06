@@ -337,6 +337,7 @@ const Game = () => {
   const [versionCStreak, setVersionCStreak] = useState(0) // Track streak for progressive multipliers
   const [showScoreConfetti, setShowScoreConfetti] = useState(false) // Track confetti animation
   const [showVersionCFeedback, setShowVersionCFeedback] = useState(false) // Track answer feedback display
+  const [previousQuestion, setPreviousQuestion] = useState<any>(null) // Track previous question for answer feedback
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Separate timer ref for Version B per-question timer
@@ -2445,6 +2446,9 @@ const Game = () => {
       audio.oncanplaythrough = null
     }
     
+    // Store current question as previous question for answer feedback
+    setPreviousQuestion(currentQuestion)
+    
     // Show feedback with correct answer
     setShowVersionCFeedback(true)
     
@@ -3983,17 +3987,17 @@ const Game = () => {
             )}
             
             {/* Version C Answer Feedback - positioned on right side below Live Score */}
-            {version === 'Version C' && showVersionCFeedback && currentQuestion && (
+            {version === 'Version C' && showVersionCFeedback && previousQuestion && (
               <div className="version-c-answer-feedback-right">
                 <div className="answer-feedback-title">Correct Answer:</div>
                 <div className="answer-feedback-content">
                   <div className="answer-feedback-item">
                     <span className="answer-feedback-label">Artist:</span>
-                    <span className="answer-feedback-value">{currentQuestion.song.artist}</span>
+                    <span className="answer-feedback-value">{previousQuestion.song.artist}</span>
                   </div>
                   <div className="answer-feedback-item">
                     <span className="answer-feedback-label">Song:</span>
-                    <span className="answer-feedback-value">{currentQuestion.song.title}</span>
+                    <span className="answer-feedback-value">{previousQuestion.song.title}</span>
                   </div>
                 </div>
               </div>
