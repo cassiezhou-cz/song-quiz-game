@@ -2839,6 +2839,93 @@
   }
 }
 
+/* Finish the Lyric Microphone Animation */
+.finish-lyric-animation {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 200px;
+}
+
+.microphone-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.microphone-emoji {
+  font-size: 8rem;
+  animation: microphonePulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3));
+}
+
+.musical-notes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.floating-note {
+  position: absolute;
+  font-size: 3rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+  animation: floatMusicalNote 3s ease-in-out infinite;
+  font-weight: 900;
+}
+
+/* Position musical notes around the microphone */
+.note-1 { top: 20%; left: 20%; animation-delay: 0s; font-size: 2.5rem; }
+.note-2 { top: 15%; left: 70%; animation-delay: 0.4s; font-size: 3.5rem; }
+.note-3 { top: 40%; left: 85%; animation-delay: 0.8s; font-size: 2.8rem; }
+.note-4 { top: 70%; left: 75%; animation-delay: 1.2s; font-size: 3.2rem; }
+.note-5 { top: 80%; left: 40%; animation-delay: 1.6s; font-size: 2.6rem; }
+.note-6 { top: 65%; left: 15%; animation-delay: 2s; font-size: 3.4rem; }
+.note-7 { top: 35%; left: 10%; animation-delay: 2.4s; font-size: 2.9rem; }
+.note-8 { top: 25%; left: 45%; animation-delay: 2.8s; font-size: 3.1rem; }
+
+@keyframes microphonePulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.05) rotate(2deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.05) rotate(-2deg);
+  }
+}
+
+@keyframes floatMusicalNote {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translateY(-15px) rotate(10deg) scale(1.2);
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-30px) rotate(-5deg) scale(0.9);
+    opacity: 0.8;
+  }
+  75% {
+    transform: translateY(-20px) rotate(15deg) scale(1.1);
+    opacity: 0.9;
+  }
+}
+
 @keyframes specialPlaylistGlow {
   0% {
     text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 60px rgba(78, 205, 196, 0.6);
@@ -3076,6 +3163,29 @@
   .qm-11 { font-size: 3.5rem; }
   .qm-12 { font-size: 4rem; }
   
+  /* Finish the Lyric Animation mobile adjustments */
+  .finish-lyric-animation {
+    margin-top: 1.5rem;
+    height: 150px;
+  }
+  
+  .microphone-emoji {
+    font-size: 6rem;
+  }
+  
+  .floating-note {
+    font-size: 2.5rem;
+  }
+  
+  .note-1 { font-size: 2rem; }
+  .note-2 { font-size: 3rem; }
+  .note-3 { font-size: 2.3rem; }
+  .note-4 { font-size: 2.7rem; }
+  .note-5 { font-size: 2.1rem; }
+  .note-6 { font-size: 2.9rem; }
+  .note-7 { font-size: 2.4rem; }
+  .note-8 { font-size: 2.6rem; }
+  
   /* Special Playlist Display mobile adjustments */
   .special-playlist-display {
     top: 130px;
@@ -3201,6 +3311,29 @@
   .qm-10 { font-size: 2.3rem; }
   .qm-11 { font-size: 3rem; }
   .qm-12 { font-size: 3.5rem; }
+  
+  /* Finish the Lyric Animation small mobile adjustments */
+  .finish-lyric-animation {
+    margin-top: 1rem;
+    height: 120px;
+  }
+  
+  .microphone-emoji {
+    font-size: 5rem;
+  }
+  
+  .floating-note {
+    font-size: 2rem;
+  }
+  
+  .note-1 { font-size: 1.7rem; }
+  .note-2 { font-size: 2.5rem; }
+  .note-3 { font-size: 1.9rem; }
+  .note-4 { font-size: 2.2rem; }
+  .note-5 { font-size: 1.8rem; }
+  .note-6 { font-size: 2.4rem; }
+  .note-7 { font-size: 2rem; }
+  .note-8 { font-size: 2.1rem; }
   
   /* Special Playlist Display small mobile adjustments */
   .special-playlist-display {

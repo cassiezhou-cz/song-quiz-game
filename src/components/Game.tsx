@@ -3588,6 +3588,25 @@ const Game = () => {
                 <div className="floating-question-mark qm-12">?</div>
               </div>
             )}
+            
+            {/* Microphone with Musical Notes for Finish the Lyric */}
+            {specialQuestionType === 'finish-the-lyric' && (
+              <div className="finish-lyric-animation">
+                <div className="microphone-container">
+                  <div className="microphone-emoji">🎤</div>
+                </div>
+                <div className="musical-notes">
+                  <div className="floating-note note-1">♪</div>
+                  <div className="floating-note note-2">♫</div>
+                  <div className="floating-note note-3">♪</div>
+                  <div className="floating-note note-4">♬</div>
+                  <div className="floating-note note-5">♫</div>
+                  <div className="floating-note note-6">♪</div>
+                  <div className="floating-note note-7">♬</div>
+                  <div className="floating-note note-8">♫</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
