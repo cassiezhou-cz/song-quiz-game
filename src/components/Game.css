@@ -628,6 +628,47 @@
 }
 
 /* Version B Debug Controls Container */
+/* Debug Special Questions Display */
+.debug-special-questions-display {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid rgba(138, 43, 226, 0.8);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  font-size: 0.9rem;
+  max-width: 300px;
+}
+
+.debug-display-label {
+  color: rgba(138, 43, 226, 1);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.25rem;
+}
+
+.debug-display-numbers {
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.debug-display-numbers .current-special {
+  color: #00ff00;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
+}
+
 .debug-controls-container {
   position: fixed;
   bottom: 2rem;
@@ -1227,6 +1268,22 @@
     font-size: 0.9rem;
   }
   
+  .debug-special-questions-display {
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    max-width: 200px;
+  }
+
+  .debug-display-label {
+    font-size: 0.7rem;
+  }
+
+  .debug-display-numbers {
+    font-size: 0.7rem;
+  }
+
   .debug-controls-container {
     bottom: 1rem;
     right: 1rem;

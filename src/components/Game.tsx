@@ -320,7 +320,7 @@ const Game = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false)
   
   // Version B per-question timer state
-  const [versionBTimeRemaining, setVersionBTimeRemaining] = useState(20)
+  const [versionBTimeRemaining, setVersionBTimeRemaining] = useState(40)
   const [versionBTimerRunning, setVersionBTimerRunning] = useState(false)
   const [allAttemptedSongs, setAllAttemptedSongs] = useState<Array<{
     song: any,
@@ -1810,7 +1810,7 @@ const Game = () => {
         clearTimeout(versionBTimerRef.current)
         versionBTimerRef.current = null
       }
-      setVersionBTimeRemaining(20)
+      setVersionBTimeRemaining(40)
       setVersionBTimerRunning(true)
       // Track question start time for time bonus
       setQuestionStartTime(Date.now())
@@ -2062,8 +2062,8 @@ const Game = () => {
       const willHaveTwoSpecialQuestions = Math.random() < 0.5
       const numSpecialQuestions = willHaveTwoSpecialQuestions ? 2 : 1
       
-      // Generate special question numbers (2-7, excluding Question 1)
-      const availableQuestions = [2, 3, 4, 5, 6, 7]
+      // Generate special question numbers (3-7, excluding Questions 1-2)
+      const availableQuestions = [3, 4, 5, 6, 7]
       const selectedSpecialQuestions: number[] = []
       
       for (let i = 0; i < numSpecialQuestions; i++) {
@@ -2125,8 +2125,8 @@ const Game = () => {
         console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
       }
       
-      // Verify all special question numbers are valid (2-7)
-      const invalidQuestions = selectedSpecialQuestions.filter(q => q < 2 || q > 7)
+      // Verify all special question numbers are valid (3-7)
+      const invalidQuestions = selectedSpecialQuestions.filter(q => q < 3 || q > 7)
       if (invalidQuestions.length > 0) {
         console.error('❌ ERROR: Invalid special question numbers:', invalidQuestions)
         // Fallback to single question 7 if there's an issue
@@ -3007,7 +3007,7 @@ const Game = () => {
       clearTimeout(versionBTimerRef.current)
       versionBTimerRef.current = null
     }
-    setVersionBTimeRemaining(20)
+    setVersionBTimeRemaining(40)
     setVersionBTimerRunning(false)
     setAllAttemptedSongs([])
     // Reset Version C streak tracking
@@ -3519,8 +3519,8 @@ const Game = () => {
                   <div className="timer-label">Time Remaining</div>
                   <div className="spectrometer-container">
                     <div 
-                      className={`spectrometer-bar ${versionBTimeRemaining >= 15 ? 'spectrometer-bonus' : versionBTimeRemaining <= 5 ? 'spectrometer-urgent' : 'spectrometer-normal'}`}
-                      style={{ width: `${(versionBTimeRemaining / 20) * 100}%` }}
+                      className={`spectrometer-bar ${versionBTimeRemaining >= 35 ? 'spectrometer-bonus' : versionBTimeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'}`}
+                      style={{ width: `${(versionBTimeRemaining / 40) * 100}%` }}
                     ></div>
                   </div>
                 </div>
@@ -4307,6 +4307,22 @@ const Game = () => {
         >
           ← Back to Playlists
         </button>
+
+        {/* Version B Special Questions Debug Display - DISABLED */}
+        {/* {version === 'Version B' && specialQuestionNumbers.length > 0 && (
+          <div className="debug-special-questions-display">
+            <div className="debug-display-label">Special Questions:</div>
+            <div className="debug-display-numbers">
+              {specialQuestionNumbers.map((num, index) => (
+                <span key={num} className={num === questionNumber ? 'current-special' : ''}>
+                  Q{num}
+                  {specialQuestionTypes[num] && ` (${specialQuestionTypes[num]})`}
+                  {index < specialQuestionNumbers.length - 1 && ', '}
+                </span>
+              ))}
+            </div>
+          </div>
+        )} */}
 
         {/* Version B Debug Controls - Debug Only */}
         {version === 'Version B' && !showSpecialQuestionTransition && (
