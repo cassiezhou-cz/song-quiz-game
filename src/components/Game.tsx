@@ -322,6 +322,9 @@ const Game = () => {
   // Version B per-question timer state
   const [versionBTimeRemaining, setVersionBTimeRemaining] = useState(40)
   const [versionBTimerRunning, setVersionBTimerRunning] = useState(false)
+  const [showPreQuestionDelay, setShowPreQuestionDelay] = useState(false)
+  const [showTimerEntrance, setShowTimerEntrance] = useState(false)
+  const [showPlaybackEntrance, setShowPlaybackEntrance] = useState(false)
   const [allAttemptedSongs, setAllAttemptedSongs] = useState<Array<{
     song: any,
     pointsEarned: number,
@@ -386,6 +389,13 @@ const Game = () => {
   // Version B Lifeline entrance animation (for first question)
   const [showLifelineEntrance, setShowLifelineEntrance] = useState(false)
   const hasShownLifelineEntrance = useRef(false)
+  
+  // Ref to track if initial question has been started (prevents duplicate calls from useEffect)
+  const hasStartedInitialQuestion = useRef(false)
+  
+  // Ref to prevent concurrent question loading
+  const isLoadingQuestionRef = useRef(false)
+  
   // 2010s playlist songs with curated alternatives
   const songs2010s: Song[] = [
     { 
@@ -1720,28 +1730,30 @@ const Game = () => {
   const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric', preserveTimer: boolean = false) => {
     console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType, 'preserveTimer:', preserveTimer)
     
-    // Prevent multiple simultaneous calls
-    if (isLoadingQuestion) {
+    // Prevent multiple simultaneous calls using ref (more reliable than state)
+    if (isLoadingQuestionRef.current) {
+      console.log('⚠️ BLOCKED: Question loading already in progress, ignoring duplicate call')
       return
     }
+    isLoadingQuestionRef.current = true
     setIsLoadingQuestion(true)
     
     // Check if this is the special question for Version B
     if (version === 'Version B' && specialQuestionNumbers.includes(questionNum)) {
       console.log('🎵 VERSION B: Starting special question #', questionNum, 'with type:', specialType)
       // This is the special question - generate a question from a different playlist
-      startNewQuestionInternal(true, specialType || 'time-warp', preserveTimer) // Use passed specialType and preserveTimer
+      startNewQuestionInternal(true, specialType || 'time-warp', preserveTimer, questionNum) // Pass questionNum
       return
     }
 
-    startNewQuestionInternal(false, undefined, preserveTimer)
+    startNewQuestionInternal(false, undefined, preserveTimer, questionNum) // Pass questionNum
   }
 
   const startNewQuestion = (preserveTimer: boolean = false) => {
     startNewQuestionWithNumber(questionNumber, undefined, preserveTimer)
   }
 
-  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric', preserveTimer: boolean = false) => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric', preserveTimer: boolean = false, actualQuestionNumber?: number) => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1749,6 +1761,8 @@ const Game = () => {
       console.log('🎵 START: Performing comprehensive audio cleanup')
       audio.pause()
       audio.currentTime = 0
+      audio.volume = 1 // Reset volume
+      audio.playbackRate = 1 // Reset playback rate
       setIsPlaying(false)
       setCurrentTime(0)
       
@@ -1758,11 +1772,16 @@ const Game = () => {
       audio.onloadeddata = null
       audio.onloadedmetadata = null
       audio.onerror = null
+      audio.onended = null
+      audio.ontimeupdate = null
+      audio.onplay = null
+      audio.onpause = null
       
-    // Complete reset of audio element for all versions (not just Version C)
-    audio.src = ''
-    audio.load()
-  }
+      // Complete reset of audio element for all versions (not just Version C)
+      audio.src = ''
+      audio.load()
+      console.log('🎵 START: Audio cleanup complete')
+    }
   
   // Stop lifeline attention animation when starting new question
   stopLifelineAttentionAnimation()
@@ -1786,6 +1805,7 @@ const Game = () => {
     setSongLetterRevealText(null)
     setArtistMultipleChoiceOptions(null) // Reset multiple choice options for new question
     setSongMultipleChoiceOptions(null)
+    setShowPlaybackEntrance(false) // Reset playback entrance animation for all questions except first
     // Note: opponentPointsEarned is not reset here to prevent popup display issues
     
     // Version-specific resets
@@ -1814,22 +1834,48 @@ const Game = () => {
       if (!preserveTimer) {
         setVersionBTimeRemaining(40)
       }
-      // Stop and restart timer to ensure proper countdown
-      setVersionBTimerRunning(false)
-      setTimeout(() => {
-        setVersionBTimerRunning(true)
-      }, 10) // Brief delay to ensure state update
-      // Track question start time for time bonus
-      setQuestionStartTime(Date.now())
       
       // Trigger lifeline entrance animation on first question only (once per session)
-      if (questionNumber === 1 && !hasShownLifelineEntrance.current) {
+      // Use actualQuestionNumber parameter if provided, otherwise fall back to state
+      const currentQuestionNum = actualQuestionNumber !== undefined ? actualQuestionNumber : questionNumber
+      const isFirstQuestion = currentQuestionNum === 1 && !hasShownLifelineEntrance.current
+      console.log('🎯 VERSION B: Checking first question - currentQuestionNum:', currentQuestionNum, 'hasShown:', hasShownLifelineEntrance.current, 'isFirst:', isFirstQuestion)
+      if (isFirstQuestion) {
         setShowLifelineEntrance(true)
         hasShownLifelineEntrance.current = true
-        // Remove animation class after animation completes
+        
+        // Sequence: Lifelines appear -> 1s delay -> Timer appears -> Song starts
+        
+        // Step 1: Remove lifeline animation class after it completes (1.5s)
         setTimeout(() => {
           setShowLifelineEntrance(false)
-        }, 1500) // Match animation duration
+          console.log('🎯 VERSION B: Lifelines appeared')
+        }, 1500)
+        
+        // Step 2: After lifelines + 1s delay = 2.5s, show timer entrance
+        setTimeout(() => {
+          setShowTimerEntrance(true)
+          console.log('🎯 VERSION B: Showing timer entrance animation')
+          // Remove timer entrance animation class after it completes (1.5s)
+          setTimeout(() => {
+            setShowTimerEntrance(false)
+            console.log('🎯 VERSION B: Timer entrance complete')
+          }, 1500)
+        }, 2500) // 1.5s lifelines + 1s delay
+        
+        // Add pre-question delay for first question
+        setShowPreQuestionDelay(true)
+        console.log('🎯 VERSION B: Starting intro sequence for first question')
+        // Don't start timer yet - will start after full sequence
+      } else {
+        // For non-first questions, start timer immediately
+        // Stop and restart timer to ensure proper countdown
+        setVersionBTimerRunning(false)
+        setTimeout(() => {
+          setVersionBTimerRunning(true)
+        }, 10) // Brief delay to ensure state update
+        // Track question start time for time bonus
+        setQuestionStartTime(Date.now())
       }
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
@@ -1898,6 +1944,7 @@ const Game = () => {
             console.error('🎵 AUTOPLAY: All attempts failed due to loading errors')
             setIsPlaying(false)
             setIsLoadingQuestion(false)
+            isLoadingQuestionRef.current = false
           }
         }
         
@@ -1944,6 +1991,7 @@ const Game = () => {
             console.log('🔍 DEBUG: Final playback rate when playing:', audioElement.playbackRate)
             setIsPlaying(true)
             setIsLoadingQuestion(false)
+            isLoadingQuestionRef.current = false
           }).catch(error => {
             console.error(`🎵 GAME: Auto-play attempt ${attemptNumber} failed for ${question.song.title}:`, error)
             if (attemptNumber < maxAttempts) {
@@ -1953,6 +2001,7 @@ const Game = () => {
               console.error('🎵 GAME: All auto-play attempts failed')
               setIsPlaying(false)
               setIsLoadingQuestion(false)
+              isLoadingQuestionRef.current = false
             }
           })
         }
@@ -1981,6 +2030,7 @@ const Game = () => {
               console.error('🎵 AUTOPLAY: Final timeout - audio never became ready')
               setIsPlaying(false)
               setIsLoadingQuestion(false)
+              isLoadingQuestionRef.current = false
             }
           }, 3000) // 3 second timeout
           
@@ -2029,12 +2079,36 @@ const Game = () => {
       } else {
         console.log('🎵 GAME: No audio element found')
         setIsLoadingQuestion(false)
+        isLoadingQuestionRef.current = false
       }
     }
     
     // Start auto-play with a short delay to allow audio element cleanup to complete
     // Reduced delay for Version C rapid-fire gameplay
-    const autoPlayDelay = version === 'Version C' ? 100 : 500
+    // Add extended delay for Version B first question: lifelines (1.5s) + delay (1s) + timer (1.5s)
+      let autoPlayDelay = version === 'Version C' ? 100 : 500
+      if (version === 'Version B' && questionNumber === 1 && hasShownLifelineEntrance.current) {
+        autoPlayDelay = 4500 // 4 seconds (1.5s lifelines + 1s + 1.5s timer) + 500ms base delay
+        console.log('🎯 VERSION B: Delaying auto-play by 4 seconds for first question intro sequence')
+        
+        // End pre-question delay after 4 seconds and start timer countdown
+        setTimeout(() => {
+          setShowPreQuestionDelay(false)
+          setVersionBTimerRunning(true)
+          setQuestionStartTime(Date.now())
+          setShowPlaybackEntrance(true)
+          console.log('🎯 VERSION B: Intro sequence complete, starting question and music')
+          
+          // Remove playback entrance animation class after it completes (1s)
+          setTimeout(() => {
+            setShowPlaybackEntrance(false)
+          }, 1000)
+        }, 4000)
+      } else if (version === 'Version B') {
+        // For subsequent Version B questions, start immediately with no animation
+        autoPlayDelay = 50 // Minimal delay for state updates
+        setShowPlaybackEntrance(false) // Explicitly ensure no animation on subsequent questions
+      }
     setTimeout(() => attemptAutoPlay(1, 3, specialType), autoPlayDelay)
     
   }
@@ -2064,6 +2138,9 @@ const Game = () => {
       
       // Reset lifeline entrance animation flag for new session
       hasShownLifelineEntrance.current = false
+      
+      // Reset initial question flag for new session
+      hasStartedInitialQuestion.current = false
       
       // Randomly select 1 or 2 special questions (50% chance for 2)
       const willHaveTwoSpecialQuestions = Math.random() < 0.5
@@ -2149,7 +2226,13 @@ const Game = () => {
       setAllAttemptedSongs([])
     }
     
-    startNewQuestion()
+    // Only start the first question when playlist is loaded (not on subsequent state updates)
+    // Use ref to prevent duplicate calls
+    if (!hasStartedInitialQuestion.current) {
+      console.log('🎵 USEEFFECT: Starting initial question for playlist:', playlist)
+      hasStartedInitialQuestion.current = true
+      startNewQuestion()
+    }
   }, [playlist])
   
   // Version C Timer Effect
@@ -2541,11 +2624,16 @@ const Game = () => {
     
     setShowFeedback(true)
     
-    // Pause audio
+    // Immediately stop and clear audio to prevent bleed into next question
     const audio = audioRef.current
     if (audio) {
+      console.log('🎵 SCORE: Immediately stopping and clearing audio')
       audio.pause()
+      audio.currentTime = 0
+      audio.src = ''
+      audio.load()
       setIsPlaying(false)
+      setCurrentTime(0)
     }
     
     // Award points to player
@@ -2973,20 +3061,18 @@ const Game = () => {
           setQuestionNumber(newQuestionNumber)
           console.log('🎯 SPECIAL QUESTION: Starting Question', newQuestionNumber, 'with special scoring')
           
-          // Start new question with proper delay for cleanup
+          // Start new question with proper delay for cleanup after transition
           setTimeout(() => {
             startNewQuestionWithNumber(newQuestionNumber, specialType)
-          }, 1000)
+          }, 500)
         }, 3000)
       } else {
         console.log('🎵 NORMAL QUESTION: Starting Question', newQuestionNumber)
-        // Normal flow for other questions
+        // Normal flow for other questions - start immediately for responsive gameplay
         setQuestionNumber(newQuestionNumber)
         
-        // Start new question with proper delay for cleanup
-        setTimeout(() => {
-          startNewQuestionWithNumber(newQuestionNumber)
-        }, 1000)
+        // Start new question immediately - no delay needed since audio is already cleaned up
+        startNewQuestionWithNumber(newQuestionNumber)
       }
     }
   }
@@ -2998,6 +3084,7 @@ const Game = () => {
     setGameComplete(false)
     // Note: Song tracking persists across new games (only resets on browser refresh)
     setIsLoadingQuestion(false) // Reset loading state
+    isLoadingQuestionRef.current = false // Reset loading ref
     // Reset opponent points tracking
     setOpponentPointsEarned(0)
     // Reset Version A streaks
@@ -3023,6 +3110,9 @@ const Game = () => {
     }
     setVersionBTimeRemaining(40)
     setVersionBTimerRunning(false)
+    setShowPreQuestionDelay(false)
+    setShowTimerEntrance(false)
+    setShowPlaybackEntrance(false)
     setAllAttemptedSongs([])
     // Reset Version C streak tracking
     setVersionCStreak(0)
@@ -3047,6 +3137,7 @@ const Game = () => {
     setUsedTriviaSongIds([]) // Reset used trivia songs tracking
     stopLifelineAttentionAnimation() // Stop lifeline attention animation
     hasShownLifelineEntrance.current = false // Reset lifeline entrance animation flag
+    hasStartedInitialQuestion.current = false // Reset initial question flag
     setTimerPulse(false)
     setShowScoreConfetti(false)
     if (timerRef.current) {
@@ -3109,6 +3200,11 @@ const Game = () => {
       clearTimeout(timerRef.current)
       timerRef.current = null
     }
+    
+    // Reset refs for clean state
+    hasShownLifelineEntrance.current = false
+    hasStartedInitialQuestion.current = false
+    isLoadingQuestionRef.current = false
     
     navigate('/')
   }
@@ -3528,7 +3624,7 @@ const Game = () => {
                 </div>
               </div>
             ) : version === 'Version B' && !(showFeedback && currentQuestion && currentQuestion.isFinishTheLyric) ? (
-              <div className="version-b-timer">
+              <div className={`version-b-timer ${showTimerEntrance ? 'timer-entrance' : ''}`} style={{ visibility: (showPreQuestionDelay && !showTimerEntrance) ? 'hidden' : 'visible' }}>
                 <div className="timer-spectrometer">
                   <div className="timer-label">Time Remaining</div>
                   <div className="spectrometer-container">
@@ -3538,6 +3634,10 @@ const Game = () => {
                     ></div>
                   </div>
                 </div>
+              </div>
+          ) : version === 'Version B' ? (
+              <div className="quiz-progress" style={{ visibility: 'hidden' }}>
+                <span>Question {questionNumber} of {totalQuestions}</span>
               </div>
           ) : (
               <div className="quiz-progress">
@@ -3641,7 +3741,6 @@ const Game = () => {
               <div className="audio-controls">
                 <audio
                   ref={audioRef}
-                  src={currentQuestion?.song?.file}
                   onEnded={() => {
                     setIsPlaying(false)
                     // Start lifeline attention animation for Version B after song ends
@@ -3655,7 +3754,7 @@ const Game = () => {
             
             {/* Animated Sound Bars - hidden for Version C and Finish The Lyric */}
             {version !== 'Version C' && !showFeedback && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
-              <div className={`sound-bars-container ${isPlaying ? 'playing' : ''}`}>
+              <div className={`sound-bars-container ${isPlaying ? 'playing' : ''} ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: showPreQuestionDelay ? 'hidden' : 'visible' }}>
                 <div className="sound-bars">
                   <div className="sound-bar bar-1"></div>
                   <div className="sound-bar bar-2"></div>
@@ -3833,7 +3932,7 @@ const Game = () => {
 
 
             {(version === 'Version C' || (!showFeedback && !showVersionCFeedback)) && !(currentQuestion && currentQuestion.isSongTrivia) && (
-              <div className="progress-bar">
+              <div className={`progress-bar ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: showPreQuestionDelay ? 'hidden' : 'visible' }}>
                 <div className="progress-time">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
@@ -3848,7 +3947,7 @@ const Game = () => {
             )}
 
             {(version === 'Version C' || (!showFeedback && !showVersionCFeedback)) && !(currentQuestion && currentQuestion.isSongTrivia) && (
-              <div className="control-buttons">
+              <div className={`control-buttons ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: showPreQuestionDelay ? 'hidden' : 'visible' }}>
                 <button 
                   className={`control-btn play-pause-btn ${version !== 'Version C' && selectedAnswer ? 'disabled' : ''}`}
                   onClick={togglePlayPause}
