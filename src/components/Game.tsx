@@ -1717,8 +1717,8 @@ const Game = () => {
   }
 
   // Helper function that works with specific question number to avoid state timing issues
-  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric') => {
-    console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType)
+  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric', preserveTimer: boolean = false) => {
+    console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType, 'preserveTimer:', preserveTimer)
     
     // Prevent multiple simultaneous calls
     if (isLoadingQuestion) {
@@ -1730,18 +1730,18 @@ const Game = () => {
     if (version === 'Version B' && specialQuestionNumbers.includes(questionNum)) {
       console.log('🎵 VERSION B: Starting special question #', questionNum, 'with type:', specialType)
       // This is the special question - generate a question from a different playlist
-      startNewQuestionInternal(true, specialType || 'time-warp') // Use passed specialType
+      startNewQuestionInternal(true, specialType || 'time-warp', preserveTimer) // Use passed specialType and preserveTimer
       return
     }
 
-    startNewQuestionInternal()
+    startNewQuestionInternal(false, undefined, preserveTimer)
   }
 
-  const startNewQuestion = () => {
-    startNewQuestionWithNumber(questionNumber)
+  const startNewQuestion = (preserveTimer: boolean = false) => {
+    startNewQuestionWithNumber(questionNumber, undefined, preserveTimer)
   }
 
-  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric') => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric', preserveTimer: boolean = false) => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1810,8 +1810,15 @@ const Game = () => {
         clearTimeout(versionBTimerRef.current)
         versionBTimerRef.current = null
       }
-      setVersionBTimeRemaining(40)
-      setVersionBTimerRunning(true)
+      // Only reset timer if not preserving it (e.g., for Skip lifeline)
+      if (!preserveTimer) {
+        setVersionBTimeRemaining(40)
+      }
+      // Stop and restart timer to ensure proper countdown
+      setVersionBTimerRunning(false)
+      setTimeout(() => {
+        setVersionBTimerRunning(true)
+      }, 10) // Brief delay to ensure state update
       // Track question start time for time bonus
       setQuestionStartTime(Date.now())
       
@@ -2562,6 +2569,13 @@ const Game = () => {
       [lifelineType]: true
     }))
 
+    // Add 15 seconds to the timer for using a lifeline (capped at 40 seconds)
+    setVersionBTimeRemaining(prev => {
+      const newTime = Math.min(prev + 15, 40)
+      console.log(`⏱️ LIFELINE BONUS: Timer ${prev}s → ${newTime}s`)
+      return newTime
+    })
+
     // Handle specific lifeline functionality
     if (lifelineType === 'skip') {
       console.log('Skip booster activated!')
@@ -2588,9 +2602,9 @@ const Game = () => {
       setArtistMultipleChoiceOptions(null) // Clear multiple choice options
       setSongMultipleChoiceOptions(null)
       
-      // Generate and start a new question immediately
+      // Generate and start a new question immediately (preserve timer to keep +15s bonus)
       setTimeout(() => {
-        startNewQuestion()
+        startNewQuestion(true) // Pass true to preserve the timer
       }, 100) // Small delay to ensure clean state reset
     } else if (lifelineType === 'artistLetterReveal') {
       console.log('Artist Letter Reveal booster activated!')
@@ -3520,7 +3534,7 @@ const Game = () => {
                   <div className="spectrometer-container">
                     <div 
                       className={`spectrometer-bar ${versionBTimeRemaining >= 35 ? 'spectrometer-bonus' : versionBTimeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'}`}
-                      style={{ width: `${(versionBTimeRemaining / 40) * 100}%` }}
+                      style={{ width: `${Math.min((versionBTimeRemaining / 40) * 100, 100)}%` }}
                     ></div>
                   </div>
                 </div>
