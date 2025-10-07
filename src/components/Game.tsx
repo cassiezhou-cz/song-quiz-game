@@ -2026,7 +2026,9 @@ const Game = () => {
     }
     
     // Start auto-play with a short delay to allow audio element cleanup to complete
-    setTimeout(() => attemptAutoPlay(1, 3, specialType), 500)
+    // Reduced delay for Version C rapid-fire gameplay
+    const autoPlayDelay = version === 'Version C' ? 100 : 500
+    setTimeout(() => attemptAutoPlay(1, 3, specialType), autoPlayDelay)
     
   }
 
@@ -3489,7 +3491,7 @@ const Game = () => {
               console.log('🕐 TIMER RENDERING CHECK:', { version, isVersionC: version === 'Version C', timeRemaining });
               return null;
             })()}
-            {version === 'Version C' ? (
+            {version === 'Version C' && !gameComplete ? (
               <div className="version-c-timer">
                 <div className="timer-spectrometer">
                   <div className="timer-label">Time Remaining: {timeRemaining} Second{timeRemaining !== 1 ? 's' : ''}</div>
@@ -3816,7 +3818,7 @@ const Game = () => {
             )}
 
 
-            {!showFeedback && !showVersionCFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && (
+            {(version === 'Version C' || (!showFeedback && !showVersionCFeedback)) && !(currentQuestion && currentQuestion.isSongTrivia) && (
               <div className="progress-bar">
                 <div className="progress-time">
                   <span>{formatTime(currentTime)}</span>
