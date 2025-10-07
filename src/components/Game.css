@@ -1910,6 +1910,72 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+/* Finish The Lyric Text Preview Styles */
+.finish-the-lyric-preview-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  min-height: 55px; /* Same as sound-bars-container to prevent layout shift */
+  align-items: center;
+}
+
+.finish-the-lyric-preview-text {
+  background: rgba(0, 0, 0, 0.85);
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 600px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+  line-height: 1.4;
+  position: relative;
+}
+
+.finish-the-lyric-preview-text::before {
+  content: '🎤';
+  position: absolute;
+  left: -15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  background: white;
+  border-radius: 50%;
+  padding: 0.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Mobile adjustments for Finish The Lyric Preview */
+@media (max-width: 768px) {
+  .finish-the-lyric-preview-text {
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    max-width: 90%;
+    margin: 0 1rem;
+  }
+  
+  .finish-the-lyric-preview-text::before {
+    left: -10px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .finish-the-lyric-preview-text {
+    font-size: 0.9rem;
+    padding: 0.7rem 0.8rem;
+    line-height: 1.3;
+  }
+  
+  .finish-the-lyric-preview-text::before {
+    left: -8px;
+    font-size: 1rem;
+  }
+}
+
 /* Finish The Lyric Styles */
 .finish-the-lyric-container {
   margin: 2rem auto;

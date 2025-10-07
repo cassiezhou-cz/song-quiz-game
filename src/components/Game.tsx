@@ -36,54 +36,54 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       title: 'Call Me Maybe',
       artist: 'Carly Rae Jepsen',
       file: '/songs/2010s/Finish The Lyric/CallMeMaybeCarlyRaeJepsen.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'I took no time with the fall',
-      acceptableAnswers: ['I took no time with the fall']
+      lyricPrompt: 'You took your time with the call, I _____ _____ _____ _____ _____ _____',
+      lyricAnswer: 'You took your time with the call, I took no time with the fall',
+      acceptableAnswers: ['You took your time with the call, I took no time with the fall']
     },
     {
       id: 'GladYouCameTheWanted',
       title: 'Glad You Came',
       artist: 'The Wanted',
       file: '/songs/2010s/Finish The Lyric/GladYouCameTheWanted.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'The sun goes down, the stars come out',
-      acceptableAnswers: ['The sun goes down, the stars come out']
+      lyricPrompt: 'Stay with me, I can make, make you glad you came. The sun goes down, _____ _____ _____ _____',
+      lyricAnswer: 'Stay with me, I can make, make you glad you came. The sun goes down, the stars come out',
+      acceptableAnswers: ['Stay with me, I can make, make you glad you came. The sun goes down, the stars come out']
     },
     {
       id: 'OceanEyesBillieEilish',
       title: 'Ocean Eyes',
       artist: 'Billie Eilish',
       file: '/songs/2010s/Finish The Lyric/OceanEyesBillieEilish.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'Fifteen flares inside those ocean eyes',
-      acceptableAnswers: ['Fifteen flares inside those ocean eyes']
+      lyricPrompt: 'Burning cities and napalm skies _____ _____ _____ _____ _____ _____',
+      lyricAnswer: 'Burning cities and napalm skies. Fifteen flares inside those ocean eyes',
+      acceptableAnswers: ['Burning cities and napalm skies. Fifteen flares inside those ocean eyes']
     },
     {
       id: 'RaiseYourGlassPink',
       title: 'Raise Your Glass',
       artist: 'Pink',
       file: '/songs/2010s/Finish The Lyric/RaiseYourGlassPink.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'And nitty-gritty, dirty, little freaks',
-      acceptableAnswers: ['And nitty-gritty, dirty, little freaks']
+      lyricPrompt: 'We will never be, never be anything but loud. And nitty-gritty, dirty, _____ _____',
+      lyricAnswer: 'We will never be, never be anything but loud. And nitty-gritty, dirty, little freaks',
+      acceptableAnswers: ['We will never be, never be anything but loud. And nitty-gritty, dirty, little freaks']
     },
     {
       id: 'SymphonyCleanBandit',
       title: 'Symphony',
       artist: 'Clean Bandit',
       file: '/songs/2010s/Finish The Lyric/SymphonyCleanBandit.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'I just wanna be part of your symphony',
-      acceptableAnswers: ['I just wanna be part of your symphony']
+      lyricPrompt: 'And when you\'re gone, I feel incomplete. So if you want the truth, _____ _____ _____ _____ _____ _____ _____ _____',
+      lyricAnswer: 'And when you\'re gone, I feel incomplete. So if you want the truth, I just wanna be part of your symphony',
+      acceptableAnswers: ['And when you\'re gone, I feel incomplete. So if you want the truth, I just wanna be part of your symphony']
     },
     {
       id: "That'sWhatILikeBrunoMars",
       title: "That's What I Like",
       artist: 'Bruno Mars',
       file: "/songs/2010s/Finish The Lyric/That'sWhatILikeBrunoMars.mp3",
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: "Lucky for you, that's what I like",
-      acceptableAnswers: ["Lucky for you, that's what I like"]
+      lyricPrompt: 'Gold jewelry shinin\' so bright. Strawberry champagne on ice. _____ _____ _____ _____ _____ _____ _____',
+      lyricAnswer: "Gold jewelry shinin' so bright. Strawberry champagne on ice. Lucky for you, that's what I like",
+      acceptableAnswers: ["Gold jewelry shinin' so bright. Strawberry champagne on ice. Lucky for you, that's what I like"]
     }
   ],
   '90s': [
@@ -92,54 +92,54 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       title: 'Baby One More Time',
       artist: 'Britney Spears',
       file: '/songs/90s/Finish The Lyric/BabyOneMoreTimeBritneySpears.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'The reason I breathe is you',
-      acceptableAnswers: ['The reason I breathe is you']
+      lyricPrompt: 'Hit me, baby, one more time. Oh baby, baby, _____ _____ _____ _____ _____ _____',
+      lyricAnswer: 'Hit me, baby, one more time. Oh baby, baby, the reason I breathe is you',
+      acceptableAnswers: ['Hit me, baby, one more time. Oh baby, baby, the reason I breathe is you']
     },
     {
       id: 'FlyAwayLennyKravitz',
       title: 'Fly Away',
       artist: 'Lenny Kravitz',
       file: '/songs/90s/Finish The Lyric/FlyAwayLennyKravitz.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'I wanna fly away, yeah, yeah, yeah',
-      acceptableAnswers: ['I wanna fly away, yeah, yeah, yeah']
+      lyricPrompt: 'To anywhere I please, oh. I want to get away, _____ _____ _____ _____',
+      lyricAnswer: 'To anywhere I please, oh. I want to get away, I wanna fly away',
+      acceptableAnswers: ['To anywhere I please, oh. I want to get away, I wanna fly away']
     },
     {
       id: 'Man!IFeelLikeAWomanShaniaTwain',
       title: 'Man! I Feel Like a Woman',
       artist: 'Shania Twain',
       file: '/songs/90s/Finish The Lyric/Man!IFeelLikeAWomanShaniaTwain.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'Is the prerogative to have a little fun',
-      acceptableAnswers: ['Is the prerogative to have a little fun']
+      lyricPrompt: 'The best thing about being a woman, Is the prerogative _____ _____ _____ _____ _____',
+      lyricAnswer: 'The best thing about being a woman, Is the prerogative to have a little fun',
+      acceptableAnswers: ['The best thing about being a woman, Is the prerogative to have a little fun']
     },
     {
       id: 'NoDiggityBlackstreet',
       title: 'No Diggity',
       artist: 'Blackstreet',
       file: '/songs/90s/Finish The Lyric/NoDiggityBlackstreet.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'Cover much grounds, got game by the pound',
-      acceptableAnswers: ['Cover much grounds, got game by the pound']
+      lyricPrompt: 'Baby got \'em open all over town. Strictly biz, she don\'t play around. Cover much grounds, _____ _____ _____ _____ _____',
+      lyricAnswer: 'Baby got \'em open all over town. Strictly biz, she don\'t play around. Cover much grounds, got game by the pound',
+      acceptableAnswers: ['Baby got \'em open all over town. Strictly biz, she don\'t play around. Cover much grounds, got game by the pound']
     },
     {
       id: 'SmellsLikeTeenSpiritNirvana',
       title: 'Smells Like Teen Spirit',
       artist: 'Nirvana',
       file: '/songs/90s/Finish The Lyric/SmellsLikeTeenSpiritNirvana.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: "With the lights out, it's less dangerous",
-      acceptableAnswers: ["With the lights out, it's less dangerous"]
+      lyricPrompt: 'Hello, hello, hello. With the lights out, _____ _____ _____',
+      lyricAnswer: 'Hello, hello, hello. With the lights out, it\'s less dangerous',
+      acceptableAnswers: ['Hello, hello, hello. With the lights out, it\'s less dangerous']
     },
     {
       id: 'ZombiesTheCranberries',
       title: 'Zombies',
       artist: 'The Cranberries',
       file: '/songs/90s/Finish The Lyric/ZombiesTheCranberries.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'Who are we, mistaken?',
-      acceptableAnswers: ['Who are we, mistaken?']
+      lyricPrompt: 'And the violence caused such silence. Who are _____, _____',
+      lyricAnswer: 'And the violence caused such silence. Who are we, mistaken?',
+      acceptableAnswers: ['And the violence caused such silence. Who are we, mistaken?']
     }
   ],
   '2000s': [
@@ -148,54 +148,54 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       title: 'All Star',
       artist: 'Smash Mouth',
       file: '/songs/2000s/Finish The Lyric/AllStarSmashMouth.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'Only shooting stars break the mold',
-      acceptableAnswers: ['Only shooting stars break the mold']
+      lyricPrompt: 'Get the show on, get paid. (All that glitters is gold). Only shootin\' _____ _____ _____ _____',
+      lyricAnswer: 'Get the show on, get paid. (All that glitters is gold). Only shooting stars break the mold',
+      acceptableAnswers: ['Get the show on, get paid. (All that glitters is gold). Only shooting stars break the mold']
     },
     {
       id: 'BadRomanceLadyGaga',
       title: 'Bad Romance',
       artist: 'Lady Gaga',
       file: '/songs/2000s/Finish The Lyric/BadRomanceLadyGaga.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'I want your drama, the touch of your hand',
-      acceptableAnswers: ['I want your drama, the touch of your hand']
+      lyricPrompt: 'I want your love. I want your drama, the touch _____ _____ _____',
+      lyricAnswer: 'I want your love. I want your drama, the touch of your hand',
+      acceptableAnswers: ['I want your love. I want your drama, the touch of your hand']
     },
     {
       id: 'ByeByeByeNSYNC',
       title: 'Bye Bye Bye',
       artist: 'NSYNC',
       file: '/songs/2000s/Finish The Lyric/ByeByeByeNSYNC.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'I wanna see you out that door',
-      acceptableAnswers: ['I wanna see you out that door']
+      lyricPrompt: 'I know that I can\'t take no more. It ain\'t no lie. I wanna _____ _____ _____ _____ _____',
+      lyricAnswer: 'I know that I can\'t take no more. It ain\'t no lie. I wanna see you out that door',
+      acceptableAnswers: ['I know that I can\'t take no more. It ain\'t no lie. I wanna see you out that door']
     },
     {
       id: 'HeySoulSisterTrain',
       title: 'Hey Soul Sister',
       artist: 'Train',
       file: '/songs/2000s/Finish The Lyric/HeySoulSisterTrain.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'Hey, soul sister',
-      acceptableAnswers: ['Hey, soul sister']
+      lyricPrompt: 'who\'s one of my kind. Hey, _____ _____',
+      lyricAnswer: 'who\'s one of my kind. Hey, soul sister',
+      acceptableAnswers: ['who\'s one of my kind. Hey, soul sister']
     },
     {
       id: 'Oops!IDidItAgainBritneySpears',
       title: 'Oops! I Did It Again',
       artist: 'Britney Spears',
       file: '/songs/2000s/Finish The Lyric/Oops!IDidItAgainBritneySpears.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: "Oops, you think I'm in love, that I'm sent from above. I'm not that innocent.",
-      acceptableAnswers: ["Oops, you think I'm in love, that I'm sent from above. I'm not that innocent."]
+      lyricPrompt: 'Oops, you think I\'m in love, that I\'m sent from above. _____ _____ _____ _____',
+      lyricAnswer: 'Oops, you think I\'m in love, that I\'m sent from above. I\'m not that innocent.',
+      acceptableAnswers: ['Oops, you think I\'m in love, that I\'m sent from above. I\'m not that innocent.']
     },
     {
       id: 'ValerieAmyWinehouse',
       title: 'Valerie',
       artist: 'Amy Winehouse',
       file: '/songs/2000s/Finish The Lyric/ValerieAmyWinehouse.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'Put your house on up for sale?',
-      acceptableAnswers: ['Put your house on up for sale?']
+      lyricPrompt: 'Did you have to go to jail? Put your house _____ _____ _____ _____',
+      lyricAnswer: 'Did you have to go to jail? Put your house on up for sale?',
+      acceptableAnswers: ['Did you have to go to jail? Put your house on up for sale?']
     }
   ],
   '2020s': [
@@ -204,45 +204,45 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       title: 'All Too Well',
       artist: 'Taylor Swift',
       file: '/songs/2020s/Finish The Lyric/AllTooWellTaylorSwift.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: "But I'm not fine at all",
-      acceptableAnswers: ["But I'm not fine at all"]
+      lyricPrompt: 'That magic\'s not here no more. And I might be okay, but I\'m _____ _____ _____ _____',
+      lyricAnswer: 'That magic\'s not here no more. And I might be okay, but I\'m not fine at all',
+      acceptableAnswers: ['That magic\'s not here no more. And I might be okay, but I\'m not fine at all']
     },
     {
       id: 'Anti-HeroTaylorSwift',
       title: 'Anti-Hero',
       artist: 'Taylor Swift',
       file: '/songs/2020s/Finish The Lyric/Anti-HeroTaylorSwift.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'At teatime, everybody agrees',
-      acceptableAnswers: ['At teatime, everybody agrees']
+      lyricPrompt: 'I\'m the problem, it\'s me. At teatime, _____ _____',
+      lyricAnswer: 'I\'m the problem, it\'s me. At teatime, everybody agrees',
+      acceptableAnswers: ['I\'m the problem, it\'s me. At teatime, everybody agrees']
     },
     {
       id: 'GhostJustinBieber',
       title: 'Ghost',
       artist: 'Justin Bieber',
       file: '/songs/2020s/Finish The Lyric/GhostJustinBieber.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: "And if you can't be next to me",
-      acceptableAnswers: ["And if you can't be next to me"]
+      lyricPrompt: 'I miss you more than life. And if you can\'t _____ _____ _____ _____',
+      lyricAnswer: 'I miss you more than life. And if you can\'t be next to me',
+      acceptableAnswers: ['I miss you more than life. And if you can\'t be next to me']
     },
     {
       id: 'MadeYouLookMeghanTrainor',
       title: 'Made You Look',
       artist: 'Meghan Trainor',
       file: '/songs/2020s/Finish The Lyric/MadeYouLookMeghanTrainor.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'Yeah I look good in my Versace dress',
-      acceptableAnswers: ['Yeah I look good in my Versace dress']
+      lyricPrompt: 'But even with nothin\' on, Bet I made you look. Yeah I look good _____ _____ _____ _____',
+      lyricAnswer: 'But even with nothin\' on, Bet I made you look. Yeah I look good in my Versace dress',
+      acceptableAnswers: ['But even with nothin\' on, Bet I made you look. Yeah I look good in my Versace dress']
     },
     {
       id: 'VampireOliviaRodrigo',
       title: 'Vampire',
       artist: 'Olivia Rodrigo',
       file: '/songs/2020s/Finish The Lyric/VampireOliviaRodrigo.mp3',
-      lyricPrompt: 'Finish the lyric',
-      lyricAnswer: 'As you sunk your teeth into me',
-      acceptableAnswers: ['As you sunk your teeth into me']
+      lyricPrompt: 'But you made me look so naive. The way you sold me for parts as you _____ _____ _____ _____ _____',
+      lyricAnswer: 'But you made me look so naive. The way you sold me for parts as you sunk your teeth into me',
+      acceptableAnswers: ['But you made me look so naive. The way you sold me for parts as you sunk your teeth into me']
     }
   ]
 }
@@ -3637,8 +3637,8 @@ const Game = () => {
               </div>
             )}
             
-            {/* Animated Sound Bars - hidden for Version C */}
-            {version !== 'Version C' && !showFeedback && (
+            {/* Animated Sound Bars - hidden for Version C and Finish The Lyric */}
+            {version !== 'Version C' && !showFeedback && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
               <div className={`sound-bars-container ${isPlaying ? 'playing' : ''}`}>
                 <div className="sound-bars">
                   <div className="sound-bar bar-1"></div>
@@ -3648,6 +3648,15 @@ const Game = () => {
                   <div className="sound-bar bar-5"></div>
                   <div className="sound-bar bar-6"></div>
                   <div className="sound-bar bar-7"></div>
+                </div>
+              </div>
+            )}
+
+            {/* Finish The Lyric Text Preview - replaces sound bars */}
+            {version === 'Version B' && currentQuestion && currentQuestion.isFinishTheLyric && !showFeedback && (
+              <div className="finish-the-lyric-preview-container">
+                <div className="finish-the-lyric-preview-text">
+                  {currentQuestion.lyricPrompt}
                 </div>
               </div>
             )}
