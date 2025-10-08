@@ -303,6 +303,7 @@ const Game = () => {
   
   // Version B time bonus tracking
   const [questionStartTime, setQuestionStartTime] = useState<number>(0)
+  const [lifelineUsedThisQuestion, setLifelineUsedThisQuestion] = useState(false)
   const totalQuestions = 7
 
   // Version A specific state
@@ -325,6 +326,7 @@ const Game = () => {
   const [showPreQuestionDelay, setShowPreQuestionDelay] = useState(false)
   const [showTimerEntrance, setShowTimerEntrance] = useState(false)
   const [showPlaybackEntrance, setShowPlaybackEntrance] = useState(false)
+  const [isTimerRefilling, setIsTimerRefilling] = useState(false)
   const [allAttemptedSongs, setAllAttemptedSongs] = useState<Array<{
     song: any,
     pointsEarned: number,
@@ -1806,6 +1808,8 @@ const Game = () => {
     setArtistMultipleChoiceOptions(null) // Reset multiple choice options for new question
     setSongMultipleChoiceOptions(null)
     setShowPlaybackEntrance(false) // Reset playback entrance animation for all questions except first
+    setIsTimerRefilling(false) // Reset timer refill animation
+    setLifelineUsedThisQuestion(false) // Reset lifeline usage flag for new question
     // Note: opponentPointsEarned is not reset here to prevent popup display issues
     
     // Version-specific resets
@@ -1832,7 +1836,13 @@ const Game = () => {
       }
       // Only reset timer if not preserving it (e.g., for Skip lifeline)
       if (!preserveTimer) {
+        // Trigger fast refill animation for new question
+        setIsTimerRefilling(true)
         setVersionBTimeRemaining(40)
+        // Remove refill class after animation completes
+        setTimeout(() => {
+          setIsTimerRefilling(false)
+        }, 200)
       }
       
       // Trigger lifeline entrance animation on first question only (once per session)
@@ -1844,7 +1854,7 @@ const Game = () => {
         setShowLifelineEntrance(true)
         hasShownLifelineEntrance.current = true
         
-        // Sequence: Lifelines appear -> 1s delay -> Timer appears -> Song starts
+        // Sequence: Lifelines appear -> 0.5s delay -> Timer appears -> Song starts
         
         // Step 1: Remove lifeline animation class after it completes (1.5s)
         setTimeout(() => {
@@ -1852,7 +1862,7 @@ const Game = () => {
           console.log('🎯 VERSION B: Lifelines appeared')
         }, 1500)
         
-        // Step 2: After lifelines + 1s delay = 2.5s, show timer entrance
+        // Step 2: After lifelines + 0.5s delay = 2.0s, show timer entrance
         setTimeout(() => {
           setShowTimerEntrance(true)
           console.log('🎯 VERSION B: Showing timer entrance animation')
@@ -1861,7 +1871,7 @@ const Game = () => {
             setShowTimerEntrance(false)
             console.log('🎯 VERSION B: Timer entrance complete')
           }, 1500)
-        }, 2500) // 1.5s lifelines + 1s delay
+        }, 2000) // 1.5s lifelines + 0.5s delay
         
         // Add pre-question delay for first question
         setShowPreQuestionDelay(true)
@@ -2085,13 +2095,13 @@ const Game = () => {
     
     // Start auto-play with a short delay to allow audio element cleanup to complete
     // Reduced delay for Version C rapid-fire gameplay
-    // Add extended delay for Version B first question: lifelines (1.5s) + delay (1s) + timer (1.5s)
+    // Add extended delay for Version B first question: lifelines (1.5s) + delay (0.5s) + timer (1.5s)
       let autoPlayDelay = version === 'Version C' ? 100 : 500
       if (version === 'Version B' && questionNumber === 1 && hasShownLifelineEntrance.current) {
-        autoPlayDelay = 4500 // 4 seconds (1.5s lifelines + 1s + 1.5s timer) + 500ms base delay
-        console.log('🎯 VERSION B: Delaying auto-play by 4 seconds for first question intro sequence')
+        autoPlayDelay = 4000 // 3.5 seconds (1.5s lifelines + 0.5s + 1.5s timer) + 500ms base delay
+        console.log('🎯 VERSION B: Delaying auto-play by 3.5 seconds for first question intro sequence')
         
-        // End pre-question delay after 4 seconds and start timer countdown
+        // End pre-question delay after 3.5 seconds and start timer countdown
         setTimeout(() => {
           setShowPreQuestionDelay(false)
           setVersionBTimerRunning(true)
@@ -2103,7 +2113,7 @@ const Game = () => {
           setTimeout(() => {
             setShowPlaybackEntrance(false)
           }, 1000)
-        }, 4000)
+        }, 3500)
       } else if (version === 'Version B') {
         // For subsequent Version B questions, start immediately with no animation
         autoPlayDelay = 50 // Minimal delay for state updates
@@ -2569,14 +2579,16 @@ const Game = () => {
 
     setSelectedAnswer('manual_score')
     
-    // Check for time bonus (answered within 5 seconds)
+    // Check for time bonus (answered within 5 seconds and no lifeline used)
     const elapsedTime = Date.now() - questionStartTime
-    const hasTimeBonus = points > 0 && elapsedTime <= 5000
+    const hasTimeBonus = points > 0 && elapsedTime <= 5000 && !lifelineUsedThisQuestion
     let finalPoints = points
     
     if (hasTimeBonus) {
       finalPoints = points * 2
       console.log('⏱️ TIME BONUS: Answered in', (elapsedTime / 1000).toFixed(1), 'seconds! Points doubled from', points, 'to', finalPoints)
+    } else if (points > 0 && elapsedTime <= 5000 && lifelineUsedThisQuestion) {
+      console.log('⏱️ TIME BONUS: Not awarded - lifeline was used on this question')
     }
     
     let artistCorrect = false
@@ -2657,12 +2669,22 @@ const Game = () => {
       [lifelineType]: true
     }))
 
+    // Disable time bonus for this question
+    setLifelineUsedThisQuestion(true)
+    console.log('⏱️ TIME BONUS: Disabled for this question due to lifeline use')
+
     // Add 15 seconds to the timer for using a lifeline (capped at 40 seconds)
+    // Trigger fast refill animation
+    setIsTimerRefilling(true)
     setVersionBTimeRemaining(prev => {
       const newTime = Math.min(prev + 15, 40)
       console.log(`⏱️ LIFELINE BONUS: Timer ${prev}s → ${newTime}s`)
       return newTime
     })
+    // Remove refill class after animation completes
+    setTimeout(() => {
+      setIsTimerRefilling(false)
+    }, 200)
 
     // Handle specific lifeline functionality
     if (lifelineType === 'skip') {
@@ -3113,6 +3135,8 @@ const Game = () => {
     setShowPreQuestionDelay(false)
     setShowTimerEntrance(false)
     setShowPlaybackEntrance(false)
+    setIsTimerRefilling(false)
+    setLifelineUsedThisQuestion(false)
     setAllAttemptedSongs([])
     // Reset Version C streak tracking
     setVersionCStreak(0)
@@ -3629,7 +3653,7 @@ const Game = () => {
                   <div className="timer-label">Time Remaining</div>
                   <div className="spectrometer-container">
                     <div 
-                      className={`spectrometer-bar ${versionBTimeRemaining >= 35 ? 'spectrometer-bonus' : versionBTimeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'}`}
+                      className={`spectrometer-bar ${versionBTimeRemaining >= 35 && !lifelineUsedThisQuestion ? 'spectrometer-bonus' : versionBTimeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'} ${isTimerRefilling ? 'spectrometer-refill' : ''}`}
                       style={{ width: `${Math.min((versionBTimeRemaining / 40) * 100, 100)}%` }}
                     ></div>
                   </div>
