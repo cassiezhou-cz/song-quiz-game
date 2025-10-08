@@ -4013,6 +4013,11 @@
   position: relative;
 }
 
+/* Fast refill animation when lifeline is used */
+.spectrometer-bar.spectrometer-refill {
+  transition: width 0.15s ease-out, background 0.3s ease;
+}
+
 .spectrometer-bar::after {
   content: '';
   position: absolute;
