@@ -5474,3 +5474,27 @@
   }
 }
 
+/* Version B Bonus Indicators */
+.bonus-indicator {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bonus-indicator.special-question-bonus {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.bonus-indicator.speed-bonus {
+  background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+  color: #1a1a1a;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+

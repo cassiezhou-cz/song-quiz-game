@@ -28,6 +28,32 @@ interface FinishTheLyricSong {
   acceptableAnswers?: string[] // Alternative acceptable answers
 }
 
+// Helper function to format Finish The Lyric answers with selective bolding
+const formatFinishTheLyricAnswer = (answer: string, isCorrect: boolean) => {
+  // Split the answer at ** markers to identify bold sections
+  const parts = answer.split('**')
+  return parts.map((part, index) => {
+    // Even indices are regular text, odd indices are bold
+    if (index % 2 === 1) {
+      // This is a bold section
+      return (
+        <strong 
+          key={index} 
+          style={{ 
+            color: isCorrect ? '#22c55e' : '#ef4444',
+            fontWeight: 'bold'
+          }}
+        >
+          {part}
+        </strong>
+      )
+    } else {
+      // Regular text
+      return part
+    }
+  })
+}
+
 // User-provided lyrics - user is responsible for ensuring rights to use
 const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
   '2010s': [
@@ -37,7 +63,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Carly Rae Jepsen',
       file: '/songs/2010s/Finish The Lyric/CallMeMaybeCarlyRaeJepsen.mp3',
       lyricPrompt: 'You took your time with the call, I _____ _____ _____ _____ _____ _____',
-      lyricAnswer: 'You took your time with the call, I took no time with the fall',
+      lyricAnswer: 'You took your time with the call, I **took no time with the fall**',
       acceptableAnswers: ['You took your time with the call, I took no time with the fall']
     },
     {
@@ -46,7 +72,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'The Wanted',
       file: '/songs/2010s/Finish The Lyric/GladYouCameTheWanted.mp3',
       lyricPrompt: 'Stay with me, I can make, make you glad you came. The sun goes down, _____ _____ _____ _____',
-      lyricAnswer: 'Stay with me, I can make, make you glad you came. The sun goes down, the stars come out',
+      lyricAnswer: 'Stay with me, I can make, make you glad you came. The sun goes down, **the stars come out**',
       acceptableAnswers: ['Stay with me, I can make, make you glad you came. The sun goes down, the stars come out']
     },
     {
@@ -55,7 +81,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Billie Eilish',
       file: '/songs/2010s/Finish The Lyric/OceanEyesBillieEilish.mp3',
       lyricPrompt: 'Burning cities and napalm skies _____ _____ _____ _____ _____ _____',
-      lyricAnswer: 'Burning cities and napalm skies. Fifteen flares inside those ocean eyes',
+      lyricAnswer: 'Burning cities and napalm skies. **Fifteen flares inside those ocean eyes**',
       acceptableAnswers: ['Burning cities and napalm skies. Fifteen flares inside those ocean eyes']
     },
     {
@@ -64,7 +90,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Pink',
       file: '/songs/2010s/Finish The Lyric/RaiseYourGlassPink.mp3',
       lyricPrompt: 'We will never be, never be anything but loud. And nitty-gritty, dirty, _____ _____',
-      lyricAnswer: 'We will never be, never be anything but loud. And nitty-gritty, dirty, little freaks',
+      lyricAnswer: 'We will never be, never be anything but loud. And nitty-gritty, dirty, **little freaks**',
       acceptableAnswers: ['We will never be, never be anything but loud. And nitty-gritty, dirty, little freaks']
     },
     {
@@ -73,7 +99,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Clean Bandit',
       file: '/songs/2010s/Finish The Lyric/SymphonyCleanBandit.mp3',
       lyricPrompt: 'And when you\'re gone, I feel incomplete. So if you want the truth, _____ _____ _____ _____ _____ _____ _____ _____',
-      lyricAnswer: 'And when you\'re gone, I feel incomplete. So if you want the truth, I just wanna be part of your symphony',
+      lyricAnswer: 'And when you\'re gone, I feel incomplete. So if you want the truth, **I just wanna be part of your symphony**',
       acceptableAnswers: ['And when you\'re gone, I feel incomplete. So if you want the truth, I just wanna be part of your symphony']
     },
     {
@@ -82,7 +108,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Bruno Mars',
       file: "/songs/2010s/Finish The Lyric/That'sWhatILikeBrunoMars.mp3",
       lyricPrompt: 'Gold jewelry shinin\' so bright. Strawberry champagne on ice. _____ _____ _____ _____ _____ _____ _____',
-      lyricAnswer: "Gold jewelry shinin' so bright. Strawberry champagne on ice. Lucky for you, that's what I like",
+      lyricAnswer: 'Strawberry champagne on ice. **Lucky for you, that\'s what I like**',
       acceptableAnswers: ["Gold jewelry shinin' so bright. Strawberry champagne on ice. Lucky for you, that's what I like"]
     }
   ],
@@ -93,7 +119,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Britney Spears',
       file: '/songs/90s/Finish The Lyric/BabyOneMoreTimeBritneySpears.mp3',
       lyricPrompt: 'Hit me, baby, one more time. Oh baby, baby, _____ _____ _____ _____ _____ _____',
-      lyricAnswer: 'Hit me, baby, one more time. Oh baby, baby, the reason I breathe is you',
+      lyricAnswer: 'Oh baby, baby, **the reason I breathe is you**',
       acceptableAnswers: ['Hit me, baby, one more time. Oh baby, baby, the reason I breathe is you']
     },
     {
@@ -102,7 +128,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Lenny Kravitz',
       file: '/songs/90s/Finish The Lyric/FlyAwayLennyKravitz.mp3',
       lyricPrompt: 'To anywhere I please, oh. I want to get away, _____ _____ _____ _____',
-      lyricAnswer: 'To anywhere I please, oh. I want to get away, I wanna fly away',
+      lyricAnswer: 'I want to get away, **I wanna fly away**',
       acceptableAnswers: ['To anywhere I please, oh. I want to get away, I wanna fly away']
     },
     {
@@ -111,7 +137,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Shania Twain',
       file: '/songs/90s/Finish The Lyric/Man!IFeelLikeAWomanShaniaTwain.mp3',
       lyricPrompt: 'The best thing about being a woman, Is the prerogative _____ _____ _____ _____ _____',
-      lyricAnswer: 'The best thing about being a woman, Is the prerogative to have a little fun',
+      lyricAnswer: 'Is the prerogative **to have a little fun**',
       acceptableAnswers: ['The best thing about being a woman, Is the prerogative to have a little fun']
     },
     {
@@ -120,7 +146,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Blackstreet',
       file: '/songs/90s/Finish The Lyric/NoDiggityBlackstreet.mp3',
       lyricPrompt: 'Baby got \'em open all over town. Strictly biz, she don\'t play around. Cover much grounds, _____ _____ _____ _____ _____',
-      lyricAnswer: 'Baby got \'em open all over town. Strictly biz, she don\'t play around. Cover much grounds, got game by the pound',
+      lyricAnswer: 'Cover much grounds, **got game by the pound**',
       acceptableAnswers: ['Baby got \'em open all over town. Strictly biz, she don\'t play around. Cover much grounds, got game by the pound']
     },
     {
@@ -129,7 +155,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Nirvana',
       file: '/songs/90s/Finish The Lyric/SmellsLikeTeenSpiritNirvana.mp3',
       lyricPrompt: 'Hello, hello, hello. With the lights out, _____ _____ _____',
-      lyricAnswer: 'Hello, hello, hello. With the lights out, it\'s less dangerous',
+      lyricAnswer: 'With the lights out, **it\'s less dangerous**',
       acceptableAnswers: ['Hello, hello, hello. With the lights out, it\'s less dangerous']
     },
     {
@@ -138,7 +164,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'The Cranberries',
       file: '/songs/90s/Finish The Lyric/ZombiesTheCranberries.mp3',
       lyricPrompt: 'And the violence caused such silence. Who are _____, _____',
-      lyricAnswer: 'And the violence caused such silence. Who are we, mistaken?',
+      lyricAnswer: 'Who are **we, mistaken?**',
       acceptableAnswers: ['And the violence caused such silence. Who are we, mistaken?']
     }
   ],
@@ -149,7 +175,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Smash Mouth',
       file: '/songs/2000s/Finish The Lyric/AllStarSmashMouth.mp3',
       lyricPrompt: 'Get the show on, get paid. (All that glitters is gold). Only shootin\' _____ _____ _____ _____',
-      lyricAnswer: 'Get the show on, get paid. (All that glitters is gold). Only shooting stars break the mold',
+      lyricAnswer: 'Only shooting **stars break the mold**',
       acceptableAnswers: ['Get the show on, get paid. (All that glitters is gold). Only shooting stars break the mold']
     },
     {
@@ -158,7 +184,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Lady Gaga',
       file: '/songs/2000s/Finish The Lyric/BadRomanceLadyGaga.mp3',
       lyricPrompt: 'I want your love. I want your drama, the touch _____ _____ _____',
-      lyricAnswer: 'I want your love. I want your drama, the touch of your hand',
+      lyricAnswer: 'I want your drama, the touch **of your hand**',
       acceptableAnswers: ['I want your love. I want your drama, the touch of your hand']
     },
     {
@@ -167,7 +193,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'NSYNC',
       file: '/songs/2000s/Finish The Lyric/ByeByeByeNSYNC.mp3',
       lyricPrompt: 'I know that I can\'t take no more. It ain\'t no lie. I wanna _____ _____ _____ _____ _____',
-      lyricAnswer: 'I know that I can\'t take no more. It ain\'t no lie. I wanna see you out that door',
+      lyricAnswer: 'It ain\'t no lie. **I wanna see you out that door**',
       acceptableAnswers: ['I know that I can\'t take no more. It ain\'t no lie. I wanna see you out that door']
     },
     {
@@ -176,7 +202,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Train',
       file: '/songs/2000s/Finish The Lyric/HeySoulSisterTrain.mp3',
       lyricPrompt: 'who\'s one of my kind. Hey, _____ _____',
-      lyricAnswer: 'who\'s one of my kind. Hey, soul sister',
+      lyricAnswer: 'Hey, **soul sister**',
       acceptableAnswers: ['who\'s one of my kind. Hey, soul sister']
     },
     {
@@ -185,7 +211,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Britney Spears',
       file: '/songs/2000s/Finish The Lyric/Oops!IDidItAgainBritneySpears.mp3',
       lyricPrompt: 'Oops, you think I\'m in love, that I\'m sent from above. _____ _____ _____ _____',
-      lyricAnswer: 'Oops, you think I\'m in love, that I\'m sent from above. I\'m not that innocent.',
+      lyricAnswer: 'Oops, you think I\'m in love, that I\'m sent from above. **I\'m not that innocent.**',
       acceptableAnswers: ['Oops, you think I\'m in love, that I\'m sent from above. I\'m not that innocent.']
     },
     {
@@ -194,7 +220,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Amy Winehouse',
       file: '/songs/2000s/Finish The Lyric/ValerieAmyWinehouse.mp3',
       lyricPrompt: 'Did you have to go to jail? Put your house _____ _____ _____ _____',
-      lyricAnswer: 'Did you have to go to jail? Put your house on up for sale?',
+      lyricAnswer: 'Put your house **on up for sale?**',
       acceptableAnswers: ['Did you have to go to jail? Put your house on up for sale?']
     }
   ],
@@ -205,7 +231,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Taylor Swift',
       file: '/songs/2020s/Finish The Lyric/AllTooWellTaylorSwift.mp3',
       lyricPrompt: 'That magic\'s not here no more. And I might be okay, but I\'m _____ _____ _____ _____',
-      lyricAnswer: 'That magic\'s not here no more. And I might be okay, but I\'m not fine at all',
+      lyricAnswer: 'And I might be okay, but I\'m **not fine at all**',
       acceptableAnswers: ['That magic\'s not here no more. And I might be okay, but I\'m not fine at all']
     },
     {
@@ -214,7 +240,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Taylor Swift',
       file: '/songs/2020s/Finish The Lyric/Anti-HeroTaylorSwift.mp3',
       lyricPrompt: 'I\'m the problem, it\'s me. At teatime, _____ _____',
-      lyricAnswer: 'I\'m the problem, it\'s me. At teatime, everybody agrees',
+      lyricAnswer: 'At teatime, **everybody agrees**',
       acceptableAnswers: ['I\'m the problem, it\'s me. At teatime, everybody agrees']
     },
     {
@@ -223,7 +249,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Justin Bieber',
       file: '/songs/2020s/Finish The Lyric/GhostJustinBieber.mp3',
       lyricPrompt: 'I miss you more than life. And if you can\'t _____ _____ _____ _____',
-      lyricAnswer: 'I miss you more than life. And if you can\'t be next to me',
+      lyricAnswer: 'And if you can\'t **be next to me**',
       acceptableAnswers: ['I miss you more than life. And if you can\'t be next to me']
     },
     {
@@ -232,7 +258,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Meghan Trainor',
       file: '/songs/2020s/Finish The Lyric/MadeYouLookMeghanTrainor.mp3',
       lyricPrompt: 'But even with nothin\' on, Bet I made you look. Yeah I look good _____ _____ _____ _____',
-      lyricAnswer: 'But even with nothin\' on, Bet I made you look. Yeah I look good in my Versace dress',
+      lyricAnswer: 'Yeah I look good **in my Versace dress**',
       acceptableAnswers: ['But even with nothin\' on, Bet I made you look. Yeah I look good in my Versace dress']
     },
     {
@@ -241,7 +267,7 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       artist: 'Olivia Rodrigo',
       file: '/songs/2020s/Finish The Lyric/VampireOliviaRodrigo.mp3',
       lyricPrompt: 'But you made me look so naive. The way you sold me for parts as you _____ _____ _____ _____ _____',
-      lyricAnswer: 'But you made me look so naive. The way you sold me for parts as you sunk your teeth into me',
+      lyricAnswer: 'The way you sold me for parts as you **sunk your teeth into me**',
       acceptableAnswers: ['But you made me look so naive. The way you sold me for parts as you sunk your teeth into me']
     }
   ]
@@ -2338,6 +2364,9 @@ const Game = () => {
     const audio = audioRef.current
     if (!audio || selectedAnswer) return // Don't allow play after answering
 
+    // Initialize audio context on first user interaction
+    initializeAudio()
+
     if (isPlaying) {
       audio.pause()
       setIsPlaying(false)
@@ -2578,6 +2607,11 @@ const Game = () => {
     setVersionBTimerRunning(false)
 
     setSelectedAnswer('manual_score')
+    
+    // Play sound effect if user got points
+    if (points > 0) {
+      playCorrectAnswerSfx()
+    }
     
     // Check for time bonus (answered within 5 seconds and no lifeline used)
     const elapsedTime = Date.now() - questionStartTime
@@ -3286,13 +3320,22 @@ const Game = () => {
     return Math.round((earnedBasePoints / totalPossiblePoints) * 100)
   }
 
+  // Initialize audio context on first user interaction
+  const initializeAudio = () => {
+    const sfx = correctAnswerSfxRef.current
+    if (sfx) {
+      sfx.load()
+    }
+  }
+
   // Sound effect functions
   const playCorrectAnswerSfx = () => {
     const sfx = correctAnswerSfxRef.current
     if (sfx) {
+      sfx.volume = 0.7
       sfx.currentTime = 0
-      sfx.play().catch(error => {
-        console.log('SFX: Correct answer sound failed to play:', error)
+      sfx.play().catch(() => {
+        // Silently handle if audio can't play
       })
     }
   }
@@ -3585,32 +3628,6 @@ const Game = () => {
               </div>
             ) : null}
           </div>
-          
-
-          {/* Sound Effect Audio Elements - Available on Game Complete Screen */}
-          <audio 
-            ref={correctAnswerSfxRef}
-            preload="auto"
-          >
-            <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
-            Your browser does not support the audio element.
-          </audio>
-          
-          <audio 
-            ref={victoryApplauseSfxRef}
-            preload="auto"
-          >
-            <source src="/assets/sfx_sq_applause_correct_answer.ogg" type="audio/ogg" />
-            Your browser does not support the audio element.
-          </audio>
-          
-          <audio 
-            ref={versionCScoreSfxRef}
-            preload="auto"
-          >
-            <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
-            Your browser does not support the audio element.
-          </audio>
         </div>
       </div>
     )
@@ -3618,6 +3635,31 @@ const Game = () => {
 
   return (
     <div className={`game-container ${version === 'Version B' ? 'version-b' : version === 'Version C' ? 'version-c' : ''}`}>
+      {/* Sound Effect Audio Elements - Always Available for All Versions */}
+      <audio 
+        ref={correctAnswerSfxRef}
+        preload="auto"
+      >
+        <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+      </audio>
+      
+      <audio 
+        ref={victoryApplauseSfxRef}
+        preload="auto"
+      >
+        <source src="/assets/sfx_sq_applause_correct_answer.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+      </audio>
+      
+      <audio 
+        ref={versionCScoreSfxRef}
+        preload="auto"
+      >
+        <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+      </audio>
+
       {/* Version C Auto-Booster Notification */}
       {version === 'Version C' && autoBoosterNotification && (
         <div className="auto-booster-notification">
@@ -4242,9 +4284,12 @@ const Game = () => {
                             <p>Artist: {currentQuestion.song.artist}</p>
                             <p>Song: {currentQuestion.song.title}</p>
                             {currentQuestion.isFinishTheLyric && currentQuestion.lyricAnswer && (
-                              <p style={{ marginTop: '1rem', fontStyle: 'italic', color: '#4ecdc4' }}>
-                                Correct Lyric: "{currentQuestion.lyricAnswer}"
-                              </p>
+                              <div style={{ marginTop: '1rem' }}>
+                                <div className="answer-feedback-label">Correct Lyric</div>
+                                <div className="answer-feedback-value">
+                                  {formatFinishTheLyricAnswer(currentQuestion.lyricAnswer, pointsEarned > 0)}
+                                </div>
+                              </div>
                             )}
                           </>
                         ) : currentQuestion.isSongTrivia ? (
@@ -4253,7 +4298,26 @@ const Game = () => {
                             <p className="trivia-correct-answer">
                               {pointsEarned > 0 ? '✅' : '❌'} Correct Answer: <strong>{currentQuestion.correctAnswer}</strong>
                             </p>
-                            {pointsEarned > 0 && <p>Points Earned: {pointsEarned}</p>}
+                            {pointsEarned > 0 && (
+                              <>
+                                <p>Points Earned: {pointsEarned}</p>
+                                {/* Show bonus indicators */}
+                                {version === 'Version B' && (
+                                  <>
+                                    {specialQuestionNumbers.includes(questionNumber) && (
+                                      <div className="bonus-indicator special-question-bonus">
+                                        🎯 Special Question 2x
+                                      </div>
+                                    )}
+                                    {isFloatingPointsTimeBonus && (
+                                      <div className="bonus-indicator speed-bonus">
+                                        ⚡ Speed Bonus 2x
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </>
+                            )}
                           </>
                         ) : (
                           <>
@@ -4269,7 +4333,26 @@ const Game = () => {
                                 <p>{songCorrect ? '✅' : '❌'} Song: {currentQuestion.song.title}</p>
                               </>
                             )}
-                            {pointsEarned > 0 && <p>Points Earned: {pointsEarned}</p>}
+                            {pointsEarned > 0 && (
+                              <>
+                                <p>Points Earned: {pointsEarned}</p>
+                                {/* Show bonus indicators */}
+                                {version === 'Version B' && (
+                                  <>
+                                    {specialQuestionNumbers.includes(questionNumber) && (
+                                      <div className="bonus-indicator special-question-bonus">
+                                        🎯 Special Question 2x
+                                      </div>
+                                    )}
+                                    {isFloatingPointsTimeBonus && (
+                                      <div className="bonus-indicator speed-bonus">
+                                        ⚡ Speed Bonus 2x
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </>
+                            )}
                           </>
                         )}
                       </div>
