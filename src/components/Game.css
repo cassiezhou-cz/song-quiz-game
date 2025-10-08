@@ -5420,6 +5420,10 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 1.5rem 2.5rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
 }
 
 .floating-points-special {
@@ -5459,6 +5463,9 @@
     transform: translate(-50%, -50%) translateY(0);
   }
   20% {
+    opacity: 1;
+  }
+  70% {
     opacity: 1;
   }
   100% {
