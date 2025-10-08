@@ -2713,8 +2713,13 @@ const Game = () => {
       setSongMultipleChoiceOptions(null)
       
       // Generate and start a new question immediately (preserve timer to keep +15s bonus)
+      // Increment question number to avoid replaying intro on Q1 skip
+      const nextQuestionNum = questionNumber + 1
+      console.log('🎵 SKIP: Moving from question', questionNumber, 'to', nextQuestionNum)
+      setQuestionNumber(nextQuestionNum)
+      
       setTimeout(() => {
-        startNewQuestion(true) // Pass true to preserve the timer
+        startNewQuestionWithNumber(nextQuestionNum, undefined, true) // Pass the new question number and preserve timer
       }, 100) // Small delay to ensure clean state reset
     } else if (lifelineType === 'artistLetterReveal') {
       console.log('Artist Letter Reveal booster activated!')
