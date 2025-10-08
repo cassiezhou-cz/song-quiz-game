@@ -3026,6 +3026,9 @@ const Game = () => {
   }
 
   const nextQuestion = () => {
+    // Hide floating points animation immediately
+    setShowFloatingPoints(false)
+    
     // First, properly stop and cleanup current audio
     const audio = audioRef.current
     if (audio) {
@@ -4094,7 +4097,7 @@ const Game = () => {
                   <div className="floating-points-special">Special Question 2X</div>
                 )}
                 {isFloatingPointsTimeBonus && (
-                  <div className="floating-points-time-bonus">Time Bonus 2X</div>
+                  <div className="floating-points-time-bonus">Speed Bonus 2X</div>
                 )}
                 <div className="floating-points-value">+{floatingPointsValue}</div>
               </div>
