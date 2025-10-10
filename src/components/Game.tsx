@@ -2708,6 +2708,69 @@ const Game = () => {
     setScore(newScore)
   }
 
+  // Helper function for letter reveal logic
+  const revealLetters = (text: string): string => {
+    // Count only letters (not spaces or special characters)
+    const letterCount = text.replace(/[^a-zA-Z]/g, '').length
+    
+    // Calculate how many letters to reveal: reveal a new letter each time we go over a multiple of 5
+    // 1-5 letters: 1 revealed, 6-10: 2 revealed, 11-15: 3 revealed, etc.
+    const lettersToReveal = Math.ceil(letterCount / 5)
+    
+    console.log(`Letter Reveal: Text has ${letterCount} letters, revealing ${lettersToReveal} letters`)
+    
+    // Get indices of all non-space characters
+    const letterIndices: number[] = []
+    text.split('').forEach((char, index) => {
+      if (char !== ' ') {
+        letterIndices.push(index)
+      }
+    })
+    
+    // Always include the first letter (index 0)
+    const revealedIndices = new Set<number>([0])
+    
+    // If we need to reveal more than 1 letter, select additional random letters
+    if (lettersToReveal > 1) {
+      // Filter out index 0 (already revealed) and indices adjacent to revealed letters
+      const availableIndices = letterIndices.filter(idx => {
+        if (idx === 0) return false // Already revealed
+        // Check if adjacent to any already revealed index
+        return !Array.from(revealedIndices).some(revealedIdx => Math.abs(revealedIdx - idx) === 1)
+      })
+      
+      // Shuffle available indices
+      const shuffled = availableIndices.sort(() => Math.random() - 0.5)
+      
+      // Add letters one by one, ensuring no adjacency
+      for (let i = 0; i < shuffled.length && revealedIndices.size < lettersToReveal; i++) {
+        const candidateIdx = shuffled[i]
+        // Double check it's not adjacent to any revealed letter
+        const isAdjacent = Array.from(revealedIndices).some(revealedIdx => 
+          Math.abs(revealedIdx - candidateIdx) === 1
+        )
+        
+        if (!isAdjacent) {
+          revealedIndices.add(candidateIdx)
+        }
+      }
+    }
+    
+    // Create display text with revealed letters and underscores
+    const displayText = text.split('').map((char, index) => {
+      if (char === ' ') {
+        return ' ' // Preserve spaces
+      } else if (revealedIndices.has(index)) {
+        return char.toUpperCase() // Reveal this letter
+      } else {
+        return '_' // Hide other letters
+      }
+    }).join('')
+    
+    console.log(`Revealed ${revealedIndices.size} letters at indices: ${Array.from(revealedIndices).join(', ')}`)
+    return displayText
+  }
+
   // Version B Lifeline handler
   const handleLifelineClick = (lifelineType: 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong') => {
     // Stop lifeline attention animation when any lifeline is used
@@ -2781,19 +2844,7 @@ const Game = () => {
       
       if (currentQuestion) {
         const artistName = currentQuestion.song.artist
-        // Create display text: first letter + last letter + spaces preserved + underscores for other letters
-        const displayText = artistName.split('').map((char, index) => {
-          if (index === 0) {
-            return char.toUpperCase() // First letter revealed
-          } else if (index === artistName.length - 1) {
-            return char.toUpperCase() // Last letter revealed
-          } else if (char === ' ') {
-            return ' ' // Preserve spaces
-          } else {
-            return '_' // Other letters as underscores
-          }
-        }).join('')
-        
+        const displayText = revealLetters(artistName)
         setArtistLetterRevealText(displayText)
         console.log(`Revealing artist: ${displayText}`)
       }
@@ -2802,19 +2853,7 @@ const Game = () => {
       
       if (currentQuestion) {
         const songName = currentQuestion.song.title
-        // Create display text: first letter + last letter + spaces preserved + underscores for other letters
-        const displayText = songName.split('').map((char, index) => {
-          if (index === 0) {
-            return char.toUpperCase() // First letter revealed
-          } else if (index === songName.length - 1) {
-            return char.toUpperCase() // Last letter revealed
-          } else if (char === ' ') {
-            return ' ' // Preserve spaces
-          } else {
-            return '_' // Other letters as underscores
-          }
-        }).join('')
-        
+        const displayText = revealLetters(songName)
         setSongLetterRevealText(displayText)
         console.log(`Revealing song: ${displayText}`)
       }
@@ -4051,72 +4090,86 @@ const Game = () => {
               <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''} ${showLifelineEntrance ? 'lifeline-entrance' : ''}`}>
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
-                  {availableLifelines.includes('skip') && (
-                    <div 
-                      className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
-                      onClick={() => handleLifelineClick('skip')}
-                      style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
-                    >
-                      <div className="booster-emoji">🔄</div>
-                      <div className="booster-label">Song Swap</div>
-                    </div>
-                  )}
-                  {availableLifelines.includes('artistLetterReveal') && (
-                    <div 
-                      className={`booster-icon ${lifelinesUsed.artistLetterReveal ? 'depleted' : ''}`}
-                      onClick={() => handleLifelineClick('artistLetterReveal')}
-                      style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
-                    >
-                      <div className="booster-emoji booster-emoji-combo">
-                        <span className="emoji-main">👤</span>
-                        <span className="emoji-small">🔤</span>
-                      </div>
-                      <div className="booster-label">Letter Reveal: Artist</div>
-                    </div>
-                  )}
-                  {availableLifelines.includes('songLetterReveal') && (
-                    <div 
-                      className={`booster-icon ${lifelinesUsed.songLetterReveal ? 'depleted' : ''}`}
-                      onClick={() => handleLifelineClick('songLetterReveal')}
-                      style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
-                    >
-                      <div className="booster-emoji booster-emoji-combo">
-                        <span className="emoji-main">🎵</span>
-                        <span className="emoji-small">🔤</span>
-                      </div>
-                      <div className="booster-label">Letter Reveal: Song</div>
-                    </div>
-                  )}
-                  {availableLifelines.includes('multipleChoiceArtist') && (
-                    <div 
-                      className={`booster-icon ${lifelinesUsed.multipleChoiceArtist ? 'depleted' : ''}`}
-                      onClick={() => handleLifelineClick('multipleChoiceArtist')}
-                      style={{ cursor: lifelinesUsed.multipleChoiceArtist ? 'not-allowed' : 'pointer' }}
-                    >
-                      <div className="booster-emoji booster-emoji-grid">
-                        <span>👤</span>
-                        <span>👤</span>
-                        <span>👤</span>
-                        <span>👤</span>
-                      </div>
-                      <div className="booster-label">Multiple Choice: Artist</div>
-                    </div>
-                  )}
-                  {availableLifelines.includes('multipleChoiceSong') && (
-                    <div 
-                      className={`booster-icon ${lifelinesUsed.multipleChoiceSong ? 'depleted' : ''}`}
-                      onClick={() => handleLifelineClick('multipleChoiceSong')}
-                      style={{ cursor: lifelinesUsed.multipleChoiceSong ? 'not-allowed' : 'pointer' }}
-                    >
-                      <div className="booster-emoji booster-emoji-grid">
-                        <span>🎵</span>
-                        <span>🎵</span>
-                        <span>🎵</span>
-                        <span>🎵</span>
-                      </div>
-                      <div className="booster-label">Multiple Choice: Song</div>
-                    </div>
-                  )}
+                  {availableLifelines.map((lifeline) => {
+                    if (lifeline === 'skip') {
+                      return (
+                        <div 
+                          key="skip"
+                          className={`booster-icon ${lifelinesUsed.skip ? 'depleted' : ''}`}
+                          onClick={() => handleLifelineClick('skip')}
+                          style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
+                        >
+                          <div className="booster-emoji">🔄</div>
+                          <div className="booster-label">Song Swap</div>
+                        </div>
+                      )
+                    } else if (lifeline === 'artistLetterReveal') {
+                      return (
+                        <div 
+                          key="artistLetterReveal"
+                          className={`booster-icon ${lifelinesUsed.artistLetterReveal ? 'depleted' : ''}`}
+                          onClick={() => handleLifelineClick('artistLetterReveal')}
+                          style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
+                        >
+                          <div className="booster-emoji booster-emoji-combo">
+                            <span className="emoji-main">👤</span>
+                            <span className="emoji-small">🔤</span>
+                          </div>
+                          <div className="booster-label">Letter Reveal: Artist</div>
+                        </div>
+                      )
+                    } else if (lifeline === 'songLetterReveal') {
+                      return (
+                        <div 
+                          key="songLetterReveal"
+                          className={`booster-icon ${lifelinesUsed.songLetterReveal ? 'depleted' : ''}`}
+                          onClick={() => handleLifelineClick('songLetterReveal')}
+                          style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
+                        >
+                          <div className="booster-emoji booster-emoji-combo">
+                            <span className="emoji-main">🎵</span>
+                            <span className="emoji-small">🔤</span>
+                          </div>
+                          <div className="booster-label">Letter Reveal: Song</div>
+                        </div>
+                      )
+                    } else if (lifeline === 'multipleChoiceArtist') {
+                      return (
+                        <div 
+                          key="multipleChoiceArtist"
+                          className={`booster-icon ${lifelinesUsed.multipleChoiceArtist ? 'depleted' : ''}`}
+                          onClick={() => handleLifelineClick('multipleChoiceArtist')}
+                          style={{ cursor: lifelinesUsed.multipleChoiceArtist ? 'not-allowed' : 'pointer' }}
+                        >
+                          <div className="booster-emoji booster-emoji-grid">
+                            <span>👤</span>
+                            <span>👤</span>
+                            <span>👤</span>
+                            <span>👤</span>
+                          </div>
+                          <div className="booster-label">Multiple Choice: Artist</div>
+                        </div>
+                      )
+                    } else if (lifeline === 'multipleChoiceSong') {
+                      return (
+                        <div 
+                          key="multipleChoiceSong"
+                          className={`booster-icon ${lifelinesUsed.multipleChoiceSong ? 'depleted' : ''}`}
+                          onClick={() => handleLifelineClick('multipleChoiceSong')}
+                          style={{ cursor: lifelinesUsed.multipleChoiceSong ? 'not-allowed' : 'pointer' }}
+                        >
+                          <div className="booster-emoji booster-emoji-grid">
+                            <span>🎵</span>
+                            <span>🎵</span>
+                            <span>🎵</span>
+                            <span>🎵</span>
+                          </div>
+                          <div className="booster-label">Multiple Choice: Song</div>
+                        </div>
+                      )
+                    }
+                    return null
+                  })}
                 </div>
               </div>
             )}
