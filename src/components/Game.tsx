@@ -331,7 +331,9 @@ const Game = () => {
     song: any,
     pointsEarned: number,
     artistCorrect: boolean,
-    songCorrect: boolean
+    songCorrect: boolean,
+    isSpecialQuestion: boolean,
+    specialType?: 'song-trivia' | 'finish-lyric'
   }>>([])
   
   // Version C Booster state removed - now using progressive streak multiplier system
@@ -2440,7 +2442,9 @@ const Game = () => {
       song: currentQuestion.song,
       pointsEarned: points,
       artistCorrect,
-      songCorrect
+      songCorrect,
+      isSpecialQuestion: false,
+      specialType: undefined
     }])
     
     // Update streak and apply streak multiplier
@@ -2624,6 +2628,23 @@ const Game = () => {
     
     // Record base correctness for percentage calculation (Version B)
     setQuestionsCorrectness(prev => [...prev, { artistCorrect, songCorrect }])
+    
+    // Track all attempted songs for final results screen
+    if (currentQuestion) {
+      const isSongTrivia = currentQuestion.isSongTrivia || false
+      const isFinishLyric = currentQuestion.isFinishTheLyric || false
+      const isSpecialQuestion = isSongTrivia || isFinishLyric
+      const specialType = isSongTrivia ? 'song-trivia' : isFinishLyric ? 'finish-lyric' : undefined
+      
+      setAllAttemptedSongs(prev => [...prev, {
+        song: currentQuestion.song,
+        pointsEarned: finalPoints,
+        artistCorrect,
+        songCorrect,
+        isSpecialQuestion,
+        specialType
+      }])
+    }
     
     if (finalPoints > 0) {
       playCorrectAnswerSfx()
@@ -3397,6 +3418,71 @@ const Game = () => {
                 <div className="version-b-results">
                   <h3 className="victory-message">Quiz Complete!</h3>
                   <p className="final-score-text">Final Score: {score}</p>
+                  
+                  {/* Songs Correct Summary */}
+                  <div className="version-b-summary">
+                    <p className="songs-correct-summary">
+                      {allAttemptedSongs.filter(song => {
+                        // For special questions (Song Trivia, Finish Lyric), count as correct if pointsEarned > 0
+                        if (song.isSpecialQuestion) {
+                          return song.pointsEarned > 0
+                        }
+                        // For regular questions, count as correct if both artist and song are correct
+                        return song.artistCorrect && song.songCorrect
+                      }).length} out of {allAttemptedSongs.length} songs correct
+                    </p>
+                  </div>
+                  
+                  {/* Detailed Song List */}
+                  <div className="version-b-song-list">
+                    <h4 className="song-list-title">Your Answers</h4>
+                    <div className="song-results-grid">
+                      {allAttemptedSongs.map((attempt, index) => (
+                        <div key={index} className="song-result-card">
+                          <div className="song-result-album">
+                            <img 
+                              src={attempt.song.albumArt} 
+                              alt={`${attempt.song.title} album art`}
+                              className="song-result-image"
+                            />
+                          </div>
+                          <div className="song-result-details">
+                            <div className="song-result-info">
+                              <div className="song-result-title">{attempt.song.title}</div>
+                              <div className="song-result-artist">{attempt.song.artist}</div>
+                            </div>
+                            <div className="song-result-indicators">
+                              {attempt.isSpecialQuestion ? (
+                                // Special Question (Song Trivia, Finish Lyric): Show single indicator
+                                <div className="indicator-row">
+                                  <span className="indicator-label">Correct Answer:</span>
+                                  <div className={`indicator-circle ${attempt.pointsEarned > 0 ? 'correct' : 'incorrect'}`}>
+                                    {attempt.pointsEarned > 0 ? '✓' : '✗'}
+                                  </div>
+                                </div>
+                              ) : (
+                                // Regular Question: Show Artist and Song indicators
+                                <>
+                                  <div className="indicator-row">
+                                    <span className="indicator-label">Artist:</span>
+                                    <div className={`indicator-circle ${attempt.artistCorrect ? 'correct' : 'incorrect'}`}>
+                                      {attempt.artistCorrect ? '✓' : '✗'}
+                                    </div>
+                                  </div>
+                                  <div className="indicator-row">
+                                    <span className="indicator-label">Song:</span>
+                                    <div className={`indicator-circle ${attempt.songCorrect ? 'correct' : 'incorrect'}`}>
+                                      {attempt.songCorrect ? '✓' : '✗'}
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
               
