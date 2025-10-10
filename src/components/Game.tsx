@@ -1862,7 +1862,7 @@ const Game = () => {
         clearTimeout(versionBTimerRef.current)
         versionBTimerRef.current = null
       }
-      // Only reset timer if not preserving it (e.g., for Skip lifeline)
+      // Only reset timer if not preserving it (e.g., for Song Swap lifeline)
       if (!preserveTimer) {
         // Trigger fast refill animation for new question
         setIsTimerRefilling(true)
@@ -2743,7 +2743,7 @@ const Game = () => {
 
     // Handle specific lifeline functionality
     if (lifelineType === 'skip') {
-      console.log('Skip booster activated!')
+      console.log('Song Swap booster activated!')
       
       // Stop current audio immediately
       const audio = audioRef.current
@@ -3212,6 +3212,16 @@ const Game = () => {
       multipleChoiceArtist: false,
       multipleChoiceSong: false
     })
+    
+    // Re-randomize available lifelines for Version B
+    if (version === 'Version B') {
+      const allLifelines: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+      const shuffled = [...allLifelines].sort(() => Math.random() - 0.5)
+      const selectedLifelines = shuffled.slice(0, 3)
+      setAvailableLifelines(selectedLifelines)
+      console.log('🎯 VERSION B RESTART: New random lifelines:', selectedLifelines)
+    }
+    
     setArtistLetterRevealText(null) // Reset letter reveal info
     setSongLetterRevealText(null)
     setArtistMultipleChoiceOptions(null) // Reset multiple choice options
@@ -4047,7 +4057,8 @@ const Game = () => {
                       onClick={() => handleLifelineClick('skip')}
                       style={{ cursor: lifelinesUsed.skip ? 'not-allowed' : 'pointer' }}
                     >
-                      <div className="booster-label">Skip</div>
+                      <div className="booster-emoji">🔄</div>
+                      <div className="booster-label">Song Swap</div>
                     </div>
                   )}
                   {availableLifelines.includes('artistLetterReveal') && (
@@ -4056,6 +4067,10 @@ const Game = () => {
                       onClick={() => handleLifelineClick('artistLetterReveal')}
                       style={{ cursor: lifelinesUsed.artistLetterReveal ? 'not-allowed' : 'pointer' }}
                     >
+                      <div className="booster-emoji booster-emoji-combo">
+                        <span className="emoji-main">👤</span>
+                        <span className="emoji-small">🔤</span>
+                      </div>
                       <div className="booster-label">Letter Reveal: Artist</div>
                     </div>
                   )}
@@ -4065,6 +4080,10 @@ const Game = () => {
                       onClick={() => handleLifelineClick('songLetterReveal')}
                       style={{ cursor: lifelinesUsed.songLetterReveal ? 'not-allowed' : 'pointer' }}
                     >
+                      <div className="booster-emoji booster-emoji-combo">
+                        <span className="emoji-main">🎵</span>
+                        <span className="emoji-small">🔤</span>
+                      </div>
                       <div className="booster-label">Letter Reveal: Song</div>
                     </div>
                   )}
@@ -4074,6 +4093,12 @@ const Game = () => {
                       onClick={() => handleLifelineClick('multipleChoiceArtist')}
                       style={{ cursor: lifelinesUsed.multipleChoiceArtist ? 'not-allowed' : 'pointer' }}
                     >
+                      <div className="booster-emoji booster-emoji-grid">
+                        <span>👤</span>
+                        <span>👤</span>
+                        <span>👤</span>
+                        <span>👤</span>
+                      </div>
                       <div className="booster-label">Multiple Choice: Artist</div>
                     </div>
                   )}
@@ -4083,6 +4108,12 @@ const Game = () => {
                       onClick={() => handleLifelineClick('multipleChoiceSong')}
                       style={{ cursor: lifelinesUsed.multipleChoiceSong ? 'not-allowed' : 'pointer' }}
                     >
+                      <div className="booster-emoji booster-emoji-grid">
+                        <span>🎵</span>
+                        <span>🎵</span>
+                        <span>🎵</span>
+                        <span>🎵</span>
+                      </div>
                       <div className="booster-label">Multiple Choice: Song</div>
                     </div>
                   )}
