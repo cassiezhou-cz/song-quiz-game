@@ -1560,6 +1560,12 @@ const Game = () => {
   const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'): QuizQuestion => {
     const currentPlaylist = playlist || '2010s'
     
+    // Debug logging to catch playlist issues
+    if (!playlist) {
+      console.error('⚠️ WARNING: playlist is undefined! Defaulting to 2010s')
+    }
+    console.log('🎯 SPECIAL QUESTION:', questionType, '| Current Playlist:', currentPlaylist, '| Playlist from params:', playlist)
+    
     // Finish The Lyric uses a special song pool from the current playlist
     if (questionType === 'finish-the-lyric') {
       console.log('🎯 FINISH THE LYRIC: Generating lyric question from current playlist', currentPlaylist)
@@ -1584,7 +1590,7 @@ const Game = () => {
         title: lyricSong.title,
         artist: lyricSong.artist,
         file: lyricSong.file,
-        albumArt: `/assets/album-art/2010s/Finish The Lyric/${lyricSong.id}.jpeg`,
+        albumArt: `/assets/album-art/${currentPlaylist}/Finish The Lyric/${lyricSong.id}.jpeg`,
         alternatives: []
       }
       
@@ -1768,9 +1774,16 @@ const Game = () => {
     isLoadingQuestionRef.current = true
     setIsLoadingQuestion(true)
     
+    // Check if a special type is explicitly provided (e.g., from Song Swap during special question)
+    if (specialType) {
+      console.log('🎵 VERSION B: Starting special question with explicitly provided type:', specialType)
+      startNewQuestionInternal(true, specialType, preserveTimer, questionNum)
+      return
+    }
+    
     // Check if this is the special question for Version B
     if (version === 'Version B' && specialQuestionNumbers.includes(questionNum)) {
-      console.log('🎵 VERSION B: Starting special question #', questionNum, 'with type:', specialType)
+      console.log('🎵 VERSION B: Starting special question #', questionNum, 'with type from array')
       // This is the special question - generate a question from a different playlist
       startNewQuestionInternal(true, specialType || 'time-warp', preserveTimer, questionNum) // Pass questionNum
       return
@@ -2808,6 +2821,10 @@ const Game = () => {
     if (lifelineType === 'skip') {
       console.log('Song Swap booster activated!')
       
+      // Store current special question type to preserve it
+      const currentSpecialType = specialQuestionType
+      console.log('🎵 SKIP: Preserving special question type:', currentSpecialType)
+      
       // Stop current audio immediately
       const audio = audioRef.current
       if (audio) {
@@ -2831,13 +2848,18 @@ const Game = () => {
       setSongMultipleChoiceOptions(null)
       
       // Generate and start a new question immediately (preserve timer to keep +15s bonus)
-      // Increment question number to avoid replaying intro on Q1 skip
-      const nextQuestionNum = questionNumber + 1
-      console.log('🎵 SKIP: Moving from question', questionNumber, 'to', nextQuestionNum)
-      setQuestionNumber(nextQuestionNum)
+      // If this is a special question, keep the same question number to preserve special question status
+      // Otherwise increment to avoid replaying intro on Q1 skip
+      let nextQuestionNum = questionNumber
+      if (!currentSpecialType) {
+        nextQuestionNum = questionNumber + 1
+        setQuestionNumber(nextQuestionNum)
+      }
+      console.log('🎵 SKIP: Question number:', questionNumber, '-> Next:', nextQuestionNum, '(Special:', currentSpecialType, ')')
       
       setTimeout(() => {
-        startNewQuestionWithNumber(nextQuestionNum, undefined, true) // Pass the new question number and preserve timer
+        // Pass the current special type to preserve hyperspeed/slo-mo/etc
+        startNewQuestionWithNumber(nextQuestionNum, currentSpecialType || undefined, true)
       }, 100) // Small delay to ensure clean state reset
     } else if (lifelineType === 'artistLetterReveal') {
       console.log('Artist Letter Reveal booster activated!')
@@ -3770,30 +3792,30 @@ const Game = () => {
 
   return (
     <div className={`game-container ${version === 'Version B' ? 'version-b' : version === 'Version C' ? 'version-c' : ''}`}>
-      {/* Sound Effect Audio Elements - Always Available for All Versions */}
-      <audio 
-        ref={correctAnswerSfxRef}
-        preload="auto"
-      >
-        <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
-        Your browser does not support the audio element.
-      </audio>
-      
-      <audio 
-        ref={victoryApplauseSfxRef}
-        preload="auto"
-      >
-        <source src="/assets/sfx_sq_applause_correct_answer.ogg" type="audio/ogg" />
-        Your browser does not support the audio element.
-      </audio>
-      
-      <audio 
-        ref={versionCScoreSfxRef}
-        preload="auto"
-      >
-        <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
-        Your browser does not support the audio element.
-      </audio>
+        {/* Sound Effect Audio Elements - Always Available for All Versions */}
+        <audio 
+          ref={correctAnswerSfxRef}
+          preload="auto"
+        >
+          <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
+          Your browser does not support the audio element.
+        </audio>
+        
+        <audio 
+          ref={victoryApplauseSfxRef}
+          preload="auto"
+        >
+          <source src="/assets/sfx_sq_applause_correct_answer.ogg" type="audio/ogg" />
+          Your browser does not support the audio element.
+        </audio>
+        
+        <audio 
+          ref={versionCScoreSfxRef}
+          preload="auto"
+        >
+          <source src="/assets/sfx_notify_correctAnswer_01.ogg" type="audio/ogg" />
+          Your browser does not support the audio element.
+        </audio>
 
       {/* Version C Auto-Booster Notification */}
       {version === 'Version C' && autoBoosterNotification && (
