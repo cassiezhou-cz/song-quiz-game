@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './PlaylistSelection.css'
 
@@ -6,6 +6,13 @@ const PlaylistSelection = () => {
   const navigate = useNavigate()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
   const [selectedVersion, setSelectedVersion] = useState<string>('Version A')
+  const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
+
+  // Load XP from localStorage on mount
+  useEffect(() => {
+    const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
+    setXpProgress(Math.min(savedXP, 100)) // Cap at 100
+  }, [])
 
   const handlePlaylistSelect = (playlist: string) => {
     setSelectedPlaylist(playlist)
@@ -24,6 +31,12 @@ const PlaylistSelection = () => {
     console.log(`Selected version: ${version}`)
   }
 
+  const handleXPReset = () => {
+    localStorage.setItem('player_xp_progress', '0')
+    setXpProgress(0)
+    console.log('XP Reset: Progress cleared')
+  }
+
   return (
     <div className="playlist-container">
       <div className="playlist-content">
@@ -34,6 +47,20 @@ const PlaylistSelection = () => {
             className="logo"
           />
         </header>
+
+        {/* XP Bar */}
+        <div className="xp-bar-container">
+          <div className="xp-bar">
+            <div 
+              className="xp-fill" 
+              style={{ width: `${xpProgress}%` }}
+            ></div>
+          </div>
+          <div className="xp-mystery-circle">
+            <span className="treasure-icon">🎁</span>
+            <span className="mystery-icon">?</span>
+          </div>
+        </div>
         
         <main className="main">
           <section className="playlist-selection">
@@ -109,6 +136,17 @@ const PlaylistSelection = () => {
             )}
           </section>
         </main>
+
+        {/* Debug Panel */}
+        <div className="debug-panel-menu">
+          <div className="debug-label-menu">DEBUG</div>
+          <button 
+            className="debug-button-menu"
+            onClick={handleXPReset}
+          >
+            XP Reset
+          </button>
+        </div>
       </div>
     </div>
   )
