@@ -372,6 +372,12 @@ const Game = () => {
   const [showVersionCFeedback, setShowVersionCFeedback] = useState(false) // Track answer feedback display
   const [previousQuestion, setPreviousQuestion] = useState<any>(null) // Track previous question for answer feedback
   
+  // XP System state for Version B
+  const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
+  const [startingXP, setStartingXP] = useState(0)
+  const [showXPAnimation, setShowXPAnimation] = useState(false)
+  const [xpAnimationComplete, setXpAnimationComplete] = useState(false)
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Separate timer ref for Version B per-question timer
   const versionBTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -2359,6 +2365,36 @@ const Game = () => {
     }
   }, [showFloatingPoints])
 
+  // Load XP on mount
+  useEffect(() => {
+    const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
+    const initialXP = Math.min(savedXP, 100) // Cap at 100
+    setXpProgress(initialXP)
+    setStartingXP(initialXP)
+  }, [])
+
+  // Handle XP gain when Version B game completes
+  useEffect(() => {
+    if (gameComplete && version === 'Version B' && !showXPAnimation) {
+      // Start XP animation after a brief delay
+      const timer = setTimeout(() => {
+        setShowXPAnimation(true)
+        
+        // Animate XP filling by 50%
+        const animationTimer = setTimeout(() => {
+          const newXP = Math.min(startingXP + 50, 100) // Add 50%, cap at 100%
+          setXpProgress(newXP)
+          localStorage.setItem('player_xp_progress', newXP.toString())
+          setXpAnimationComplete(true)
+        }, 500)
+        
+        return () => clearTimeout(animationTimer)
+      }, 1000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [gameComplete, version, showXPAnimation, startingXP])
+
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -3546,6 +3582,28 @@ const Game = () => {
                       }).length} out of {allAttemptedSongs.length} songs correct
                     </p>
                   </div>
+
+                  {/* XP Bar Animation */}
+                  {showXPAnimation && (
+                    <div className="xp-gain-container">
+                      <div className="xp-bar-final-results">
+                        <div className="xp-bar-final">
+                          <div 
+                            className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''}`}
+                            style={{ 
+                              width: xpAnimationComplete 
+                                ? `${xpProgress}%` 
+                                : `${startingXP}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <div className="xp-mystery-circle-final">
+                          <span className="treasure-icon-final">🎁</span>
+                          <span className="mystery-icon-final">?</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Detailed Song List */}
                   <div className="version-b-song-list">
