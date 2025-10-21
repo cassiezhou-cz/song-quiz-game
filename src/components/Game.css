@@ -4053,19 +4053,29 @@
 .xp-gain-container {
   margin: 2rem auto;
   padding: 2rem;
-  max-width: 700px;
-  width: 90%;
+  padding-right: 4rem; /* Extra padding to contain the mystery circle */
+  max-width: 650px;
+  width: 85%;
   background: rgba(0, 191, 255, 0.15);
   border: 2px solid rgba(0, 191, 255, 0.6);
   border-radius: 15px;
   backdrop-filter: blur(10px);
   animation: xpContainerFadeIn 0.5s ease-out;
   box-shadow: 0 0 30px rgba(0, 191, 255, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .xp-bar-final-results {
   position: relative;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .xp-bar-final {
