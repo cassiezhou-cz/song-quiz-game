@@ -12,6 +12,7 @@ const PlaylistSelection = () => {
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
   const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
   const [lifelineRechargeProgress, setLifelineRechargeProgress] = useState<Partial<Record<LifelineType, number>>>({})
+  const [hatUnlocked, setHatUnlocked] = useState(false)
   
   // Track previous progress to detect changes and trigger animations
   const previousRechargeProgress = useRef<Partial<Record<LifelineType, number>>>({})
@@ -25,6 +26,9 @@ const PlaylistSelection = () => {
     
     const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
     setXpProgress(Math.min(savedXP, 100))
+    
+    const savedHatUnlocked = localStorage.getItem('hat_unlocked')
+    setHatUnlocked(savedHatUnlocked === 'true')
     
     const savedLifelines = localStorage.getItem('unlocked_lifelines')
     if (savedLifelines) {
@@ -203,12 +207,15 @@ const PlaylistSelection = () => {
     localStorage.removeItem('unlocked_lifelines')
     localStorage.removeItem('lifeline_recharge_progress')
     localStorage.removeItem('lifeline_recharge_snapshot')
+    localStorage.removeItem('level_up_count')
+    localStorage.removeItem('hat_unlocked')
     setXpProgress(0)
     setUnlockedLifelines([])
     setLifelineRechargeProgress({})
+    setHatUnlocked(false)
     previousRechargeProgress.current = {}
     hasLoadedInitial.current = false
-    console.log('XP Reset: Progress cleared, all lifelines locked, and recharge status reset')
+    console.log('XP Reset: Progress cleared, all lifelines locked, recharge status reset, and hat removed')
   }
 
   // DEBUG: Test recharge animation
@@ -240,7 +247,7 @@ const PlaylistSelection = () => {
       <div className="player-avatar-container">
         <div className="player-avatar-image-wrapper">
           <img 
-            src="/assets/CatNeutral.png" 
+            src={hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png"}
             alt="Player Avatar" 
             className="player-avatar-image"
           />
