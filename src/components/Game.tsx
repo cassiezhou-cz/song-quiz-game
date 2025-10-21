@@ -328,7 +328,7 @@ const Game = () => {
   const [isFloatingPointsTimeBonus, setIsFloatingPointsTimeBonus] = useState(false)
   
   // Version B confetti effect
-  const [showConfetti, setShowConfetti] = useState(false)
+  const [activeConfetti, setActiveConfetti] = useState<number[]>([])
   
   // Version B time bonus tracking
   const [questionStartTime, setQuestionStartTime] = useState<number>(0)
@@ -2481,17 +2481,6 @@ const Game = () => {
     }
   }, [showFloatingPoints])
 
-  // Auto-hide confetti animation after delay
-  useEffect(() => {
-    if (showConfetti) {
-      const timer = setTimeout(() => {
-        setShowConfetti(false)
-      }, 3000) // Hide after 3 seconds
-      
-      return () => clearTimeout(timer)
-    }
-  }, [showConfetti])
-
   // Load XP and unlocked lifelines on mount
   useEffect(() => {
     const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
@@ -3001,7 +2990,12 @@ const Game = () => {
       setShowFloatingPoints(true)
       // Trigger confetti effect
       if (version === 'Version B') {
-        setShowConfetti(true)
+        const confettiId = Date.now()
+        setActiveConfetti(prev => [...prev, confettiId])
+        // Remove this confetti instance after 3 seconds
+        setTimeout(() => {
+          setActiveConfetti(prev => prev.filter(id => id !== confettiId))
+        }, 3000)
       }
     }
     
@@ -5064,8 +5058,8 @@ const Game = () => {
               <div className="version-b-player-label">{playerName || 'Player'}</div>
               
               {/* Confetti effect */}
-              {showConfetti && (
-                <div className="confetti-container">
+              {activeConfetti.map(confettiId => (
+                <div key={confettiId} className="confetti-container">
                   {[...Array(120)].map((_, i) => (
                     <div 
                       key={i} 
@@ -5079,7 +5073,7 @@ const Game = () => {
                     />
                   ))}
                 </div>
-              )}
+              ))}
             </div>
           ) : (
             <div className="avatar-container player-container">
