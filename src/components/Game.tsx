@@ -4905,7 +4905,20 @@ const Game = () => {
         
         {/* Competitive Avatars */}
         <div className="avatars">
-          {version === 'Version B' ? null : (
+          {version === 'Version B' ? (
+            <div className="avatar-container player-container version-b-cat-container">
+              <img 
+                src={
+                  showFeedback 
+                    ? (pointsEarned > 0 ? "/assets/CatHappy.png" : "/assets/CatSad.png")
+                    : "/assets/CatNeutral.png"
+                }
+                alt="Player Avatar" 
+                className="version-b-cat-avatar"
+              />
+              <div className="version-b-player-label">Player</div>
+            </div>
+          ) : (
             <div className="avatar-container player-container">
               {/* Total Score Display Above Player Avatar */}
               {showFeedback && (

@@ -402,6 +402,36 @@
   animation: celebrate 0.8s ease-in-out;
 }
 
+/* Version B Cat Avatar */
+.version-b-cat-container {
+  top: 50%;
+  left: 50px;
+  transform: translateY(-50%);
+  bottom: auto !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.version-b-cat-avatar {
+  height: 400px;
+  width: auto;
+  filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.6));
+  transition: opacity 0.3s ease;
+}
+
+.version-b-player-label {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 4px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
 /* Sparkles around avatars */
 .sparkles {
   position: absolute;
