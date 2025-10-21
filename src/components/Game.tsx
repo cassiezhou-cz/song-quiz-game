@@ -377,6 +377,9 @@ const Game = () => {
   
   // XP System state for Version B
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
+  
+  // Player name
+  const [playerName, setPlayerName] = useState('')
   const [startingXP, setStartingXP] = useState(0)
   const [showXPAnimation, setShowXPAnimation] = useState(false)
   const [xpAnimationComplete, setXpAnimationComplete] = useState(false)
@@ -2495,6 +2498,12 @@ const Game = () => {
     const initialXP = Math.min(savedXP, 100) // Cap at 100
     setXpProgress(initialXP)
     setStartingXP(initialXP)
+    
+    // Load player name
+    const savedName = localStorage.getItem('player_name')
+    if (savedName) {
+      setPlayerName(savedName)
+    }
     
     // Load unlocked lifelines
     const savedLifelines = localStorage.getItem('unlocked_lifelines')
@@ -5052,7 +5061,7 @@ const Game = () => {
                 alt="Player Avatar" 
                 className="version-b-cat-avatar"
               />
-              <div className="version-b-player-label">Player</div>
+              <div className="version-b-player-label">{playerName || 'Player'}</div>
               
               {/* Confetti effect */}
               {showConfetti && (
