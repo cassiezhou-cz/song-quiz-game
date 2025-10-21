@@ -1908,9 +1908,10 @@ const Game = () => {
       
       // Trigger lifeline entrance animation on first question only (once per session)
       // Use actualQuestionNumber parameter if provided, otherwise fall back to state
+      // Don't show intro animations if preserveTimer is true (e.g., after Song Swap)
       const currentQuestionNum = actualQuestionNumber !== undefined ? actualQuestionNumber : questionNumber
-      const isFirstQuestion = currentQuestionNum === 1 && !hasShownLifelineEntrance.current
-      console.log('🎯 VERSION B: Checking first question - currentQuestionNum:', currentQuestionNum, 'hasShown:', hasShownLifelineEntrance.current, 'isFirst:', isFirstQuestion)
+      const isFirstQuestion = currentQuestionNum === 1 && !hasShownLifelineEntrance.current && !preserveTimer
+      console.log('🎯 VERSION B: Checking first question - currentQuestionNum:', currentQuestionNum, 'hasShown:', hasShownLifelineEntrance.current, 'preserveTimer:', preserveTimer, 'isFirst:', isFirstQuestion)
       if (isFirstQuestion) {
         setShowLifelineEntrance(true)
         hasShownLifelineEntrance.current = true
@@ -1939,14 +1940,21 @@ const Game = () => {
         console.log('🎯 VERSION B: Starting intro sequence for first question')
         // Don't start timer yet - will start after full sequence
       } else {
-        // For non-first questions, start timer immediately
-        // Stop and restart timer to ensure proper countdown
-        setVersionBTimerRunning(false)
-        setTimeout(() => {
-          setVersionBTimerRunning(true)
-        }, 10) // Brief delay to ensure state update
-        // Track question start time for time bonus
-        setQuestionStartTime(Date.now())
+        // For non-first questions or after Song Swap, manage timer
+        if (preserveTimer) {
+          // When preserving timer (e.g., Song Swap), keep timer running
+          console.log('🎯 VERSION B: Preserving timer, keeping it running')
+          // Timer bonus was already added by Song Swap, don't restart it
+          // Don't reset question start time - keep existing timer state
+        } else {
+          // For regular new questions, restart timer
+          setVersionBTimerRunning(false)
+          setTimeout(() => {
+            setVersionBTimerRunning(true)
+          }, 10) // Brief delay to ensure state update
+          // Track question start time for time bonus
+          setQuestionStartTime(Date.now())
+        }
       }
     } else if (version === 'Version C') {
       // Version C: Start timer if not already running, or continue if still running
@@ -3074,15 +3082,10 @@ const Game = () => {
       setArtistMultipleChoiceOptions(null) // Clear multiple choice options
       setSongMultipleChoiceOptions(null)
       
-      // Generate and start a new question immediately (preserve timer to keep +15s bonus)
-      // If this is a special question, keep the same question number to preserve special question status
-      // Otherwise increment to avoid replaying intro on Q1 skip
-      let nextQuestionNum = questionNumber
-      if (!currentSpecialType) {
-        nextQuestionNum = questionNumber + 1
-        setQuestionNumber(nextQuestionNum)
-      }
-      console.log('🎵 SKIP: Question number:', questionNumber, '-> Next:', nextQuestionNum, '(Special:', currentSpecialType, ')')
+      // Generate and start a new song for the same question immediately (preserve timer to keep +15s bonus)
+      // Keep the same question number to avoid skipping questions
+      const nextQuestionNum = questionNumber
+      console.log('🎵 SKIP: Swapping song for question number:', questionNumber, '(Special:', currentSpecialType, ')')
       
       setTimeout(() => {
         // Pass the current special type to preserve hyperspeed/slo-mo/etc
