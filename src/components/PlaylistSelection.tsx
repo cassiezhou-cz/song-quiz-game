@@ -10,7 +10,7 @@ const PlaylistSelection = () => {
   const [selectedVersion, setSelectedVersion] = useState<string>('Version A')
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
   const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
-  const [consumedLifelines, setConsumedLifelines] = useState<LifelineType[]>([])
+  const [lifelineRechargeProgress, setLifelineRechargeProgress] = useState<Partial<Record<LifelineType, number>>>({})
 
   // Load XP and unlocked lifelines from localStorage on mount
   useEffect(() => {
@@ -28,14 +28,14 @@ const PlaylistSelection = () => {
       }
     }
     
-    const savedConsumed = localStorage.getItem('consumed_lifelines')
-    if (savedConsumed) {
+    const savedRecharge = localStorage.getItem('lifeline_recharge_progress')
+    if (savedRecharge) {
       try {
-        const parsed = JSON.parse(savedConsumed) as LifelineType[]
-        setConsumedLifelines(parsed)
+        const parsed = JSON.parse(savedRecharge) as Partial<Record<LifelineType, number>>
+        setLifelineRechargeProgress(parsed)
       } catch (e) {
-        console.error('Failed to parse consumed lifelines:', e)
-        setConsumedLifelines([])
+        console.error('Failed to parse lifeline recharge progress:', e)
+        setLifelineRechargeProgress({})
       }
     }
   }, [])
@@ -60,11 +60,11 @@ const PlaylistSelection = () => {
   const handleXPReset = () => {
     localStorage.setItem('player_xp_progress', '0')
     localStorage.removeItem('unlocked_lifelines')
-    localStorage.removeItem('consumed_lifelines')
+    localStorage.removeItem('lifeline_recharge_progress')
     setXpProgress(0)
     setUnlockedLifelines([])
-    setConsumedLifelines([])
-    console.log('XP Reset: Progress cleared, all lifelines locked, and consumption reset')
+    setLifelineRechargeProgress({})
+    console.log('XP Reset: Progress cleared, all lifelines locked, and recharge status reset')
   }
 
   return (
@@ -97,50 +97,80 @@ const PlaylistSelection = () => {
           <div className="available-lifelines-container">
             <div className="available-lifelines-header">Available Lifelines</div>
             <div className="available-lifelines-list">
-              {unlockedLifelines.map((lifeline) => (
-                <div key={lifeline} className={`lifeline-display-item ${consumedLifelines.includes(lifeline) ? 'consumed' : ''}`}>
-                  {lifeline === 'skip' && (
-                    <>
-                      <div className="lifeline-display-icon">🔄</div>
-                      <div className="lifeline-display-name">Song Swap</div>
-                    </>
-                  )}
-                  {lifeline === 'artistLetterReveal' && (
-                    <>
-                      <div className="lifeline-display-icon">👤 <span className="small-emoji">🔤</span></div>
-                      <div className="lifeline-display-name">Letter Reveal: Artist</div>
-                    </>
-                  )}
-                  {lifeline === 'songLetterReveal' && (
-                    <>
-                      <div className="lifeline-display-icon">🎵 <span className="small-emoji">🔤</span></div>
-                      <div className="lifeline-display-name">Letter Reveal: Song</div>
-                    </>
-                  )}
-                  {lifeline === 'multipleChoiceArtist' && (
-                    <>
-                      <div className="lifeline-display-icon">
-                        <div className="emoji-grid-small">
-                          <span>👤</span><span>👤</span>
-                          <span>👤</span><span>👤</span>
+              {unlockedLifelines.map((lifeline) => {
+                const rechargeProgress = lifelineRechargeProgress[lifeline] || 3 // Default to 3 (fully charged)
+                const isRecharging = rechargeProgress < 3
+                
+                return (
+                  <div key={lifeline} className={`lifeline-display-item ${isRecharging ? 'recharging' : ''}`}>
+                    {lifeline === 'skip' && (
+                      <>
+                        <div className="lifeline-display-icon">🔄</div>
+                        <div className="lifeline-display-name">Song Swap</div>
+                        <div className="recharge-indicators">
+                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''}`}></div>
                         </div>
-                      </div>
-                      <div className="lifeline-display-name">Multiple Choice: Artist</div>
-                    </>
-                  )}
-                  {lifeline === 'multipleChoiceSong' && (
-                    <>
-                      <div className="lifeline-display-icon">
-                        <div className="emoji-grid-small">
-                          <span>🎵</span><span>🎵</span>
-                          <span>🎵</span><span>🎵</span>
+                      </>
+                    )}
+                    {lifeline === 'artistLetterReveal' && (
+                      <>
+                        <div className="lifeline-display-icon">👤 <span className="small-emoji">🔤</span></div>
+                        <div className="lifeline-display-name">Letter Reveal: Artist</div>
+                        <div className="recharge-indicators">
+                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''}`}></div>
                         </div>
-                      </div>
-                      <div className="lifeline-display-name">Multiple Choice: Song</div>
-                    </>
-                  )}
-                </div>
-              ))}
+                      </>
+                    )}
+                    {lifeline === 'songLetterReveal' && (
+                      <>
+                        <div className="lifeline-display-icon">🎵 <span className="small-emoji">🔤</span></div>
+                        <div className="lifeline-display-name">Letter Reveal: Song</div>
+                        <div className="recharge-indicators">
+                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''}`}></div>
+                        </div>
+                      </>
+                    )}
+                    {lifeline === 'multipleChoiceArtist' && (
+                      <>
+                        <div className="lifeline-display-icon">
+                          <div className="emoji-grid-small">
+                            <span>👤</span><span>👤</span>
+                            <span>👤</span><span>👤</span>
+                          </div>
+                        </div>
+                        <div className="lifeline-display-name">Multiple Choice: Artist</div>
+                        <div className="recharge-indicators">
+                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''}`}></div>
+                        </div>
+                      </>
+                    )}
+                    {lifeline === 'multipleChoiceSong' && (
+                      <>
+                        <div className="lifeline-display-icon">
+                          <div className="emoji-grid-small">
+                            <span>🎵</span><span>🎵</span>
+                            <span>🎵</span><span>🎵</span>
+                          </div>
+                        </div>
+                        <div className="lifeline-display-name">Multiple Choice: Song</div>
+                        <div className="recharge-indicators">
+                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''}`}></div>
+                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''}`}></div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
