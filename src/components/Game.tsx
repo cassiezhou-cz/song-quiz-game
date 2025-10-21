@@ -406,6 +406,8 @@ const Game = () => {
   // Level up modal state
   const [showLevelUpModal, setShowLevelUpModal] = useState(false)
   const [newlyUnlockedLifeline, setNewlyUnlockedLifeline] = useState<LifelineType | null>(null)
+  const [showHatUnlockModal, setShowHatUnlockModal] = useState(false)
+  const [hatUnlocked, setHatUnlocked] = useState(false)
   
   // Debug: Log when modal state changes
   useEffect(() => {
@@ -2440,6 +2442,10 @@ const Game = () => {
       setUnlockedLifelines([])
     }
     
+    // Load hat unlock status
+    const savedHatUnlocked = localStorage.getItem('hat_unlocked')
+    setHatUnlocked(savedHatUnlocked === 'true')
+    
     // Load lifeline recharge progress
     const savedRecharge = localStorage.getItem('lifeline_recharge_progress')
     if (savedRecharge) {
@@ -2504,32 +2510,53 @@ const Game = () => {
           console.log('🎯 XP System: newXP =', newXP, 'startingXP =', startingXP)
           if (newXP >= 100) {
             console.log('🎉 LEVEL UP! XP reached 100%')
-            // Unlock next lifeline
-            const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
-            const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !unlockedLifelines.includes(lifeline))
             
-            console.log('🎯 Current unlocked lifelines:', unlockedLifelines)
-            console.log('🎯 Next lifeline to unlock:', nextLifelineToUnlock)
+            // Get the level-up count
+            const levelUpCount = parseInt(localStorage.getItem('level_up_count') || '0', 10) + 1
+            localStorage.setItem('level_up_count', levelUpCount.toString())
+            console.log('🎯 Level up count:', levelUpCount)
             
-            if (nextLifelineToUnlock) {
-              // Show level up modal
+            // Check if this is the third level up (hat unlock)
+            if (levelUpCount === 3 && !hatUnlocked) {
+              console.log('🎩 HAT UNLOCK!')
               setTimeout(() => {
-                console.log('🎉 Showing level up modal for:', nextLifelineToUnlock)
-                setNewlyUnlockedLifeline(nextLifelineToUnlock)
-                setShowLevelUpModal(true)
-                
-                // Update unlocked lifelines
-                const updatedUnlocked = [...unlockedLifelines, nextLifelineToUnlock]
-                setUnlockedLifelines(updatedUnlocked)
-                localStorage.setItem('unlocked_lifelines', JSON.stringify(updatedUnlocked))
+                setShowHatUnlockModal(true)
+                setHatUnlocked(true)
+                localStorage.setItem('hat_unlocked', 'true')
                 
                 // Reset XP to 0
                 setXpProgress(0)
                 setStartingXP(0)
                 localStorage.setItem('player_xp_progress', '0')
-              }, 1500) // Wait for XP animation to finish
+              }, 1500)
             } else {
-              console.log('⚠️ No more lifelines to unlock - player has all 5!')
+              // Unlock next lifeline
+              const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+              const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !unlockedLifelines.includes(lifeline))
+              
+              console.log('🎯 Current unlocked lifelines:', unlockedLifelines)
+              console.log('🎯 Next lifeline to unlock:', nextLifelineToUnlock)
+              
+              if (nextLifelineToUnlock) {
+                // Show level up modal
+                setTimeout(() => {
+                  console.log('🎉 Showing level up modal for:', nextLifelineToUnlock)
+                  setNewlyUnlockedLifeline(nextLifelineToUnlock)
+                  setShowLevelUpModal(true)
+                  
+                  // Update unlocked lifelines
+                  const updatedUnlocked = [...unlockedLifelines, nextLifelineToUnlock]
+                  setUnlockedLifelines(updatedUnlocked)
+                  localStorage.setItem('unlocked_lifelines', JSON.stringify(updatedUnlocked))
+                  
+                  // Reset XP to 0
+                  setXpProgress(0)
+                  setStartingXP(0)
+                  localStorage.setItem('player_xp_progress', '0')
+                }, 1500) // Wait for XP animation to finish
+              } else {
+                console.log('⚠️ No more lifelines to unlock - player has all 5!')
+              }
             }
           }
         }, 500)
@@ -3428,6 +3455,10 @@ const Game = () => {
     setNewlyUnlockedLifeline(null)
   }
 
+  const closeHatUnlockModal = () => {
+    setShowHatUnlockModal(false)
+  }
+
   const restartGame = () => {
     setScore(0)
     setOpponentScore(0)
@@ -4102,6 +4133,25 @@ const Game = () => {
                 )}
               </div>
               <button className="level-up-confirm-btn" onClick={closeLevelUpModal}>
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Hat Unlock Modal */}
+        {showHatUnlockModal && (
+          <div className="level-up-modal-overlay">
+            <div className="level-up-modal">
+              <h2 className="level-up-title">New Avatar Item!</h2>
+              <div className="level-up-lifeline-display">
+                <img 
+                  src="/assets/Hat.png" 
+                  alt="Hat" 
+                  className="hat-unlock-image"
+                />
+              </div>
+              <button className="level-up-confirm-btn" onClick={closeHatUnlockModal}>
                 Continue
               </button>
             </div>
@@ -4909,9 +4959,13 @@ const Game = () => {
             <div className="avatar-container player-container version-b-cat-container">
               <img 
                 src={
-                  showFeedback 
-                    ? (pointsEarned > 0 ? "/assets/CatHappy.png" : "/assets/CatSad.png")
-                    : "/assets/CatNeutral.png"
+                  hatUnlocked
+                    ? (showFeedback 
+                        ? (pointsEarned > 0 ? "/assets/CatHatHappy.png" : "/assets/CatHatSad.png")
+                        : "/assets/CatHatNeutral.png")
+                    : (showFeedback 
+                        ? (pointsEarned > 0 ? "/assets/CatHappy.png" : "/assets/CatSad.png")
+                        : "/assets/CatNeutral.png")
                 }
                 alt="Player Avatar" 
                 className="version-b-cat-avatar"
@@ -5177,6 +5231,25 @@ const Game = () => {
                 )}
               </div>
               <button className="level-up-confirm-btn" onClick={closeLevelUpModal}>
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Hat Unlock Modal */}
+        {showHatUnlockModal && (
+          <div className="level-up-modal-overlay">
+            <div className="level-up-modal">
+              <h2 className="level-up-title">New Avatar Item!</h2>
+              <div className="level-up-lifeline-display">
+                <img 
+                  src="/assets/Hat.png" 
+                  alt="Hat" 
+                  className="hat-unlock-image"
+                />
+              </div>
+              <button className="level-up-confirm-btn" onClick={closeHatUnlockModal}>
                 Continue
               </button>
             </div>

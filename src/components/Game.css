@@ -6055,6 +6055,13 @@
   font-size: 2.5rem;
 }
 
+.hat-unlock-image {
+  width: 200px;
+  height: auto;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4));
+  animation: iconBounce 1s ease-in-out infinite;
+}
+
 .level-up-lifeline-name {
   font-size: 1.8rem;
   font-weight: 700;
