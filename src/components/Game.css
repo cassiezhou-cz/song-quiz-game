@@ -6106,3 +6106,40 @@
   transform: translateY(0);
 }
 
+/* Confetti effect around cat avatar */
+.confetti-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 50;
+}
+
+.confetti-container .confetti-piece {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 0;
+  border-radius: 3px;
+  animation: confettiFall 1.5s ease-in forwards;
+  opacity: 1;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(500px) translateX(calc(var(--random-x, 0) * 50px)) rotate(1080deg) scale(0.5);
+    opacity: 0;
+  }
+}
+
