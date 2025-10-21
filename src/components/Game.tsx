@@ -2472,16 +2472,29 @@ const Game = () => {
   // Handle XP gain when Version B game completes
   useEffect(() => {
     if (gameComplete && version === 'Version B' && !showXPAnimation) {
-      // Start XP animation after a brief delay
-      const timer = setTimeout(() => {
+      // Calculate new XP value
+      const newXP = Math.min(startingXP + 50, 100) // Add 50%, cap at 100%
+      console.log('🎯 XP Animation: Starting XP =', startingXP, ', Target XP =', newXP)
+      
+      // Reset animation state and set initial XP
+      setXpAnimationComplete(false)
+      setXpProgress(startingXP)
+      
+      // Show XP bar on next tick to ensure xpProgress update is committed
+      const showTimer = setTimeout(() => {
         setShowXPAnimation(true)
+        console.log('🎯 XP Animation: Bar shown at', startingXP, '%')
         
-        // Animate XP filling by 50%
+        // Trigger animation after a delay to let the bar render at starting position
         const animationTimer = setTimeout(() => {
-          const newXP = Math.min(startingXP + 50, 100) // Add 50%, cap at 100%
+          console.log('🎯 XP Animation: Triggering fill animation from', startingXP, '% to', newXP, '%')
+          // Update to new XP value - CSS transition will animate this change
           setXpProgress(newXP)
           localStorage.setItem('player_xp_progress', newXP.toString())
           setXpAnimationComplete(true)
+          
+          // Update startingXP to newXP so next animation starts from the correct position
+          setStartingXP(newXP)
           
           // Increment recharge progress for all lifelines that are recharging
           const savedRecharge = localStorage.getItem('lifeline_recharge_progress')
@@ -2567,14 +2580,14 @@ const Game = () => {
               }
             }
           }
-        }, 500)
-        
-        return () => clearTimeout(animationTimer)
-      }, 1000)
+        }, 300)
+      }, 10)
       
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(showTimer)
+      }
     }
-  }, [gameComplete, version, showXPAnimation, startingXP, unlockedLifelines])
+  }, [gameComplete, version, showXPAnimation, unlockedLifelines, hatUnlocked])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -3583,6 +3596,10 @@ const Game = () => {
     }
     // doublePointsTimerRef removed for streak multiplier system; no cleanup needed
     
+    // Reset XP animation state for next completion
+    setShowXPAnimation(false)
+    setXpAnimationComplete(false)
+    
     startNewQuestion()
   }
 
@@ -3834,9 +3851,7 @@ const Game = () => {
                           <div 
                             className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''}`}
                             style={{ 
-                              width: xpAnimationComplete 
-                                ? `${xpProgress}%` 
-                                : `${startingXP}%` 
+                              width: `${xpProgress}%` 
                             }}
                           ></div>
                         </div>
