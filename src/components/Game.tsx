@@ -327,6 +327,9 @@ const Game = () => {
   const [isFloatingPointsSpecial, setIsFloatingPointsSpecial] = useState(false)
   const [isFloatingPointsTimeBonus, setIsFloatingPointsTimeBonus] = useState(false)
   
+  // Version B confetti effect
+  const [showConfetti, setShowConfetti] = useState(false)
+  
   // Version B time bonus tracking
   const [questionStartTime, setQuestionStartTime] = useState<number>(0)
   const [lifelineUsedThisQuestion, setLifelineUsedThisQuestion] = useState(false)
@@ -2475,6 +2478,17 @@ const Game = () => {
     }
   }, [showFloatingPoints])
 
+  // Auto-hide confetti animation after delay
+  useEffect(() => {
+    if (showConfetti) {
+      const timer = setTimeout(() => {
+        setShowConfetti(false)
+      }, 3000) // Hide after 3 seconds
+      
+      return () => clearTimeout(timer)
+    }
+  }, [showConfetti])
+
   // Load XP and unlocked lifelines on mount
   useEffect(() => {
     const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
@@ -2976,6 +2990,10 @@ const Game = () => {
       setIsFloatingPointsSpecial(specialQuestionNumbers.includes(questionNumber))
       setIsFloatingPointsTimeBonus(hasTimeBonus)
       setShowFloatingPoints(true)
+      // Trigger confetti effect
+      if (version === 'Version B') {
+        setShowConfetti(true)
+      }
     }
     
     setShowFeedback(true)
@@ -5035,6 +5053,24 @@ const Game = () => {
                 className="version-b-cat-avatar"
               />
               <div className="version-b-player-label">Player</div>
+              
+              {/* Confetti effect */}
+              {showConfetti && (
+                <div className="confetti-container">
+                  {[...Array(120)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="confetti-piece"
+                      style={{
+                        left: `${Math.random() * 120 - 10}%`,
+                        animationDelay: `${Math.random() * 0.2}s`,
+                        animationDuration: `${1 + Math.random() * 0.5}s`,
+                        backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#FF1493', '#00FF00', '#FF4500', '#9370DB'][Math.floor(Math.random() * 10)]
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="avatar-container player-container">
