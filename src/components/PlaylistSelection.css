@@ -374,9 +374,10 @@
 
 .available-lifelines-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 1rem;
   justify-content: center;
+  width: 100%;
 }
 
 .lifeline-display-item {
@@ -384,7 +385,9 @@
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   padding: 1rem;
-  min-width: 160px;
+  flex: 1;
+  min-width: 120px;
+  max-width: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -464,6 +467,80 @@
       0 0 15px rgba(0, 255, 136, 0.8),
       0 0 30px rgba(0, 255, 136, 0.6),
       inset 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Light-up animation for individual lights */
+.recharge-light.light-up {
+  animation: lightUp 0.8s ease-out;
+}
+
+@keyframes lightUp {
+  0% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 10px rgba(0, 255, 136, 0.6),
+      0 0 20px rgba(0, 255, 136, 0.4),
+      inset 0 0 8px rgba(255, 255, 255, 0.3);
+  }
+  30% {
+    transform: scale(1.5);
+    box-shadow: 
+      0 0 30px rgba(0, 255, 136, 1),
+      0 0 50px rgba(0, 255, 136, 0.8),
+      0 0 70px rgba(0, 255, 136, 0.6),
+      inset 0 0 15px rgba(255, 255, 255, 0.8);
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 
+      0 0 15px rgba(0, 255, 136, 0.8),
+      0 0 30px rgba(0, 255, 136, 0.6),
+      inset 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Fully recharged lifeline animation */
+.lifeline-display-item.newly-recharged {
+  animation: lifelineRecharge 2s ease-out;
+}
+
+@keyframes lifelineRecharge {
+  0% {
+    opacity: 0.5;
+    filter: grayscale(80%);
+    transform: scale(1);
+  }
+  20% {
+    opacity: 1;
+    filter: grayscale(0%);
+    transform: scale(1.1);
+    box-shadow: 
+      0 0 30px rgba(0, 255, 136, 0.8),
+      0 0 50px rgba(0, 255, 136, 0.6),
+      0 8px 25px rgba(0, 0, 0, 0.5);
+  }
+  40% {
+    transform: scale(1.05);
+    box-shadow: 
+      0 0 40px rgba(0, 255, 136, 1),
+      0 0 70px rgba(0, 255, 136, 0.8),
+      0 8px 25px rgba(0, 0, 0, 0.5);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  80% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    filter: grayscale(0%);
+    transform: scale(1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   }
 }
 
