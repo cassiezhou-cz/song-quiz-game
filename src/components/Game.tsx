@@ -400,7 +400,8 @@ const Game = () => {
   type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
   const [availableLifelines, setAvailableLifelines] = useState<LifelineType[]>([])
   const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
-  const [consumedLifelines, setConsumedLifelines] = useState<LifelineType[]>([])
+  // Lifeline recharge progress: 0-2 = recharging (number of runs completed), 3+ = fully charged/available
+  const [lifelineRechargeProgress, setLifelineRechargeProgress] = useState<Partial<Record<LifelineType, number>>>({})
   
   // Level up modal state
   const [showLevelUpModal, setShowLevelUpModal] = useState(false)
@@ -2190,11 +2191,11 @@ const Game = () => {
     
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
-      // Load latest unlocked and consumed lifelines from localStorage
+      // Load latest unlocked lifelines and recharge progress from localStorage
       const savedLifelines = localStorage.getItem('unlocked_lifelines')
-      const savedConsumed = localStorage.getItem('consumed_lifelines')
+      const savedRecharge = localStorage.getItem('lifeline_recharge_progress')
       let currentUnlockedLifelines: LifelineType[] = []
-      let currentConsumedLifelines: LifelineType[] = []
+      let currentRechargeProgress: Partial<Record<LifelineType, number>> = {}
       
       if (savedLifelines) {
         try {
@@ -2205,21 +2206,24 @@ const Game = () => {
         }
       }
       
-      if (savedConsumed) {
+      if (savedRecharge) {
         try {
-          currentConsumedLifelines = JSON.parse(savedConsumed) as LifelineType[]
-          setConsumedLifelines(currentConsumedLifelines)
+          currentRechargeProgress = JSON.parse(savedRecharge) as Partial<Record<LifelineType, number>>
+          setLifelineRechargeProgress(currentRechargeProgress)
         } catch (e) {
-          console.error('Failed to parse consumed lifelines:', e)
+          console.error('Failed to parse lifeline recharge progress:', e)
         }
       }
       
       console.log('🎯 VERSION B START: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
-      console.log('🎯 VERSION B START: Consumed lifelines from localStorage:', currentConsumedLifelines)
+      console.log('🎯 VERSION B START: Recharge progress from localStorage:', currentRechargeProgress)
       
-      // Filter out consumed lifelines from available pool
-      const availablePool = currentUnlockedLifelines.filter(lifeline => !currentConsumedLifelines.includes(lifeline))
-      console.log('🎯 VERSION B START: Available pool (unlocked - consumed):', availablePool)
+      // Filter out lifelines that are still recharging (progress < 3)
+      const availablePool = currentUnlockedLifelines.filter(lifeline => {
+        const progress = currentRechargeProgress[lifeline] || 3 // Default to 3 (charged) if not in map
+        return progress >= 3
+      })
+      console.log('🎯 VERSION B START: Available pool (fully charged lifelines):', availablePool)
       
       // Select up to 3 random lifelines from available pool
       if (availablePool.length > 0) {
@@ -2436,18 +2440,18 @@ const Game = () => {
       setUnlockedLifelines([])
     }
     
-    // Load consumed lifelines
-    const savedConsumed = localStorage.getItem('consumed_lifelines')
-    if (savedConsumed) {
+    // Load lifeline recharge progress
+    const savedRecharge = localStorage.getItem('lifeline_recharge_progress')
+    if (savedRecharge) {
       try {
-        const parsed = JSON.parse(savedConsumed) as LifelineType[]
-        setConsumedLifelines(parsed)
+        const parsed = JSON.parse(savedRecharge) as Partial<Record<LifelineType, number>>
+        setLifelineRechargeProgress(parsed)
       } catch (e) {
-        console.error('Failed to parse consumed lifelines:', e)
-        setConsumedLifelines([])
+        console.error('Failed to parse lifeline recharge progress:', e)
+        setLifelineRechargeProgress({})
       }
     } else {
-      setConsumedLifelines([])
+      setLifelineRechargeProgress({})
     }
   }, [])
 
@@ -2464,6 +2468,37 @@ const Game = () => {
           setXpProgress(newXP)
           localStorage.setItem('player_xp_progress', newXP.toString())
           setXpAnimationComplete(true)
+          
+          // Increment recharge progress for all lifelines that are recharging
+          const savedRecharge = localStorage.getItem('lifeline_recharge_progress')
+          if (savedRecharge) {
+            try {
+              const currentProgress = JSON.parse(savedRecharge) as Partial<Record<LifelineType, number>>
+              const updatedProgress = { ...currentProgress }
+              let anyRecharged = false
+              
+              // Increment progress for each lifeline that's recharging (0-2)
+              for (const lifeline in updatedProgress) {
+                const key = lifeline as LifelineType
+                const currentValue = updatedProgress[key]
+                if (currentValue !== undefined && currentValue < 3) {
+                  updatedProgress[key] = currentValue + 1
+                  console.log(`🔋 Lifeline Recharge: ${lifeline} progress ${currentValue} → ${updatedProgress[key]}`)
+                  
+                  if (updatedProgress[key]! >= 3) {
+                    console.log(`✨ Lifeline Recharged: ${lifeline} is now fully charged!`)
+                    anyRecharged = true
+                  }
+                }
+              }
+              
+              // Update state and localStorage
+              setLifelineRechargeProgress(updatedProgress)
+              localStorage.setItem('lifeline_recharge_progress', JSON.stringify(updatedProgress))
+            } catch (e) {
+              console.error('Failed to update recharge progress:', e)
+            }
+          }
           
           // Check if player leveled up (reached 100%)
           console.log('🎯 XP System: newXP =', newXP, 'startingXP =', startingXP)
@@ -2947,24 +2982,23 @@ const Game = () => {
       [lifelineType]: true
     }))
     
-    // Mark lifeline as consumed permanently
-    const savedConsumed = localStorage.getItem('consumed_lifelines')
-    let currentConsumed: LifelineType[] = []
+    // Set lifeline recharge progress to 0 (needs 3 runs to recharge)
+    const savedRecharge = localStorage.getItem('lifeline_recharge_progress')
+    let currentProgress: Partial<Record<LifelineType, number>> = {}
     
-    if (savedConsumed) {
+    if (savedRecharge) {
       try {
-        currentConsumed = JSON.parse(savedConsumed) as LifelineType[]
+        currentProgress = JSON.parse(savedRecharge) as Partial<Record<LifelineType, number>>
       } catch (e) {
-        console.error('Failed to parse consumed lifelines:', e)
+        console.error('Failed to parse lifeline recharge progress:', e)
       }
     }
     
-    if (!currentConsumed.includes(lifelineType)) {
-      currentConsumed.push(lifelineType)
-      localStorage.setItem('consumed_lifelines', JSON.stringify(currentConsumed))
-      setConsumedLifelines(currentConsumed)
-      console.log(`🎯 LIFELINE CONSUMED: ${lifelineType} is now permanently used`)
-    }
+    currentProgress[lifelineType] = 0 // Set to 0 - needs 3 Version B runs to recharge
+    localStorage.setItem('lifeline_recharge_progress', JSON.stringify(currentProgress))
+    setLifelineRechargeProgress(currentProgress)
+    console.log(`🔋 LIFELINE USED: ${lifelineType} recharge progress set to 0 (needs 3 runs to recharge)`)
+
 
     // Disable time bonus for this question
     setLifelineUsedThisQuestion(true)
@@ -3447,11 +3481,11 @@ const Game = () => {
     
     // Re-randomize available lifelines for Version B
     if (version === 'Version B') {
-      // Load latest unlocked and consumed lifelines from localStorage
+      // Load latest unlocked lifelines and recharge progress from localStorage
       const savedLifelines = localStorage.getItem('unlocked_lifelines')
-      const savedConsumed = localStorage.getItem('consumed_lifelines')
+      const savedRecharge = localStorage.getItem('lifeline_recharge_progress')
       let currentUnlockedLifelines: LifelineType[] = []
-      let currentConsumedLifelines: LifelineType[] = []
+      let currentRechargeProgress: Partial<Record<LifelineType, number>> = {}
       
       if (savedLifelines) {
         try {
@@ -3462,21 +3496,24 @@ const Game = () => {
         }
       }
       
-      if (savedConsumed) {
+      if (savedRecharge) {
         try {
-          currentConsumedLifelines = JSON.parse(savedConsumed) as LifelineType[]
-          setConsumedLifelines(currentConsumedLifelines)
+          currentRechargeProgress = JSON.parse(savedRecharge) as Partial<Record<LifelineType, number>>
+          setLifelineRechargeProgress(currentRechargeProgress)
         } catch (e) {
-          console.error('Failed to parse consumed lifelines:', e)
+          console.error('Failed to parse lifeline recharge progress:', e)
         }
       }
       
       console.log('🎯 VERSION B RESTART: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
-      console.log('🎯 VERSION B RESTART: Consumed lifelines from localStorage:', currentConsumedLifelines)
+      console.log('🎯 VERSION B RESTART: Recharge progress from localStorage:', currentRechargeProgress)
       
-      // Filter out consumed lifelines from available pool
-      const availablePool = currentUnlockedLifelines.filter(lifeline => !currentConsumedLifelines.includes(lifeline))
-      console.log('🎯 VERSION B RESTART: Available pool (unlocked - consumed):', availablePool)
+      // Filter out lifelines that are still recharging (progress < 3)
+      const availablePool = currentUnlockedLifelines.filter(lifeline => {
+        const progress = currentRechargeProgress[lifeline] || 3 // Default to 3 (charged) if not in map
+        return progress >= 3
+      })
+      console.log('🎯 VERSION B RESTART: Available pool (fully charged lifelines):', availablePool)
       
       // Select up to 3 random lifelines from available pool
       if (availablePool.length > 0) {
