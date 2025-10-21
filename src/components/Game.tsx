@@ -1783,7 +1783,7 @@ const Game = () => {
   }
 
   // Helper function that works with specific question number to avoid state timing issues
-  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric', preserveTimer: boolean = false) => {
+  const startNewQuestionWithNumber = (questionNum: number, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric', preserveTimer: boolean = false, lifelinesForRun?: LifelineType[]) => {
     console.log('🎵 START: Starting question', questionNum, 'for version', version, 'with special type:', specialType, 'preserveTimer:', preserveTimer)
     
     // Prevent multiple simultaneous calls using ref (more reliable than state)
@@ -1797,7 +1797,7 @@ const Game = () => {
     // Check if a special type is explicitly provided (e.g., from Song Swap during special question)
     if (specialType) {
       console.log('🎵 VERSION B: Starting special question with explicitly provided type:', specialType)
-      startNewQuestionInternal(true, specialType, preserveTimer, questionNum)
+      startNewQuestionInternal(true, specialType, preserveTimer, questionNum, lifelinesForRun)
       return
     }
     
@@ -1805,18 +1805,18 @@ const Game = () => {
     if (version === 'Version B' && specialQuestionNumbers.includes(questionNum)) {
       console.log('🎵 VERSION B: Starting special question #', questionNum, 'with type from array')
       // This is the special question - generate a question from a different playlist
-      startNewQuestionInternal(true, specialType || 'time-warp', preserveTimer, questionNum) // Pass questionNum
+      startNewQuestionInternal(true, specialType || 'time-warp', preserveTimer, questionNum, lifelinesForRun) // Pass questionNum and lifelines
       return
     }
 
-    startNewQuestionInternal(false, undefined, preserveTimer, questionNum) // Pass questionNum
+    startNewQuestionInternal(false, undefined, preserveTimer, questionNum, lifelinesForRun) // Pass questionNum and lifelines
   }
 
-  const startNewQuestion = (preserveTimer: boolean = false) => {
-    startNewQuestionWithNumber(questionNumber, undefined, preserveTimer)
+  const startNewQuestion = (preserveTimer: boolean = false, lifelinesForRun?: LifelineType[]) => {
+    startNewQuestionWithNumber(questionNumber, undefined, preserveTimer, lifelinesForRun)
   }
 
-  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric', preserveTimer: boolean = false, actualQuestionNumber?: number) => {
+  const startNewQuestionInternal = (isSpecialQuestion: boolean = false, specialType?: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric', preserveTimer: boolean = false, actualQuestionNumber?: number, lifelinesForRun?: LifelineType[]) => {
     
     // Stop and reset any currently playing audio - comprehensive cleanup
     const audio = audioRef.current
@@ -1911,21 +1911,39 @@ const Game = () => {
       // Don't show intro animations if preserveTimer is true (e.g., after Song Swap)
       const currentQuestionNum = actualQuestionNumber !== undefined ? actualQuestionNumber : questionNumber
       const isFirstQuestion = currentQuestionNum === 1 && !hasShownLifelineEntrance.current && !preserveTimer
-      console.log('🎯 VERSION B: Checking first question - currentQuestionNum:', currentQuestionNum, 'hasShown:', hasShownLifelineEntrance.current, 'preserveTimer:', preserveTimer, 'isFirst:', isFirstQuestion)
+      // Use passed lifelines if provided, otherwise fall back to state
+      const lifelinesToCheck = lifelinesForRun !== undefined ? lifelinesForRun : availableLifelines
+      const hasLifelines = lifelinesToCheck.length > 0
+      console.log('🎯 VERSION B: Checking first question - currentQuestionNum:', currentQuestionNum, 'hasShown:', hasShownLifelineEntrance.current, 'preserveTimer:', preserveTimer, 'isFirst:', isFirstQuestion, 'hasLifelines:', hasLifelines)
+      
       if (isFirstQuestion) {
-        setShowLifelineEntrance(true)
         hasShownLifelineEntrance.current = true
+        console.log('🎯 VERSION B: First question - lifelinesToCheck:', lifelinesToCheck, 'length:', lifelinesToCheck.length, 'passed:', lifelinesForRun, 'state:', availableLifelines)
         
-        // Sequence: Lifelines appear -> 0.5s delay -> Timer appears -> Song starts
-        
-        // Step 1: Remove lifeline animation class after it completes (1.5s)
-        setTimeout(() => {
-          setShowLifelineEntrance(false)
-          console.log('🎯 VERSION B: Lifelines appeared')
-        }, 1500)
-        
-        // Step 2: After lifelines + 0.5s delay = 2.0s, show timer entrance
-        setTimeout(() => {
+        // Show lifeline entrance animation if there are lifelines to show
+        if (hasLifelines) {
+          setShowLifelineEntrance(true)
+          console.log('🎯 VERSION B: ✅ Showing lifeline entrance animation for', lifelinesToCheck.length, 'lifelines')
+          
+          // Step 1: Remove lifeline animation class after it completes (1.5s)
+          setTimeout(() => {
+            setShowLifelineEntrance(false)
+            console.log('🎯 VERSION B: Lifelines appeared')
+          }, 1500)
+          
+          // Step 2: After lifelines + 0.5s delay = 2.0s, show timer entrance
+          setTimeout(() => {
+            setShowTimerEntrance(true)
+            console.log('🎯 VERSION B: Showing timer entrance animation')
+            // Remove timer entrance animation class after it completes (1.5s)
+            setTimeout(() => {
+              setShowTimerEntrance(false)
+              console.log('🎯 VERSION B: Timer entrance complete')
+            }, 1500)
+          }, 2000) // 1.5s lifelines + 0.5s delay
+        } else {
+          // No lifelines - skip directly to timer entrance (no lifeline delay)
+          console.log('🎯 VERSION B: No lifelines available, skipping to timer entrance')
           setShowTimerEntrance(true)
           console.log('🎯 VERSION B: Showing timer entrance animation')
           // Remove timer entrance animation class after it completes (1.5s)
@@ -1933,9 +1951,9 @@ const Game = () => {
             setShowTimerEntrance(false)
             console.log('🎯 VERSION B: Timer entrance complete')
           }, 1500)
-        }, 2000) // 1.5s lifelines + 0.5s delay
+        }
         
-        // Add pre-question delay for first question
+        // Add pre-question delay for first question (applies to both with/without lifelines)
         setShowPreQuestionDelay(true)
         console.log('🎯 VERSION B: Starting intro sequence for first question')
         // Don't start timer yet - will start after full sequence
@@ -2164,25 +2182,49 @@ const Game = () => {
     
     // Start auto-play with a short delay to allow audio element cleanup to complete
     // Reduced delay for Version C rapid-fire gameplay
-    // Add extended delay for Version B first question: lifelines (1.5s) + delay (0.5s) + timer (1.5s)
+    // Add extended delay for Version B first question (varies based on lifeline presence)
       let autoPlayDelay = version === 'Version C' ? 100 : 500
       if (version === 'Version B' && questionNumber === 1 && hasShownLifelineEntrance.current) {
-        autoPlayDelay = 4000 // 3.5 seconds (1.5s lifelines + 0.5s + 1.5s timer) + 500ms base delay
-        console.log('🎯 VERSION B: Delaying auto-play by 3.5 seconds for first question intro sequence')
-        
-        // End pre-question delay after 3.5 seconds and start timer countdown
-        setTimeout(() => {
-          setShowPreQuestionDelay(false)
-          setVersionBTimerRunning(true)
-          setQuestionStartTime(Date.now())
-          setShowPlaybackEntrance(true)
-          console.log('🎯 VERSION B: Intro sequence complete, starting question and music')
+        // Use passed lifelines if provided, otherwise fall back to state
+        const lifelinesToCheck = lifelinesForRun !== undefined ? lifelinesForRun : availableLifelines
+        // Check if there were lifelines to show
+        if (lifelinesToCheck.length > 0) {
+          // With lifelines: Wait for lifelines (1.5s) + delay (0.5s) + timer (1.5s) = 3.5s + base delay
+          autoPlayDelay = 4000
+          console.log('🎯 VERSION B: Delaying auto-play by 4 seconds for first question intro sequence with lifelines')
           
-          // Remove playback entrance animation class after it completes (1s)
+          // End pre-question delay after 3.5 seconds and start timer countdown
           setTimeout(() => {
-            setShowPlaybackEntrance(false)
-          }, 1000)
-        }, 3500)
+            setShowPreQuestionDelay(false)
+            setVersionBTimerRunning(true)
+            setQuestionStartTime(Date.now())
+            setShowPlaybackEntrance(true)
+            console.log('🎯 VERSION B: Intro sequence complete, starting question and music')
+            
+            // Remove playback entrance animation class after it completes (1s)
+            setTimeout(() => {
+              setShowPlaybackEntrance(false)
+            }, 1000)
+          }, 3500)
+        } else {
+          // No lifelines: Only wait for timer entrance (1.5s) + base delay
+          autoPlayDelay = 2000
+          console.log('🎯 VERSION B: Delaying auto-play by 2 seconds for timer entrance (no lifelines)')
+          
+          // End pre-question delay after 1.5 seconds and start timer countdown
+          setTimeout(() => {
+            setShowPreQuestionDelay(false)
+            setVersionBTimerRunning(true)
+            setQuestionStartTime(Date.now())
+            setShowPlaybackEntrance(true)
+            console.log('🎯 VERSION B: Timer entrance complete, starting question and music')
+            
+            // Remove playback entrance animation class after it completes (1s)
+            setTimeout(() => {
+              setShowPlaybackEntrance(false)
+            }, 1000)
+          }, 1500)
+        }
       } else if (version === 'Version B') {
         // For subsequent Version B questions, start immediately with no animation
         autoPlayDelay = 50 // Minimal delay for state updates
@@ -2198,6 +2240,9 @@ const Game = () => {
     }
     
     // Note: Song tracking persists across playlist changes (only resets on browser refresh)
+    
+    // Store lifelines to pass to startNewQuestion (for Version B)
+    let lifelinesForInitialQuestion: LifelineType[] = []
     
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
@@ -2238,9 +2283,9 @@ const Game = () => {
       // Select up to 3 random lifelines from available pool
       if (availablePool.length > 0) {
         const shuffled = [...availablePool].sort(() => Math.random() - 0.5)
-        const selectedLifelines = shuffled.slice(0, Math.min(3, availablePool.length))
-        setAvailableLifelines(selectedLifelines)
-        console.log('🎯 VERSION B START: Selected lifelines for this run:', selectedLifelines)
+        lifelinesForInitialQuestion = shuffled.slice(0, Math.min(3, availablePool.length))
+        setAvailableLifelines(lifelinesForInitialQuestion)
+        console.log('🎯 VERSION B START: Selected lifelines for this run:', lifelinesForInitialQuestion)
       } else {
         // No lifelines available (either none unlocked or all consumed)
         setAvailableLifelines([])
@@ -2352,7 +2397,8 @@ const Game = () => {
     if (!hasStartedInitialQuestion.current) {
       console.log('🎵 USEEFFECT: Starting initial question for playlist:', playlist)
       hasStartedInitialQuestion.current = true
-      startNewQuestion()
+      // Pass lifelines directly for Version B to avoid state timing issues
+      startNewQuestion(false, version === 'Version B' ? lifelinesForInitialQuestion : undefined)
     }
   }, [playlist])
   
