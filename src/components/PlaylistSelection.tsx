@@ -2,16 +2,42 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './PlaylistSelection.css'
 
+type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
+
 const PlaylistSelection = () => {
   const navigate = useNavigate()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
   const [selectedVersion, setSelectedVersion] = useState<string>('Version A')
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
+  const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
+  const [consumedLifelines, setConsumedLifelines] = useState<LifelineType[]>([])
 
-  // Load XP from localStorage on mount
+  // Load XP and unlocked lifelines from localStorage on mount
   useEffect(() => {
     const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
     setXpProgress(Math.min(savedXP, 100)) // Cap at 100
+    
+    const savedLifelines = localStorage.getItem('unlocked_lifelines')
+    if (savedLifelines) {
+      try {
+        const parsed = JSON.parse(savedLifelines) as LifelineType[]
+        setUnlockedLifelines(parsed)
+      } catch (e) {
+        console.error('Failed to parse unlocked lifelines:', e)
+        setUnlockedLifelines([])
+      }
+    }
+    
+    const savedConsumed = localStorage.getItem('consumed_lifelines')
+    if (savedConsumed) {
+      try {
+        const parsed = JSON.parse(savedConsumed) as LifelineType[]
+        setConsumedLifelines(parsed)
+      } catch (e) {
+        console.error('Failed to parse consumed lifelines:', e)
+        setConsumedLifelines([])
+      }
+    }
   }, [])
 
   const handlePlaylistSelect = (playlist: string) => {
@@ -34,8 +60,11 @@ const PlaylistSelection = () => {
   const handleXPReset = () => {
     localStorage.setItem('player_xp_progress', '0')
     localStorage.removeItem('unlocked_lifelines')
+    localStorage.removeItem('consumed_lifelines')
     setXpProgress(0)
-    console.log('XP Reset: Progress cleared and all lifelines locked')
+    setUnlockedLifelines([])
+    setConsumedLifelines([])
+    console.log('XP Reset: Progress cleared, all lifelines locked, and consumption reset')
   }
 
   return (
@@ -62,6 +91,59 @@ const PlaylistSelection = () => {
             <span className="mystery-icon">?</span>
           </div>
         </div>
+
+        {/* Available Lifelines Display */}
+        {unlockedLifelines.length > 0 && (
+          <div className="available-lifelines-container">
+            <div className="available-lifelines-header">Available Lifelines</div>
+            <div className="available-lifelines-list">
+              {unlockedLifelines.map((lifeline) => (
+                <div key={lifeline} className={`lifeline-display-item ${consumedLifelines.includes(lifeline) ? 'consumed' : ''}`}>
+                  {lifeline === 'skip' && (
+                    <>
+                      <div className="lifeline-display-icon">🔄</div>
+                      <div className="lifeline-display-name">Song Swap</div>
+                    </>
+                  )}
+                  {lifeline === 'artistLetterReveal' && (
+                    <>
+                      <div className="lifeline-display-icon">👤 <span className="small-emoji">🔤</span></div>
+                      <div className="lifeline-display-name">Letter Reveal: Artist</div>
+                    </>
+                  )}
+                  {lifeline === 'songLetterReveal' && (
+                    <>
+                      <div className="lifeline-display-icon">🎵 <span className="small-emoji">🔤</span></div>
+                      <div className="lifeline-display-name">Letter Reveal: Song</div>
+                    </>
+                  )}
+                  {lifeline === 'multipleChoiceArtist' && (
+                    <>
+                      <div className="lifeline-display-icon">
+                        <div className="emoji-grid-small">
+                          <span>👤</span><span>👤</span>
+                          <span>👤</span><span>👤</span>
+                        </div>
+                      </div>
+                      <div className="lifeline-display-name">Multiple Choice: Artist</div>
+                    </>
+                  )}
+                  {lifeline === 'multipleChoiceSong' && (
+                    <>
+                      <div className="lifeline-display-icon">
+                        <div className="emoji-grid-small">
+                          <span>🎵</span><span>🎵</span>
+                          <span>🎵</span><span>🎵</span>
+                        </div>
+                      </div>
+                      <div className="lifeline-display-name">Multiple Choice: Song</div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         <main className="main">
           <section className="playlist-selection">

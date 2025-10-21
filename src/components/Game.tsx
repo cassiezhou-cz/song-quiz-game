@@ -400,6 +400,7 @@ const Game = () => {
   type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
   const [availableLifelines, setAvailableLifelines] = useState<LifelineType[]>([])
   const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
+  const [consumedLifelines, setConsumedLifelines] = useState<LifelineType[]>([])
   
   // Level up modal state
   const [showLevelUpModal, setShowLevelUpModal] = useState(false)
@@ -2189,9 +2190,11 @@ const Game = () => {
     
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
-      // Load latest unlocked lifelines from localStorage
+      // Load latest unlocked and consumed lifelines from localStorage
       const savedLifelines = localStorage.getItem('unlocked_lifelines')
+      const savedConsumed = localStorage.getItem('consumed_lifelines')
       let currentUnlockedLifelines: LifelineType[] = []
+      let currentConsumedLifelines: LifelineType[] = []
       
       if (savedLifelines) {
         try {
@@ -2202,18 +2205,32 @@ const Game = () => {
         }
       }
       
-      console.log('🎯 VERSION B START: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
+      if (savedConsumed) {
+        try {
+          currentConsumedLifelines = JSON.parse(savedConsumed) as LifelineType[]
+          setConsumedLifelines(currentConsumedLifelines)
+        } catch (e) {
+          console.error('Failed to parse consumed lifelines:', e)
+        }
+      }
       
-      // Select up to 3 random lifelines from unlocked pool
-      if (currentUnlockedLifelines.length > 0) {
-        const shuffled = [...currentUnlockedLifelines].sort(() => Math.random() - 0.5)
-        const selectedLifelines = shuffled.slice(0, Math.min(3, currentUnlockedLifelines.length))
+      console.log('🎯 VERSION B START: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
+      console.log('🎯 VERSION B START: Consumed lifelines from localStorage:', currentConsumedLifelines)
+      
+      // Filter out consumed lifelines from available pool
+      const availablePool = currentUnlockedLifelines.filter(lifeline => !currentConsumedLifelines.includes(lifeline))
+      console.log('🎯 VERSION B START: Available pool (unlocked - consumed):', availablePool)
+      
+      // Select up to 3 random lifelines from available pool
+      if (availablePool.length > 0) {
+        const shuffled = [...availablePool].sort(() => Math.random() - 0.5)
+        const selectedLifelines = shuffled.slice(0, Math.min(3, availablePool.length))
         setAvailableLifelines(selectedLifelines)
         console.log('🎯 VERSION B START: Selected lifelines for this run:', selectedLifelines)
       } else {
-        // No lifelines unlocked yet
+        // No lifelines available (either none unlocked or all consumed)
         setAvailableLifelines([])
-        console.log('🎯 VERSION B START: No lifelines unlocked yet')
+        console.log('🎯 VERSION B START: No lifelines available')
       }
       
       setLifelinesUsed({
@@ -2417,6 +2434,20 @@ const Game = () => {
       }
     } else {
       setUnlockedLifelines([])
+    }
+    
+    // Load consumed lifelines
+    const savedConsumed = localStorage.getItem('consumed_lifelines')
+    if (savedConsumed) {
+      try {
+        const parsed = JSON.parse(savedConsumed) as LifelineType[]
+        setConsumedLifelines(parsed)
+      } catch (e) {
+        console.error('Failed to parse consumed lifelines:', e)
+        setConsumedLifelines([])
+      }
+    } else {
+      setConsumedLifelines([])
     }
   }, [])
 
@@ -2910,11 +2941,30 @@ const Game = () => {
       return // Do nothing if already used
     }
 
-    // Mark lifeline as used
+    // Mark lifeline as used in this session
     setLifelinesUsed(prev => ({
       ...prev,
       [lifelineType]: true
     }))
+    
+    // Mark lifeline as consumed permanently
+    const savedConsumed = localStorage.getItem('consumed_lifelines')
+    let currentConsumed: LifelineType[] = []
+    
+    if (savedConsumed) {
+      try {
+        currentConsumed = JSON.parse(savedConsumed) as LifelineType[]
+      } catch (e) {
+        console.error('Failed to parse consumed lifelines:', e)
+      }
+    }
+    
+    if (!currentConsumed.includes(lifelineType)) {
+      currentConsumed.push(lifelineType)
+      localStorage.setItem('consumed_lifelines', JSON.stringify(currentConsumed))
+      setConsumedLifelines(currentConsumed)
+      console.log(`🎯 LIFELINE CONSUMED: ${lifelineType} is now permanently used`)
+    }
 
     // Disable time bonus for this question
     setLifelineUsedThisQuestion(true)
@@ -3397,9 +3447,11 @@ const Game = () => {
     
     // Re-randomize available lifelines for Version B
     if (version === 'Version B') {
-      // Load latest unlocked lifelines from localStorage
+      // Load latest unlocked and consumed lifelines from localStorage
       const savedLifelines = localStorage.getItem('unlocked_lifelines')
+      const savedConsumed = localStorage.getItem('consumed_lifelines')
       let currentUnlockedLifelines: LifelineType[] = []
+      let currentConsumedLifelines: LifelineType[] = []
       
       if (savedLifelines) {
         try {
@@ -3410,18 +3462,32 @@ const Game = () => {
         }
       }
       
-      console.log('🎯 VERSION B RESTART: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
+      if (savedConsumed) {
+        try {
+          currentConsumedLifelines = JSON.parse(savedConsumed) as LifelineType[]
+          setConsumedLifelines(currentConsumedLifelines)
+        } catch (e) {
+          console.error('Failed to parse consumed lifelines:', e)
+        }
+      }
       
-      // Select up to 3 random lifelines from unlocked pool
-      if (currentUnlockedLifelines.length > 0) {
-        const shuffled = [...currentUnlockedLifelines].sort(() => Math.random() - 0.5)
-        const selectedLifelines = shuffled.slice(0, Math.min(3, currentUnlockedLifelines.length))
+      console.log('🎯 VERSION B RESTART: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
+      console.log('🎯 VERSION B RESTART: Consumed lifelines from localStorage:', currentConsumedLifelines)
+      
+      // Filter out consumed lifelines from available pool
+      const availablePool = currentUnlockedLifelines.filter(lifeline => !currentConsumedLifelines.includes(lifeline))
+      console.log('🎯 VERSION B RESTART: Available pool (unlocked - consumed):', availablePool)
+      
+      // Select up to 3 random lifelines from available pool
+      if (availablePool.length > 0) {
+        const shuffled = [...availablePool].sort(() => Math.random() - 0.5)
+        const selectedLifelines = shuffled.slice(0, Math.min(3, availablePool.length))
         setAvailableLifelines(selectedLifelines)
-        console.log('🎯 VERSION B RESTART: New random lifelines from unlocked pool:', selectedLifelines)
+        console.log('🎯 VERSION B RESTART: New random lifelines from available pool:', selectedLifelines)
       } else {
-        // No lifelines unlocked yet
+        // No lifelines available (either none unlocked or all consumed)
         setAvailableLifelines([])
-        console.log('🎯 VERSION B RESTART: No lifelines unlocked')
+        console.log('🎯 VERSION B RESTART: No lifelines available')
       }
     }
     
