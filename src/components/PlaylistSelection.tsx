@@ -13,6 +13,11 @@ const PlaylistSelection = () => {
   const [lifelineRechargeProgress, setLifelineRechargeProgress] = useState<Partial<Record<LifelineType, number>>>({})
   const [hatUnlocked, setHatUnlocked] = useState(false)
   
+  // Player name state
+  const [playerName, setPlayerName] = useState('')
+  const [showNamePrompt, setShowNamePrompt] = useState(false)
+  const [nameInput, setNameInput] = useState('')
+  
   // Track previous progress to detect changes and trigger animations
   const previousRechargeProgress = useRef<Partial<Record<LifelineType, number>>>({})
   const [newlyLitLights, setNewlyLitLights] = useState<Record<string, boolean>>({}) // e.g., "skip-1": true
@@ -22,6 +27,17 @@ const PlaylistSelection = () => {
   // Load data whenever we navigate to this page
   useEffect(() => {
     console.log('🔄 PlaylistSelection mounted/navigated, location:', location.pathname)
+    
+    // Check for player name first
+    const savedName = localStorage.getItem('player_name')
+    if (savedName) {
+      setPlayerName(savedName)
+      console.log('👤 Loaded player name:', savedName)
+    } else {
+      // Show name prompt if no name is saved
+      setShowNamePrompt(true)
+      console.log('👤 No player name found, showing prompt')
+    }
     
     const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
     setXpProgress(Math.min(savedXP, 100))
@@ -196,6 +212,17 @@ const PlaylistSelection = () => {
     }, 1000)
   }
 
+  const handleNameSubmit = () => {
+    if (nameInput.trim()) {
+      const trimmedName = nameInput.trim()
+      localStorage.setItem('player_name', trimmedName)
+      setPlayerName(trimmedName)
+      setShowNamePrompt(false)
+      setNameInput('')
+      console.log('👤 Player name set to:', trimmedName)
+    }
+  }
+
   const handleXPReset = () => {
     localStorage.setItem('player_xp_progress', '0')
     localStorage.removeItem('unlocked_lifelines')
@@ -203,13 +230,16 @@ const PlaylistSelection = () => {
     localStorage.removeItem('lifeline_recharge_snapshot')
     localStorage.removeItem('level_up_count')
     localStorage.removeItem('hat_unlocked')
+    localStorage.removeItem('player_name')
     setXpProgress(0)
     setUnlockedLifelines([])
     setLifelineRechargeProgress({})
     setHatUnlocked(false)
+    setPlayerName('')
+    setShowNamePrompt(true)
     previousRechargeProgress.current = {}
     hasLoadedInitial.current = false
-    console.log('XP Reset: Progress cleared, all lifelines locked, recharge status reset, and hat removed')
+    console.log('XP Reset: Progress cleared, all lifelines locked, recharge status reset, hat removed, and player name cleared')
   }
 
   return (
@@ -223,8 +253,39 @@ const PlaylistSelection = () => {
             className="player-avatar-image"
           />
         </div>
-        <div className="player-avatar-label">Player</div>
+        <div className="player-avatar-label">{playerName || 'Player'}</div>
       </div>
+
+      {/* Name Input Prompt */}
+      {showNamePrompt && (
+        <div className="name-prompt-overlay">
+          <div className="name-prompt-modal">
+            <h2 className="name-prompt-title">Welcome to Song Quiz!</h2>
+            <p className="name-prompt-subtitle">What's your name?</p>
+            <input 
+              type="text"
+              className="name-input"
+              placeholder="Enter your name"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleNameSubmit()
+                }
+              }}
+              autoFocus
+              maxLength={20}
+            />
+            <button 
+              className="name-submit-btn"
+              onClick={handleNameSubmit}
+              disabled={!nameInput.trim()}
+            >
+              Let's Play!
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="playlist-content">
         <header className="header">
