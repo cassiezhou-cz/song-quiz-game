@@ -33,8 +33,9 @@ const PlaylistSelection = () => {
 
   const handleXPReset = () => {
     localStorage.setItem('player_xp_progress', '0')
+    localStorage.removeItem('unlocked_lifelines')
     setXpProgress(0)
-    console.log('XP Reset: Progress cleared')
+    console.log('XP Reset: Progress cleared and all lifelines locked')
   }
 
   return (

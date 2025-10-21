@@ -330,7 +330,7 @@ const Game = () => {
   // Version B time bonus tracking
   const [questionStartTime, setQuestionStartTime] = useState<number>(0)
   const [lifelineUsedThisQuestion, setLifelineUsedThisQuestion] = useState(false)
-  const totalQuestions = 7
+  const totalQuestions = version === 'Version B' ? 3 : 7
 
   // Version A specific state
   const [streak, setStreak] = useState(0)
@@ -399,6 +399,16 @@ const Game = () => {
   // Version B Available Lifelines (randomly selected 3 out of 5)
   type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
   const [availableLifelines, setAvailableLifelines] = useState<LifelineType[]>([])
+  const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
+  
+  // Level up modal state
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false)
+  const [newlyUnlockedLifeline, setNewlyUnlockedLifeline] = useState<LifelineType | null>(null)
+  
+  // Debug: Log when modal state changes
+  useEffect(() => {
+    console.log('🎯 Modal State Changed:', { showLevelUpModal, newlyUnlockedLifeline })
+  }, [showLevelUpModal, newlyUnlockedLifeline])
 
   // Version B Letter Reveal state
   const [artistLetterRevealText, setArtistLetterRevealText] = useState<string | null>(null)
@@ -2179,11 +2189,32 @@ const Game = () => {
     
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
-      // Randomly select 3 lifelines out of 5
-      const allLifelines: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
-      const shuffled = [...allLifelines].sort(() => Math.random() - 0.5)
-      const selectedLifelines = shuffled.slice(0, 3)
-      setAvailableLifelines(selectedLifelines)
+      // Load latest unlocked lifelines from localStorage
+      const savedLifelines = localStorage.getItem('unlocked_lifelines')
+      let currentUnlockedLifelines: LifelineType[] = []
+      
+      if (savedLifelines) {
+        try {
+          currentUnlockedLifelines = JSON.parse(savedLifelines) as LifelineType[]
+          setUnlockedLifelines(currentUnlockedLifelines)
+        } catch (e) {
+          console.error('Failed to parse unlocked lifelines:', e)
+        }
+      }
+      
+      console.log('🎯 VERSION B START: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
+      
+      // Select up to 3 random lifelines from unlocked pool
+      if (currentUnlockedLifelines.length > 0) {
+        const shuffled = [...currentUnlockedLifelines].sort(() => Math.random() - 0.5)
+        const selectedLifelines = shuffled.slice(0, Math.min(3, currentUnlockedLifelines.length))
+        setAvailableLifelines(selectedLifelines)
+        console.log('🎯 VERSION B START: Selected lifelines for this run:', selectedLifelines)
+      } else {
+        // No lifelines unlocked yet
+        setAvailableLifelines([])
+        console.log('🎯 VERSION B START: No lifelines unlocked yet')
+      }
       
       setLifelinesUsed({
         skip: false,
@@ -2199,39 +2230,40 @@ const Game = () => {
       // Reset initial question flag for new session
       hasStartedInitialQuestion.current = false
       
+      // Special Questions disabled for now (can still be triggered via debug buttons)
       // Randomly select 1 or 2 special questions (50% chance for 2)
-      const willHaveTwoSpecialQuestions = Math.random() < 0.5
-      const numSpecialQuestions = willHaveTwoSpecialQuestions ? 2 : 1
+      // const willHaveTwoSpecialQuestions = Math.random() < 0.5
+      // const numSpecialQuestions = willHaveTwoSpecialQuestions ? 2 : 1
       
       // Generate special question numbers (3-7, excluding Questions 1-2)
-      const availableQuestions = [3, 4, 5, 6, 7]
+      // const availableQuestions = [3, 4, 5, 6, 7]
       const selectedSpecialQuestions: number[] = []
       
-      for (let i = 0; i < numSpecialQuestions; i++) {
-        // Filter out questions that would create consecutive special questions
-        const validQuestions = availableQuestions.filter(question => {
-          // Check if this question would be consecutive with any already selected
-          return !selectedSpecialQuestions.some(selected => Math.abs(question - selected) === 1)
-        })
-        
-        // If no valid questions remain, break to avoid infinite loop
-        if (validQuestions.length === 0) {
-          console.warn('⚠️ WARNING: Cannot select more special questions without creating consecutive ones')
-          break
-        }
-        
-        const randomIndex = Math.floor(Math.random() * validQuestions.length)
-        const selectedQuestion = validQuestions[randomIndex]
-        selectedSpecialQuestions.push(selectedQuestion)
-        
-        // Remove the selected question from available questions
-        const originalIndex = availableQuestions.indexOf(selectedQuestion)
-        if (originalIndex > -1) {
-          availableQuestions.splice(originalIndex, 1)
-        }
-      }
+      // for (let i = 0; i < numSpecialQuestions; i++) {
+      //   // Filter out questions that would create consecutive special questions
+      //   const validQuestions = availableQuestions.filter(question => {
+      //     // Check if this question would be consecutive with any already selected
+      //     return !selectedSpecialQuestions.some(selected => Math.abs(question - selected) === 1)
+      //   })
+      //   
+      //   // If no valid questions remain, break to avoid infinite loop
+      //   if (validQuestions.length === 0) {
+      //     console.warn('⚠️ WARNING: Cannot select more special questions without creating consecutive ones')
+      //     break
+      //   }
+      //   
+      //   const randomIndex = Math.floor(Math.random() * validQuestions.length)
+      //   const selectedQuestion = validQuestions[randomIndex]
+      //   selectedSpecialQuestions.push(selectedQuestion)
+      //   
+      //   // Remove the selected question from available questions
+      //   const originalIndex = availableQuestions.indexOf(selectedQuestion)
+      //   if (originalIndex > -1) {
+      //     availableQuestions.splice(originalIndex, 1)
+      //   }
+      // }
       
-      selectedSpecialQuestions.sort((a, b) => a - b) // Sort in ascending order
+      // selectedSpecialQuestions.sort((a, b) => a - b) // Sort in ascending order
       setSpecialQuestionNumbers(selectedSpecialQuestions)
       setSpecialQuestionPlaylist(null) // Reset special playlist
       setSpecialQuestionType(null) // Reset special question type
@@ -2239,41 +2271,42 @@ const Game = () => {
       
       // Pre-assign types to special questions to ensure variety
       // Note: Using 'hyperspeed', 'song-trivia', and 'finish-the-lyric'
-      const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['hyperspeed', 'song-trivia', 'finish-the-lyric']
-      const shuffledTypes = [...allTypes].sort(() => Math.random() - 0.5) // Shuffle the types
+      // const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['hyperspeed', 'song-trivia', 'finish-the-lyric']
+      // const shuffledTypes = [...allTypes].sort(() => Math.random() - 0.5) // Shuffle the types
       const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'} = {}
       
-      selectedSpecialQuestions.forEach((questionNum, index) => {
-        // Cycle through shuffled types to ensure variety
-        assignedTypes[questionNum] = shuffledTypes[index % shuffledTypes.length]
-      })
+      // selectedSpecialQuestions.forEach((questionNum, index) => {
+      //   // Cycle through shuffled types to ensure variety
+      //   assignedTypes[questionNum] = shuffledTypes[index % shuffledTypes.length]
+      // })
       
       setSpecialQuestionTypes(assignedTypes)
       
-      console.log(`🎯 VERSION B: ${selectedSpecialQuestions.length} Special Question(s) will be:`, selectedSpecialQuestions)
-      console.log(`🎯 VERSION B: Assigned types:`, assignedTypes)
+      console.log(`🎯 VERSION B: Special Questions disabled - only available via debug buttons`)
+      // console.log(`🎯 VERSION B: ${selectedSpecialQuestions.length} Special Question(s) will be:`, selectedSpecialQuestions)
+      // console.log(`🎯 VERSION B: Assigned types:`, assignedTypes)
       
       // Verify no consecutive special questions
-      const hasConsecutive = selectedSpecialQuestions.some((question, index) => {
-        if (index === 0) return false
-        return question - selectedSpecialQuestions[index - 1] === 1
-      })
-      
-      if (hasConsecutive) {
-        console.error('❌ ERROR: Consecutive special questions detected:', selectedSpecialQuestions)
-        // Fallback to single question 7 if there's an issue
-        setSpecialQuestionNumbers([7])
-        console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
-      }
-      
-      // Verify all special question numbers are valid (3-7)
-      const invalidQuestions = selectedSpecialQuestions.filter(q => q < 3 || q > 7)
-      if (invalidQuestions.length > 0) {
-        console.error('❌ ERROR: Invalid special question numbers:', invalidQuestions)
-        // Fallback to single question 7 if there's an issue
-        setSpecialQuestionNumbers([7])
-        console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
-      }
+      // const hasConsecutive = selectedSpecialQuestions.some((question, index) => {
+      //   if (index === 0) return false
+      //   return question - selectedSpecialQuestions[index - 1] === 1
+      // })
+      // 
+      // if (hasConsecutive) {
+      //   console.error('❌ ERROR: Consecutive special questions detected:', selectedSpecialQuestions)
+      //   // Fallback to single question 7 if there's an issue
+      //   setSpecialQuestionNumbers([7])
+      //   console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
+      // }
+      // 
+      // // Verify all special question numbers are valid (3-7)
+      // const invalidQuestions = selectedSpecialQuestions.filter(q => q < 3 || q > 7)
+      // if (invalidQuestions.length > 0) {
+      //   console.error('❌ ERROR: Invalid special question numbers:', invalidQuestions)
+      //   // Fallback to single question 7 if there's an issue
+      //   setSpecialQuestionNumbers([7])
+      //   console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
+      // }
     }
     
     // Version C: Start timer when game begins
@@ -2365,12 +2398,26 @@ const Game = () => {
     }
   }, [showFloatingPoints])
 
-  // Load XP on mount
+  // Load XP and unlocked lifelines on mount
   useEffect(() => {
     const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
     const initialXP = Math.min(savedXP, 100) // Cap at 100
     setXpProgress(initialXP)
     setStartingXP(initialXP)
+    
+    // Load unlocked lifelines
+    const savedLifelines = localStorage.getItem('unlocked_lifelines')
+    if (savedLifelines) {
+      try {
+        const parsed = JSON.parse(savedLifelines) as LifelineType[]
+        setUnlockedLifelines(parsed)
+      } catch (e) {
+        console.error('Failed to parse unlocked lifelines:', e)
+        setUnlockedLifelines([])
+      }
+    } else {
+      setUnlockedLifelines([])
+    }
   }, [])
 
   // Handle XP gain when Version B game completes
@@ -2386,6 +2433,39 @@ const Game = () => {
           setXpProgress(newXP)
           localStorage.setItem('player_xp_progress', newXP.toString())
           setXpAnimationComplete(true)
+          
+          // Check if player leveled up (reached 100%)
+          console.log('🎯 XP System: newXP =', newXP, 'startingXP =', startingXP)
+          if (newXP >= 100) {
+            console.log('🎉 LEVEL UP! XP reached 100%')
+            // Unlock next lifeline
+            const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+            const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !unlockedLifelines.includes(lifeline))
+            
+            console.log('🎯 Current unlocked lifelines:', unlockedLifelines)
+            console.log('🎯 Next lifeline to unlock:', nextLifelineToUnlock)
+            
+            if (nextLifelineToUnlock) {
+              // Show level up modal
+              setTimeout(() => {
+                console.log('🎉 Showing level up modal for:', nextLifelineToUnlock)
+                setNewlyUnlockedLifeline(nextLifelineToUnlock)
+                setShowLevelUpModal(true)
+                
+                // Update unlocked lifelines
+                const updatedUnlocked = [...unlockedLifelines, nextLifelineToUnlock]
+                setUnlockedLifelines(updatedUnlocked)
+                localStorage.setItem('unlocked_lifelines', JSON.stringify(updatedUnlocked))
+                
+                // Reset XP to 0
+                setXpProgress(0)
+                setStartingXP(0)
+                localStorage.setItem('player_xp_progress', '0')
+              }, 1500) // Wait for XP animation to finish
+            } else {
+              console.log('⚠️ No more lifelines to unlock - player has all 5!')
+            }
+          }
         }, 500)
         
         return () => clearTimeout(animationTimer)
@@ -2393,7 +2473,7 @@ const Game = () => {
       
       return () => clearTimeout(timer)
     }
-  }, [gameComplete, version, showXPAnimation, startingXP])
+  }, [gameComplete, version, showXPAnimation, startingXP, unlockedLifelines])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -3259,6 +3339,11 @@ const Game = () => {
     }
   }
 
+  const closeLevelUpModal = () => {
+    setShowLevelUpModal(false)
+    setNewlyUnlockedLifeline(null)
+  }
+
   const restartGame = () => {
     setScore(0)
     setOpponentScore(0)
@@ -3312,11 +3397,32 @@ const Game = () => {
     
     // Re-randomize available lifelines for Version B
     if (version === 'Version B') {
-      const allLifelines: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
-      const shuffled = [...allLifelines].sort(() => Math.random() - 0.5)
-      const selectedLifelines = shuffled.slice(0, 3)
-      setAvailableLifelines(selectedLifelines)
-      console.log('🎯 VERSION B RESTART: New random lifelines:', selectedLifelines)
+      // Load latest unlocked lifelines from localStorage
+      const savedLifelines = localStorage.getItem('unlocked_lifelines')
+      let currentUnlockedLifelines: LifelineType[] = []
+      
+      if (savedLifelines) {
+        try {
+          currentUnlockedLifelines = JSON.parse(savedLifelines) as LifelineType[]
+          setUnlockedLifelines(currentUnlockedLifelines)
+        } catch (e) {
+          console.error('Failed to parse unlocked lifelines:', e)
+        }
+      }
+      
+      console.log('🎯 VERSION B RESTART: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
+      
+      // Select up to 3 random lifelines from unlocked pool
+      if (currentUnlockedLifelines.length > 0) {
+        const shuffled = [...currentUnlockedLifelines].sort(() => Math.random() - 0.5)
+        const selectedLifelines = shuffled.slice(0, Math.min(3, currentUnlockedLifelines.length))
+        setAvailableLifelines(selectedLifelines)
+        console.log('🎯 VERSION B RESTART: New random lifelines from unlocked pool:', selectedLifelines)
+      } else {
+        // No lifelines unlocked yet
+        setAvailableLifelines([])
+        console.log('🎯 VERSION B RESTART: No lifelines unlocked')
+      }
     }
     
     setArtistLetterRevealText(null) // Reset letter reveal info
@@ -3844,6 +3950,60 @@ const Game = () => {
             ) : null}
           </div>
         </div>
+
+        {/* Level Up Modal */}
+        {showLevelUpModal && newlyUnlockedLifeline && (
+          <div className="level-up-modal-overlay">
+            <div className="level-up-modal">
+              <h2 className="level-up-title">New Lifeline Unlocked!</h2>
+              <div className="level-up-lifeline-display">
+                {newlyUnlockedLifeline === 'skip' && (
+                  <>
+                    <div className="level-up-icon">🔄</div>
+                    <div className="level-up-lifeline-name">Song Swap</div>
+                  </>
+                )}
+                {newlyUnlockedLifeline === 'artistLetterReveal' && (
+                  <>
+                    <div className="level-up-icon">👤 <span className="small-emoji">🔤</span></div>
+                    <div className="level-up-lifeline-name">Letter Reveal: Artist</div>
+                  </>
+                )}
+                {newlyUnlockedLifeline === 'songLetterReveal' && (
+                  <>
+                    <div className="level-up-icon">🎵 <span className="small-emoji">🔤</span></div>
+                    <div className="level-up-lifeline-name">Letter Reveal: Song</div>
+                  </>
+                )}
+                {newlyUnlockedLifeline === 'multipleChoiceArtist' && (
+                  <>
+                    <div className="level-up-icon">
+                      <div className="emoji-grid">
+                        <span>👤</span><span>👤</span>
+                        <span>👤</span><span>👤</span>
+                      </div>
+                    </div>
+                    <div className="level-up-lifeline-name">Multiple Choice: Artist</div>
+                  </>
+                )}
+                {newlyUnlockedLifeline === 'multipleChoiceSong' && (
+                  <>
+                    <div className="level-up-icon">
+                      <div className="emoji-grid">
+                        <span>🎵</span><span>🎵</span>
+                        <span>🎵</span><span>🎵</span>
+                      </div>
+                    </div>
+                    <div className="level-up-lifeline-name">Multiple Choice: Song</div>
+                  </>
+                )}
+              </div>
+              <button className="level-up-confirm-btn" onClick={closeLevelUpModal}>
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -4166,7 +4326,7 @@ const Game = () => {
             )}
 
             {/* Version B Boosters */}
-            {version === 'Version B' && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
+            {version === 'Version B' && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && availableLifelines.length > 0 && (
               <div className={`boosters-section ${showLifelineAttention ? 'lifeline-attention' : ''} ${showLifelineEntrance ? 'lifeline-entrance' : ''}`}>
                 <div className="boosters-header">LIFELINES</div>
                 <div className="boosters-container">
@@ -4849,6 +5009,60 @@ const Game = () => {
             >
               FTL
             </button>
+            </div>
+          </div>
+        )}
+
+        {/* Level Up Modal */}
+        {showLevelUpModal && newlyUnlockedLifeline && (
+          <div className="level-up-modal-overlay">
+            <div className="level-up-modal">
+              <h2 className="level-up-title">New Lifeline Unlocked!</h2>
+              <div className="level-up-lifeline-display">
+                {newlyUnlockedLifeline === 'skip' && (
+                  <>
+                    <div className="level-up-icon">🔄</div>
+                    <div className="level-up-lifeline-name">Song Swap</div>
+                  </>
+                )}
+                {newlyUnlockedLifeline === 'artistLetterReveal' && (
+                  <>
+                    <div className="level-up-icon">👤 <span className="small-emoji">🔤</span></div>
+                    <div className="level-up-lifeline-name">Letter Reveal: Artist</div>
+                  </>
+                )}
+                {newlyUnlockedLifeline === 'songLetterReveal' && (
+                  <>
+                    <div className="level-up-icon">🎵 <span className="small-emoji">🔤</span></div>
+                    <div className="level-up-lifeline-name">Letter Reveal: Song</div>
+                  </>
+                )}
+                {newlyUnlockedLifeline === 'multipleChoiceArtist' && (
+                  <>
+                    <div className="level-up-icon">
+                      <div className="emoji-grid">
+                        <span>👤</span><span>👤</span>
+                        <span>👤</span><span>👤</span>
+                      </div>
+                    </div>
+                    <div className="level-up-lifeline-name">Multiple Choice: Artist</div>
+                  </>
+                )}
+                {newlyUnlockedLifeline === 'multipleChoiceSong' && (
+                  <>
+                    <div className="level-up-icon">
+                      <div className="emoji-grid">
+                        <span>🎵</span><span>🎵</span>
+                        <span>🎵</span><span>🎵</span>
+                      </div>
+                    </div>
+                    <div className="level-up-lifeline-name">Multiple Choice: Song</div>
+                  </>
+                )}
+              </div>
+              <button className="level-up-confirm-btn" onClick={closeLevelUpModal}>
+                Continue
+              </button>
             </div>
           </div>
         )}
