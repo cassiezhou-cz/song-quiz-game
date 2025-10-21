@@ -8,7 +8,6 @@ const PlaylistSelection = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
-  const [selectedVersion, setSelectedVersion] = useState<string>('Version A')
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
   const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
   const [lifelineRechargeProgress, setLifelineRechargeProgress] = useState<Partial<Record<LifelineType, number>>>({})
@@ -180,7 +179,7 @@ const PlaylistSelection = () => {
 
   const handlePlaylistSelect = (playlist: string) => {
     setSelectedPlaylist(playlist)
-    console.log(`Selected playlist: ${playlist}, Version: ${selectedVersion}`)
+    console.log(`Selected playlist: ${playlist}, Version: Version B`)
     
     // Save a snapshot of current recharge progress before navigating (for animation detection on return)
     const currentRecharge = localStorage.getItem('lifeline_recharge_progress')
@@ -189,17 +188,12 @@ const PlaylistSelection = () => {
       console.log('📸 Saved recharge progress snapshot before navigating to game')
     }
     
-    // Navigate to game with version parameter after a brief moment to show selection feedback
-    const url = `/game/${playlist}?version=${encodeURIComponent(selectedVersion)}`
-    console.log('🚀 NAVIGATING TO:', url, 'Version:', selectedVersion)
+    // Navigate to game with Version B after a brief moment to show selection feedback
+    const url = `/game/${playlist}?version=Version%20B`
+    console.log('🚀 NAVIGATING TO:', url, 'Version: Version B')
     setTimeout(() => {
       navigate(url)
     }, 1000)
-  }
-
-  const handleVersionSelect = (version: string) => {
-    setSelectedVersion(version)
-    console.log(`Selected version: ${version}`)
   }
 
   const handleXPReset = () => {
@@ -216,29 +210,6 @@ const PlaylistSelection = () => {
     previousRechargeProgress.current = {}
     hasLoadedInitial.current = false
     console.log('XP Reset: Progress cleared, all lifelines locked, recharge status reset, and hat removed')
-  }
-
-  // DEBUG: Test recharge animation
-  const handleTestRechargeAnimation = () => {
-    console.log('🧪 TEST: Simulating recharge progress increment')
-    
-    // Get current progress
-    const currentProgress = { ...lifelineRechargeProgress }
-    
-    // Increment first lifeline found with progress < 3
-    for (const lifeline of unlockedLifelines) {
-      const current = currentProgress[lifeline] || 3
-      if (current < 3) {
-        const newProgress = current + 1
-        currentProgress[lifeline] = newProgress
-        console.log(`🧪 TEST: Incrementing ${lifeline} from ${current} to ${newProgress}`)
-        
-        // Update localStorage and state
-        localStorage.setItem('lifeline_recharge_progress', JSON.stringify(currentProgress))
-        setLifelineRechargeProgress(currentProgress)
-        break
-      }
-    }
   }
 
   return (
@@ -399,38 +370,9 @@ const PlaylistSelection = () => {
               </button>
             </div>
 
-            <div className="version-selection">
-              <h3 className="version-title">Choose Game Version</h3>
-              <div className="version-buttons">
-                <button 
-                  className={`version-button ${selectedVersion === 'Version A' ? 'selected' : ''}`}
-                  onClick={() => handleVersionSelect('Version A')}
-                  disabled={selectedPlaylist !== null}
-                >
-                  Version A
-                </button>
-                
-                <button 
-                  className={`version-button ${selectedVersion === 'Version B' ? 'selected' : ''}`}
-                  onClick={() => handleVersionSelect('Version B')}
-                  disabled={selectedPlaylist !== null}
-                >
-                  Version B
-                </button>
-                
-                <button 
-                  className={`version-button ${selectedVersion === 'Version C' ? 'selected' : ''}`}
-                  onClick={() => handleVersionSelect('Version C')}
-                  disabled={selectedPlaylist !== null}
-                >
-                  Version C
-                </button>
-              </div>
-            </div>
-
             {selectedPlaylist && (
               <div className="selection-feedback">
-                <p>✨ You selected the <strong>{selectedPlaylist}</strong> playlist with <strong>{selectedVersion}</strong>!</p>
+                <p>✨ You selected the <strong>{selectedPlaylist}</strong> playlist!</p>
                 <p><em>Starting game...</em></p>
               </div>
             )}
@@ -445,13 +387,6 @@ const PlaylistSelection = () => {
             onClick={handleXPReset}
           >
             XP Reset
-          </button>
-          <button 
-            className="debug-button-menu"
-            onClick={handleTestRechargeAnimation}
-            style={{ marginTop: '0.5rem' }}
-          >
-            Test Animation
           </button>
         </div>
       </div>
