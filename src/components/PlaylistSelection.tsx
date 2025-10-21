@@ -236,6 +236,18 @@ const PlaylistSelection = () => {
 
   return (
     <div className="playlist-container">
+      {/* Player Avatar */}
+      <div className="player-avatar-container">
+        <div className="player-avatar-image-wrapper">
+          <img 
+            src="/assets/CatNeutral.png" 
+            alt="Player Avatar" 
+            className="player-avatar-image"
+          />
+        </div>
+        <div className="player-avatar-label">Player</div>
+      </div>
+
       <div className="playlist-content">
         <header className="header">
           <img 
