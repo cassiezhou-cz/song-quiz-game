@@ -429,6 +429,22 @@ const PlaylistSelection = () => {
               >
                 <span className="decade">90s</span>
               </button>
+              
+              <button 
+                className="playlist-button playlist-iconic"
+                onClick={() => handlePlaylistSelect('Iconic Songs')}
+                disabled={selectedPlaylist !== null}
+              >
+                <span className="decade">Iconic Songs</span>
+              </button>
+              
+              <button 
+                className="playlist-button playlist-most-streamed"
+                onClick={() => handlePlaylistSelect('Most Streamed Songs')}
+                disabled={selectedPlaylist !== null}
+              >
+                <span className="decade">Most Streamed Songs</span>
+              </button>
             </div>
 
             {selectedPlaylist && (

@@ -1412,6 +1412,477 @@ const Game = () => {
     }
   ]
 
+  // Iconic Songs playlist - timeless classics across decades
+  const songsIconic: Song[] = [
+    { 
+      id: '1', 
+      title: 'Africa', 
+      artist: 'Toto', 
+      file: '/songs/Iconic Songs/AfricaToto.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/AfricaToto.jpeg',
+      alternatives: ['Rosanna - Toto', 'Hold the Line - Toto', 'I Won\'t Hold You Back - Toto']
+    },
+    { 
+      id: '2', 
+      title: 'All Star', 
+      artist: 'Smash Mouth', 
+      file: '/songs/Iconic Songs/AllStarSmashMouth.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/AllStarSmashMouth.jpeg',
+      alternatives: ['I\'m a Believer - Smash Mouth', 'Walkin\' on the Sun - Smash Mouth', 'Then the Morning Comes - Smash Mouth']
+    },
+    { 
+      id: '3', 
+      title: 'A Thousand Miles', 
+      artist: 'Vanessa Carlton', 
+      file: '/songs/Iconic Songs/AThousandMilesVanessaCarlton.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/AThousandMilesVanessaCarlton.jpeg',
+      alternatives: ['White Houses - Vanessa Carlton', 'Ordinary Day - Vanessa Carlton', 'Pretty Baby - Vanessa Carlton']
+    },
+    { 
+      id: '4', 
+      title: 'Baby Got Back', 
+      artist: 'Sir Mix-a-Lot', 
+      file: '/songs/Iconic Songs/BabyGotBackSirMixaLot.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/BabyGotBackSirMixaLot.jpeg',
+      alternatives: ['Jump Around - House of Pain', 'Whoomp! (There It Is) - Tag Team', 'Gonna Make You Sweat - C+C Music Factory'],
+      artistAlternatives: ['Sir Mix-a-lot', 'Sir Mixalot', 'Sir Mix a Lot']
+    },
+    { 
+      id: '5', 
+      title: 'Bad Day', 
+      artist: 'Daniel Powter', 
+      file: '/songs/Iconic Songs/BadDayDanielPowter.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/BadDayDanielPowter.jpeg',
+      alternatives: ['Free Loop - Daniel Powter', 'Cupid - Daniel Powter', 'Jimmy Gets High - Daniel Powter']
+    },
+    { 
+      id: '6', 
+      title: 'Beat It', 
+      artist: 'Michael Jackson', 
+      file: '/songs/Iconic Songs/BeatItMichaelJackson.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/BeatItMichaelJackson.jpeg',
+      alternatives: ['Billie Jean - Michael Jackson', 'Thriller - Michael Jackson', 'Smooth Criminal - Michael Jackson']
+    },
+    { 
+      id: '7', 
+      title: 'Cotton Eye Joe', 
+      artist: 'Rednex', 
+      file: '/songs/Iconic Songs/CottonEyeJoeRedneck.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/CottonEyeJoeRedneck.jpeg',
+      alternatives: ['Old Pop in an Oak - Rednex', 'Wish You Were Here - Rednex', 'Spirit of the Hawk - Rednex']
+    },
+    { 
+      id: '8', 
+      title: 'Don\'t Stop Believin\'', 
+      artist: 'Journey', 
+      file: '/songs/Iconic Songs/Don\'tStopBelievin\'Journey.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/Don\'tStopBelievin\'Journey.jpeg',
+      alternatives: ['Faithfully - Journey', 'Open Arms - Journey', 'Separate Ways - Journey']
+    },
+    { 
+      id: '9', 
+      title: 'Eye of the Tiger', 
+      artist: 'Survivor', 
+      file: '/songs/Iconic Songs/EyeoftheTigerSurvivor.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/EyeoftheTigerSurvivor.jpeg',
+      alternatives: ['Burning Heart - Survivor', 'The Search Is Over - Survivor', 'High on You - Survivor']
+    },
+    { 
+      id: '10', 
+      title: 'Forget You', 
+      artist: 'CeeLo Green', 
+      file: '/songs/Iconic Songs/ForgetYouCeeloGreen.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/ForgetYouCeeloGreen.jpeg',
+      alternatives: ['Crazy - Gnarls Barkley', 'Bright Lights Bigger City - CeeLo Green', 'It\'s OK - CeeLo Green'],
+      artistAlternatives: ['Ceelo Green', 'Cee Lo Green', 'Cee-Lo Green']
+    },
+    { 
+      id: '11', 
+      title: 'Hey Ya!', 
+      artist: 'OutKast', 
+      file: '/songs/Iconic Songs/HeyYa!Outkast.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/HeyYa!Outkast.jpeg',
+      alternatives: ['Ms. Jackson - OutKast', 'The Way You Move - OutKast', 'So Fresh, So Clean - OutKast'],
+      artistAlternatives: ['Outkast', 'Out Kast']
+    },
+    { 
+      id: '12', 
+      title: 'How to Save a Life', 
+      artist: 'The Fray', 
+      file: '/songs/Iconic Songs/HowToSaveALifeTheFray.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/HowToSaveALifeTheFray.jpeg',
+      alternatives: ['Over My Head (Cable Car) - The Fray', 'You Found Me - The Fray', 'Never Say Never - The Fray']
+    },
+    { 
+      id: '13', 
+      title: 'Ice Ice Baby', 
+      artist: 'Vanilla Ice', 
+      file: '/songs/Iconic Songs/IceIceBabyVanillaIce.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/IceIceBabyVanillaIce.jpeg',
+      alternatives: ['U Can\'t Touch This - MC Hammer', 'Play That Funky Music - Vanilla Ice', 'Rollin\' in My 5.0 - Vanilla Ice']
+    },
+    { 
+      id: '14', 
+      title: 'I Have Nothing', 
+      artist: 'Whitney Houston', 
+      file: '/songs/Iconic Songs/IHaveNothingWhitneyHouston.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/IHaveNothingWhitneyHouston.jpeg',
+      alternatives: ['I Will Always Love You - Whitney Houston', 'Greatest Love of All - Whitney Houston', 'I Wanna Dance with Somebody - Whitney Houston']
+    },
+    { 
+      id: '15', 
+      title: 'Last Friday Night', 
+      artist: 'Katy Perry', 
+      file: '/songs/Iconic Songs/LastFridayNightKatyPerry.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/LastFridayNightKatyPerry.jpeg',
+      alternatives: ['Teenage Dream - Katy Perry', 'California Gurls - Katy Perry', 'Firework - Katy Perry']
+    },
+    { 
+      id: '16', 
+      title: 'Mockingbird', 
+      artist: 'Eminem', 
+      file: '/songs/Iconic Songs/MockingbirdEminem.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/MockingbirdEminem.jpeg',
+      alternatives: ['When I\'m Gone - Eminem', 'Hailie\'s Song - Eminem', 'Beautiful - Eminem']
+    },
+    { 
+      id: '17', 
+      title: 'Never Gonna Give You Up', 
+      artist: 'Rick Astley', 
+      file: '/songs/Iconic Songs/NeverGonnaGiveYouUpRickAstley.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/NeverGonnaGiveYouUpRickAstley.jpeg',
+      alternatives: ['Together Forever - Rick Astley', 'Whenever You Need Somebody - Rick Astley', 'She Wants to Dance with Me - Rick Astley']
+    },
+    { 
+      id: '18', 
+      title: 'Piano Man', 
+      artist: 'Billy Joel', 
+      file: '/songs/Iconic Songs/PianoManBillyJoel.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/PianoManBillyJoel.jpeg',
+      alternatives: ['Uptown Girl - Billy Joel', 'We Didn\'t Start the Fire - Billy Joel', 'It\'s Still Rock and Roll to Me - Billy Joel']
+    },
+    { 
+      id: '19', 
+      title: 'Rocket Man', 
+      artist: 'Elton John', 
+      file: '/songs/Iconic Songs/RocketManEltonJohn.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/RocketManEltonJohn.jpeg',
+      alternatives: ['Tiny Dancer - Elton John', 'Bennie and the Jets - Elton John', 'Your Song - Elton John']
+    },
+    { 
+      id: '20', 
+      title: 'SexyBack', 
+      artist: 'Justin Timberlake', 
+      file: '/songs/Iconic Songs/SexyBackJustinTimberlake.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/SexyBackJustinTimberlake.jpeg',
+      alternatives: ['My Love - Justin Timberlake', 'What Goes Around... Comes Around - Justin Timberlake', 'Cry Me a River - Justin Timberlake']
+    },
+    { 
+      id: '21', 
+      title: 'Stayin\' Alive', 
+      artist: 'Bee Gees', 
+      file: '/songs/Iconic Songs/StayinAliveBeeGees.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/StayinAliveBeeGees.jpeg',
+      alternatives: ['Night Fever - Bee Gees', 'How Deep Is Your Love - Bee Gees', 'Jive Talkin\' - Bee Gees'],
+      artistAlternatives: ['BeeGees', 'The Bee Gees']
+    },
+    { 
+      id: '22', 
+      title: 'Thunderstruck', 
+      artist: 'AC/DC', 
+      file: '/songs/Iconic Songs/ThunderstruckAC:DC.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/ThunderstruckAC:DC.jpeg',
+      alternatives: ['Back in Black - AC/DC', 'Highway to Hell - AC/DC', 'You Shook Me All Night Long - AC/DC'],
+      artistAlternatives: ['AC DC', 'ACDC', 'Ac/dc']
+    },
+    { 
+      id: '23', 
+      title: 'U Can\'t Touch This', 
+      artist: 'MC Hammer', 
+      file: '/songs/Iconic Songs/UCan\'tTouchThisMCHammer.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/UCan\'tTouchThisMCHammer.jpeg',
+      alternatives: ['2 Legit 2 Quit - MC Hammer', 'Ice Ice Baby - Vanilla Ice', 'Push It - Salt-N-Pepa']
+    },
+    { 
+      id: '24', 
+      title: 'Uptown Girl', 
+      artist: 'Billy Joel', 
+      file: '/songs/Iconic Songs/UptownGirlBillyJoel.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/UptownGirlBillyJoel.jpeg',
+      alternatives: ['Piano Man - Billy Joel', 'We Didn\'t Start the Fire - Billy Joel', 'It\'s Still Rock and Roll to Me - Billy Joel']
+    },
+    { 
+      id: '25', 
+      title: 'Wake Me Up Before You Go-Go', 
+      artist: 'Wham!', 
+      file: '/songs/Iconic Songs/WakeMeUpBeforeYouGo-GoWham!.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/WakeMeUpBeforeYouGo-GoWham!.jpeg',
+      alternatives: ['Careless Whisper - George Michael', 'Last Christmas - Wham!', 'Freedom - Wham!'],
+      artistAlternatives: ['Wham', 'WHAM!', 'WHAM']
+    },
+    { 
+      id: '26', 
+      title: 'Wannabe', 
+      artist: 'Spice Girls', 
+      file: '/songs/Iconic Songs/WannabeSpiceGirls.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/WannabeSpiceGirls.jpeg',
+      alternatives: ['Say You\'ll Be There - Spice Girls', 'Spice Up Your Life - Spice Girls', '2 Become 1 - Spice Girls']
+    },
+    { 
+      id: '27', 
+      title: 'We Will Rock You', 
+      artist: 'Queen', 
+      file: '/songs/Iconic Songs/WeWillRockYouQueen.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/WeWillRockYouQueen.jpeg',
+      alternatives: ['We Are the Champions - Queen', 'Bohemian Rhapsody - Queen', 'Another One Bites the Dust - Queen']
+    },
+    { 
+      id: '28', 
+      title: 'YMCA', 
+      artist: 'Village People', 
+      file: '/songs/Iconic Songs/YMCAVillagePeople.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/YMCAVillagePeople.jpeg',
+      alternatives: ['Macho Man - Village People', 'In the Navy - Village People', 'Go West - Village People']
+    },
+    { 
+      id: '29', 
+      title: 'You Give Love a Bad Name', 
+      artist: 'Bon Jovi', 
+      file: '/songs/Iconic Songs/YouGiveLoveABadNameBonJovi.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/YouGiveLoveABadNameBonJovi.jpeg',
+      alternatives: ['Livin\' on a Prayer - Bon Jovi', 'Wanted Dead or Alive - Bon Jovi', 'It\'s My Life - Bon Jovi']
+    }
+  ]
+
+  // Most Streamed Songs playlist - chart-topping hits with billions of streams
+  const songsMostStreamed: Song[] = [
+    { 
+      id: '1', 
+      title: '7 rings', 
+      artist: 'Ariana Grande', 
+      file: '/songs/Most Streamed Songs/7ringsArianaGrande.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/7ringsArianaGrande.jpeg',
+      alternatives: ['thank u, next - Ariana Grande', 'breathin - Ariana Grande', 'no tears left to cry - Ariana Grande']
+    },
+    { 
+      id: '2', 
+      title: 'As It Was', 
+      artist: 'Harry Styles', 
+      file: '/songs/Most Streamed Songs/AsItWasHarryStyles.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/AsItWasHarryStyles.jpeg',
+      alternatives: ['Watermelon Sugar - Harry Styles', 'Sign of the Times - Harry Styles', 'Adore You - Harry Styles']
+    },
+    { 
+      id: '3', 
+      title: 'bad guy', 
+      artist: 'Billie Eilish', 
+      file: '/songs/Most Streamed Songs/badguyBillieEilish.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/badguyBillieEilish.jpeg',
+      alternatives: ['lovely - Billie Eilish', 'ocean eyes - Billie Eilish', 'when the party\'s over - Billie Eilish']
+    },
+    { 
+      id: '4', 
+      title: 'Believer', 
+      artist: 'Imagine Dragons', 
+      file: '/songs/Most Streamed Songs/BelieverImagineDragons.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/BelieverImagineDragons.jpeg',
+      alternatives: ['Thunder - Imagine Dragons', 'Radioactive - Imagine Dragons', 'Demons - Imagine Dragons']
+    },
+    { 
+      id: '5', 
+      title: 'Blinding Lights', 
+      artist: 'The Weeknd', 
+      file: '/songs/Most Streamed Songs/BlindingLightsTheWeeknd.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/BlindingLightsTheWeeknd.jpeg',
+      alternatives: ['Starboy - The Weeknd', 'Save Your Tears - The Weeknd', 'I Feel It Coming - The Weeknd']
+    },
+    { 
+      id: '6', 
+      title: 'Can\'t Hold Us', 
+      artist: 'Macklemore', 
+      file: '/songs/Most Streamed Songs/Can\'tHoldUsMacklemore.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/Can\'tHoldUsMacklemore.jpeg',
+      alternatives: ['Thrift Shop - Macklemore & Ryan Lewis', 'Downtown - Macklemore & Ryan Lewis', 'Good Old Days - Macklemore']
+    },
+    { 
+      id: '7', 
+      title: 'Circles', 
+      artist: 'Post Malone', 
+      file: '/songs/Most Streamed Songs/CirclesPostMalone.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/CirclesPostMalone.jpeg',
+      alternatives: ['Sunflower - Post Malone', 'Congratulations - Post Malone', 'Better Now - Post Malone']
+    },
+    { 
+      id: '8', 
+      title: 'Closer', 
+      artist: 'The Chainsmokers', 
+      file: '/songs/Most Streamed Songs/CloserTheChainsmokers.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/CloserTheChainsmokers.jpeg',
+      alternatives: ['Don\'t Let Me Down - The Chainsmokers', 'Something Just Like This - The Chainsmokers', 'Paris - The Chainsmokers'],
+      artistAlternatives: ['Chainsmokers', 'Chain Smokers']
+    },
+    { 
+      id: '9', 
+      title: 'Cruel Summer', 
+      artist: 'Taylor Swift', 
+      file: '/songs/Most Streamed Songs/CruelSummerTaylorSwift.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/CruelSummerTaylorSwift.jpeg',
+      alternatives: ['Lover - Taylor Swift', 'ME! - Taylor Swift', 'You Need to Calm Down - Taylor Swift']
+    },
+    { 
+      id: '10', 
+      title: 'Dance Monkey', 
+      artist: 'Tones And I', 
+      file: '/songs/Most Streamed Songs/DanceMonkeyTonesAndI.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/DanceMonkeyTonesAndI.jpeg',
+      alternatives: ['Never Seen the Rain - Tones And I', 'Fly Away - Tones And I', 'Johnny Run Away - Tones And I']
+    },
+    { 
+      id: '11', 
+      title: 'Don\'t Start Now', 
+      artist: 'Dua Lipa', 
+      file: '/songs/Most Streamed Songs/Don\'tStartNowDuaLipa.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/Don\'tStartNowDuaLipa.jpeg',
+      alternatives: ['Levitating - Dua Lipa', 'New Rules - Dua Lipa', 'Physical - Dua Lipa']
+    },
+    { 
+      id: '12', 
+      title: 'Every Breath You Take', 
+      artist: 'The Police', 
+      file: '/songs/Most Streamed Songs/EveryBreathYouTakeThePolice.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/EveryBreathYouTakeThePolice.jpeg',
+      alternatives: ['Roxanne - The Police', 'Message in a Bottle - The Police', 'Don\'t Stand So Close to Me - The Police']
+    },
+    { 
+      id: '13', 
+      title: 'Kill Bill', 
+      artist: 'SZA', 
+      file: '/songs/Most Streamed Songs/KillBillSZA.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/KillBillSZA.jpeg',
+      alternatives: ['Snooze - SZA', 'The Weekend - SZA', 'Good Days - SZA']
+    },
+    { 
+      id: '14', 
+      title: 'lovely', 
+      artist: 'Billie Eilish', 
+      file: '/songs/Most Streamed Songs/lovelyBillieEilish.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/lovelyBillieEilish.jpeg',
+      alternatives: ['bad guy - Billie Eilish', 'ocean eyes - Billie Eilish', 'when the party\'s over - Billie Eilish']
+    },
+    { 
+      id: '15', 
+      title: 'Lucid Dreams', 
+      artist: 'Juice WRLD', 
+      file: '/songs/Most Streamed Songs/LucidDreamsJuiceWRLD.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/LucidDreamsJuiceWRLD.jpeg',
+      alternatives: ['All Girls Are the Same - Juice WRLD', 'Robbery - Juice WRLD', 'Wishing Well - Juice WRLD']
+    },
+    { 
+      id: '16', 
+      title: 'Night Changes', 
+      artist: 'One Direction', 
+      file: '/songs/Most Streamed Songs/NightChangesOneDirection.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/NightChangesOneDirection.jpeg',
+      alternatives: ['Story of My Life - One Direction', 'What Makes You Beautiful - One Direction', 'Steal My Girl - One Direction']
+    },
+    { 
+      id: '17', 
+      title: 'One Dance', 
+      artist: 'Drake', 
+      file: '/songs/Most Streamed Songs/OneDanceDrake.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/OneDanceDrake.jpeg',
+      alternatives: ['God\'s Plan - Drake', 'Hotline Bling - Drake', 'In My Feelings - Drake']
+    },
+    { 
+      id: '18', 
+      title: 'Perfect', 
+      artist: 'Ed Sheeran', 
+      file: '/songs/Most Streamed Songs/PerfectEdSheeran.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/PerfectEdSheeran.jpeg',
+      alternatives: ['Shape of You - Ed Sheeran', 'Thinking Out Loud - Ed Sheeran', 'Photograph - Ed Sheeran']
+    },
+    { 
+      id: '19', 
+      title: 'Señorita', 
+      artist: 'Shawn Mendes', 
+      file: '/songs/Most Streamed Songs/SeñoritaShawnMendes.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/SeñoritaShawnMendes.jpeg',
+      alternatives: ['Stitches - Shawn Mendes', 'Treat You Better - Shawn Mendes', 'There\'s Nothing Holdin\' Me Back - Shawn Mendes']
+    },
+    { 
+      id: '20', 
+      title: 'Shallow', 
+      artist: 'Lady Gaga', 
+      file: '/songs/Most Streamed Songs/ShallowLadyGaga.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/ShallowLadyGaga.jpeg',
+      alternatives: ['Bad Romance - Lady Gaga', 'Poker Face - Lady Gaga', 'Born This Way - Lady Gaga']
+    },
+    { 
+      id: '21', 
+      title: 'Someone Like You', 
+      artist: 'Adele', 
+      file: '/songs/Most Streamed Songs/SomeoneLikeYouAdele.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/SomeoneLikeYouAdele.jpeg',
+      alternatives: ['Hello - Adele', 'Rolling in the Deep - Adele', 'Set Fire to the Rain - Adele']
+    },
+    { 
+      id: '22', 
+      title: 'Someone You Loved', 
+      artist: 'Lewis Capaldi', 
+      file: '/songs/Most Streamed Songs/SomeoneYouLovedLewisCapaldi.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/SomeoneYouLovedLewisCapaldi.jpeg',
+      alternatives: ['Before You Go - Lewis Capaldi', 'Bruises - Lewis Capaldi', 'Hold Me While You Wait - Lewis Capaldi']
+    },
+    { 
+      id: '23', 
+      title: 'Starboy', 
+      artist: 'The Weeknd', 
+      file: '/songs/Most Streamed Songs/StarboyTheWeeknd.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/StarboyTheWeeknd.jpeg',
+      alternatives: ['Blinding Lights - The Weeknd', 'The Hills - The Weeknd', 'Can\'t Feel My Face - The Weeknd']
+    },
+    { 
+      id: '24', 
+      title: 'STAY', 
+      artist: 'The Kid LAROI', 
+      file: '/songs/Most Streamed Songs/STAYTheKidLAROI.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/STAYTheKidLAROI.jpeg',
+      alternatives: ['WITHOUT YOU - The Kid LAROI', 'GO - The Kid LAROI', 'SO DONE - The Kid LAROI']
+    },
+    { 
+      id: '25', 
+      title: 'Take Me to Church', 
+      artist: 'Hozier', 
+      file: '/songs/Most Streamed Songs/TakeMeToChurchHozier.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/TakeMeToChurchHozier.jpeg',
+      alternatives: ['Someone New - Hozier', 'Cherry Wine - Hozier', 'Work Song - Hozier']
+    },
+    { 
+      id: '26', 
+      title: 'Watermelon Sugar', 
+      artist: 'Harry Styles', 
+      file: '/songs/Most Streamed Songs/WatermelonSugarHarryStyles.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/WatermelonSugarHarryStyles.jpeg',
+      alternatives: ['As It Was - Harry Styles', 'Adore You - Harry Styles', 'Golden - Harry Styles']
+    },
+    { 
+      id: '27', 
+      title: 'When I Was Your Man', 
+      artist: 'Bruno Mars', 
+      file: '/songs/Most Streamed Songs/WhenIWasYourManBrunoMars.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/WhenIWasYourManBrunoMars.jpeg',
+      alternatives: ['Just the Way You Are - Bruno Mars', 'Grenade - Bruno Mars', 'Locked Out of Heaven - Bruno Mars']
+    },
+    { 
+      id: '28', 
+      title: 'Yellow', 
+      artist: 'Coldplay', 
+      file: '/songs/Most Streamed Songs/YellowColdplay.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/YellowColdplay.jpeg',
+      alternatives: ['Viva La Vida - Coldplay', 'The Scientist - Coldplay', 'Fix You - Coldplay']
+    }
+  ]
+
   const getPlaylistSongs = (playlistName: string): Song[] => {
     switch (playlistName) {
       case '2020s':
@@ -1422,6 +1893,10 @@ const Game = () => {
         return songs2000s
       case '90s':
         return songs90s
+      case 'Iconic Songs':
+        return songsIconic
+      case 'Most Streamed Songs':
+        return songsMostStreamed
       default:
         return songs2010s // Default to 2010s if playlist not found
     }

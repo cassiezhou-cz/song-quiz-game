@@ -174,7 +174,7 @@
 .debug-panel-menu {
   position: fixed;
   bottom: 20px;
-  right: 20px;
+  left: 20px;
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
@@ -229,14 +229,15 @@
 
 .playlist-selection {
   margin: 3rem 0;
+  padding-bottom: 100px;
   text-align: center;
 }
 
 .playlist-buttons {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  max-width: 400px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -244,7 +245,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  justify-content: center;
+  padding: 1.5rem 1rem;
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 15px;
   background: rgba(255, 255, 255, 0.1);
@@ -252,6 +254,7 @@
   transition: all 0.3s ease;
   backdrop-filter: blur(20px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  min-height: 120px;
 }
 
 .playlist-button:hover:not(:disabled) {
@@ -271,11 +274,12 @@
 }
 
 .decade {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: bold;
   color: #ffffff;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 .playlist-2020s:hover:not(:disabled) .decade {
@@ -292,6 +296,14 @@
 
 .playlist-90s:hover:not(:disabled) .decade {
   color: #ff9ff3;
+}
+
+.playlist-iconic:hover:not(:disabled) .decade {
+  color: #ffd700;
+}
+
+.playlist-most-streamed:hover:not(:disabled) .decade {
+  color: #9b59b6;
 }
 
 .selection-feedback {
@@ -600,16 +612,18 @@
   }
   
   .playlist-buttons {
-    max-width: 300px;
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 500px;
     gap: 1rem;
   }
   
   .playlist-button {
-    padding: 1.5rem;
+    padding: 1.2rem 0.8rem;
+    min-height: 100px;
   }
   
   .decade {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
   
   .version-buttons {
