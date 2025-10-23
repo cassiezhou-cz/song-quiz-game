@@ -53,6 +53,31 @@
   text-align: center;
   margin-bottom: 3rem;
   width: 100%;
+  position: relative;
+}
+
+/* Results Screen Back Button */
+.results-back-btn {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.results-back-btn:hover {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateX(-3px);
 }
 
 .game-logo {
@@ -913,8 +938,16 @@
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: 2rem;
   transform: translateY(-75px);
+}
+
+/* Remove width constraints for Version B Results */
+.final-score:has(.version-b-results) {
+  max-width: 100%;
+  width: 100%;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
 }
 
 .final-score h3 {
@@ -925,9 +958,12 @@
 }
 
 .victory-message {
-  font-size: 5.5rem;
+  font-size: 7.5rem !important;
   font-weight: 900;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  margin-top: 0;
+  padding: 2rem 1rem;
+  width: 100%;
   color: #ffffff;
   background: linear-gradient(135deg, #ff6b6b, #ff8e53, #ff6b6b, #ff8e53);
   background-size: 400% 400%;
@@ -935,10 +971,25 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-shadow: 0 6px 30px rgba(255, 107, 107, 0.8);
-  animation: victoryPulse 2s ease-in-out infinite, victoryGlow 3s ease-in-out infinite alternate;
+  line-height: 1;
+  animation: zoomInQuick 0.4s ease-out forwards, victoryPulse 2s ease-in-out infinite 0.4s, victoryGlow 3s ease-in-out infinite alternate 0.4s;
   text-transform: uppercase;
-  letter-spacing: 3px;
+  letter-spacing: 0.05em;
   text-align: center;
+  word-spacing: 0.2em;
+  white-space: nowrap;
+}
+
+/* Zoom in entrance animation */
+@keyframes zoomInQuick {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes victoryPulse {
@@ -1348,9 +1399,9 @@
   }
   
   .victory-message {
-    font-size: 4rem;
+    font-size: 4.5rem !important;
     margin-bottom: 1.5rem;
-    letter-spacing: 2px;
+    padding: 1.5rem 0.5rem;
   }
   
   .player-final-score .score-display,
@@ -2514,6 +2565,9 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
+  min-height: 80vh;
+  justify-content: flex-start;
+  padding-top: 0.5rem;
 }
 
 .score-button.score-30 {
@@ -4022,6 +4076,7 @@
   text-shadow: 0 4px 20px rgba(76, 205, 196, 0.5);
   margin: 1rem 0;
   text-align: center;
+  animation: zoomInQuick 0.4s ease-out forwards;
 }
 
 /* Mobile adjustments for Version B elements */
@@ -4066,8 +4121,6 @@
   flex-direction: column;
   align-items: center;
   position: relative;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .xp-bar-final-results {
@@ -4110,14 +4163,82 @@
   animation: xpBarGlow 0.5s ease-in-out, xpPulseGlowFinal 2s ease-in-out infinite;
 }
 
+/* XP Gain Indicator */
+.xp-gain-indicator {
+  position: absolute;
+  /* left is set dynamically via inline style based on xpProgress */
+  top: 50%;
+  transform: translate(-50%, -50%); /* Center horizontally on the position */
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 
+    /* Dark outline for contrast */
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 8px #000,
+    /* Bright green glow on top */
+    0 0 15px rgba(0, 255, 170, 1),
+    0 0 25px rgba(0, 255, 170, 0.8),
+    0 0 35px rgba(0, 255, 170, 0.6),
+    0 0 45px rgba(0, 255, 170, 0.4);
+  z-index: 10;
+  pointer-events: none;
+  animation: xpGainLifecycle 3s ease-in-out forwards;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+@keyframes xpGainLifecycle {
+  /* Appear phase: 0-0.4s */
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  13.33% { /* 0.4s / 3s */
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  /* Pulse phase: 0.4s-2.4s (during bar fill) */
+  30% { /* ~0.9s */
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  46.67% { /* ~1.4s */
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  63.33% { /* ~1.9s */
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  80% { /* 2.4s - end of bar fill */
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  /* Fade out phase: 2.4s-3s */
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
+/* Mobile responsive for XP Gain Indicator */
+@media (max-width: 768px) {
+  .xp-gain-indicator {
+    font-size: 1.3rem;
+  }
+}
+
 @keyframes xpContainerFadeIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(20px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
 }
 

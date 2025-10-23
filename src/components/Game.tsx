@@ -384,6 +384,13 @@ const Game = () => {
   const [showXPAnimation, setShowXPAnimation] = useState(false)
   const [xpAnimationComplete, setXpAnimationComplete] = useState(false)
   
+  // NEW Results Screen sequence
+  const [showQuizComplete, setShowQuizComplete] = useState(false)
+  const [showFinalScore, setShowFinalScore] = useState(false)
+  const [displayedScore, setDisplayedScore] = useState(0)
+  const [showXPBar, setShowXPBar] = useState(false)
+  const [targetXPPosition, setTargetXPPosition] = useState(0) // Static target for indicator
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Separate timer ref for Version B per-question timer
   const versionBTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -3063,9 +3070,178 @@ const Game = () => {
     }
   }, [])
 
-  // Handle XP gain when Version B game completes
+  // NEW Results Screen sequence
   useEffect(() => {
-    if (gameComplete && version === 'Version B' && !showXPAnimation) {
+    if (gameComplete && version === 'Version B' && !showQuizComplete) {
+      console.log('🎬 Starting NEW Results Screen sequence')
+      
+      // Step 1: After 0.3s delay, show "QUIZ COMPLETE!"
+      const quizCompleteTimer = setTimeout(() => {
+        console.log('🎬 Step 1: Showing QUIZ COMPLETE!')
+        setShowQuizComplete(true)
+        
+        // Step 2: Show Final Score after a delay and count up
+        const finalScoreTimer = setTimeout(() => {
+          console.log('🎬 Step 2: Showing Final Score with count-up animation')
+          setShowFinalScore(true)
+          setDisplayedScore(0)
+          
+          // Count up animation
+          const countDuration = 1000 // 1 second
+          const countSteps = 30
+          const increment = score / countSteps
+          const stepTime = countDuration / countSteps
+          
+          let currentStep = 0
+          const countInterval = setInterval(() => {
+            currentStep++
+            if (currentStep >= countSteps) {
+              setDisplayedScore(score)
+              clearInterval(countInterval)
+              console.log('🎬 Score count complete at', score)
+            } else {
+              setDisplayedScore(Math.floor(increment * currentStep))
+            }
+          }, stepTime)
+          
+          // Step 3: Show XP bar 0.5s after count completes (1.5s total)
+          const xpBarTimer = setTimeout(() => {
+            console.log('🎬 Step 3: Showing XP Bar')
+            setShowXPBar(true)
+            setXpAnimationComplete(false)
+            setXpProgress(startingXP)
+            
+            // Calculate and set the static target position for the indicator
+            const calculatedTarget = Math.min(Math.min(startingXP + score, 100), 92)
+            setTargetXPPosition(calculatedTarget)
+            console.log('🎯 Target XP Position for indicator:', calculatedTarget)
+            
+            // Show and fill XP bar
+            setTimeout(() => {
+              setShowXPAnimation(true)
+              
+              // Trigger fill animation
+              setTimeout(() => {
+                // NEW XP SYSTEM: Fill based on score (1 point = 1 XP)
+                const totalXP = startingXP + score
+                const levelsGained = Math.floor(totalXP / 100)
+                const finalXP = totalXP % 100
+                
+                console.log('🎯 XP Animation: Starting XP =', startingXP, ', Score =', score, ', Total =', totalXP)
+                console.log('🎯 XP Animation: Levels gained =', levelsGained, ', Final XP =', finalXP)
+                
+                // Fill bar to 100% (or to finalXP if no level up)
+                const displayXP = levelsGained > 0 ? 100 : finalXP
+                setXpProgress(displayXP)
+                setXpAnimationComplete(true)
+                
+                // Handle lifeline recharge progress
+                const savedRecharge = localStorage.getItem('lifeline_recharge_progress')
+                if (savedRecharge) {
+                  try {
+                    const currentProgress = JSON.parse(savedRecharge) as Partial<Record<LifelineType, number>>
+                    const updatedProgress = { ...currentProgress }
+                    
+                    for (const lifeline in updatedProgress) {
+                      const key = lifeline as LifelineType
+                      const currentValue = updatedProgress[key]
+                      if (currentValue !== undefined && currentValue < 3) {
+                        updatedProgress[key] = currentValue + 1
+                        console.log(`🔋 Lifeline Recharge: ${lifeline} progress ${currentValue} → ${updatedProgress[key]}`)
+                        
+                        if (updatedProgress[key]! >= 3) {
+                          console.log(`✨ Lifeline Recharged: ${lifeline} is now fully charged!`)
+                        }
+                      }
+                    }
+                    
+                    setLifelineRechargeProgress(updatedProgress)
+                    localStorage.setItem('lifeline_recharge_progress', JSON.stringify(updatedProgress))
+                  } catch (e) {
+                    console.error('Failed to update recharge progress:', e)
+                  }
+                }
+                
+                // Handle level up(s)
+                if (levelsGained > 0) {
+                  console.log('🎉 LEVEL UP! Gained', levelsGained, 'level(s)')
+                  
+                  const currentLevelUpCount = parseInt(localStorage.getItem('level_up_count') || '0', 10)
+                  const newLevelUpCount = currentLevelUpCount + levelsGained
+                  localStorage.setItem('level_up_count', newLevelUpCount.toString())
+                  
+                  // After bar fills to 100%, drain to overflow and show modals
+                  setTimeout(() => {
+                    // Drain bar to overflow amount
+                    setXpProgress(finalXP)
+                    setStartingXP(finalXP)
+                    localStorage.setItem('player_xp_progress', finalXP.toString())
+                    console.log('🎯 XP bar drained to overflow:', finalXP)
+                    
+                    // Show unlock modals after drain animation
+                    setTimeout(() => {
+                      // Process each level up
+                      const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+                      let currentUnlocked = [...unlockedLifelines]
+                      let modalDelay = 0
+                      
+                      for (let i = 0; i < levelsGained; i++) {
+                        const levelNum = currentLevelUpCount + i + 1
+                        
+                        // Check if this is the third level up (hat unlock)
+                        if (levelNum === 3 && !hatUnlocked) {
+                          setTimeout(() => {
+                            console.log('🎩 HAT UNLOCK!')
+                            setShowHatUnlockModal(true)
+                            setHatUnlocked(true)
+                            localStorage.setItem('hat_unlocked', 'true')
+                          }, modalDelay)
+                          modalDelay += 2000 // Delay next modal
+                        } else {
+                          // Unlock next lifeline
+                          const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !currentUnlocked.includes(lifeline))
+                          
+                          if (nextLifelineToUnlock) {
+                            const capturedLifeline = nextLifelineToUnlock
+                            const capturedUnlocked = [...currentUnlocked, nextLifelineToUnlock]
+                            
+                            setTimeout(() => {
+                              console.log('🎉 Showing level up modal for:', capturedLifeline)
+                              setNewlyUnlockedLifeline(capturedLifeline)
+                              setShowLevelUpModal(true)
+                              
+                              setUnlockedLifelines(capturedUnlocked)
+                              localStorage.setItem('unlocked_lifelines', JSON.stringify(capturedUnlocked))
+                            }, modalDelay)
+                            
+                            // Update tracking array for next iteration
+                            currentUnlocked = capturedUnlocked
+                            modalDelay += 2000 // Delay next modal
+                          }
+                        }
+                      }
+                    }, 500) // Wait for drain animation
+                  }, 800) // Wait for fill to 100% animation
+                } else {
+                  // No level up, just save the new XP
+                  setStartingXP(finalXP)
+                  localStorage.setItem('player_xp_progress', finalXP.toString())
+                }
+              }, 300)
+            }, 100)
+          }, 1500) // 1.5s after final score appears (0.5s after count completes)
+        }, 600) // 0.6s after quiz complete
+        
+        return () => clearTimeout(finalScoreTimer)
+      }, 300) // 0.3s initial delay
+      
+      return () => clearTimeout(quizCompleteTimer)
+    }
+  }, [gameComplete, version, showQuizComplete])
+
+  // Handle XP gain when Version B game completes (OLD - DISABLED, now handled in new sequence)
+  useEffect(() => {
+    if (false && gameComplete && version === 'Version B' && !showXPAnimation) {
       // Calculate new XP value
       const newXP = Math.min(startingXP + 50, 100) // Add 50%, cap at 100%
       console.log('🎯 XP Animation: Starting XP =', startingXP, ', Target XP =', newXP)
@@ -4203,6 +4379,13 @@ const Game = () => {
     setShowXPAnimation(false)
     setXpAnimationComplete(false)
     
+    // Reset NEW Results Screen sequence states
+    setShowQuizComplete(false)
+    setShowFinalScore(false)
+    setDisplayedScore(0)
+    setShowXPBar(false)
+    setTargetXPPosition(0)
+    
     startNewQuestion()
   }
 
@@ -4422,6 +4605,10 @@ const Game = () => {
       <div className={`game-container ${version === 'Version B' ? 'version-b' : version === 'Version C' ? 'version-c' : ''}`}>
         <div className="game-content">
           <header className="game-header">
+            {/* Back to Playlists button in top left */}
+            <button className="results-back-btn" onClick={backToPlaylist}>
+              ← Back to Playlists
+            </button>
           </header>
 
           <main className="game-main">
@@ -4429,9 +4616,47 @@ const Game = () => {
               {/* Version B Final Results */}
               {version === 'Version B' && (
                 <div className="version-b-results">
-                  <h3 className="victory-message">Quiz Complete!</h3>
-                  <p className="final-score-text">Final Score: {score}</p>
+                  {/* NEW Sequential Results Display */}
+                  {showQuizComplete && (
+                    <h3 className="victory-message">Quiz Complete!</h3>
+                  )}
                   
+                  {showFinalScore && (
+                    <p className="final-score-text">Final Score: {displayedScore}</p>
+                  )}
+                  
+                  {/* XP Bar - NEW */}
+                  {showXPBar && showXPAnimation && (
+                    <div className="xp-gain-container">
+                      <div className="xp-bar-final-results">
+                        <div className="xp-bar-final">
+                          <div 
+                            className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''}`}
+                            style={{ 
+                              width: `${xpProgress}%` 
+                            }}
+                          ></div>
+                          {/* XP Gain Indicator - positioned at TARGET end of fill */}
+                          <div 
+                            className="xp-gain-indicator" 
+                            style={{ 
+                              left: `${targetXPPosition}%` 
+                            }}
+                          >
+                            +{score}
+                          </div>
+                        </div>
+                        <div className="xp-mystery-circle-final">
+                          <span className="treasure-icon-final">🎁</span>
+                          <span className="mystery-icon-final">?</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* OLD CONTENT - TEMPORARILY DISABLED */}
+                  {false && (
+                    <>
                   {/* Songs Correct Summary */}
                   <div className="version-b-summary">
                     <p className="songs-correct-summary">
@@ -4516,6 +4741,9 @@ const Game = () => {
                       ))}
                     </div>
                   </div>
+                  </>
+                  )}
+                  {/* END OF OLD CONTENT */}
                 </div>
               )}
               
@@ -4628,15 +4856,6 @@ const Game = () => {
               )}
               
 
-            </div>
-
-            <div className="game-actions">
-              <button className="game-btn restart-btn" onClick={restartGame}>
-                🔄 Play Again
-              </button>
-              <button className="game-btn back-btn" onClick={backToPlaylist}>
-                ← Back to Playlists
-              </button>
             </div>
           </main>
           
