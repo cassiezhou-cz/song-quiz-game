@@ -4414,6 +4414,18 @@
   }
 }
 
+/* Song card cascade animation */
+@keyframes songCardCascade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Version B Final Results - Song List */
 .version-b-song-list {
   margin: 1rem 0;
@@ -4447,6 +4459,9 @@
   backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: songCardCascade 0.5s ease-out forwards;
 }
 
 .song-result-card:hover {

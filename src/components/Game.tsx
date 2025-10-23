@@ -393,6 +393,7 @@ const Game = () => {
   const [displayedScore, setDisplayedScore] = useState(0)
   const [showXPBar, setShowXPBar] = useState(false)
   const [targetXPPosition, setTargetXPPosition] = useState(0) // Static target for indicator
+  const [showSongList, setShowSongList] = useState(false) // Show Your Answers section
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Separate timer ref for Version B per-question timer
@@ -433,6 +434,11 @@ const Game = () => {
     console.log('🎯 Modal State Changed:', { showLevelUpModal, newlyUnlockedLifeline })
   }, [showLevelUpModal, newlyUnlockedLifeline])
 
+  // Debug: Log when song list state changes
+  useEffect(() => {
+    console.log('🎵 Song List State Changed:', { showSongList, songsCount: allAttemptedSongs.length })
+  }, [showSongList, allAttemptedSongs.length])
+
   // Handle XP refill after all level-up modals are closed
   useEffect(() => {
     if (pendingXPDrain && pendingXPDrain.closedModals === pendingXPDrain.totalModals) {
@@ -449,6 +455,12 @@ const Game = () => {
           
           // Clear pending refill
           setPendingXPDrain(null)
+          
+          // Show song list after XP bar finishes refilling
+          setTimeout(() => {
+            console.log('🎵 Showing Your Answers section (after level-up)')
+            setShowSongList(true)
+          }, 1500) // Wait for XP bar refill animation (1.5s) - no extra pause since player just interacted with modals
         }, 50) // Small delay to ensure transition is re-enabled
       }, 300) // Small delay before refill for better UX
     }
@@ -3286,6 +3298,12 @@ const Game = () => {
                   // No level up, just save the new XP
                   setStartingXP(finalXP)
                   localStorage.setItem('player_xp_progress', finalXP.toString())
+                  
+                  // Show song list after XP bar finishes filling
+                  setTimeout(() => {
+                    console.log('🎵 Showing Your Answers section (no level-up)')
+                    setShowSongList(true)
+                  }, 2000) // Wait for XP bar fill animation (1.5s) + 0.5s delay
                 }
               }, 1300) // Wait for indicator to arrive (0.5s delay + 0.8s flight)
             }, 100)
@@ -4466,6 +4484,7 @@ const Game = () => {
     setDisplayedScore(0)
     setShowXPBar(false)
     setTargetXPPosition(0)
+    setShowSongList(false)
     
     startNewQuestion()
   }
@@ -4735,49 +4754,19 @@ const Game = () => {
                     </div>
                   )}
                   
-                  {/* OLD CONTENT - TEMPORARILY DISABLED */}
-                  {false && (
-                    <>
-                  {/* Songs Correct Summary */}
-                  <div className="version-b-summary">
-                    <p className="songs-correct-summary">
-                      {allAttemptedSongs.filter(song => {
-                        // For special questions (Song Trivia, Finish Lyric), count as correct if pointsEarned > 0
-                        if (song.isSpecialQuestion) {
-                          return song.pointsEarned > 0
-                        }
-                        // For regular questions, count as correct if both artist and song are correct
-                        return song.artistCorrect && song.songCorrect
-                      }).length} out of {allAttemptedSongs.length} songs correct
-                    </p>
-                  </div>
-
-                  {/* XP Bar Animation */}
-                  {showXPAnimation && (
-                    <div className="xp-gain-container">
-                      <div className="xp-bar-final-results">
-                        <div className="xp-bar-final">
-                          <div 
-                            className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''} ${skipXPTransition ? 'no-transition' : ''}`}
-                            style={{ 
-                              width: `${xpProgress}%` 
-                            }}
-                          ></div>
-                        </div>
-                        <div className="xp-mystery-circle-final">
-                          <span className="treasure-icon-final">🎁</span>
-                          <span className={`mystery-icon-final ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Detailed Song List */}
+                  {/* Detailed Song List - NEW ACTIVE */}
+                  {showSongList && (
                   <div className="version-b-song-list">
                     <h4 className="song-list-title">Your Answers</h4>
                     <div className="song-results-grid">
                       {allAttemptedSongs.map((attempt, index) => (
-                        <div key={index} className="song-result-card">
+                        <div 
+                          key={index} 
+                          className="song-result-card"
+                          style={{
+                            animationDelay: `${index * 0.15}s`
+                          }}
+                        >
                           <div className="song-result-album">
                             <img 
                               src={attempt.song.albumArt} 
@@ -4822,6 +4811,44 @@ const Game = () => {
                       ))}
                     </div>
                   </div>
+                  )}
+                  
+                  {/* OLD CONTENT - TEMPORARILY DISABLED */}
+                  {false && (
+                    <>
+                  {/* Songs Correct Summary */}
+                  <div className="version-b-summary">
+                    <p className="songs-correct-summary">
+                      {allAttemptedSongs.filter(song => {
+                        // For special questions (Song Trivia, Finish Lyric), count as correct if pointsEarned > 0
+                        if (song.isSpecialQuestion) {
+                          return song.pointsEarned > 0
+                        }
+                        // For regular questions, count as correct if both artist and song are correct
+                        return song.artistCorrect && song.songCorrect
+                      }).length} out of {allAttemptedSongs.length} songs correct
+                    </p>
+                  </div>
+
+                  {/* XP Bar Animation */}
+                  {showXPAnimation && (
+                    <div className="xp-gain-container">
+                      <div className="xp-bar-final-results">
+                        <div className="xp-bar-final">
+                          <div 
+                            className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''} ${skipXPTransition ? 'no-transition' : ''}`}
+                            style={{ 
+                              width: `${xpProgress}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <div className="xp-mystery-circle-final">
+                          <span className="treasure-icon-final">🎁</span>
+                          <span className={`mystery-icon-final ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   </>
                   )}
                   {/* END OF OLD CONTENT */}
