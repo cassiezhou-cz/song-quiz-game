@@ -378,6 +378,8 @@ const Game = () => {
   // XP System state for Version B
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
   const [skipXPTransition, setSkipXPTransition] = useState(false) // Skip transition for instant drain
+  const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
+  const [showLevelUpAnimation, setShowLevelUpAnimation] = useState(false) // Trigger level-up animation
   
   // Player name
   const [playerName, setPlayerName] = useState('')
@@ -3056,6 +3058,11 @@ const Game = () => {
     setXpProgress(initialXP)
     setStartingXP(initialXP)
     
+    // Load player level
+    const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
+    setPlayerLevel(savedLevel)
+    console.log('🎯 Loaded player level:', savedLevel)
+    
     // Load player name
     const savedName = localStorage.getItem('player_name')
     if (savedName) {
@@ -3195,15 +3202,30 @@ const Game = () => {
                   const newLevelUpCount = currentLevelUpCount + levelsGained
                   localStorage.setItem('level_up_count', newLevelUpCount.toString())
                   
-                  // After bar fills to 100%, show modals and drain bar behind them
+                  // After bar fills to 100%, update level with animation, then show modals
                   setTimeout(() => {
+                    // Update player level AFTER bar finishes filling
+                    const newPlayerLevel = playerLevel + levelsGained
+                    setPlayerLevel(newPlayerLevel)
+                    localStorage.setItem('player_level', newPlayerLevel.toString())
+                    console.log('🎯 Player level increased to:', newPlayerLevel)
+                    
+                    // Trigger level-up animation
+                    setShowLevelUpAnimation(true)
+                    console.log('🎉 Playing level-up animation!')
+                    
+                    // Wait for level-up animation to complete before showing modals
+                    setTimeout(() => {
+                      setShowLevelUpAnimation(false)
+                      console.log('✨ Level-up animation complete!')
+                    
                     // Count how many modals will be shown
                     let totalModalsToShow = 0
                     
                     // Process each level up to count modals
                     const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
                     let currentUnlocked = [...unlockedLifelines]
-                    let modalDelay = 0
+                    let modalDelay = 500 // 0.5s delay after animation before first modal
                     
                     for (let i = 0; i < levelsGained; i++) {
                       const levelNum = currentLevelUpCount + i + 1
@@ -3249,7 +3271,7 @@ const Game = () => {
                       console.log('🎯 Level up! Draining bar to 0% instantly (behind modal)')
                       setSkipXPTransition(true) // Disable transition for instant drain
                       setXpProgress(0)
-                    }, 200) // Wait for modal to fully render
+                    }, 700) // Wait 0.5s pause + 0.2s for modal to render
                     
                     // Set up pending refill (from 0% to overflow) that will execute after all modals are closed
                     setPendingXPDrain({
@@ -3258,6 +3280,7 @@ const Game = () => {
                       closedModals: 0
                     })
                     console.log('🎯 Pending XP refill to:', finalXP, 'after', totalModalsToShow, 'modal(s) close')
+                    }, 1500) // Wait for level-up animation (1.5s)
                   }, 800) // Wait for fill to 100% animation
                 } else {
                   // No level up, just save the new XP
@@ -4435,6 +4458,7 @@ const Game = () => {
     setXpAnimationComplete(false)
     setPendingXPDrain(null) // Clear any pending XP refill
     setSkipXPTransition(false) // Re-enable XP transitions
+    setShowLevelUpAnimation(false) // Reset level-up animation
     
     // Reset NEW Results Screen sequence states
     setShowQuizComplete(false)
@@ -4696,7 +4720,7 @@ const Game = () => {
                         </div>
                         {/* XP Gain Indicator - positioned at TARGET end of fill, outside bar to avoid clipping */}
                         <div 
-                          className="xp-gain-indicator" 
+                          className={`xp-gain-indicator ${showLevelUpAnimation ? 'early-fade' : ''}`}
                           style={{ 
                             left: `${targetXPPosition}%` 
                           }}
@@ -4705,7 +4729,7 @@ const Game = () => {
                         </div>
                         <div className="xp-mystery-circle-final">
                           <span className="treasure-icon-final">🎁</span>
-                          <span className="mystery-icon-final">?</span>
+                          <span className={`mystery-icon-final ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
                         </div>
                       </div>
                     </div>
@@ -4742,7 +4766,7 @@ const Game = () => {
                         </div>
                         <div className="xp-mystery-circle-final">
                           <span className="treasure-icon-final">🎁</span>
-                          <span className="mystery-icon-final">?</span>
+                          <span className={`mystery-icon-final ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
                         </div>
                       </div>
                     </div>

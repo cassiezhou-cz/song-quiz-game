@@ -4197,6 +4197,11 @@
   opacity: 0; /* Start invisible until animation begins */
 }
 
+/* Early fade for level-up - fades out before level animation starts */
+.xp-gain-indicator.early-fade {
+  animation: xpGainFlyFromScore 0.8s ease-out 0.5s forwards, xpGainPulseStatic 2s ease-in-out infinite 1.3s, xpGainFadeOut 0.4s ease-in-out 1.8s forwards !important;
+}
+
 /* Fly down from Final Score position to XP bar target */
 @keyframes xpGainFlyFromScore {
   0% {
@@ -4312,6 +4317,7 @@
   border: 4px solid rgba(0, 191, 255, 0.6);
   border-radius: 50%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
@@ -4324,22 +4330,88 @@
 
 .treasure-icon-final {
   position: absolute;
-  font-size: 3.8rem;
-  opacity: 0.75;
+  top: -2.5rem;
+  font-size: 3.2rem;
   user-select: none;
-  filter: blur(0.5px);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 }
 
 .mystery-icon-final {
-  position: relative;
-  font-size: 3.3rem;
+  font-size: 2.8rem;
   font-weight: bold;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.9);
   text-shadow: 
     0 3px 6px rgba(0, 0, 0, 0.8),
-    0 0 15px rgba(255, 255, 255, 0.3);
+    0 0 15px rgba(0, 191, 255, 0.4);
   user-select: none;
-  z-index: 1;
+  margin-top: 0.2rem;
+  transition: all 0.3s ease;
+}
+
+/* Level-up animation for the level number */
+.mystery-icon-final.level-up-animation {
+  animation: levelUpCelebration 1.5s ease-in-out;
+}
+
+@keyframes levelUpCelebration {
+  0% {
+    transform: scale(1);
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 
+      0 3px 6px rgba(0, 0, 0, 0.8),
+      0 0 15px rgba(0, 191, 255, 0.4);
+  }
+  15% {
+    transform: scale(2.5);
+    color: rgb(255, 215, 0);
+    text-shadow: 
+      0 0 30px rgba(255, 215, 0, 1),
+      0 0 60px rgba(255, 215, 0, 0.8),
+      0 0 90px rgba(255, 215, 0, 0.6),
+      0 5px 15px rgba(0, 0, 0, 1);
+  }
+  30% {
+    transform: scale(2.2);
+    color: rgb(255, 215, 0);
+    text-shadow: 
+      0 0 40px rgba(255, 215, 0, 1),
+      0 0 80px rgba(255, 215, 0, 0.8),
+      0 0 120px rgba(255, 165, 0, 0.6),
+      0 5px 15px rgba(0, 0, 0, 1);
+  }
+  45% {
+    transform: scale(2.4);
+    color: rgb(255, 255, 255);
+    text-shadow: 
+      0 0 50px rgba(255, 255, 255, 1),
+      0 0 100px rgba(0, 255, 255, 1),
+      0 0 150px rgba(0, 191, 255, 0.8),
+      0 5px 20px rgba(0, 0, 0, 1);
+  }
+  60% {
+    transform: scale(2.2);
+    color: rgb(255, 215, 0);
+    text-shadow: 
+      0 0 40px rgba(255, 215, 0, 1),
+      0 0 80px rgba(255, 165, 0, 0.8),
+      0 0 120px rgba(255, 215, 0, 0.6),
+      0 5px 15px rgba(0, 0, 0, 1);
+  }
+  75% {
+    transform: scale(1.5);
+    color: rgba(255, 255, 255, 1);
+    text-shadow: 
+      0 0 30px rgba(0, 191, 255, 1),
+      0 0 60px rgba(0, 191, 255, 0.6),
+      0 3px 10px rgba(0, 0, 0, 0.8);
+  }
+  100% {
+    transform: scale(1);
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 
+      0 3px 6px rgba(0, 0, 0, 0.8),
+      0 0 15px rgba(0, 191, 255, 0.4);
+  }
 }
 
 /* Version B Final Results - Song List */
