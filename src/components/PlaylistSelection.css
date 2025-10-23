@@ -140,6 +140,7 @@
   border: 4px solid rgba(0, 191, 255, 0.6);
   border-radius: 50%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
@@ -152,22 +153,21 @@
 
 .treasure-icon {
   position: absolute;
-  font-size: 3.5rem;
-  opacity: 0.75;
+  top: -2.3rem;
+  font-size: 2.8rem;
   user-select: none;
-  filter: blur(0.5px);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 }
 
 .mystery-icon {
-  position: relative;
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: bold;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.9);
   text-shadow: 
     0 3px 6px rgba(0, 0, 0, 0.8),
-    0 0 15px rgba(255, 255, 255, 0.3);
+    0 0 15px rgba(0, 191, 255, 0.4);
   user-select: none;
-  z-index: 1;
+  margin-top: 0.2rem;
 }
 
 /* Debug Panel */

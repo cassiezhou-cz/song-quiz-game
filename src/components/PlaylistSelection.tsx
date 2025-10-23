@@ -9,6 +9,7 @@ const PlaylistSelection = () => {
   const location = useLocation()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
+  const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
   const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
   const [lifelineRechargeProgress, setLifelineRechargeProgress] = useState<Partial<Record<LifelineType, number>>>({})
   const [hatUnlocked, setHatUnlocked] = useState(false)
@@ -41,6 +42,9 @@ const PlaylistSelection = () => {
     
     const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
     setXpProgress(Math.min(savedXP, 100))
+    
+    const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
+    setPlayerLevel(savedLevel)
     
     const savedHatUnlocked = localStorage.getItem('hat_unlocked')
     setHatUnlocked(savedHatUnlocked === 'true')
@@ -225,6 +229,7 @@ const PlaylistSelection = () => {
 
   const handleXPReset = () => {
     localStorage.setItem('player_xp_progress', '0')
+    localStorage.setItem('player_level', '1')
     localStorage.removeItem('unlocked_lifelines')
     localStorage.removeItem('lifeline_recharge_progress')
     localStorage.removeItem('lifeline_recharge_snapshot')
@@ -232,6 +237,7 @@ const PlaylistSelection = () => {
     localStorage.removeItem('hat_unlocked')
     localStorage.removeItem('player_name')
     setXpProgress(0)
+    setPlayerLevel(1)
     setUnlockedLifelines([])
     setLifelineRechargeProgress({})
     setHatUnlocked(false)
@@ -239,7 +245,7 @@ const PlaylistSelection = () => {
     setShowNamePrompt(true)
     previousRechargeProgress.current = {}
     hasLoadedInitial.current = false
-    console.log('XP Reset: Progress cleared, all lifelines locked, recharge status reset, hat removed, and player name cleared')
+    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, recharge status reset, hat removed, and player name cleared')
   }
 
   return (
@@ -306,7 +312,7 @@ const PlaylistSelection = () => {
           </div>
           <div className="xp-mystery-circle">
             <span className="treasure-icon">🎁</span>
-            <span className="mystery-icon">?</span>
+            <span className="mystery-icon">{playerLevel}</span>
           </div>
         </div>
 
