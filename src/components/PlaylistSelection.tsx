@@ -326,33 +326,51 @@ const PlaylistSelection = () => {
                       <>
                         <div className="lifeline-display-icon">🔄</div>
                         <div className="lifeline-display-name">Song Swap</div>
-                        <div className="recharge-indicators">
-                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''} ${newlyLitLights['skip-1'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''} ${newlyLitLights['skip-2'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''} ${newlyLitLights['skip-3'] ? 'light-up' : ''}`}></div>
+                        <div className={`battery-meter ${rechargeProgress >= 3 ? 'fully-charged' : ''}`}>
+                          <div className="battery-body">
+                            <div className={`battery-segment ${rechargeProgress >= 1 ? 'filled' : ''} ${newlyLitLights['skip-1'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 2 ? 'filled' : ''} ${newlyLitLights['skip-2'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 3 ? 'filled' : ''} ${newlyLitLights['skip-3'] ? 'fill-animation' : ''}`}></div>
+                          </div>
+                          <div className="battery-tip"></div>
                         </div>
+                        {isNewlyRecharged && (
+                          <div className="recharged-label">RECHARGED</div>
+                        )}
                       </>
                     )}
                     {lifeline === 'artistLetterReveal' && (
                       <>
                         <div className="lifeline-display-icon">👤 <span className="small-emoji">🔤</span></div>
                         <div className="lifeline-display-name">Letter Reveal: Artist</div>
-                        <div className="recharge-indicators">
-                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''} ${newlyLitLights['artistLetterReveal-1'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''} ${newlyLitLights['artistLetterReveal-2'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''} ${newlyLitLights['artistLetterReveal-3'] ? 'light-up' : ''}`}></div>
+                        <div className={`battery-meter ${rechargeProgress >= 3 ? 'fully-charged' : ''}`}>
+                          <div className="battery-body">
+                            <div className={`battery-segment ${rechargeProgress >= 1 ? 'filled' : ''} ${newlyLitLights['artistLetterReveal-1'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 2 ? 'filled' : ''} ${newlyLitLights['artistLetterReveal-2'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 3 ? 'filled' : ''} ${newlyLitLights['artistLetterReveal-3'] ? 'fill-animation' : ''}`}></div>
+                          </div>
+                          <div className="battery-tip"></div>
                         </div>
+                        {isNewlyRecharged && (
+                          <div className="recharged-label">RECHARGED</div>
+                        )}
                       </>
                     )}
                     {lifeline === 'songLetterReveal' && (
                       <>
                         <div className="lifeline-display-icon">🎵 <span className="small-emoji">🔤</span></div>
                         <div className="lifeline-display-name">Letter Reveal: Song</div>
-                        <div className="recharge-indicators">
-                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''} ${newlyLitLights['songLetterReveal-1'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''} ${newlyLitLights['songLetterReveal-2'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''} ${newlyLitLights['songLetterReveal-3'] ? 'light-up' : ''}`}></div>
+                        <div className={`battery-meter ${rechargeProgress >= 3 ? 'fully-charged' : ''}`}>
+                          <div className="battery-body">
+                            <div className={`battery-segment ${rechargeProgress >= 1 ? 'filled' : ''} ${newlyLitLights['songLetterReveal-1'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 2 ? 'filled' : ''} ${newlyLitLights['songLetterReveal-2'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 3 ? 'filled' : ''} ${newlyLitLights['songLetterReveal-3'] ? 'fill-animation' : ''}`}></div>
+                          </div>
+                          <div className="battery-tip"></div>
                         </div>
+                        {isNewlyRecharged && (
+                          <div className="recharged-label">RECHARGED</div>
+                        )}
                       </>
                     )}
                     {lifeline === 'multipleChoiceArtist' && (
@@ -364,11 +382,17 @@ const PlaylistSelection = () => {
                           </div>
                         </div>
                         <div className="lifeline-display-name">Multiple Choice: Artist</div>
-                        <div className="recharge-indicators">
-                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''} ${newlyLitLights['multipleChoiceArtist-1'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''} ${newlyLitLights['multipleChoiceArtist-2'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''} ${newlyLitLights['multipleChoiceArtist-3'] ? 'light-up' : ''}`}></div>
+                        <div className={`battery-meter ${rechargeProgress >= 3 ? 'fully-charged' : ''}`}>
+                          <div className="battery-body">
+                            <div className={`battery-segment ${rechargeProgress >= 1 ? 'filled' : ''} ${newlyLitLights['multipleChoiceArtist-1'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 2 ? 'filled' : ''} ${newlyLitLights['multipleChoiceArtist-2'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 3 ? 'filled' : ''} ${newlyLitLights['multipleChoiceArtist-3'] ? 'fill-animation' : ''}`}></div>
+                          </div>
+                          <div className="battery-tip"></div>
                         </div>
+                        {isNewlyRecharged && (
+                          <div className="recharged-label">RECHARGED</div>
+                        )}
                       </>
                     )}
                     {lifeline === 'multipleChoiceSong' && (
@@ -380,11 +404,17 @@ const PlaylistSelection = () => {
                           </div>
                         </div>
                         <div className="lifeline-display-name">Multiple Choice: Song</div>
-                        <div className="recharge-indicators">
-                          <div className={`recharge-light ${rechargeProgress >= 1 ? 'lit' : ''} ${newlyLitLights['multipleChoiceSong-1'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 2 ? 'lit' : ''} ${newlyLitLights['multipleChoiceSong-2'] ? 'light-up' : ''}`}></div>
-                          <div className={`recharge-light ${rechargeProgress >= 3 ? 'lit' : ''} ${newlyLitLights['multipleChoiceSong-3'] ? 'light-up' : ''}`}></div>
+                        <div className={`battery-meter ${rechargeProgress >= 3 ? 'fully-charged' : ''}`}>
+                          <div className="battery-body">
+                            <div className={`battery-segment ${rechargeProgress >= 1 ? 'filled' : ''} ${newlyLitLights['multipleChoiceSong-1'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 2 ? 'filled' : ''} ${newlyLitLights['multipleChoiceSong-2'] ? 'fill-animation' : ''}`}></div>
+                            <div className={`battery-segment ${rechargeProgress >= 3 ? 'filled' : ''} ${newlyLitLights['multipleChoiceSong-3'] ? 'fill-animation' : ''}`}></div>
+                          </div>
+                          <div className="battery-tip"></div>
                         </div>
+                        {isNewlyRecharged && (
+                          <div className="recharged-label">RECHARGED</div>
+                        )}
                       </>
                     )}
                   </div>

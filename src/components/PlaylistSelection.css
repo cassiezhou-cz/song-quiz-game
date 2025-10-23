@@ -431,9 +431,11 @@
   gap: 1rem;
   justify-content: center;
   width: 100%;
+  padding-bottom: 30px; /* Space for RECHARGED label */
 }
 
 .lifeline-display-item {
+  position: relative;
   background: rgba(0, 0, 0, 0.3);
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
@@ -481,78 +483,112 @@
 }
 
 /* Recharge Indicators */
-.recharge-indicators {
+/* Battery Meter for Lifeline Recharge */
+.battery-meter {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  gap: 2px;
 }
 
-.recharge-light {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+.battery-body {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
   transition: all 0.4s ease;
 }
 
-.recharge-light.lit {
-  background: linear-gradient(135deg, #00ff88, #00cc6a);
-  border: 2px solid #00ff88;
-  box-shadow: 
-    0 0 10px rgba(0, 255, 136, 0.6),
-    0 0 20px rgba(0, 255, 136, 0.4),
-    inset 0 0 8px rgba(255, 255, 255, 0.3);
-  animation: rechargePulse 2s ease-in-out infinite;
+.battery-tip {
+  width: 4px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 0 2px 2px 0;
+  transition: all 0.4s ease;
 }
 
-@keyframes rechargePulse {
-  0%, 100% {
-    box-shadow: 
-      0 0 10px rgba(0, 255, 136, 0.6),
-      0 0 20px rgba(0, 255, 136, 0.4),
-      inset 0 0 8px rgba(255, 255, 255, 0.3);
+.battery-segment {
+  width: 12px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  transition: all 0.5s ease;
+}
+
+.battery-segment.filled {
+  background: linear-gradient(135deg, #00ff88, #00cc6a);
+  box-shadow: 
+    0 0 8px rgba(0, 255, 136, 0.4),
+    inset 0 0 6px rgba(255, 255, 255, 0.2);
+}
+
+/* Fill animation for individual segments */
+.battery-segment.fill-animation {
+  animation: segmentFill 0.6s ease-out;
+}
+
+@keyframes segmentFill {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
   }
   50% {
-    box-shadow: 
-      0 0 15px rgba(0, 255, 136, 0.8),
-      0 0 30px rgba(0, 255, 136, 0.6),
-      inset 0 0 10px rgba(255, 255, 255, 0.5);
-  }
-}
-
-/* Light-up animation for individual lights */
-.recharge-light.light-up {
-  animation: lightUp 0.8s ease-out;
-}
-
-@keyframes lightUp {
-  0% {
-    transform: scale(1);
-    box-shadow: 
-      0 0 10px rgba(0, 255, 136, 0.6),
-      0 0 20px rgba(0, 255, 136, 0.4),
-      inset 0 0 8px rgba(255, 255, 255, 0.3);
-  }
-  30% {
-    transform: scale(1.5);
-    box-shadow: 
-      0 0 30px rgba(0, 255, 136, 1),
-      0 0 50px rgba(0, 255, 136, 0.8),
-      0 0 70px rgba(0, 255, 136, 0.6),
-      inset 0 0 15px rgba(255, 255, 255, 0.8);
-  }
-  60% {
-    transform: scale(1.2);
+    transform: scaleY(1.2);
   }
   100% {
-    transform: scale(1);
-    box-shadow: 
-      0 0 15px rgba(0, 255, 136, 0.8),
-      0 0 30px rgba(0, 255, 136, 0.6),
-      inset 0 0 10px rgba(255, 255, 255, 0.5);
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Fully charged battery - static appearance without glow */
+.battery-meter.fully-charged .battery-body {
+  border-color: #00ff88;
+}
+
+.battery-meter.fully-charged .battery-tip {
+  background: linear-gradient(90deg, #00ff88, #00cc6a);
+}
+
+/* Recharged label */
+.recharged-label {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #00ff88;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 
+    0 0 10px rgba(0, 255, 136, 0.8),
+    0 0 20px rgba(0, 255, 136, 0.6),
+    0 0 30px rgba(0, 255, 136, 0.4);
+  animation: rechargedLabelFade 2.5s ease-in-out forwards;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@keyframes rechargedLabelFade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
   }
 }
 
