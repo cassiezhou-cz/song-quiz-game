@@ -3120,7 +3120,7 @@ const Game = () => {
             setTimeout(() => {
               setShowXPAnimation(true)
               
-              // Trigger fill animation
+              // Trigger fill animation - wait for indicator to arrive (0.5s delay + 0.8s flight = 1.3s)
               setTimeout(() => {
                 // NEW XP SYSTEM: Fill based on score (1 point = 1 XP)
                 const totalXP = startingXP + score
@@ -3227,7 +3227,7 @@ const Game = () => {
                   setStartingXP(finalXP)
                   localStorage.setItem('player_xp_progress', finalXP.toString())
                 }
-              }, 300)
+              }, 1300) // Wait for indicator to arrive (0.5s delay + 0.8s flight)
             }, 100)
           }, 1500) // 1.5s after final score appears (0.5s after count completes)
         }, 600) // 0.6s after quiz complete
@@ -4636,15 +4636,15 @@ const Game = () => {
                               width: `${xpProgress}%` 
                             }}
                           ></div>
-                          {/* XP Gain Indicator - positioned at TARGET end of fill */}
-                          <div 
-                            className="xp-gain-indicator" 
-                            style={{ 
-                              left: `${targetXPPosition}%` 
-                            }}
-                          >
-                            +{score}
-                          </div>
+                        </div>
+                        {/* XP Gain Indicator - positioned at TARGET end of fill, outside bar to avoid clipping */}
+                        <div 
+                          className="xp-gain-indicator" 
+                          style={{ 
+                            left: `${targetXPPosition}%` 
+                          }}
+                        >
+                          +{score}
                         </div>
                         <div className="xp-mystery-circle-final">
                           <span className="treasure-icon-final">🎁</span>

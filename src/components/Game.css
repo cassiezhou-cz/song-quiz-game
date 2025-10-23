@@ -4163,12 +4163,13 @@
   animation: xpBarGlow 0.5s ease-in-out, xpPulseGlowFinal 2s ease-in-out infinite;
 }
 
-/* XP Gain Indicator */
+/* XP Gain Indicator - now positioned relative to xp-bar-final-results to avoid clipping */
 .xp-gain-indicator {
   position: absolute;
   /* left is set dynamically via inline style based on xpProgress */
-  top: 50%;
-  transform: translate(-50%, -50%); /* Center horizontally on the position */
+  /* Position to align vertically with center of XP bar (45px height / 2 = 22.5px) */
+  top: 22.5px;
+  transform: translate(-50%, -50%); /* Center horizontally and vertically on the position */
   font-size: 1.8rem;
   font-weight: bold;
   color: #ffffff;
@@ -4184,43 +4185,47 @@
     0 0 25px rgba(0, 255, 170, 0.8),
     0 0 35px rgba(0, 255, 170, 0.6),
     0 0 45px rgba(0, 255, 170, 0.4);
-  z-index: 10;
+  z-index: 1000; /* High z-index to ensure visibility during flight */
   pointer-events: none;
-  animation: xpGainLifecycle 3s ease-in-out forwards;
+  animation: xpGainFlyFromScore 0.8s ease-out 0.5s forwards, xpGainPulseStatic 2s ease-in-out infinite 1.3s, xpGainFadeOut 0.6s ease-in-out 2.9s forwards;
   white-space: nowrap; /* Prevent text wrapping */
+  opacity: 0; /* Start invisible until animation begins */
 }
 
-@keyframes xpGainLifecycle {
-  /* Appear phase: 0-0.4s */
+/* Fly down from Final Score position to XP bar target */
+@keyframes xpGainFlyFromScore {
   0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5);
-  }
-  13.33% { /* 0.4s / 3s */
     opacity: 1;
+    /* Start at right side of center (where the score NUMBER is, after "Final Score: " text) */
+    left: calc(50% + 8rem);
+    transform: translate(-50%, calc(-50% - 12rem)) scale(1.67);
+  }
+  100% {
+    opacity: 1;
+    /* End at target position - left will animate to inline style value */
     transform: translate(-50%, -50%) scale(1);
   }
-  /* Pulse phase: 0.4s-2.4s (during bar fill) */
-  30% { /* ~0.9s */
-    opacity: 0.9;
+}
+
+/* Pulse animation while bar fills */
+@keyframes xpGainPulseStatic {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
     transform: translate(-50%, -50%) scale(1.05);
   }
-  46.67% { /* ~1.4s */
+}
+
+/* Fade out at the end */
+@keyframes xpGainFadeOut {
+  0% {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
-  63.33% { /* ~1.9s */
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(1.05);
-  }
-  80% { /* 2.4s - end of bar fill */
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  /* Fade out phase: 2.4s-3s */
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
+    transform: translate(-50%, -50%) scale(0.9);
   }
 }
 
@@ -4228,6 +4233,21 @@
 @media (max-width: 768px) {
   .xp-gain-indicator {
     font-size: 1.3rem;
+  }
+  
+  /* Adjusted fly animation for mobile */
+  @keyframes xpGainFlyFromScore {
+    0% {
+      opacity: 1;
+      /* Start at right side of center (where the score NUMBER is, after "Final Score: " text) */
+      left: calc(50% + 6rem);
+      transform: translate(-50%, calc(-50% - 10rem)) scale(1.92);
+    }
+    100% {
+      opacity: 1;
+      /* End at target position - left will animate to inline style value */
+      transform: translate(-50%, -50%) scale(1);
+    }
   }
 }
 
