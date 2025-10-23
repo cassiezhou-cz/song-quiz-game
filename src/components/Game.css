@@ -4159,6 +4159,11 @@
   animation: xpPulseGlowFinal 2s ease-in-out infinite;
 }
 
+/* Disable transition for instant drain on level-up */
+.xp-fill-final.no-transition {
+  transition: none !important;
+}
+
 .xp-fill-final.animate {
   animation: xpBarGlow 0.5s ease-in-out, xpPulseGlowFinal 2s ease-in-out infinite;
 }
@@ -4198,7 +4203,7 @@
     opacity: 1;
     /* Start at right side of center (where the score NUMBER is, after "Final Score: " text) */
     left: calc(50% + 8rem);
-    transform: translate(-50%, calc(-50% - 12rem)) scale(1.67);
+    transform: translate(-50%, calc(-50% - 8rem)) scale(1.67);
   }
   100% {
     opacity: 1;
@@ -4241,7 +4246,7 @@
       opacity: 1;
       /* Start at right side of center (where the score NUMBER is, after "Final Score: " text) */
       left: calc(50% + 6rem);
-      transform: translate(-50%, calc(-50% - 10rem)) scale(1.92);
+      transform: translate(-50%, calc(-50% - 6.5rem)) scale(1.92);
     }
     100% {
       opacity: 1;

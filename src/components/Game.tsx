@@ -377,6 +377,7 @@ const Game = () => {
   
   // XP System state for Version B
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
+  const [skipXPTransition, setSkipXPTransition] = useState(false) // Skip transition for instant drain
   
   // Player name
   const [playerName, setPlayerName] = useState('')
@@ -422,10 +423,34 @@ const Game = () => {
   const [showHatUnlockModal, setShowHatUnlockModal] = useState(false)
   const [hatUnlocked, setHatUnlocked] = useState(false)
   
+  // Track XP refill (overflow) after level-up modals
+  const [pendingXPDrain, setPendingXPDrain] = useState<{ finalXP: number; totalModals: number; closedModals: number } | null>(null)
+  
   // Debug: Log when modal state changes
   useEffect(() => {
     console.log('🎯 Modal State Changed:', { showLevelUpModal, newlyUnlockedLifeline })
   }, [showLevelUpModal, newlyUnlockedLifeline])
+
+  // Handle XP refill after all level-up modals are closed
+  useEffect(() => {
+    if (pendingXPDrain && pendingXPDrain.closedModals === pendingXPDrain.totalModals) {
+      console.log('🎯 All modals closed! Refilling XP bar to overflow:', pendingXPDrain.finalXP)
+      
+      // Re-enable transition and refill bar from 0% to overflow amount
+      setTimeout(() => {
+        setSkipXPTransition(false) // Re-enable transition for visible refill animation
+        setTimeout(() => {
+          setXpProgress(pendingXPDrain.finalXP)
+          setStartingXP(pendingXPDrain.finalXP)
+          localStorage.setItem('player_xp_progress', pendingXPDrain.finalXP.toString())
+          console.log('🎯 XP bar refilled to overflow:', pendingXPDrain.finalXP)
+          
+          // Clear pending refill
+          setPendingXPDrain(null)
+        }, 50) // Small delay to ensure transition is re-enabled
+      }, 300) // Small delay before refill for better UX
+    }
+  }, [pendingXPDrain])
 
   // Version B Letter Reveal state
   const [artistLetterRevealText, setArtistLetterRevealText] = useState<string | null>(null)
@@ -3170,57 +3195,69 @@ const Game = () => {
                   const newLevelUpCount = currentLevelUpCount + levelsGained
                   localStorage.setItem('level_up_count', newLevelUpCount.toString())
                   
-                  // After bar fills to 100%, drain to overflow and show modals
+                  // After bar fills to 100%, show modals and drain bar behind them
                   setTimeout(() => {
-                    // Drain bar to overflow amount
-                    setXpProgress(finalXP)
-                    setStartingXP(finalXP)
-                    localStorage.setItem('player_xp_progress', finalXP.toString())
-                    console.log('🎯 XP bar drained to overflow:', finalXP)
+                    // Count how many modals will be shown
+                    let totalModalsToShow = 0
                     
-                    // Show unlock modals after drain animation
-                    setTimeout(() => {
-                      // Process each level up
-                      const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
-                      let currentUnlocked = [...unlockedLifelines]
-                      let modalDelay = 0
+                    // Process each level up to count modals
+                    const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+                    let currentUnlocked = [...unlockedLifelines]
+                    let modalDelay = 0
+                    
+                    for (let i = 0; i < levelsGained; i++) {
+                      const levelNum = currentLevelUpCount + i + 1
                       
-                      for (let i = 0; i < levelsGained; i++) {
-                        const levelNum = currentLevelUpCount + i + 1
+                      // Check if this is the third level up (hat unlock)
+                      if (levelNum === 3 && !hatUnlocked) {
+                        totalModalsToShow++
+                        setTimeout(() => {
+                          console.log('🎩 HAT UNLOCK!')
+                          setShowHatUnlockModal(true)
+                          setHatUnlocked(true)
+                          localStorage.setItem('hat_unlocked', 'true')
+                        }, modalDelay)
+                        modalDelay += 2000 // Delay next modal
+                      } else {
+                        // Unlock next lifeline
+                        const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !currentUnlocked.includes(lifeline))
                         
-                        // Check if this is the third level up (hat unlock)
-                        if (levelNum === 3 && !hatUnlocked) {
-                          setTimeout(() => {
-                            console.log('🎩 HAT UNLOCK!')
-                            setShowHatUnlockModal(true)
-                            setHatUnlocked(true)
-                            localStorage.setItem('hat_unlocked', 'true')
-                          }, modalDelay)
-                          modalDelay += 2000 // Delay next modal
-                        } else {
-                          // Unlock next lifeline
-                          const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !currentUnlocked.includes(lifeline))
+                        if (nextLifelineToUnlock) {
+                          totalModalsToShow++
+                          const capturedLifeline = nextLifelineToUnlock
+                          const capturedUnlocked = [...currentUnlocked, nextLifelineToUnlock]
                           
-                          if (nextLifelineToUnlock) {
-                            const capturedLifeline = nextLifelineToUnlock
-                            const capturedUnlocked = [...currentUnlocked, nextLifelineToUnlock]
+                          setTimeout(() => {
+                            console.log('🎉 Showing level up modal for:', capturedLifeline)
+                            setNewlyUnlockedLifeline(capturedLifeline)
+                            setShowLevelUpModal(true)
                             
-                            setTimeout(() => {
-                              console.log('🎉 Showing level up modal for:', capturedLifeline)
-                              setNewlyUnlockedLifeline(capturedLifeline)
-                              setShowLevelUpModal(true)
-                              
-                              setUnlockedLifelines(capturedUnlocked)
-                              localStorage.setItem('unlocked_lifelines', JSON.stringify(capturedUnlocked))
-                            }, modalDelay)
-                            
-                            // Update tracking array for next iteration
-                            currentUnlocked = capturedUnlocked
-                            modalDelay += 2000 // Delay next modal
-                          }
+                            setUnlockedLifelines(capturedUnlocked)
+                            localStorage.setItem('unlocked_lifelines', JSON.stringify(capturedUnlocked))
+                          }, modalDelay)
+                          
+                          // Update tracking array for next iteration
+                          currentUnlocked = capturedUnlocked
+                          modalDelay += 2000 // Delay next modal
                         }
                       }
-                    }, 500) // Wait for drain animation
+                    }
+                    
+                    // Wait for modal to fully appear before draining bar
+                    setTimeout(() => {
+                      // Drain bar to 0% instantaneously behind the modal (player won't see this happen)
+                      console.log('🎯 Level up! Draining bar to 0% instantly (behind modal)')
+                      setSkipXPTransition(true) // Disable transition for instant drain
+                      setXpProgress(0)
+                    }, 200) // Wait for modal to fully render
+                    
+                    // Set up pending refill (from 0% to overflow) that will execute after all modals are closed
+                    setPendingXPDrain({
+                      finalXP: finalXP,
+                      totalModals: totalModalsToShow,
+                      closedModals: 0
+                    })
+                    console.log('🎯 Pending XP refill to:', finalXP, 'after', totalModalsToShow, 'modal(s) close')
                   }, 800) // Wait for fill to 100% animation
                 } else {
                   // No level up, just save the new XP
@@ -4248,10 +4285,28 @@ const Game = () => {
   const closeLevelUpModal = () => {
     setShowLevelUpModal(false)
     setNewlyUnlockedLifeline(null)
+    
+    // Increment closed modal count for XP refill tracking
+    if (pendingXPDrain) {
+      setPendingXPDrain({
+        ...pendingXPDrain,
+        closedModals: pendingXPDrain.closedModals + 1
+      })
+      console.log('🎯 Lifeline modal closed:', pendingXPDrain.closedModals + 1, '/', pendingXPDrain.totalModals)
+    }
   }
 
   const closeHatUnlockModal = () => {
     setShowHatUnlockModal(false)
+    
+    // Increment closed modal count for XP refill tracking
+    if (pendingXPDrain) {
+      setPendingXPDrain({
+        ...pendingXPDrain,
+        closedModals: pendingXPDrain.closedModals + 1
+      })
+      console.log('🎯 Hat modal closed:', pendingXPDrain.closedModals + 1, '/', pendingXPDrain.totalModals)
+    }
   }
 
   const restartGame = () => {
@@ -4378,6 +4433,8 @@ const Game = () => {
     // Reset XP animation state for next completion
     setShowXPAnimation(false)
     setXpAnimationComplete(false)
+    setPendingXPDrain(null) // Clear any pending XP refill
+    setSkipXPTransition(false) // Re-enable XP transitions
     
     // Reset NEW Results Screen sequence states
     setShowQuizComplete(false)
@@ -4631,7 +4688,7 @@ const Game = () => {
                       <div className="xp-bar-final-results">
                         <div className="xp-bar-final">
                           <div 
-                            className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''}`}
+                            className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''} ${skipXPTransition ? 'no-transition' : ''}`}
                             style={{ 
                               width: `${xpProgress}%` 
                             }}
@@ -4677,7 +4734,7 @@ const Game = () => {
                       <div className="xp-bar-final-results">
                         <div className="xp-bar-final">
                           <div 
-                            className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''}`}
+                            className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''} ${skipXPTransition ? 'no-transition' : ''}`}
                             style={{ 
                               width: `${xpProgress}%` 
                             }}
