@@ -25,6 +25,14 @@ const PlaylistSelection = () => {
   const [newlyRechargedLifelines, setNewlyRechargedLifelines] = useState<LifelineType[]>([])
   const hasLoadedInitial = useRef(false)
 
+  // Debug: Log whenever newlyLitLights changes
+  useEffect(() => {
+    if (Object.keys(newlyLitLights).length > 0) {
+      console.log('🎨 RENDER: newlyLitLights state changed:', newlyLitLights)
+      console.log('🎨 These segments should have fill-animation class now')
+    }
+  }, [newlyLitLights])
+
   // Load data whenever we navigate to this page
   useEffect(() => {
     console.log('🔄 PlaylistSelection mounted/navigated, location:', location.pathname)
@@ -162,8 +170,15 @@ const PlaylistSelection = () => {
         if (effectivePrevProgress < i && currentProgress >= i) {
           const lightKey = `${lifeline}-${i}`
           newLitLights[lightKey] = true
-          console.log(`✨ Light ${i} will animate for ${lifeline}`)
+          console.log(`✨ Light ${i} will animate for ${lifeline} (key: ${lightKey})`)
+          console.log(`   Condition: ${effectivePrevProgress} < ${i} AND ${currentProgress} >= ${i}`)
         }
+      }
+      
+      // Debug: show what we're checking
+      console.log(`   Checking segments 1-3 for ${lifeline}:`)
+      for (let i = 1; i <= 3; i++) {
+        console.log(`     Segment ${i}: prev=${effectivePrevProgress}, curr=${currentProgress}, shouldAnimate=${effectivePrevProgress < i && currentProgress >= i}`)
       }
       
       // Check if lifeline just became fully recharged
@@ -176,13 +191,22 @@ const PlaylistSelection = () => {
     // Trigger animations if there are changes
     if (Object.keys(newLitLights).length > 0) {
       console.log('🎬 TRIGGERING LIGHT-UP ANIMATIONS:', newLitLights)
+      console.log('🎬 Setting newlyLitLights state to:', newLitLights)
       setNewlyLitLights(newLitLights)
+      
+      // Log to verify state was set
       setTimeout(() => {
-        console.log('🧹 Clearing light-up animations')
+        console.log('🔍 Verify: newlyLitLights should now be:', newLitLights)
+      }, 100)
+      
+      setTimeout(() => {
+        console.log('🧹 Clearing light-up animations after 2.5s')
         setNewlyLitLights({})
-      }, 2000) // Increased to 2s to allow animation to complete (0.5s delay + 1.2s animation + buffer)
+      }, 2500) // Extended to 2.5s to ensure animation completes
     } else {
       console.log('❌ No light-up animations to trigger')
+      console.log('   Current state:', current)
+      console.log('   Previous state:', prev)
     }
     
     if (recharged.length > 0) {
