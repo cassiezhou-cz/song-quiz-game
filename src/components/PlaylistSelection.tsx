@@ -10,6 +10,7 @@ const PlaylistSelection = () => {
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
   const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
+  const [displayLevel, setDisplayLevel] = useState(1) // Level to display on XP bar icon (delays update until modal dismissed)
   const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
   const [hatUnlocked, setHatUnlocked] = useState(false)
   
@@ -38,6 +39,7 @@ const PlaylistSelection = () => {
     
     const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
     setPlayerLevel(savedLevel)
+    setDisplayLevel(savedLevel) // Initialize display level to match actual level
     
     const savedHatUnlocked = localStorage.getItem('hat_unlocked')
     setHatUnlocked(savedHatUnlocked === 'true')
@@ -89,6 +91,7 @@ const PlaylistSelection = () => {
     localStorage.removeItem('player_name')
     setXpProgress(0)
     setPlayerLevel(1)
+    setDisplayLevel(1)
     setUnlockedLifelines([])
     setHatUnlocked(false)
     setPlayerName('')
@@ -159,7 +162,13 @@ const PlaylistSelection = () => {
             ></div>
           </div>
           <div className="xp-mystery-circle">
-            <span className="treasure-icon">🎁</span>
+            <span className="treasure-icon">
+              {displayLevel === 3 ? (
+                '🎁'
+              ) : (
+                <img src="/assets/TreasureChest.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              )}
+            </span>
             <span className="mystery-icon">{playerLevel}</span>
           </div>
         </div>

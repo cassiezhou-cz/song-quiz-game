@@ -379,6 +379,7 @@ const Game = () => {
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
   const [skipXPTransition, setSkipXPTransition] = useState(false) // Skip transition for instant drain
   const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
+  const [displayLevel, setDisplayLevel] = useState(1) // Level to display on XP bar icon (delays update until modal dismissed)
   const [showLevelUpAnimation, setShowLevelUpAnimation] = useState(false) // Trigger level-up animation
   
   // Player name
@@ -3055,6 +3056,7 @@ const Game = () => {
     // Load player level
     const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
     setPlayerLevel(savedLevel)
+    setDisplayLevel(savedLevel) // Initialize display level to match actual level
     console.log('🎯 Loaded player level:', savedLevel)
     
     // Load player name
@@ -4223,6 +4225,9 @@ const Game = () => {
     setShowLevelUpModal(false)
     setNewlyUnlockedLifeline(null)
     
+    // Update display level to match actual level (show new icon after modal dismissed)
+    setDisplayLevel(playerLevel)
+    
     // Increment closed modal count for XP refill tracking
     if (pendingXPDrain) {
       setPendingXPDrain({
@@ -4235,6 +4240,9 @@ const Game = () => {
 
   const closeHatUnlockModal = () => {
     setShowHatUnlockModal(false)
+    
+    // Update display level to match actual level (show new icon after modal dismissed)
+    setDisplayLevel(playerLevel)
     
     // Increment closed modal count for XP refill tracking
     if (pendingXPDrain) {
@@ -4626,7 +4634,13 @@ const Game = () => {
                           +{score}
                         </div>
                         <div className="xp-mystery-circle-final">
-                          <span className="treasure-icon-final">🎁</span>
+                          <span className="treasure-icon-final">
+                            {displayLevel === 3 ? (
+                              '🎁'
+                            ) : (
+                              <img src="/assets/TreasureChest.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                            )}
+                          </span>
                           <span className={`mystery-icon-final ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
                         </div>
                       </div>
@@ -4723,7 +4737,13 @@ const Game = () => {
                           ></div>
                         </div>
                         <div className="xp-mystery-circle-final">
-                          <span className="treasure-icon-final">🎁</span>
+                          <span className="treasure-icon-final">
+                            {displayLevel === 3 ? (
+                              '🎁'
+                            ) : (
+                              <img src="/assets/TreasureChest.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                            )}
+                          </span>
                           <span className={`mystery-icon-final ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
                         </div>
                       </div>
@@ -4917,7 +4937,9 @@ const Game = () => {
         {showLevelUpModal && newlyUnlockedLifeline && (
           <div className="level-up-modal-overlay">
             <div className="level-up-modal">
-              <div className="level-up-present-icon">🎁</div>
+              <div className="level-up-present-icon">
+                <img src="/assets/TreasureChest.png" alt="Treasure Chest" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
               <h2 className="level-up-title">New Lifeline Unlocked!</h2>
               <div className="level-up-lifeline-display">
                 {newlyUnlockedLifeline === 'skip' && (
@@ -6035,7 +6057,9 @@ const Game = () => {
         {showLevelUpModal && newlyUnlockedLifeline && (
           <div className="level-up-modal-overlay">
             <div className="level-up-modal">
-              <div className="level-up-present-icon">🎁</div>
+              <div className="level-up-present-icon">
+                <img src="/assets/TreasureChest.png" alt="Treasure Chest" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
               <h2 className="level-up-title">New Lifeline Unlocked!</h2>
               <div className="level-up-lifeline-display">
                 {newlyUnlockedLifeline === 'skip' && (
