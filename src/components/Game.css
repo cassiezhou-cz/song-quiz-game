@@ -2565,9 +2565,23 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  min-height: 80vh;
+  min-height: 100vh;
   justify-content: flex-start;
   padding-top: 0.5rem;
+  padding-bottom: 2rem;
+  overflow-y: auto;
+  overflow-anchor: none; /* Prevent scroll anchoring that causes shifts */
+}
+
+/* Top section wrapper - keeps Quiz Complete, Score, and XP Bar stable */
+.results-top-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0; /* Prevent compression */
+  margin-bottom: 0; /* Song list will add its own spacing */
+  position: relative; /* Establish positioning context */
 }
 
 .score-button.score-30 {
@@ -4106,7 +4120,7 @@
 
 /* XP Gain Animation in Final Results */
 .xp-gain-container {
-  margin: 2rem auto;
+  margin: 2rem auto 0 auto; /* Removed bottom margin - song list handles spacing */
   padding: 2rem;
   padding-right: 4rem; /* Extra padding to contain the mystery circle */
   max-width: 650px;
@@ -4428,8 +4442,10 @@
 
 /* Version B Final Results - Song List */
 .version-b-song-list {
-  margin: 1rem 0;
+  margin: 2rem 0 2rem 0;
   width: 100%;
+  overflow-anchor: none; /* Prevent scroll anchoring */
+  flex-shrink: 0; /* Prevent compression */
 }
 
 .song-list-title {

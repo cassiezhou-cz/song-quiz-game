@@ -457,10 +457,13 @@ const Game = () => {
           setPendingXPDrain(null)
           
           // Show song list after XP bar finishes refilling
+          // If no overflow XP (finalXP === 0), skip the refill animation wait
+          const hasOverflow = pendingXPDrain.finalXP > 0
+          const delay = hasOverflow ? 2150 : 650 // With overflow: wait for refill animation (1.5s) + pause. No overflow: just pause
           setTimeout(() => {
-            console.log('🎵 Showing Your Answers section (after level-up)')
+            console.log('🎵 Showing Your Answers section (after level-up)', hasOverflow ? 'with overflow' : 'no overflow')
             setShowSongList(true)
-          }, 1500) // Wait for XP bar refill animation (1.5s) - no extra pause since player just interacted with modals
+          }, delay)
         }, 50) // Small delay to ensure transition is re-enabled
       }, 300) // Small delay before refill for better UX
     }
@@ -3119,6 +3122,9 @@ const Game = () => {
     if (gameComplete && version === 'Version B' && !showQuizComplete) {
       console.log('🎬 Starting NEW Results Screen sequence')
       
+      // Ensure we're scrolled to top to prevent layout shifts
+      window.scrollTo({ top: 0, behavior: 'auto' })
+      
       // Step 1: After 0.3s delay, show "QUIZ COMPLETE!"
       const quizCompleteTimer = setTimeout(() => {
         console.log('🎬 Step 1: Showing QUIZ COMPLETE!')
@@ -3303,7 +3309,7 @@ const Game = () => {
                   setTimeout(() => {
                     console.log('🎵 Showing Your Answers section (no level-up)')
                     setShowSongList(true)
-                  }, 2000) // Wait for XP bar fill animation (1.5s) + 0.5s delay
+                  }, 2500) // Wait for XP bar fill animation (1.5s) + 1.0s pause
                 }
               }, 1300) // Wait for indicator to arrive (0.5s delay + 0.8s flight)
             }, 100)
@@ -4716,6 +4722,8 @@ const Game = () => {
               {/* Version B Final Results */}
               {version === 'Version B' && (
                 <div className="version-b-results">
+                  {/* Top section - stable positioning */}
+                  <div className="results-top-section">
                   {/* NEW Sequential Results Display */}
                   {showQuizComplete && (
                     <h3 className="victory-message">Quiz Complete!</h3>
@@ -4753,6 +4761,7 @@ const Game = () => {
                       </div>
                     </div>
                   )}
+                  </div>
                   
                   {/* Detailed Song List - NEW ACTIVE */}
                   {showSongList && (
