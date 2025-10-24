@@ -601,7 +601,7 @@
   background: linear-gradient(90deg, #00ff88, #00cc6a);
 }
 
-/* Recharged label - delayed to play after battery animation */
+/* Recharged label - part of Battery Recharged animation, appears with lifeline pulse */
 .recharged-label {
   position: absolute;
   bottom: -25px;
@@ -616,10 +616,10 @@
     0 0 10px rgba(0, 255, 136, 0.8),
     0 0 20px rgba(0, 255, 136, 0.6),
     0 0 30px rgba(0, 255, 136, 0.4);
-  animation: rechargedLabelFade 2.5s ease-in-out 1.8s forwards; /* 1.8s delay = 0.3s battery delay + 1.5s battery animation */
+  animation: rechargedLabelFade 2.5s ease-in-out 1.8s forwards; /* Same 1.8s delay as lifeline animation */
   white-space: nowrap;
   pointer-events: none;
-  opacity: 0; /* Start invisible */
+  opacity: 0; /* Start invisible, appears with lifeline pulse */
 }
 
 @keyframes rechargedLabelFade {
@@ -645,9 +645,10 @@
   }
 }
 
-/* Fully recharged lifeline animation */
+/* Fully recharged lifeline animation - delayed to play AFTER segment fill */
 .lifeline-display-item.newly-recharged {
-  animation: lifelineRecharge 2s ease-out;
+  animation: lifelineRecharge 2s ease-out 1.8s; /* Wait for segment fill to complete (0.3s + 1.5s) */
+  animation-fill-mode: both; /* Maintain initial state during delay */
 }
 
 @keyframes lifelineRecharge {
