@@ -223,7 +223,7 @@ const PlaylistSelection = () => {
       setTimeout(() => {
         console.log('🧹 Clearing recharge animations')
         setNewlyRechargedLifelines([])
-      }, 2000)
+      }, 4200) // Wait for recharged animation to complete (1.5s delay + 2.5s animation + 0.2s buffer)
     } else {
       console.log('❌ No recharge animations to trigger')
     }

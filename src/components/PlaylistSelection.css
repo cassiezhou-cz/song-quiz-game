@@ -616,7 +616,7 @@
     0 0 10px rgba(0, 255, 136, 0.8),
     0 0 20px rgba(0, 255, 136, 0.6),
     0 0 30px rgba(0, 255, 136, 0.4);
-  animation: rechargedLabelFade 2.5s ease-in-out 1.8s forwards; /* Same 1.8s delay as lifeline animation */
+  animation: rechargedLabelFade 2.5s ease-in-out 1.5s forwards; /* Overlaps with end of segment fill for smooth transition */
   white-space: nowrap;
   pointer-events: none;
   opacity: 0; /* Start invisible, appears with lifeline pulse */
@@ -645,9 +645,9 @@
   }
 }
 
-/* Fully recharged lifeline animation - delayed to play AFTER segment fill */
+/* Fully recharged lifeline animation - overlaps with end of segment fill for smooth transition */
 .lifeline-display-item.newly-recharged {
-  animation: lifelineRecharge 2s ease-out 1.8s; /* Wait for segment fill to complete (0.3s + 1.5s) */
+  animation: lifelineRecharge 2s ease-out 1.5s; /* Starts near end of segment fill (smooth transition) */
   animation-fill-mode: both; /* Maintain initial state during delay */
 }
 
