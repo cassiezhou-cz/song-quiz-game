@@ -6274,6 +6274,22 @@
   }
 }
 
+.level-up-present-icon {
+  font-size: 5rem;
+  margin: 0 0 1.5rem 0;
+  animation: presentBounce 1s ease-in-out infinite;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+}
+
+@keyframes presentBounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
 .level-up-title {
   font-size: 2.5rem;
   font-weight: 800;

@@ -4917,6 +4917,7 @@ const Game = () => {
         {showLevelUpModal && newlyUnlockedLifeline && (
           <div className="level-up-modal-overlay">
             <div className="level-up-modal">
+              <div className="level-up-present-icon">🎁</div>
               <h2 className="level-up-title">New Lifeline Unlocked!</h2>
               <div className="level-up-lifeline-display">
                 {newlyUnlockedLifeline === 'skip' && (
@@ -4971,6 +4972,7 @@ const Game = () => {
         {showHatUnlockModal && (
           <div className="level-up-modal-overlay">
             <div className="level-up-modal">
+              <div className="level-up-present-icon">🎁</div>
               <h2 className="level-up-title">New Avatar Item!</h2>
               <div className="level-up-lifeline-display">
                 <img 
@@ -6033,6 +6035,7 @@ const Game = () => {
         {showLevelUpModal && newlyUnlockedLifeline && (
           <div className="level-up-modal-overlay">
             <div className="level-up-modal">
+              <div className="level-up-present-icon">🎁</div>
               <h2 className="level-up-title">New Lifeline Unlocked!</h2>
               <div className="level-up-lifeline-display">
                 {newlyUnlockedLifeline === 'skip' && (
@@ -6087,6 +6090,7 @@ const Game = () => {
         {showHatUnlockModal && (
           <div className="level-up-modal-overlay">
             <div className="level-up-modal">
+              <div className="level-up-present-icon">🎁</div>
               <h2 className="level-up-title">New Avatar Item!</h2>
               <div className="level-up-lifeline-display">
                 <img 
