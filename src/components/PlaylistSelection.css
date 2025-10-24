@@ -449,16 +449,15 @@
   gap: 0.5rem;
 }
 
-.lifeline-display-item.recharging {
+/* Recharging styles removed - lifelines are no longer consumables */
+/* .lifeline-display-item.recharging {
   opacity: 0.5;
-  /* Removed grayscale from parent - applying it to children individually instead */
 }
 
-/* Apply grayscale to icon and name when recharging, but NOT to battery meter */
 .lifeline-display-item.recharging .lifeline-display-icon,
 .lifeline-display-item.recharging .lifeline-display-name {
   filter: grayscale(80%);
-}
+} */
 
 .lifeline-display-icon {
   font-size: 2.5rem;
@@ -488,8 +487,11 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Recharge Indicators */
-/* Battery Meter for Lifeline Recharge */
+/* ============================================ */
+/* BATTERY METER STYLES - COMMENTED OUT */
+/* Lifelines are no longer consumables that need recharging */
+/* ============================================ */
+/*
 .battery-meter {
   display: flex;
   align-items: center;
@@ -521,10 +523,9 @@
   height: 20px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 2px;
-  transition: none; /* Disable transition to not interfere with animation */
+  transition: none;
 }
 
-/* Apply grayscale to filled segments when NOT animating and NOT fully charged */
 .lifeline-display-item.recharging .battery-segment.filled {
   background: linear-gradient(135deg, #00ff88, #00cc6a);
   box-shadow: 
@@ -533,7 +534,6 @@
   filter: grayscale(100%);
 }
 
-/* Regular filled segments (when fully charged) - no grayscale */
 .battery-segment.filled {
   background: linear-gradient(135deg, #00ff88, #00cc6a);
   box-shadow: 
@@ -541,13 +541,11 @@
     inset 0 0 6px rgba(255, 255, 255, 0.2);
 }
 
-/* Fill animation for individual segments - DRAMATIC VERSION - NO GRAYSCALE! */
 .battery-segment.fill-animation {
-  animation: segmentFillDramatic 1.5s ease-out 0.3s; /* Shorter delay, longer animation */
+  animation: segmentFillDramatic 1.5s ease-out 0.3s;
   animation-fill-mode: both;
   position: relative;
   z-index: 10;
-  /* Force visibility during animation */
   opacity: 1 !important;
 }
 
@@ -596,7 +594,6 @@
   }
 }
 
-/* Fully charged battery - static appearance without glow */
 .battery-meter.fully-charged .battery-body {
   border-color: #00ff88;
 }
@@ -605,12 +602,16 @@
   background: linear-gradient(90deg, #00ff88, #00cc6a);
 }
 
-/* Remove grayscale from segments when battery is fully charged */
 .battery-meter.fully-charged .battery-segment.filled {
   filter: grayscale(0%) !important;
 }
+*/
 
-/* Recharged label - part of Battery Recharged animation, appears with lifeline pulse */
+/* ============================================ */
+/* RECHARGE ANIMATION STYLES - COMMENTED OUT */
+/* Lifelines no longer need recharge animations */
+/* ============================================ */
+/*
 .recharged-label {
   position: absolute;
   bottom: -25px;
@@ -625,10 +626,10 @@
     0 0 10px rgba(0, 255, 136, 0.8),
     0 0 20px rgba(0, 255, 136, 0.6),
     0 0 30px rgba(0, 255, 136, 0.4);
-  animation: rechargedLabelFade 2.5s ease-in-out 1.5s forwards; /* Overlaps with end of segment fill for smooth transition */
+  animation: rechargedLabelFade 2.5s ease-in-out 1.5s forwards;
   white-space: nowrap;
   pointer-events: none;
-  opacity: 0; /* Start invisible, appears with lifeline pulse */
+  opacity: 0;
 }
 
 @keyframes rechargedLabelFade {
@@ -654,10 +655,9 @@
   }
 }
 
-/* Fully recharged lifeline animation - overlaps with end of segment fill for smooth transition */
 .lifeline-display-item.newly-recharged {
-  animation: lifelineRecharge 2s ease-out 1.5s; /* Starts near end of segment fill (smooth transition) */
-  animation-fill-mode: both; /* Maintain initial state during delay */
+  animation: lifelineRecharge 2s ease-out 1.5s;
+  animation-fill-mode: both;
 }
 
 @keyframes lifelineRecharge {
@@ -695,6 +695,7 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   }
 }
+*/
 
 /* Responsive design for mobile */
 @media (max-width: 768px) {
