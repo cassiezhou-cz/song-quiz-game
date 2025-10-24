@@ -601,7 +601,7 @@
   background: linear-gradient(90deg, #00ff88, #00cc6a);
 }
 
-/* Recharged label */
+/* Recharged label - delayed to play after battery animation */
 .recharged-label {
   position: absolute;
   bottom: -25px;
@@ -616,9 +616,10 @@
     0 0 10px rgba(0, 255, 136, 0.8),
     0 0 20px rgba(0, 255, 136, 0.6),
     0 0 30px rgba(0, 255, 136, 0.4);
-  animation: rechargedLabelFade 2.5s ease-in-out forwards;
+  animation: rechargedLabelFade 2.5s ease-in-out 1.8s forwards; /* 1.8s delay = 0.3s battery delay + 1.5s battery animation */
   white-space: nowrap;
   pointer-events: none;
+  opacity: 0; /* Start invisible */
 }
 
 @keyframes rechargedLabelFade {
