@@ -150,12 +150,19 @@ const PlaylistSelection = () => {
     // Check each lifeline for progress changes
     for (const lifeline of unlockedLifelines) {
       const prevProgress = prev[lifeline] !== undefined ? prev[lifeline]! : 3
-      // If lifeline is being tracked for the first time (in current but not in prev), treat as starting from 0
       const currentProgress = current[lifeline] !== undefined ? current[lifeline]! : 3
-      const isFirstTimeTracking = prev[lifeline] === undefined && current[lifeline] !== undefined && current[lifeline]! < 3
-      const effectivePrevProgress = isFirstTimeTracking ? 0 : prevProgress
       
-      console.log(`  ${lifeline}: ${effectivePrevProgress} → ${currentProgress}${isFirstTimeTracking ? ' (first time tracking)' : ''}`)
+      // If lifeline was fully charged (3) and now is recharging (< 3), treat as starting from 0
+      // This handles the case where a lifeline was just used and is now recharging
+      const wasFullyCharged = prevProgress === 3 && currentProgress < 3
+      
+      // If lifeline is being tracked for the first time (in current but not in prev), treat as starting from 0
+      const isFirstTimeTracking = prev[lifeline] === undefined && currentProgress < 3
+      
+      const effectivePrevProgress = (wasFullyCharged || isFirstTimeTracking) ? 0 : prevProgress
+      
+      const statusText = wasFullyCharged ? ' (JUST USED - animating from 0!)' : (isFirstTimeTracking ? ' (first time tracking)' : '')
+      console.log(`  ${lifeline}: ${effectivePrevProgress} → ${currentProgress}${statusText}`)
       
       // Skip if no change
       if (effectivePrevProgress === currentProgress) {
@@ -163,7 +170,8 @@ const PlaylistSelection = () => {
         continue
       }
       
-      console.log(`🔋 CHANGE DETECTED for ${lifeline}: ${effectivePrevProgress} → ${currentProgress}${isFirstTimeTracking ? ' (first charge!)' : ''}`)
+      const changeText = wasFullyCharged ? ' (FIRST CHARGE after use!)' : (isFirstTimeTracking ? ' (first charge!)' : '')
+      console.log(`🔋 CHANGE DETECTED for ${lifeline}: ${effectivePrevProgress} → ${currentProgress}${changeText}`)
       
       // Check which lights just lit up
       for (let i = 1; i <= 3; i++) {
