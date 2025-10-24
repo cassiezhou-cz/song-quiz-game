@@ -4152,7 +4152,7 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  overflow: hidden;
+  overflow: visible;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
@@ -4165,21 +4165,26 @@
   background: linear-gradient(90deg, rgb(0, 191, 255), rgb(0, 230, 255));
   border-radius: 10px;
   transition: width 2s cubic-bezier(0.4, 0.0, 0.2, 1);
-  box-shadow: 
-    0 0 15px rgba(0, 191, 255, 0.8),
-    0 0 30px rgba(0, 191, 255, 0.6),
-    0 0 45px rgba(0, 191, 255, 0.4),
-    inset 0 0 20px rgba(255, 255, 255, 0.3);
-  animation: xpPulseGlowFinal 2s ease-in-out infinite;
+}
+
+.xp-bar-text-final {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  pointer-events: none;
 }
 
 /* Disable transition for instant drain on level-up */
 .xp-fill-final.no-transition {
   transition: none !important;
-}
-
-.xp-fill-final.animate {
-  animation: xpBarGlow 0.5s ease-in-out, xpPulseGlowFinal 2s ease-in-out infinite;
 }
 
 /* XP Gain Indicator - now positioned relative to xp-bar-final-results to avoid clipping */
@@ -4286,6 +4291,7 @@
   }
 }
 
+/* Removed flash glow animation
 @keyframes xpBarGlow {
   0%, 100% {
     box-shadow: 
@@ -4302,7 +4308,9 @@
       inset 0 0 30px rgba(255, 255, 255, 0.5);
   }
 }
+*/
 
+/* Removed constant pulsing glow animation
 @keyframes xpPulseGlowFinal {
   0%, 100% {
     box-shadow: 
@@ -4319,6 +4327,7 @@
       inset 0 0 25px rgba(255, 255, 255, 0.4);
   }
 }
+*/
 
 .xp-mystery-circle-final {
   position: absolute;

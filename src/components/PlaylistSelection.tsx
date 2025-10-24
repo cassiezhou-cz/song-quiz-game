@@ -160,6 +160,7 @@ const PlaylistSelection = () => {
               className="xp-fill" 
               style={{ width: `${xpProgress}%` }}
             ></div>
+            <div className="xp-bar-text">{xpProgress}/100</div>
           </div>
           <div className="xp-mystery-circle">
             <span className="treasure-icon">

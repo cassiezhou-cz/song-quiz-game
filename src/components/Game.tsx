@@ -377,6 +377,7 @@ const Game = () => {
   
   // XP System state for Version B
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
+  const [displayedXP, setDisplayedXP] = useState(0) // XP counter that animates/counts up for display
   const [skipXPTransition, setSkipXPTransition] = useState(false) // Skip transition for instant drain
   const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
   const [displayLevel, setDisplayLevel] = useState(1) // Level to display on XP bar icon (delays update until modal dismissed)
@@ -447,10 +448,11 @@ const Game = () => {
       setTimeout(() => {
         setSkipXPTransition(false) // Re-enable transition for visible refill animation
         setTimeout(() => {
+          setStartingXP(0) // Start from 0 for the counter animation
+          setDisplayedXP(0) // Start counter at 0
           setXpProgress(pendingXPDrain.finalXP)
-          setStartingXP(pendingXPDrain.finalXP)
           localStorage.setItem('player_xp_progress', pendingXPDrain.finalXP.toString())
-          console.log('🎯 XP bar refilled to overflow:', pendingXPDrain.finalXP)
+          console.log('🎯 XP bar refilling from 0 to overflow:', pendingXPDrain.finalXP)
           
           // Clear pending refill
           setPendingXPDrain(null)
@@ -459,6 +461,15 @@ const Game = () => {
           // If no overflow XP (finalXP === 0), skip the refill animation wait
           const hasOverflow = pendingXPDrain.finalXP > 0
           const delay = hasOverflow ? 2150 : 650 // With overflow: wait for refill animation (1.5s) + pause. No overflow: just pause
+          
+          // Update startingXP after animation completes
+          if (hasOverflow) {
+            setTimeout(() => {
+              setStartingXP(pendingXPDrain.finalXP)
+              console.log('🎯 Updated startingXP to:', pendingXPDrain.finalXP)
+            }, 2000) // After 2s animation
+          }
+          
           setTimeout(() => {
             console.log('🎵 Showing Your Answers section (after level-up)', hasOverflow ? 'with overflow' : 'no overflow')
             setShowSongList(true)
@@ -3051,6 +3062,7 @@ const Game = () => {
     const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
     const initialXP = Math.min(savedXP, 100) // Cap at 100
     setXpProgress(initialXP)
+    setDisplayedXP(initialXP)
     setStartingXP(initialXP)
     
     // Load player level
@@ -3229,6 +3241,8 @@ const Game = () => {
                       console.log('🎯 Level up! Draining bar to 0% instantly (behind modal)')
                       setSkipXPTransition(true) // Disable transition for instant drain
                       setXpProgress(0)
+                      setDisplayedXP(0) // Also update displayed counter immediately
+                      setStartingXP(0) // Set starting point for next animation
                     }, 700) // Wait 0.5s pause + 0.2s for modal to render
                     
                     // Set up pending refill (from 0% to overflow) that will execute after all modals are closed
@@ -3242,7 +3256,10 @@ const Game = () => {
                   }, 800) // Wait for fill to 100% animation
                 } else {
                   // No level up, just save the new XP
-                  setStartingXP(finalXP)
+                  // Update startingXP after animation completes (2 seconds)
+                  setTimeout(() => {
+                    setStartingXP(finalXP)
+                  }, 2000)
                   localStorage.setItem('player_xp_progress', finalXP.toString())
                   
                   // Show song list after XP bar finishes filling
@@ -3351,6 +3368,53 @@ const Game = () => {
       }
     }
   }, [gameComplete, version, showXPAnimation, unlockedLifelines, hatUnlocked])
+
+  // Animate XP counter counting up
+  useEffect(() => {
+    if (skipXPTransition) {
+      // For instant transitions (like level-up drain), update immediately
+      setDisplayedXP(xpProgress)
+      return
+    }
+
+    // If not showing XP animation or values haven't changed, sync displayedXP to xpProgress
+    if (!showXPAnimation) {
+      setDisplayedXP(xpProgress)
+      return
+    }
+
+    // If XP hasn't changed, don't animate
+    if (xpProgress === startingXP) {
+      setDisplayedXP(xpProgress)
+      return
+    }
+
+    // Count up from startingXP to xpProgress over 2 seconds
+    const start = startingXP
+    const end = xpProgress
+    const duration = 2000 // 2 seconds to match CSS transition
+    const steps = 60 // Update 60 times over 2 seconds (~30fps)
+    const increment = (end - start) / steps
+    const intervalTime = duration / steps
+
+    // Set initial value
+    setDisplayedXP(start)
+
+    let currentStep = 0
+    const counter = setInterval(() => {
+      currentStep++
+      const newValue = start + (increment * currentStep)
+      
+      if (currentStep >= steps) {
+        setDisplayedXP(end) // Ensure we end at exact value
+        clearInterval(counter)
+      } else {
+        setDisplayedXP(newValue)
+      }
+    }, intervalTime)
+
+    return () => clearInterval(counter)
+  }, [xpProgress, startingXP, skipXPTransition, showXPAnimation])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -4623,6 +4687,7 @@ const Game = () => {
                               width: `${xpProgress}%` 
                             }}
                           ></div>
+                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/100</div>
                         </div>
                         {/* XP Gain Indicator - positioned at TARGET end of fill, outside bar to avoid clipping */}
                         <div 
@@ -4735,6 +4800,7 @@ const Game = () => {
                               width: `${xpProgress}%` 
                             }}
                           ></div>
+                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/100</div>
                         </div>
                         <div className="xp-mystery-circle-final">
                           <span className="treasure-icon-final">

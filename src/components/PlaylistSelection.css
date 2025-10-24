@@ -92,7 +92,7 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  overflow: hidden;
+  overflow: visible;
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
@@ -104,14 +104,24 @@
   height: 100%;
   background: linear-gradient(90deg, rgb(0, 191, 255), rgb(0, 230, 255));
   border-radius: 10px;
-  box-shadow: 
-    0 0 15px rgba(0, 191, 255, 0.8),
-    0 0 30px rgba(0, 191, 255, 0.6),
-    0 0 45px rgba(0, 191, 255, 0.4),
-    inset 0 0 20px rgba(255, 255, 255, 0.3);
-  animation: xpPulseGlow 2s ease-in-out infinite;
 }
 
+.xp-bar-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Removed constant pulsing glow animation
 @keyframes xpPulseGlow {
   0%, 100% {
     box-shadow: 
@@ -128,6 +138,7 @@
       inset 0 0 25px rgba(255, 255, 255, 0.4);
   }
 }
+*/
 
 .xp-mystery-circle {
   position: absolute;
