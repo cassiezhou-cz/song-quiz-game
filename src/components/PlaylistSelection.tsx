@@ -93,13 +93,18 @@ const PlaylistSelection = () => {
             setLifelineRechargeProgress(currentProgress)
           }
         } else {
-          // No snapshot or already loaded - just update current
-          console.log('ℹ️ No snapshot or already loaded, just updating current progress')
+          // No snapshot or already loaded
           if (!hasLoadedInitial.current) {
-            previousRechargeProgress.current = currentProgress
+            // First load without snapshot - set previous to empty so animations trigger for existing progress
+            console.log('ℹ️ No snapshot found on first load - will trigger animations for existing progress')
+            previousRechargeProgress.current = {}
             hasLoadedInitial.current = true
+            setLifelineRechargeProgress(currentProgress)
+          } else {
+            // Already loaded - just update current
+            console.log('ℹ️ Already loaded, just updating current progress')
+            setLifelineRechargeProgress(currentProgress)
           }
-          setLifelineRechargeProgress(currentProgress)
         }
       } catch (e) {
         console.error('Failed to parse lifeline recharge progress:', e)
@@ -118,17 +123,13 @@ const PlaylistSelection = () => {
     console.log('  Previous keys:', Object.keys(prev))
     console.log('  Current keys:', Object.keys(current))
     
-    // Skip if no data
+    // Skip if no current data
     if (Object.keys(current).length === 0) {
       console.log('⏭️ No current data, skipping')
       return
     }
     
-    // Skip if no previous data
-    if (Object.keys(prev).length === 0) {
-      console.log('⏭️ No previous data, skipping (will be set on next check)')
-      return
-    }
+    // Allow empty previous data - this means we'll animate all current progress (first time scenario)
     
     const newLitLights: Record<string, boolean> = {}
     const recharged: LifelineType[] = []
@@ -141,21 +142,24 @@ const PlaylistSelection = () => {
     // Check each lifeline for progress changes
     for (const lifeline of unlockedLifelines) {
       const prevProgress = prev[lifeline] !== undefined ? prev[lifeline]! : 3
+      // If lifeline is being tracked for the first time (in current but not in prev), treat as starting from 0
       const currentProgress = current[lifeline] !== undefined ? current[lifeline]! : 3
+      const isFirstTimeTracking = prev[lifeline] === undefined && current[lifeline] !== undefined && current[lifeline]! < 3
+      const effectivePrevProgress = isFirstTimeTracking ? 0 : prevProgress
       
-      console.log(`  ${lifeline}: ${prevProgress} → ${currentProgress}`)
+      console.log(`  ${lifeline}: ${effectivePrevProgress} → ${currentProgress}${isFirstTimeTracking ? ' (first time tracking)' : ''}`)
       
       // Skip if no change
-      if (prevProgress === currentProgress) {
+      if (effectivePrevProgress === currentProgress) {
         console.log(`    No change for ${lifeline}`)
         continue
       }
       
-      console.log(`🔋 CHANGE DETECTED for ${lifeline}: ${prevProgress} → ${currentProgress}`)
+      console.log(`🔋 CHANGE DETECTED for ${lifeline}: ${effectivePrevProgress} → ${currentProgress}${isFirstTimeTracking ? ' (first charge!)' : ''}`)
       
       // Check which lights just lit up
       for (let i = 1; i <= 3; i++) {
-        if (prevProgress < i && currentProgress >= i) {
+        if (effectivePrevProgress < i && currentProgress >= i) {
           const lightKey = `${lifeline}-${i}`
           newLitLights[lightKey] = true
           console.log(`✨ Light ${i} will animate for ${lifeline}`)
@@ -163,7 +167,7 @@ const PlaylistSelection = () => {
       }
       
       // Check if lifeline just became fully recharged
-      if (prevProgress < 3 && currentProgress >= 3) {
+      if (effectivePrevProgress < 3 && currentProgress >= 3) {
         recharged.push(lifeline)
         console.log(`🎉 ${lifeline} is fully recharged!`)
       }
@@ -176,7 +180,7 @@ const PlaylistSelection = () => {
       setTimeout(() => {
         console.log('🧹 Clearing light-up animations')
         setNewlyLitLights({})
-      }, 1000)
+      }, 2000) // Increased to 2s to allow animation to complete (0.5s delay + 1.2s animation + buffer)
     } else {
       console.log('❌ No light-up animations to trigger')
     }
