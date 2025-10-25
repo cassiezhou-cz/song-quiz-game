@@ -3028,7 +3028,7 @@ const Game = () => {
             // Wait for the bar animation to reach 0% before auto-scoring
             setTimeout(() => {
               if (!selectedAnswer) {
-                handleVersionBScore(0)
+                handleVersionBScore(0, 'none')
               }
             }, 1000) // Match the CSS transition duration
             return 0
@@ -3670,7 +3670,7 @@ const Game = () => {
   }
 
   // Version B manual scoring function
-  const handleVersionBScore = (points: number) => {
+  const handleVersionBScore = (points: number, scoreType?: 'artist' | 'song' | 'both' | 'none') => {
     if (selectedAnswer) return // Already answered
     
     // Stop Version B timer on scoring
@@ -3715,14 +3715,22 @@ const Game = () => {
         songCorrect = false
       }
     } else {
-      console.log('🎵 NORMAL QUESTION: Scoring Question', questionNumber, 'with normal points:', points)
+      console.log('🎵 NORMAL QUESTION: Scoring Question', questionNumber, 'with normal points:', points, 'scoreType:', scoreType)
       // Questions 1-6: 0, 10, or 20 points
-      if (points >= 20) {
+      if (scoreType === 'artist') {
+        // Artist only - 10 points
+        artistCorrect = true
+        songCorrect = false
+      } else if (scoreType === 'song') {
+        // Song only - 10 points
+        artistCorrect = false
+        songCorrect = true
+      } else if (scoreType === 'both' || points >= 20) {
+        // Both correct - 20 points
         artistCorrect = true
         songCorrect = true
       }
-      // For 10 points or 0 points, don't set artistCorrect or songCorrect - leave them as false
-      // This way we won't show ✅ or ❌ indicators, just the song info
+      // For scoreType === 'none' or 0 points, both remain false
     }
     
     setArtistCorrect(artistCorrect)
@@ -5310,7 +5318,7 @@ const Game = () => {
                       onClick={() => {
                         // For Song Trivia, award 40 points for correct, 0 for incorrect
                         const isCorrect = option === currentQuestion.correctAnswer
-                        handleVersionBScore(isCorrect ? 40 : 0)
+                        handleVersionBScore(isCorrect ? 40 : 0, isCorrect ? 'both' : 'none')
                       }}
                     >
                       {option}
@@ -5555,35 +5563,46 @@ const Game = () => {
               </div>
             )}
             
-            {/* Version B Manual Scoring */}
+            {/* Version B Manual Scoring - Debug Only */}
             {version === 'Version B' && !selectedAnswer && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
-              <div className="manual-scoring">
-                <div className="score-buttons">
-                  <button
-                    className="score-button score-0"
-                    onClick={() => handleVersionBScore(0)}
-                  >
-                    None
-                  </button>
-                <button
-                  className="score-button score-10"
-                  onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10)}
-                >
-                  One
-                </button>
-                <button
-                  className="score-button score-20"
-                  onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20)}
-                >
-                  Both
-                </button>
-                  {/* No special scoring for question 7 since it's now a special question */}
-                </div>
-                {currentQuestion && (
-                  <div className="song-number-display">
-                    Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
+              <div className="debug-scoring-container">
+                <div className="debug-label-scoring">DEBUG SCORING</div>
+                <div className="manual-scoring">
+                  <div className="score-buttons">
+                    <button
+                      className="score-button score-0"
+                      onClick={() => handleVersionBScore(0, 'none')}
+                    >
+                      None
+                    </button>
+                  <div className="score-button-group">
+                    <button
+                      className="score-button score-10 score-half"
+                      onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'artist')}
+                    >
+                      A
+                    </button>
+                    <button
+                      className="score-button score-10 score-half"
+                      onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'song')}
+                    >
+                      S
+                    </button>
                   </div>
-                )}
+                  <button
+                    className="score-button score-20"
+                    onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20, 'both')}
+                  >
+                    Both
+                  </button>
+                    {/* No special scoring for question 7 since it's now a special question */}
+                  </div>
+                  {currentQuestion && (
+                    <div className="song-number-display">
+                      Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             
@@ -5598,13 +5617,13 @@ const Game = () => {
                   <div className="score-buttons">
                     <button
                       className="score-button score-0"
-                      onClick={() => handleVersionBScore(0)}
+                      onClick={() => handleVersionBScore(0, 'none')}
                     >
                       0 Points
                     </button>
                     <button
                       className="score-button score-20"
-                      onClick={() => handleVersionBScore(30)}
+                      onClick={() => handleVersionBScore(30, 'both')}
                     >
                       30 Points
                     </button>
