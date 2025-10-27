@@ -4,6 +4,13 @@ import './PlaylistSelection.css'
 
 type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
 
+type PlaylistTier = 1 | 2 | 3
+
+interface PlaylistProgress {
+  tier: PlaylistTier
+  progress: number // Number of segments filled in current tier
+}
+
 const PlaylistSelection = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -18,6 +25,17 @@ const PlaylistSelection = () => {
   const [playerName, setPlayerName] = useState('')
   const [showNamePrompt, setShowNamePrompt] = useState(false)
   const [nameInput, setNameInput] = useState('')
+
+  // Playlist tier system state
+  const playlists = ['2020s', '2010s', '2000s', '90s', 'Iconic Songs', 'Most Streamed Songs']
+  const [playlistProgress, setPlaylistProgress] = useState<Record<string, PlaylistProgress>>({
+    '2020s': { tier: 1, progress: 0 },
+    '2010s': { tier: 1, progress: 0 },
+    '2000s': { tier: 1, progress: 0 },
+    '90s': { tier: 1, progress: 0 },
+    'Iconic Songs': { tier: 1, progress: 0 },
+    'Most Streamed Songs': { tier: 1, progress: 0 }
+  })
 
   // Load data whenever we navigate to this page
   useEffect(() => {
@@ -55,7 +73,84 @@ const PlaylistSelection = () => {
         setUnlockedLifelines([])
       }
     }
+
+    // Load playlist progress
+    const savedPlaylistProgress = localStorage.getItem('playlist_progress')
+    if (savedPlaylistProgress) {
+      try {
+        const parsed = JSON.parse(savedPlaylistProgress) as Record<string, PlaylistProgress>
+        setPlaylistProgress(parsed)
+        console.log('📊 Loaded playlist progress:', parsed)
+      } catch (e) {
+        console.error('Failed to parse playlist progress:', e)
+      }
+    }
   }, [location])
+
+  // Helper function to get max segments for a tier
+  const getTierMaxSegments = (tier: PlaylistTier): number => {
+    if (tier === 1) return 5
+    if (tier === 2) return 10
+    return 0 // Tier 3 doesn't have segments
+  }
+
+  // Helper function to get medal image path
+  const getMedalImage = (tier: PlaylistTier): string => {
+    if (tier === 1) return '/assets/MedalBronze.png'
+    if (tier === 2) return '/assets/MedalSilver.png'
+    return '/assets/MedalGold.png'
+  }
+
+  // Debug function: Add 1 segment to playlist
+  const handleAddOneSegment = (playlist: string) => {
+    setPlaylistProgress(prev => {
+      const current = prev[playlist]
+      const maxSegments = getTierMaxSegments(current.tier)
+      
+      let newProgress = current.progress + 1
+      let newTier = current.tier
+
+      // Check if we need to upgrade tier
+      if (newProgress >= maxSegments && current.tier < 3) {
+        newTier = (current.tier + 1) as PlaylistTier
+        newProgress = 0
+        console.log(`🎉 ${playlist} upgraded to Tier ${newTier}!`)
+      } else if (current.tier === 3) {
+        // Can't add more at max tier
+        console.log(`${playlist} is already at max tier (3)`)
+        return prev
+      }
+
+      const updated = {
+        ...prev,
+        [playlist]: { tier: newTier, progress: newProgress }
+      }
+      localStorage.setItem('playlist_progress', JSON.stringify(updated))
+      return updated
+    })
+  }
+
+  // Debug function: Fill playlist completely and upgrade tier
+  const handleFillPlaylist = (playlist: string) => {
+    setPlaylistProgress(prev => {
+      const current = prev[playlist]
+      
+      if (current.tier === 3) {
+        console.log(`${playlist} is already at max tier (3)`)
+        return prev
+      }
+
+      const newTier = (current.tier + 1) as PlaylistTier
+      console.log(`🎉 ${playlist} upgraded to Tier ${newTier}!`)
+
+      const updated = {
+        ...prev,
+        [playlist]: { tier: newTier, progress: 0 }
+      }
+      localStorage.setItem('playlist_progress', JSON.stringify(updated))
+      return updated
+    })
+  }
 
   const handlePlaylistSelect = (playlist: string) => {
     setSelectedPlaylist(playlist)
@@ -89,6 +184,7 @@ const PlaylistSelection = () => {
     localStorage.removeItem('level_up_count')
     localStorage.removeItem('hat_unlocked')
     localStorage.removeItem('player_name')
+    localStorage.removeItem('playlist_progress')
     setXpProgress(0)
     setPlayerLevel(1)
     setDisplayLevel(1)
@@ -96,7 +192,16 @@ const PlaylistSelection = () => {
     setHatUnlocked(false)
     setPlayerName('')
     setShowNamePrompt(true)
-    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, and player name cleared')
+    // Reset all playlist progress to Tier 1 with 0 segments
+    setPlaylistProgress({
+      '2020s': { tier: 1, progress: 0 },
+      '2010s': { tier: 1, progress: 0 },
+      '2000s': { tier: 1, progress: 0 },
+      '90s': { tier: 1, progress: 0 },
+      'Iconic Songs': { tier: 1, progress: 0 },
+      'Most Streamed Songs': { tier: 1, progress: 0 }
+    })
+    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, and all playlist tiers reset to Tier 1')
   }
 
   return (
@@ -178,53 +283,73 @@ const PlaylistSelection = () => {
           <section className="playlist-selection">
             
             <div className="playlist-buttons">
-              <button 
-                className="playlist-button playlist-2020s"
-                onClick={() => handlePlaylistSelect('2020s')}
-                disabled={selectedPlaylist !== null}
-              >
-                <span className="decade">2020s</span>
-              </button>
-              
-              <button 
-                className="playlist-button playlist-2010s"
-                onClick={() => handlePlaylistSelect('2010s')}
-                disabled={selectedPlaylist !== null}
-              >
-                <span className="decade">2010s</span>
-              </button>
-              
-              <button 
-                className="playlist-button playlist-2000s"
-                onClick={() => handlePlaylistSelect('2000s')}
-                disabled={selectedPlaylist !== null}
-              >
-                <span className="decade">2000s</span>
-              </button>
-              
-              <button 
-                className="playlist-button playlist-90s"
-                onClick={() => handlePlaylistSelect('90s')}
-                disabled={selectedPlaylist !== null}
-              >
-                <span className="decade">90s</span>
-              </button>
-              
-              <button 
-                className="playlist-button playlist-iconic"
-                onClick={() => handlePlaylistSelect('Iconic Songs')}
-                disabled={selectedPlaylist !== null}
-              >
-                <span className="decade">Iconic Songs</span>
-              </button>
-              
-              <button 
-                className="playlist-button playlist-most-streamed"
-                onClick={() => handlePlaylistSelect('Most Streamed Songs')}
-                disabled={selectedPlaylist !== null}
-              >
-                <span className="decade">Most Streamed Songs</span>
-              </button>
+              {playlists.map((playlist) => {
+                const progress = playlistProgress[playlist]
+                const maxSegments = getTierMaxSegments(progress.tier)
+                const classNameMap: Record<string, string> = {
+                  '2020s': 'playlist-2020s',
+                  '2010s': 'playlist-2010s',
+                  '2000s': 'playlist-2000s',
+                  '90s': 'playlist-90s',
+                  'Iconic Songs': 'playlist-iconic',
+                  'Most Streamed Songs': 'playlist-most-streamed'
+                }
+
+                return (
+                  <div key={playlist} className="playlist-item-with-meter">
+                    {/* Debug Buttons - Top Right Corner */}
+                    <div className="playlist-debug-buttons">
+                      <button 
+                        className="playlist-debug-btn"
+                        onClick={() => handleAddOneSegment(playlist)}
+                        disabled={progress.tier === 3}
+                      >
+                        1
+                      </button>
+                      <button 
+                        className="playlist-debug-btn"
+                        onClick={() => handleFillPlaylist(playlist)}
+                        disabled={progress.tier === 3}
+                      >
+                        Full
+                      </button>
+                    </div>
+
+                    <button 
+                      className={`playlist-button ${classNameMap[playlist]}`}
+                      onClick={() => handlePlaylistSelect(playlist)}
+                      disabled={selectedPlaylist !== null}
+                    >
+                      <span className="decade">{playlist}</span>
+                    </button>
+                    
+                    <div className="playlist-meter-row">
+                      {/* Playlist Tier Meter */}
+                      {progress.tier < 3 ? (
+                        <div className="playlist-tier-meter">
+                          {Array.from({ length: maxSegments }).map((_, index) => (
+                            <div
+                              key={index}
+                              className={`playlist-segment ${index < progress.progress ? 'filled' : ''}`}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <button className="master-mode-button">
+                          Master Mode
+                        </button>
+                      )}
+
+                      {/* Medal Icon */}
+                      <img 
+                        src={getMedalImage(progress.tier)}
+                        alt={`Tier ${progress.tier} Medal`}
+                        className="playlist-medal-icon"
+                      />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
             {selectedPlaylist && (
