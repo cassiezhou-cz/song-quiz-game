@@ -186,6 +186,7 @@ const PlaylistSelection = () => {
     localStorage.removeItem('hat_unlocked')
     localStorage.removeItem('player_name')
     localStorage.removeItem('playlist_progress')
+    localStorage.removeItem('completed_songs')
     setXpProgress(0)
     setPlayerLevel(1)
     setDisplayLevel(1)

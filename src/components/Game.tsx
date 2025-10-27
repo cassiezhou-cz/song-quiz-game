@@ -364,8 +364,26 @@ const Game = () => {
     artistCorrect: boolean,
     songCorrect: boolean,
     isSpecialQuestion: boolean,
-    specialType?: 'song-trivia' | 'finish-lyric'
+    specialType?: 'song-trivia' | 'finish-lyric',
+    isNewlyCompleted?: boolean
   }>>([])
+  
+  // Completed songs tracking (for NEW indicators)
+  const [completedSongs, setCompletedSongs] = useState<Set<string>>(new Set())
+  
+  // Load completed songs from localStorage on mount
+  useEffect(() => {
+    const savedCompletedSongs = localStorage.getItem('completed_songs')
+    if (savedCompletedSongs) {
+      try {
+        const songsArray = JSON.parse(savedCompletedSongs) as string[]
+        setCompletedSongs(new Set(songsArray))
+        console.log('📚 Loaded completed songs:', songsArray.length)
+      } catch (e) {
+        console.error('Failed to parse completed songs:', e)
+      }
+    }
+  }, [])
   
   // Version C Booster state removed - now using progressive streak multiplier system
   
@@ -3744,13 +3762,31 @@ const Game = () => {
       const isSpecialQuestion = isSongTrivia || isFinishLyric
       const specialType = isSongTrivia ? 'song-trivia' : isFinishLyric ? 'finish-lyric' : undefined
       
+      // Generate unique song ID
+      const songId = `${currentQuestion.song.title}-${currentQuestion.song.artist}`.toLowerCase()
+      
+      // Check if this is the first time the song is being completed correctly
+      const isNewlyCompleted = artistCorrect && songCorrect && !completedSongs.has(songId)
+      
+      // If newly completed, add to completed songs and save to localStorage
+      if (isNewlyCompleted) {
+        setCompletedSongs(prev => {
+          const updated = new Set(prev)
+          updated.add(songId)
+          localStorage.setItem('completed_songs', JSON.stringify(Array.from(updated)))
+          console.log('🎉 NEW SONG COMPLETED:', songId)
+          return updated
+        })
+      }
+      
       setAllAttemptedSongs(prev => [...prev, {
         song: currentQuestion.song,
         pointsEarned: finalPoints,
         artistCorrect,
         songCorrect,
         isSpecialQuestion,
-        specialType
+        specialType,
+        isNewlyCompleted
       }])
     }
     
@@ -4730,6 +4766,23 @@ const Game = () => {
                             animationDelay: `${index * 0.15}s`
                           }}
                         >
+                          {/* NEW indicator for first-time completions */}
+                          {attempt.isNewlyCompleted && (
+                            <div 
+                              className="new-completion-badge"
+                              style={{
+                                animationDelay: `${index * 0.15 + 0.3}s`
+                              }}
+                            >
+                              <div className="new-completion-text">NEW</div>
+                              <div 
+                                className="new-completion-icon"
+                                style={{
+                                  animationDelay: `${index * 0.15 + 0.9}s`
+                                }}
+                              >🎵</div>
+                            </div>
+                          )}
                           <div className="song-result-album">
                             <img 
                               src={attempt.song.albumArt} 
