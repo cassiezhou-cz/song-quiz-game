@@ -6697,6 +6697,60 @@
   }
 }
 
+/* Flying music note from badge to playlist segment */
+.flying-note-to-segment {
+  position: fixed;
+  font-size: 2.5rem;
+  filter: 
+    drop-shadow(0 0 8px rgba(78, 205, 196, 1))
+    drop-shadow(0 0 16px rgba(78, 205, 196, 0.8))
+    drop-shadow(0 0 24px rgba(78, 205, 196, 0.6));
+  z-index: 10000; /* Very high to ensure visibility */
+  pointer-events: none;
+  animation: flyNoteToSegment 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes flyNoteToSegment {
+  0% {
+    opacity: 1;
+    left: var(--start-x);
+    top: var(--start-y);
+  }
+  90% {
+    opacity: 1;
+    left: var(--end-x);
+    top: var(--end-y);
+  }
+  100% {
+    opacity: 0;
+    left: var(--end-x);
+    top: var(--end-y);
+  }
+}
+
+/* Playlist segment filling animation when note arrives */
+.results-playlist-segment.filling {
+  animation: segmentFillFromNote 0.6s ease-out forwards;
+}
+
+@keyframes segmentFillFromNote {
+  0% {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: none;
+  }
+  50% {
+    background: linear-gradient(135deg, #4ecdc4, #44a3a0);
+    box-shadow: 0 0 25px rgba(78, 205, 196, 1), 0 0 40px rgba(78, 205, 196, 0.6);
+    transform: scale(1.15);
+  }
+  100% {
+    background: linear-gradient(135deg, #4ecdc4, #44a3a0);
+    box-shadow: 0 0 15px rgba(78, 205, 196, 0.6);
+    border-color: rgba(78, 205, 196, 0.5);
+    transform: scale(1);
+  }
+}
+
 /* Playlist Tier Meter on Results Screen */
 .results-playlist-meter-container {
   position: absolute; /* Overlay the spacer position */

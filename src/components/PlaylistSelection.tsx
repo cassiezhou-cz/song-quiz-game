@@ -286,7 +286,7 @@ const PlaylistSelection = () => {
             
             <div className="playlist-buttons">
               {playlists.map((playlist) => {
-                const progress = playlistProgress[playlist]
+                const progress = playlistProgress[playlist] || { tier: 1, progress: 0 }
                 const maxSegments = getTierMaxSegments(progress.tier)
                 const classNameMap: Record<string, string> = {
                   '2020s': 'playlist-2020s',

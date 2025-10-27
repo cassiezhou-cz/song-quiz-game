@@ -285,6 +285,10 @@ interface QuizQuestion {
 }
 
 
+// MUSIC NOTE POSITIONING - ADJUST THESE TO CENTER THE NOTES
+const NOTE_OFFSET_X = 50 // How much to move note left from center (increase = more left, decrease = more right)
+const NOTE_OFFSET_Y = -15 // How much to move note up from center (increase = more down, decrease = more up)
+
 const Game = () => {
   const navigate = useNavigate()
   const { playlist } = useParams<{ playlist: string }>()
@@ -423,6 +427,20 @@ const Game = () => {
   const [showPlaylistMeter, setShowPlaylistMeter] = useState(false) // Show playlist meter on results screen
   const [playlistProgress, setPlaylistProgress] = useState<{ tier: 1 | 2 | 3; progress: number }>({ tier: 1, progress: 0 })
   
+  // Flying music notes state
+  interface FlyingNote {
+    id: number
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+  }
+  const [flyingNotes, setFlyingNotes] = useState<FlyingNote[]>([])
+  const [fillingSegmentIndex, setFillingSegmentIndex] = useState<number | null>(null)
+  const [tempFilledSegments, setTempFilledSegments] = useState<Set<number>>(new Set())
+  const badgeRefsMap = useRef<Map<number, HTMLDivElement>>(new Map())
+  const segmentRefsMap = useRef<Map<number, HTMLDivElement>>(new Map())
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Separate timer ref for Version B per-question timer
   const versionBTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -504,11 +522,125 @@ const Game = () => {
           setTimeout(() => {
             setShowPlaylistMeter(true)
             console.log('➡️ Playlist meter flying in...')
+            
+            // After playlist meter flies in (0.8s animation), start music note animations
+            setTimeout(() => {
+              startMusicNoteAnimations()
+            }, 900) // 0.9s to ensure meter is fully in place
           }, 800)
         }, 500) // 0.5s pause after song list appears
       }
     }
   }, [showSongList, allAttemptedSongs, playlistProgress.tier, version])
+  
+  // Animate music notes from badges to playlist segments
+  const startMusicNoteAnimations = () => {
+    console.log('🎵 Starting music note animations...')
+    
+    // Capture the INITIAL progress before any notes start flying
+    const initialProgress = playlistProgress.progress
+    console.log('🎯 Initial progress:', initialProgress)
+    
+    // Get all newly completed songs
+    const newlyCompletedIndices = allAttemptedSongs
+      .map((song, index) => song.isNewlyCompleted ? index : -1)
+      .filter(index => index !== -1)
+    
+    console.log('🎵 Found newly completed songs at indices:', newlyCompletedIndices)
+    console.log('🎵 Number of new songs:', newlyCompletedIndices.length)
+    console.log('📊 Current tier:', playlistProgress.tier)
+    console.log('📊 Segments that are currently filled:', `0 to ${initialProgress - 1} (${initialProgress} segments filled)`)
+    
+    if (newlyCompletedIndices.length === 0) {
+      console.log('⚠️ No newly completed songs found')
+      return
+    }
+    
+    // Calculate total animation time for all notes
+    const totalAnimationTime = newlyCompletedIndices.length * 800 + 800 + 600 // delays + last note animation + fill animation
+    
+    // Animate each note one by one
+    let delay = 0
+    newlyCompletedIndices.forEach((songIndex, arrayIndex) => {
+      setTimeout(() => {
+        animateSingleNote(songIndex, arrayIndex, initialProgress, false)
+      }, delay)
+      delay += 800 // 0.8s between each note animation
+    })
+    
+    // After ALL animations complete, update the progress state once and clear temp filled segments
+    setTimeout(() => {
+      console.log(`✅ All animations complete! Updating progress from ${initialProgress} to ${initialProgress + newlyCompletedIndices.length}`)
+      setPlaylistProgress(prev => ({
+        ...prev,
+        progress: initialProgress + newlyCompletedIndices.length
+      }))
+      setTempFilledSegments(new Set()) // Clear temp fills after permanent update
+    }, totalAnimationTime)
+  }
+  
+  const animateSingleNote = (songIndex: number, newSongSequence: number, initialProgress: number, updateProgress: boolean) => {
+    console.log(`\n🎵 ===== ANIMATING NOTE =====`)
+    console.log(`🎵 Song Index: ${songIndex}, New Song Sequence: ${newSongSequence}`)
+    console.log(`🎯 Initial Progress: ${initialProgress}`)
+    console.log(`🎯 Current playlistProgress.progress: ${playlistProgress.progress}`)
+    
+    // Get badge position (the music note icon)
+    const badgeElement = badgeRefsMap.current.get(songIndex)
+    if (!badgeElement) {
+      console.warn(`⚠️ Badge element not found for song ${songIndex}`)
+      return
+    }
+    
+    // Calculate target segment using INITIAL progress (not current progress which changes as notes land)
+    const targetSegmentIndex = initialProgress + newSongSequence
+    console.log(`🎯 CALCULATED TARGET: segment ${targetSegmentIndex} = initialProgress(${initialProgress}) + newSongSequence(${newSongSequence})`)
+    console.log(`📊 All segment refs:`, Array.from(segmentRefsMap.current.keys()).sort((a, b) => a - b))
+    
+    const segmentElement = segmentRefsMap.current.get(targetSegmentIndex)
+    if (!segmentElement) {
+      console.warn(`⚠️ Segment element not found at index ${targetSegmentIndex}`)
+      console.log('Available segment refs:', Array.from(segmentRefsMap.current.keys()))
+      return
+    }
+    
+    const badgeRect = badgeElement.getBoundingClientRect()
+    const segmentRect = segmentElement.getBoundingClientRect()
+    
+    // Calculate exact center coordinates using adjustable offsets
+    const note: FlyingNote = {
+      id: Date.now() + songIndex * 1000,
+      startX: badgeRect.left + badgeRect.width / 2 - NOTE_OFFSET_X,
+      startY: badgeRect.top + badgeRect.height / 2 - NOTE_OFFSET_Y,
+      endX: segmentRect.left + segmentRect.width / 2 - NOTE_OFFSET_X,
+      endY: segmentRect.top + segmentRect.height / 2 - NOTE_OFFSET_Y
+    }
+    
+    console.log(`Note offset: X=${NOTE_OFFSET_X}, Y=${NOTE_OFFSET_Y}`)
+    console.log(`Segment center: (${segmentRect.left + segmentRect.width / 2}, ${segmentRect.top + segmentRect.height / 2})`)
+    console.log(`Note position: (${note.endX}, ${note.endY})`)
+    
+    setFlyingNotes(prev => [...prev, note])
+    
+    // After animation completes (0.8s), trigger segment fill animation and remove the note
+    setTimeout(() => {
+      console.log(`✨ Filling segment ${targetSegmentIndex}`)
+      setFillingSegmentIndex(targetSegmentIndex)
+      
+      // Mark this segment as temporarily filled (for visual display)
+      setTempFilledSegments(prev => {
+        const newSet = new Set(prev)
+        newSet.add(targetSegmentIndex)
+        return newSet
+      })
+      
+      // Remove the note from DOM after fill animation
+      setTimeout(() => {
+        setFlyingNotes(prev => prev.filter(n => n.id !== note.id))
+        setFillingSegmentIndex(null)
+      }, 600) // Match segment fill animation duration
+    }, 800) // Match flyNoteToSegment animation duration (0.8s)
+  }
 
   // Handle XP refill after all level-up modals are closed
   useEffect(() => {
@@ -4816,12 +4948,22 @@ const Game = () => {
                           {/* Tier Meter (only show if not Tier 3) */}
                           {playlistProgress.tier < 3 ? (
                             <div className="results-playlist-tier-meter">
-                              {Array.from({ length: playlistProgress.tier === 1 ? 5 : 10 }).map((_, index) => (
-                                <div
-                                  key={index}
-                                  className={`results-playlist-segment ${index < playlistProgress.progress ? 'filled' : ''}`}
-                                />
-                              ))}
+                              {Array.from({ length: playlistProgress.tier === 1 ? 5 : 10 }).map((_, index) => {
+                                const isPermanentlyFilled = index < playlistProgress.progress
+                                const isTempFilled = tempFilledSegments.has(index)
+                                const isCurrentlyFilling = fillingSegmentIndex === index
+                                const shouldShowAsFilled = isPermanentlyFilled || isTempFilled
+                                
+                                return (
+                                  <div
+                                    key={index}
+                                    ref={(el) => {
+                                      if (el) segmentRefsMap.current.set(index, el as HTMLDivElement)
+                                    }}
+                                    className={`results-playlist-segment ${shouldShowAsFilled ? 'filled' : ''} ${isCurrentlyFilling ? 'filling' : ''}`}
+                                  />
+                                )
+                              })}
                             </div>
                           ) : (
                             <div className="results-playlist-master-text">Master Mode</div>
@@ -4862,6 +5004,9 @@ const Game = () => {
                             >
                               <div className="new-completion-text">NEW</div>
                               <div 
+                                ref={(el) => {
+                                  if (el) badgeRefsMap.current.set(index, el as HTMLDivElement)
+                                }}
                                 className="new-completion-icon"
                                 style={{
                                   animationDelay: `${index * 0.15 + 0.9}s`
@@ -4961,6 +5106,24 @@ const Game = () => {
                   </>
                   )}
                   {/* END OF OLD CONTENT */}
+                  
+                  {/* Flying Music Notes */}
+                  {flyingNotes.map((note) => {
+                    return (
+                      <div
+                        key={note.id}
+                        className="flying-note-to-segment"
+                        style={{
+                          '--start-x': `${note.startX}px`,
+                          '--start-y': `${note.startY}px`,
+                          '--end-x': `${note.endX}px`,
+                          '--end-y': `${note.endY}px`,
+                        } as React.CSSProperties}
+                      >
+                        🎵
+                      </div>
+                    )
+                  })}
                 </div>
               )}
               
