@@ -290,6 +290,7 @@ const Game = () => {
   const { playlist } = useParams<{ playlist: string }>()
   const [searchParams] = useSearchParams()
   const version = searchParams.get('version') || 'Version A'
+  const tier = parseInt(searchParams.get('tier') || '1') as 1 | 2 | 3
   const audioRef = useRef<HTMLAudioElement>(null)
   
   
@@ -333,7 +334,8 @@ const Game = () => {
   // Version B time bonus tracking
   const [questionStartTime, setQuestionStartTime] = useState<number>(0)
   const [lifelineUsedThisQuestion, setLifelineUsedThisQuestion] = useState(false)
-  const totalQuestions = version === 'Version B' ? 3 : 7
+  // Tier-based total questions: Tier 1 = 3, Tier 2 = 5, Tier 3 = 7
+  const totalQuestions = tier === 1 ? 3 : tier === 2 ? 5 : 7
 
   // Version A specific state
   const [streak, setStreak] = useState(0)
@@ -2847,6 +2849,8 @@ const Game = () => {
     
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
+      console.log(`🎮 Starting game with Playlist: ${playlist}, Tier: ${tier}, Total Questions: ${totalQuestions}`)
+      
       // Load latest unlocked lifelines from localStorage
       const savedLifelines = localStorage.getItem('unlocked_lifelines')
       let currentUnlockedLifelines: LifelineType[] = []
@@ -2888,83 +2892,75 @@ const Game = () => {
       // Reset initial question flag for new session
       hasStartedInitialQuestion.current = false
       
-      // Special Questions disabled for now (can still be triggered via debug buttons)
-      // Randomly select 1 or 2 special questions (50% chance for 2)
-      // const willHaveTwoSpecialQuestions = Math.random() < 0.5
-      // const numSpecialQuestions = willHaveTwoSpecialQuestions ? 2 : 1
+      // Tier-based Special Question Logic
+      let selectedSpecialQuestions: number[] = []
+      const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'} = {}
       
-      // Generate special question numbers (3-7, excluding Questions 1-2)
-      // const availableQuestions = [3, 4, 5, 6, 7]
-      const selectedSpecialQuestions: number[] = []
+      if (tier === 1) {
+        // Tier 1 (Bronze): No special questions
+        console.log('🎯 TIER 1: No special questions')
+      } else if (tier === 2) {
+        // Tier 2 (Silver): 1 special question at position 3, 4, or 5
+        const availablePositions = [3, 4, 5]
+        const randomIndex = Math.floor(Math.random() * availablePositions.length)
+        const selectedQuestion = availablePositions[randomIndex]
+        selectedSpecialQuestions = [selectedQuestion]
+        
+        // Assign a random type to this special question
+        const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['time-warp', 'slo-mo', 'hyperspeed', 'song-trivia', 'finish-the-lyric']
+        const typeIndex = Math.floor(Math.random() * allTypes.length)
+        assignedTypes[selectedQuestion] = allTypes[typeIndex]
+        
+        console.log(`🎯 TIER 2: 1 Special Question at position ${selectedQuestion} of type ${assignedTypes[selectedQuestion]}`)
+      } else if (tier === 3) {
+        // Tier 3 (Gold): 1-2 special questions (50% chance for 2), positions 4-7, non-consecutive
+        const willHaveTwoSpecialQuestions = Math.random() < 0.5
+        const numSpecialQuestions = willHaveTwoSpecialQuestions ? 2 : 1
+        const availableQuestions = [4, 5, 6, 7]
+        
+        for (let i = 0; i < numSpecialQuestions; i++) {
+          // Filter out questions that would create consecutive special questions
+          const validQuestions = availableQuestions.filter(question => {
+            // Check if this question would be consecutive with any already selected
+            return !selectedSpecialQuestions.some(selected => Math.abs(question - selected) === 1)
+          })
+          
+          // If no valid questions remain, break to avoid infinite loop
+          if (validQuestions.length === 0) {
+            console.warn('⚠️ WARNING: Cannot select more special questions without creating consecutive ones')
+            break
+          }
+          
+          const randomIndex = Math.floor(Math.random() * validQuestions.length)
+          const selectedQuestion = validQuestions[randomIndex]
+          selectedSpecialQuestions.push(selectedQuestion)
+          
+          // Remove the selected question from available questions
+          const originalIndex = availableQuestions.indexOf(selectedQuestion)
+          if (originalIndex > -1) {
+            availableQuestions.splice(originalIndex, 1)
+          }
+        }
+        
+        selectedSpecialQuestions.sort((a, b) => a - b) // Sort in ascending order
+        
+        // Pre-assign types to special questions to ensure variety
+        const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['time-warp', 'slo-mo', 'hyperspeed', 'song-trivia', 'finish-the-lyric']
+        const shuffledTypes = [...allTypes].sort(() => Math.random() - 0.5) // Shuffle the types
+        
+        selectedSpecialQuestions.forEach((questionNum, index) => {
+          // Cycle through shuffled types to ensure variety
+          assignedTypes[questionNum] = shuffledTypes[index % shuffledTypes.length]
+        })
+        
+        console.log(`🎯 TIER 3: ${selectedSpecialQuestions.length} Special Question(s) at positions`, selectedSpecialQuestions, 'with types:', assignedTypes)
+      }
       
-      // for (let i = 0; i < numSpecialQuestions; i++) {
-      //   // Filter out questions that would create consecutive special questions
-      //   const validQuestions = availableQuestions.filter(question => {
-      //     // Check if this question would be consecutive with any already selected
-      //     return !selectedSpecialQuestions.some(selected => Math.abs(question - selected) === 1)
-      //   })
-      //   
-      //   // If no valid questions remain, break to avoid infinite loop
-      //   if (validQuestions.length === 0) {
-      //     console.warn('⚠️ WARNING: Cannot select more special questions without creating consecutive ones')
-      //     break
-      //   }
-      //   
-      //   const randomIndex = Math.floor(Math.random() * validQuestions.length)
-      //   const selectedQuestion = validQuestions[randomIndex]
-      //   selectedSpecialQuestions.push(selectedQuestion)
-      //   
-      //   // Remove the selected question from available questions
-      //   const originalIndex = availableQuestions.indexOf(selectedQuestion)
-      //   if (originalIndex > -1) {
-      //     availableQuestions.splice(originalIndex, 1)
-      //   }
-      // }
-      
-      // selectedSpecialQuestions.sort((a, b) => a - b) // Sort in ascending order
       setSpecialQuestionNumbers(selectedSpecialQuestions)
       setSpecialQuestionPlaylist(null) // Reset special playlist
       setSpecialQuestionType(null) // Reset special question type
       setUsedTriviaSongIds([]) // Reset used trivia songs when starting new playlist
-      
-      // Pre-assign types to special questions to ensure variety
-      // Note: Using 'hyperspeed', 'song-trivia', and 'finish-the-lyric'
-      // const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['hyperspeed', 'song-trivia', 'finish-the-lyric']
-      // const shuffledTypes = [...allTypes].sort(() => Math.random() - 0.5) // Shuffle the types
-      const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'} = {}
-      
-      // selectedSpecialQuestions.forEach((questionNum, index) => {
-      //   // Cycle through shuffled types to ensure variety
-      //   assignedTypes[questionNum] = shuffledTypes[index % shuffledTypes.length]
-      // })
-      
       setSpecialQuestionTypes(assignedTypes)
-      
-      console.log(`🎯 VERSION B: Special Questions disabled - only available via debug buttons`)
-      // console.log(`🎯 VERSION B: ${selectedSpecialQuestions.length} Special Question(s) will be:`, selectedSpecialQuestions)
-      // console.log(`🎯 VERSION B: Assigned types:`, assignedTypes)
-      
-      // Verify no consecutive special questions
-      // const hasConsecutive = selectedSpecialQuestions.some((question, index) => {
-      //   if (index === 0) return false
-      //   return question - selectedSpecialQuestions[index - 1] === 1
-      // })
-      // 
-      // if (hasConsecutive) {
-      //   console.error('❌ ERROR: Consecutive special questions detected:', selectedSpecialQuestions)
-      //   // Fallback to single question 7 if there's an issue
-      //   setSpecialQuestionNumbers([7])
-      //   console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
-      // }
-      // 
-      // // Verify all special question numbers are valid (3-7)
-      // const invalidQuestions = selectedSpecialQuestions.filter(q => q < 3 || q > 7)
-      // if (invalidQuestions.length > 0) {
-      //   console.error('❌ ERROR: Invalid special question numbers:', invalidQuestions)
-      //   // Fallback to single question 7 if there's an issue
-      //   setSpecialQuestionNumbers([7])
-      //   console.log('🎯 VERSION B: Fallback - Special Question set to Question 7')
-      // }
     }
     
     // Version C: Start timer when game begins
@@ -5562,6 +5558,24 @@ const Game = () => {
                 )}
               </div>
             )}
+            
+            {/* Version B Special Questions Debug Info - Hidden */}
+            {/* {version === 'Version B' && (
+              <div className="debug-special-questions-container">
+                <div className="debug-label-special">SPECIAL QUESTIONS</div>
+                <div className="special-questions-info">
+                  {specialQuestionNumbers.length === 0 ? (
+                    <div className="no-special-questions">None (Tier 1)</div>
+                  ) : (
+                    specialQuestionNumbers.map((num) => (
+                      <div key={num} className="special-question-item">
+                        Q{num}: {specialQuestionTypes[num] || 'Unknown'}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )} */}
             
             {/* Version B Manual Scoring - Debug Only */}
             {version === 'Version B' && !selectedAnswer && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && (

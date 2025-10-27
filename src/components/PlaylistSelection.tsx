@@ -154,11 +154,12 @@ const PlaylistSelection = () => {
 
   const handlePlaylistSelect = (playlist: string) => {
     setSelectedPlaylist(playlist)
-    console.log(`Selected playlist: ${playlist}, Version: Version B`)
+    const tier = playlistProgress[playlist]?.tier || 1
+    console.log(`Selected playlist: ${playlist}, Version: Version B, Tier: ${tier}`)
     
-    // Navigate to game with Version B after a brief moment to show selection feedback
-    const url = `/game/${playlist}?version=Version%20B`
-    console.log('🚀 NAVIGATING TO:', url, 'Version: Version B')
+    // Navigate to game with Version B and tier info after a brief moment to show selection feedback
+    const url = `/game/${playlist}?version=Version%20B&tier=${tier}`
+    console.log('🚀 NAVIGATING TO:', url, 'Version: Version B, Tier:', tier)
     setTimeout(() => {
       navigate(url)
     }, 1000)
