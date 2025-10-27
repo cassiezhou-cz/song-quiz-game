@@ -384,6 +384,7 @@ const Game = () => {
       }
     }
   }, [])
+
   
   // Version C Booster state removed - now using progressive streak multiplier system
   
@@ -416,6 +417,11 @@ const Game = () => {
   const [showXPBar, setShowXPBar] = useState(false)
   const [targetXPPosition, setTargetXPPosition] = useState(0) // Static target for indicator
   const [showSongList, setShowSongList] = useState(false) // Show Your Answers section
+  
+  // Playlist Tier Update Sequence state
+  const [xpBarFlyLeft, setXpBarFlyLeft] = useState(false) // Trigger XP bar fly-left animation
+  const [showPlaylistMeter, setShowPlaylistMeter] = useState(false) // Show playlist meter on results screen
+  const [playlistProgress, setPlaylistProgress] = useState<{ tier: 1 | 2 | 3; progress: number }>({ tier: 1, progress: 0 })
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Separate timer ref for Version B per-question timer
@@ -458,6 +464,51 @@ const Game = () => {
   useEffect(() => {
     console.log('🎵 Song List State Changed:', { showSongList, songsCount: allAttemptedSongs.length })
   }, [showSongList, allAttemptedSongs.length])
+
+  // Load current playlist's progress on mount
+  useEffect(() => {
+    const savedPlaylistProgress = localStorage.getItem('playlist_progress')
+    if (savedPlaylistProgress && playlist) {
+      try {
+        const allProgress = JSON.parse(savedPlaylistProgress) as Record<string, { tier: 1 | 2 | 3; progress: number }>
+        if (allProgress[playlist]) {
+          setPlaylistProgress(allProgress[playlist])
+          console.log(`📊 Loaded ${playlist} progress:`, allProgress[playlist])
+        }
+      } catch (e) {
+        console.error('Failed to parse playlist progress:', e)
+      }
+    }
+  }, [playlist])
+
+  // Trigger playlist tier update sequence after song list appears
+  useEffect(() => {
+    if (showSongList && version === 'Version B') {
+      // Check if any songs are newly completed
+      const hasNewSongs = allAttemptedSongs.some(song => song.isNewlyCompleted)
+      
+      // Check if playlist is NOT at Tier 3
+      const isNotMaxTier = playlistProgress.tier < 3
+      
+      console.log('🎯 Checking tier update conditions:', { hasNewSongs, isNotMaxTier, tier: playlistProgress.tier })
+      
+      if (hasNewSongs && isNotMaxTier) {
+        console.log('✅ Triggering playlist tier update sequence!')
+        
+        // Wait a brief moment after song list appears, then fly XP bar left
+        setTimeout(() => {
+          setXpBarFlyLeft(true)
+          console.log('⬅️ XP bar flying left...')
+          
+          // After XP bar flies off (0.8s animation), show playlist meter flying in
+          setTimeout(() => {
+            setShowPlaylistMeter(true)
+            console.log('➡️ Playlist meter flying in...')
+          }, 800)
+        }, 500) // 0.5s pause after song list appears
+      }
+    }
+  }, [showSongList, allAttemptedSongs, playlistProgress.tier, version])
 
   // Handle XP refill after all level-up modals are closed
   useEffect(() => {
@@ -4716,9 +4767,11 @@ const Game = () => {
                     <p className="final-score-text">Final Score: {displayedScore}</p>
                   )}
                   
-                  {/* XP Bar - NEW */}
-                  {showXPBar && showXPAnimation && (
-                    <div className="xp-gain-container">
+                  {/* Wrapper to contain both XP bar and Playlist meter */}
+                  <div className="xp-playlist-wrapper">
+                    {/* XP Bar - NEW */}
+                    {showXPBar && showXPAnimation && (
+                      <div className={`xp-gain-container ${xpBarFlyLeft ? 'fly-left' : ''}`}>
                       <div className="xp-bar-final-results">
                         <div className="xp-bar-final">
                           <div 
@@ -4750,8 +4803,41 @@ const Game = () => {
                         </div>
                       </div>
                     </div>
-                  )}
-                  </div>
+                    )}
+                    
+                    {/* Playlist Tier Meter (flies in after XP bar flies out) */}
+                    {showPlaylistMeter && (
+                      <div className={`results-playlist-meter-container ${showPlaylistMeter ? 'fly-in' : ''}`}>
+                        {/* Playlist Name on the left */}
+                        <div className="results-playlist-name">{playlist}</div>
+                        
+                        {/* Meter and Medal on the right */}
+                        <div className="results-playlist-meter-row">
+                          {/* Tier Meter (only show if not Tier 3) */}
+                          {playlistProgress.tier < 3 ? (
+                            <div className="results-playlist-tier-meter">
+                              {Array.from({ length: playlistProgress.tier === 1 ? 5 : 10 }).map((_, index) => (
+                                <div
+                                  key={index}
+                                  className={`results-playlist-segment ${index < playlistProgress.progress ? 'filled' : ''}`}
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="results-playlist-master-text">Master Mode</div>
+                          )}
+                          
+                          {/* Medal Icon */}
+                          <img 
+                            src={playlistProgress.tier === 1 ? '/assets/MedalBronze.png' : playlistProgress.tier === 2 ? '/assets/MedalSilver.png' : '/assets/MedalGold.png'}
+                            alt={`Tier ${playlistProgress.tier} Medal`}
+                            className="results-playlist-medal-icon"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>{/* End xp-playlist-wrapper */}
+                  </div>{/* End results-top-section */}
                   
                   {/* Detailed Song List - NEW ACTIVE */}
                   {showSongList && (

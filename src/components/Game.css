@@ -4253,7 +4253,7 @@
 
 /* XP Gain Animation in Final Results */
 .xp-gain-container {
-  margin: 2rem auto 0 auto; /* Removed bottom margin - song list handles spacing */
+  margin: 2rem auto 0 auto;
   padding: 2rem;
   padding-right: 4rem; /* Extra padding to contain the mystery circle */
   max-width: 650px;
@@ -6672,5 +6672,123 @@
     transform: translateY(500px) translateX(calc(var(--random-x, 0) * 50px)) rotate(1080deg) scale(0.5);
     opacity: 0;
   }
+}
+
+/* Playlist Tier Update Sequence Animations */
+@keyframes xpBarFlyLeft {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-120vw);
+    opacity: 0;
+  }
+}
+
+@keyframes playlistMeterFlyIn {
+  0% {
+    transform: translateX(calc(120vw)); /* Start from far right */
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%); /* End at centered position */
+    opacity: 1;
+  }
+}
+
+/* Playlist Tier Meter on Results Screen */
+.results-playlist-meter-container {
+  position: absolute; /* Overlay the spacer position */
+  top: 0; /* Position at top of spacer */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
+  display: flex;
+  flex-direction: row; /* Changed to horizontal layout */
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 650px; /* Don't exceed XP bar width */
+  width: fit-content; /* Dynamically size to content */
+  opacity: 0;
+  padding: 1.5rem 2.5rem;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 10; /* Ensure it appears above the XP bar */
+}
+
+.results-playlist-meter-container.fly-in {
+  animation: playlistMeterFlyIn 0.8s ease-out forwards;
+}
+
+.results-playlist-name {
+  font-size: 1.8rem; /* Slightly smaller */
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  letter-spacing: 1px;
+  white-space: nowrap; /* Prevent wrapping */
+  flex-shrink: 0; /* Don't shrink */
+}
+
+.results-playlist-meter-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1; /* Take remaining space */
+}
+
+.results-playlist-tier-meter {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 1rem;
+}
+
+.results-playlist-segment {
+  width: 40px;
+  height: 30px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.results-playlist-segment.filled {
+  background: linear-gradient(135deg, #4ecdc4, #44a3a0);
+  box-shadow: 0 0 15px rgba(78, 205, 196, 0.6);
+  border-color: rgba(78, 205, 196, 0.5);
+}
+
+.results-playlist-master-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #4ecdc4;
+  text-shadow: 0 2px 8px rgba(78, 205, 196, 0.5);
+  letter-spacing: 1px;
+  flex: 1;
+  text-align: center;
+}
+
+.results-playlist-medal-icon {
+  width: 60px; /* Smaller to fit compact layout */
+  height: 60px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.6));
+  flex-shrink: 0;
+}
+
+/* Wrapper to contain both XP bar and Playlist meter in same visual space */
+.xp-playlist-wrapper {
+  position: relative; /* Positioning context for absolutely positioned playlist meter */
+  margin: 0;
+  width: 100%;
+}
+
+/* XP Bar container fly-left animation */
+.xp-gain-container.fly-left {
+  animation: xpBarFlyLeft 0.8s ease-in forwards;
 }
 
