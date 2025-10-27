@@ -289,6 +289,33 @@ interface QuizQuestion {
 const NOTE_OFFSET_X = 50 // How much to move note left from center (increase = more left, decrease = more right)
 const NOTE_OFFSET_Y = -15 // How much to move note up from center (increase = more down, decrease = more up)
 
+// PROGRESSIVE XP SYSTEM - Each level requires 50 more XP than the previous
+// Level 1: 100 XP, Level 2: 150 XP, Level 3: 200 XP, etc.
+const getXPRequiredForLevel = (level: number): number => {
+  return 50 + (level * 50) // Level 1: 100, Level 2: 150, Level 3: 200, etc.
+}
+
+const getTotalXPForLevel = (level: number): number => {
+  // Sum of XP required from level 1 to reach the given level
+  let total = 0
+  for (let i = 1; i < level; i++) {
+    total += getXPRequiredForLevel(i)
+  }
+  return total
+}
+
+const getLevelFromTotalXP = (totalXP: number, currentLevel: number): { level: number; xpInCurrentLevel: number } => {
+  let level = currentLevel
+  let xpRemaining = totalXP
+  
+  while (xpRemaining >= getXPRequiredForLevel(level)) {
+    xpRemaining -= getXPRequiredForLevel(level)
+    level++
+  }
+  
+  return { level, xpInCurrentLevel: xpRemaining }
+}
+
 const Game = () => {
   const navigate = useNavigate()
   const { playlist } = useParams<{ playlist: string }>()
@@ -338,8 +365,8 @@ const Game = () => {
   // Version B time bonus tracking
   const [questionStartTime, setQuestionStartTime] = useState<number>(0)
   const [lifelineUsedThisQuestion, setLifelineUsedThisQuestion] = useState(false)
-  // Tier-based total questions: Tier 1 = 3, Tier 2 = 5, Tier 3 = 7
-  const totalQuestions = tier === 1 ? 3 : tier === 2 ? 5 : 7
+  // All tiers now have 5 questions
+  const totalQuestions = 5
 
   // Version A specific state
   const [streak, setStreak] = useState(0)
@@ -653,9 +680,12 @@ const Game = () => {
         setTimeout(() => {
           setStartingXP(0) // Start from 0 for the counter animation
           setDisplayedXP(0) // Start counter at 0
-          setXpProgress(pendingXPDrain.finalXP)
+          // Calculate percentage for display
+          const xpRequired = getXPRequiredForLevel(playerLevel)
+          const displayPercentage = Math.min((pendingXPDrain.finalXP / xpRequired) * 100, 100)
+          setXpProgress(displayPercentage)
           localStorage.setItem('player_xp_progress', pendingXPDrain.finalXP.toString())
-          console.log('🎯 XP bar refilling from 0 to overflow:', pendingXPDrain.finalXP)
+          console.log('🎯 XP bar refilling from 0 to overflow:', pendingXPDrain.finalXP, `(${displayPercentage.toFixed(1)}%)`)
           
           // Clear pending refill
           setPendingXPDrain(null)
@@ -3100,8 +3130,8 @@ const Game = () => {
       if (tier === 1) {
         // Tier 1 (Bronze): No special questions
         console.log('🎯 TIER 1: No special questions')
-      } else if (tier === 2) {
-        // Tier 2 (Silver): 1 special question at position 3, 4, or 5
+      } else if (tier === 2 || tier === 3) {
+        // Tier 2 (Silver) & Tier 3 (Gold): 1 special question at position 3, 4, or 5
         const availablePositions = [3, 4, 5]
         const randomIndex = Math.floor(Math.random() * availablePositions.length)
         const selectedQuestion = availablePositions[randomIndex]
@@ -3112,49 +3142,8 @@ const Game = () => {
         const typeIndex = Math.floor(Math.random() * allTypes.length)
         assignedTypes[selectedQuestion] = allTypes[typeIndex]
         
-        console.log(`🎯 TIER 2: 1 Special Question at position ${selectedQuestion} of type ${assignedTypes[selectedQuestion]}`)
-      } else if (tier === 3) {
-        // Tier 3 (Gold): 1-2 special questions (50% chance for 2), positions 4-7, non-consecutive
-        const willHaveTwoSpecialQuestions = Math.random() < 0.5
-        const numSpecialQuestions = willHaveTwoSpecialQuestions ? 2 : 1
-        const availableQuestions = [4, 5, 6, 7]
-        
-        for (let i = 0; i < numSpecialQuestions; i++) {
-          // Filter out questions that would create consecutive special questions
-          const validQuestions = availableQuestions.filter(question => {
-            // Check if this question would be consecutive with any already selected
-            return !selectedSpecialQuestions.some(selected => Math.abs(question - selected) === 1)
-          })
-          
-          // If no valid questions remain, break to avoid infinite loop
-          if (validQuestions.length === 0) {
-            console.warn('⚠️ WARNING: Cannot select more special questions without creating consecutive ones')
-            break
-          }
-          
-          const randomIndex = Math.floor(Math.random() * validQuestions.length)
-          const selectedQuestion = validQuestions[randomIndex]
-          selectedSpecialQuestions.push(selectedQuestion)
-          
-          // Remove the selected question from available questions
-          const originalIndex = availableQuestions.indexOf(selectedQuestion)
-          if (originalIndex > -1) {
-            availableQuestions.splice(originalIndex, 1)
-          }
-        }
-        
-        selectedSpecialQuestions.sort((a, b) => a - b) // Sort in ascending order
-        
-        // Pre-assign types to special questions to ensure variety
-        const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['time-warp', 'slo-mo', 'hyperspeed', 'song-trivia', 'finish-the-lyric']
-        const shuffledTypes = [...allTypes].sort(() => Math.random() - 0.5) // Shuffle the types
-        
-        selectedSpecialQuestions.forEach((questionNum, index) => {
-          // Cycle through shuffled types to ensure variety
-          assignedTypes[questionNum] = shuffledTypes[index % shuffledTypes.length]
-        })
-        
-        console.log(`🎯 TIER 3: ${selectedSpecialQuestions.length} Special Question(s) at positions`, selectedSpecialQuestions, 'with types:', assignedTypes)
+        const tierName = tier === 2 ? 'TIER 2 (Silver)' : 'TIER 3 (Gold)'
+        console.log(`🎯 ${tierName}: 1 Special Question at position ${selectedQuestion} of type ${assignedTypes[selectedQuestion]}`)
       }
       
       setSpecialQuestionNumbers(selectedSpecialQuestions)
@@ -3256,17 +3245,20 @@ const Game = () => {
 
   // Load XP and unlocked lifelines on mount
   useEffect(() => {
-    const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
-    const initialXP = Math.min(savedXP, 100) // Cap at 100
-    setXpProgress(initialXP)
-    setDisplayedXP(initialXP)
-    setStartingXP(initialXP)
-    
-    // Load player level
+    // Load player level first
     const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
     setPlayerLevel(savedLevel)
     setDisplayLevel(savedLevel) // Initialize display level to match actual level
     console.log('🎯 Loaded player level:', savedLevel)
+    
+    // Calculate XP percentage based on level requirement
+    const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
+    const xpRequired = getXPRequiredForLevel(savedLevel)
+    const initialXP = Math.min((savedXP / xpRequired) * 100, 100) // Convert to percentage
+    setXpProgress(initialXP)
+    setDisplayedXP(savedXP) // Display actual XP value
+    setStartingXP(savedXP) // Store actual XP value
+    console.log('🎯 Loaded XP:', savedXP, `/ ${xpRequired} (${initialXP.toFixed(1)}%)`)
     
     // Load player name
     const savedName = localStorage.getItem('player_name')
@@ -3335,12 +3327,17 @@ const Game = () => {
             console.log('🎬 Step 3: Showing XP Bar')
             setShowXPBar(true)
             setXpAnimationComplete(false)
-            setXpProgress(startingXP)
             
             // Calculate and set the static target position for the indicator
-            const calculatedTarget = Math.min(Math.min(startingXP + score, 100), 92)
+            const xpRequired = getXPRequiredForLevel(playerLevel)
+            const startingPercentage = (startingXP / xpRequired) * 100
+            setXpProgress(startingPercentage)
+            
+            const targetXP = Math.min(startingXP + score, xpRequired)
+            const targetPercentage = (targetXP / xpRequired) * 100
+            const calculatedTarget = Math.min(targetPercentage, 92) // Cap at 92% for visual positioning
             setTargetXPPosition(calculatedTarget)
-            console.log('🎯 Target XP Position for indicator:', calculatedTarget)
+            console.log('🎯 Target XP Position for indicator:', calculatedTarget, `(${targetXP}/${xpRequired})`)
             
             // Show and fill XP bar
             setTimeout(() => {
@@ -3348,16 +3345,18 @@ const Game = () => {
               
               // Trigger fill animation - wait for indicator to arrive (0.5s delay + 0.8s flight = 1.3s)
               setTimeout(() => {
-                // NEW XP SYSTEM: Fill based on score (1 point = 1 XP)
-                const totalXP = startingXP + score
-                const levelsGained = Math.floor(totalXP / 100)
-                const finalXP = totalXP % 100
+                // PROGRESSIVE XP SYSTEM: Each level requires more XP
+                const xpRequired = getXPRequiredForLevel(playerLevel)
+                const newTotalXP = startingXP + score
+                const { level: newLevel, xpInCurrentLevel: finalXP } = getLevelFromTotalXP(newTotalXP, playerLevel)
+                const levelsGained = newLevel - playerLevel
                 
-                console.log('🎯 XP Animation: Starting XP =', startingXP, ', Score =', score, ', Total =', totalXP)
-                console.log('🎯 XP Animation: Levels gained =', levelsGained, ', Final XP =', finalXP)
+                console.log('🎯 XP Animation: Starting XP =', startingXP, ', Score =', score, ', Total XP earned =', newTotalXP)
+                console.log('🎯 Current level =', playerLevel, ', XP required for next level =', xpRequired)
+                console.log('🎯 New level =', newLevel, ', Levels gained =', levelsGained, ', Final XP =', finalXP)
                 
-                // Fill bar to 100% (or to finalXP if no level up)
-                const displayXP = levelsGained > 0 ? 100 : finalXP
+                // Calculate display percentage: current XP / XP required for this level * 100
+                const displayXP = levelsGained > 0 ? 100 : Math.min((finalXP / xpRequired) * 100, 100)
                 setXpProgress(displayXP)
                 setXpAnimationComplete(true)
                 
@@ -4912,7 +4911,7 @@ const Game = () => {
                               width: `${xpProgress}%` 
                             }}
                           ></div>
-                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/100</div>
+                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/{getXPRequiredForLevel(playerLevel)}</div>
                         </div>
                         {/* XP Gain Indicator - positioned at TARGET end of fill, outside bar to avoid clipping */}
                         <div 
@@ -4948,7 +4947,7 @@ const Game = () => {
                           {/* Tier Meter (only show if not Tier 3) */}
                           {playlistProgress.tier < 3 ? (
                             <div className="results-playlist-tier-meter">
-                              {Array.from({ length: playlistProgress.tier === 1 ? 5 : 10 }).map((_, index) => {
+                              {Array.from({ length: 5 }).map((_, index) => {
                                 const isPermanentlyFilled = index < playlistProgress.progress
                                 const isTempFilled = tempFilledSegments.has(index)
                                 const isCurrentlyFilling = fillingSegmentIndex === index
@@ -5088,7 +5087,7 @@ const Game = () => {
                               width: `${xpProgress}%` 
                             }}
                           ></div>
-                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/100</div>
+                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/{getXPRequiredForLevel(playerLevel)}</div>
                         </div>
                         <div className="xp-mystery-circle-final">
                           <span className="treasure-icon-final">

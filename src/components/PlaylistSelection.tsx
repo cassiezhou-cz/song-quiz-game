@@ -11,11 +11,18 @@ interface PlaylistProgress {
   progress: number // Number of segments filled in current tier
 }
 
+// PROGRESSIVE XP SYSTEM - Each level requires 50 more XP than the previous
+// Level 1: 100 XP, Level 2: 150 XP, Level 3: 200 XP, etc.
+const getXPRequiredForLevel = (level: number): number => {
+  return 50 + (level * 50) // Level 1: 100, Level 2: 150, Level 3: 200, etc.
+}
+
 const PlaylistSelection = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
+  const [actualXP, setActualXP] = useState(0) // Actual XP value (not percentage)
   const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
   const [displayLevel, setDisplayLevel] = useState(1) // Level to display on XP bar icon (delays update until modal dismissed)
   const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
@@ -52,12 +59,15 @@ const PlaylistSelection = () => {
       console.log('👤 No player name found, showing prompt')
     }
     
-    const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
-    setXpProgress(Math.min(savedXP, 100))
-    
     const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
     setPlayerLevel(savedLevel)
     setDisplayLevel(savedLevel) // Initialize display level to match actual level
+    
+    const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
+    const xpRequired = getXPRequiredForLevel(savedLevel)
+    const xpPercentage = Math.min((savedXP / xpRequired) * 100, 100)
+    setActualXP(savedXP)
+    setXpProgress(xpPercentage)
     
     const savedHatUnlocked = localStorage.getItem('hat_unlocked')
     setHatUnlocked(savedHatUnlocked === 'true')
@@ -89,8 +99,7 @@ const PlaylistSelection = () => {
 
   // Helper function to get max segments for a tier
   const getTierMaxSegments = (tier: PlaylistTier): number => {
-    if (tier === 1) return 5
-    if (tier === 2) return 10
+    if (tier === 1 || tier === 2) return 5
     return 0 // Tier 3 doesn't have segments
   }
 
@@ -188,6 +197,7 @@ const PlaylistSelection = () => {
     localStorage.removeItem('playlist_progress')
     localStorage.removeItem('completed_songs')
     setXpProgress(0)
+    setActualXP(0)
     setPlayerLevel(1)
     setDisplayLevel(1)
     setUnlockedLifelines([])
@@ -267,7 +277,7 @@ const PlaylistSelection = () => {
               className="xp-fill" 
               style={{ width: `${xpProgress}%` }}
             ></div>
-            <div className="xp-bar-text">{xpProgress}/100</div>
+            <div className="xp-bar-text">{actualXP}/{getXPRequiredForLevel(playerLevel)}</div>
           </div>
           <div className="xp-mystery-circle">
             <span className="treasure-icon">
