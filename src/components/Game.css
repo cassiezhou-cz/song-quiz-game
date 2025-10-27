@@ -4605,13 +4605,14 @@
 }
 
 .song-results-grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
   gap: 0.8rem;
-  max-width: 600px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 1rem;
-  align-items: center; /* Center cards horizontally */
+  align-items: start; /* Align cards to the top */
+  justify-content: center; /* Center the grid columns */
 }
 
 .song-result-card {
@@ -4626,9 +4627,10 @@
   opacity: 0;
   transform: translateY(20px);
   animation: songCardCascade 0.5s ease-out forwards;
-  justify-content: center; /* Center content horizontally */
+  justify-content: flex-start; /* Align content to the left */
   align-items: center; /* Center content vertically */
-  width: fit-content; /* Hug content instead of stretching */
+  width: fit-content; /* Hug content */
+  max-width: 100%; /* Don't overflow grid cell */
   position: relative; /* For absolute positioning of NEW badge */
 }
 
@@ -4748,8 +4750,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center; /* Center content horizontally */
-  flex-grow: 0; /* Don't expand to fill space */
+  align-items: flex-start; /* Align content to the left */
+  flex-grow: 0; /* Don't expand */
   min-width: 0;
   gap: 0.5rem;
 }
@@ -4758,8 +4760,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  align-items: center; /* Center text */
-  text-align: center;
+  align-items: flex-start; /* Align text to the left */
+  text-align: left;
 }
 
 .song-result-title {
@@ -4786,7 +4788,7 @@
 .song-result-indicators {
   display: flex;
   gap: 0.75rem;
-  justify-content: center; /* Center indicators */
+  justify-content: flex-start; /* Align indicators to the left */
 }
 
 .indicator-row {
@@ -4838,6 +4840,7 @@
   }
   
   .song-results-grid {
+    grid-template-columns: 1fr;
     gap: 0.6rem;
   }
   
