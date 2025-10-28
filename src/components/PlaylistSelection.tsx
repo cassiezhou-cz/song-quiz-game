@@ -214,10 +214,11 @@ const PlaylistSelection = () => {
     localStorage.removeItem('completed_songs')
     localStorage.removeItem('playlists_with_new_songs')
     
-    // Clear all playlist stats (including collections)
+    // Clear all playlist stats (including collections and master mode ranks)
     playlists.forEach(playlist => {
       localStorage.removeItem(`playlist_stats_${playlist}`)
       localStorage.removeItem(`new_songs_${playlist}`)
+      localStorage.removeItem(`master_mode_rank_${playlist}`)
     })
     setXpProgress(0)
     setActualXP(0)
@@ -237,20 +238,15 @@ const PlaylistSelection = () => {
       'Iconic Songs': { tier: 1, progress: 0 },
       'Most Streamed Songs': { tier: 1, progress: 0 }
     })
-    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist tiers reset to Tier 1, and NEW badges cleared')
+    // Reset all playlist stats
+    const emptyStats: Record<string, any> = {}
+    playlists.forEach(playlist => {
+      emptyStats[playlist] = { timesPlayed: 0, averageScore: 0, highestScore: 0, completedSongs: [] }
+    })
+    setPlaylistStats(emptyStats)
+    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist tiers reset to Tier 1, NEW badges cleared, and all stats (including Master Mode ranks) cleared')
   }
 
-  // Debug: Advance playlist to Tier 3
-  const handleAdvanceToTier3 = (playlist: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const updatedProgress = {
-      ...playlistProgress,
-      [playlist]: { tier: 3, progress: 0 }
-    }
-    setPlaylistProgress(updatedProgress)
-    localStorage.setItem('playlist_progress', JSON.stringify(updatedProgress))
-    console.log(`🎯 DEBUG: Advanced ${playlist} to Tier 3`)
-  }
 
   return (
     <div className="playlist-container">
@@ -401,15 +397,6 @@ const PlaylistSelection = () => {
                         </div>
                       </div>
                     </div>
-
-                    {/* Debug: 100% Button */}
-                    <button
-                      className="debug-tier-button"
-                      onClick={(e) => handleAdvanceToTier3(playlist, e)}
-                      title={`Advance ${playlist} to Tier 3`}
-                    >
-                      100%
-                    </button>
 
                     <button 
                       className={`playlist-button ${classNameMap[playlist]}`}

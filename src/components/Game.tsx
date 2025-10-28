@@ -5917,19 +5917,6 @@ const Game = () => {
             })()}
             {version === 'Version C' && !gameComplete ? (
               <div className="version-c-timer">
-                {/* Debug: FINISH Button */}
-                <button
-                  className="debug-finish-button"
-                  onClick={() => {
-                    setIsTimerRunning(false)
-                    setGameComplete(true)
-                    console.log('🎯 DEBUG: Game ended instantly')
-                  }}
-                  title="Instantly finish the game"
-                >
-                  FINISH
-                </button>
-                
                 <div className="timer-spectrometer">
                   <div className="timer-label">Time Remaining: {timeRemaining} Second{timeRemaining !== 1 ? 's' : ''}</div>
                   <div className="spectrometer-container">

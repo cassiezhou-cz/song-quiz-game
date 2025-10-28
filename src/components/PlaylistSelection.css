@@ -340,34 +340,6 @@
   z-index: 100;
 }
 
-/* Debug: 100% Button */
-.debug-tier-button {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 200;
-  padding: 0.3rem 0.6rem;
-  background: rgba(255, 0, 0, 0.8);
-  border: 2px solid rgba(255, 0, 0, 1);
-  border-radius: 6px;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.4);
-}
-
-.debug-tier-button:hover {
-  background: rgba(255, 50, 50, 0.9);
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.6);
-}
-
-.debug-tier-button:active {
-  transform: scale(0.95);
-}
-
 /* Inline Stats Display */
 .inline-stats {
   position: absolute;
