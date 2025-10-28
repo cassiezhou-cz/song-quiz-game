@@ -5906,17 +5906,33 @@ const Game = () => {
                 </div>
               </div>
             ) : version === 'Version B' && !(showFeedback && currentQuestion && currentQuestion.isFinishTheLyric) ? (
-              <div className={`version-b-timer ${showTimerEntrance ? 'timer-entrance' : ''}`} style={{ visibility: (showPreQuestionDelay && !showTimerEntrance) ? 'hidden' : 'visible' }}>
-                <div className="timer-spectrometer">
-                  <div className="timer-label">Time Remaining</div>
-                  <div className="spectrometer-container">
-                    <div 
-                      className={`spectrometer-bar ${versionBTimeRemaining >= 35 && !lifelineUsedThisQuestion ? 'spectrometer-bonus' : versionBTimeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'} ${isTimerRefilling ? 'spectrometer-refill' : ''}`}
-                      style={{ width: `${Math.min((versionBTimeRemaining / 40) * 100, 100)}%` }}
-                    ></div>
+              <>
+                <div className={`version-b-timer ${showTimerEntrance ? 'timer-entrance' : ''}`} style={{ visibility: (showPreQuestionDelay && !showTimerEntrance) ? 'hidden' : 'visible' }}>
+                  <div className="timer-spectrometer">
+                    <div className="timer-label">Time Remaining</div>
+                    <div className="spectrometer-container">
+                      <div 
+                        className={`spectrometer-bar ${versionBTimeRemaining >= 35 && !lifelineUsedThisQuestion ? 'spectrometer-bonus' : versionBTimeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'} ${isTimerRefilling ? 'spectrometer-refill' : ''}`}
+                        style={{ width: `${Math.min((versionBTimeRemaining / 40) * 100, 100)}%` }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
-              </div>
+                
+                {/* Question Progress Indicator */}
+                <div className={`question-progress-indicator ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: showPreQuestionDelay ? 'hidden' : 'visible' }}>
+                  <div className="progress-dots-container">
+                    {[1, 2, 3, 4, 5].map((qNum) => (
+                      <div key={qNum} style={{ display: 'flex', alignItems: 'center' }}>
+                        <div className={`progress-dot ${questionNumber === qNum ? 'active' : ''} ${questionNumber > qNum ? 'completed' : ''}`}>
+                          {questionNumber === qNum && <span className="dot-label">Q{qNum}</span>}
+                        </div>
+                        {qNum < 5 && <div className="progress-line"></div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
           ) : version === 'Version B' ? (
               <div className="quiz-progress" style={{ visibility: 'hidden' }}>
                 <span>Question {questionNumber} of {totalQuestions}</span>
