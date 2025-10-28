@@ -457,6 +457,10 @@ const Game = () => {
   const [showPlaylistMeter, setShowPlaylistMeter] = useState(false) // Show playlist meter on results screen
   const [playlistProgress, setPlaylistProgress] = useState<{ tier: 1 | 2 | 3; progress: number }>({ tier: 1, progress: 0 })
   
+  // Rank Up Modal state
+  const [showRankUpModal, setShowRankUpModal] = useState(false)
+  const [rankUpTier, setRankUpTier] = useState<2 | 3>(2) // The tier we just upgraded TO
+  
   // Flying music notes state
   interface FlyingNote {
     id: number
@@ -470,6 +474,7 @@ const Game = () => {
   const [tempFilledSegments, setTempFilledSegments] = useState<Set<number>>(new Set())
   const badgeRefsMap = useRef<Map<number, HTMLDivElement>>(new Map())
   const segmentRefsMap = useRef<Map<number, HTMLDivElement>>(new Map())
+  const hasRunMusicNoteAnimations = useRef(false) // Prevent re-animation after tier change
   
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   // Separate timer ref for Version B per-question timer
@@ -531,17 +536,18 @@ const Game = () => {
 
   // Trigger playlist tier update sequence after song list appears
   useEffect(() => {
-    if (showSongList && version === 'Version B') {
+    if (showSongList && version === 'Version B' && !hasRunMusicNoteAnimations.current) {
       // Check if any songs are newly completed
       const hasNewSongs = allAttemptedSongs.some(song => song.isNewlyCompleted)
       
       // Check if playlist is NOT at Tier 3
       const isNotMaxTier = playlistProgress.tier < 3
       
-      console.log('🎯 Checking tier update conditions:', { hasNewSongs, isNotMaxTier, tier: playlistProgress.tier })
+      console.log('🎯 Checking tier update conditions:', { hasNewSongs, isNotMaxTier, tier: playlistProgress.tier, hasRunAnimations: hasRunMusicNoteAnimations.current })
       
       if (hasNewSongs && isNotMaxTier) {
         console.log('✅ Triggering playlist tier update sequence!')
+        hasRunMusicNoteAnimations.current = true // Set flag to prevent re-run
         
         // Wait a brief moment after song list appears, then fly XP bar left
         setTimeout(() => {
@@ -602,10 +608,77 @@ const Game = () => {
     // After ALL animations complete, update the progress state once and clear temp filled segments
     setTimeout(() => {
       console.log(`✅ All animations complete! Updating progress from ${initialProgress} to ${initialProgress + newlyCompletedIndices.length}`)
-      setPlaylistProgress(prev => ({
-        ...prev,
-        progress: initialProgress + newlyCompletedIndices.length
-      }))
+      
+      const newProgress = initialProgress + newlyCompletedIndices.length
+      const currentTier = playlistProgress.tier
+      const maxSegmentsForTier = currentTier === 1 ? 5 : 10
+      
+      // Check if we need to upgrade tier
+      if (newProgress >= maxSegmentsForTier && currentTier < 3) {
+        const newTier = (currentTier + 1) as 2 | 3
+        const overflowProgress = newProgress - maxSegmentsForTier // Calculate overflow notes
+        console.log(`🎉 TIER UP! ${currentTier} → ${newTier}`)
+        console.log(`📊 Overflow calculation: ${newProgress} total - ${maxSegmentsForTier} max = ${overflowProgress} overflow`)
+        
+        // Show rank-up modal FIRST (immediately) so it covers the screen
+        setRankUpTier(newTier)
+        setShowRankUpModal(true)
+        
+        // Then update the tier state WHILE the modal is visible (after modal fade-in)
+        // This way players never see the tier change on the meter
+        setTimeout(() => {
+          console.log('🔄 Updating tier state behind the modal...')
+          
+          // Update state with new tier and overflow progress
+          // For Tier 3 (Gold), progress should always be 0 since it's maxed out
+          const finalProgress = newTier === 3 ? 0 : overflowProgress
+          console.log(`💾 Setting new tier ${newTier} with progress: ${finalProgress}`)
+          
+          setPlaylistProgress({
+            tier: newTier,
+            progress: finalProgress
+          })
+          
+          // Save to localStorage
+          const savedProgress = localStorage.getItem('playlist_progress')
+          let allProgress: Record<string, { tier: 1 | 2 | 3; progress: number }> = {}
+          if (savedProgress) {
+            try {
+              allProgress = JSON.parse(savedProgress)
+            } catch (e) {
+              console.error('Failed to parse playlist progress:', e)
+            }
+          }
+          if (playlist) {
+            allProgress[playlist] = { tier: newTier, progress: finalProgress }
+            localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+            console.log('💾 Saved tier upgrade to localStorage (behind modal):', allProgress)
+          }
+        }, 400) // Update after modal is fully visible
+      } else {
+        // Just update progress, no tier change
+        setPlaylistProgress(prev => ({
+          ...prev,
+          progress: newProgress
+        }))
+        
+        // Save to localStorage
+        const savedProgress = localStorage.getItem('playlist_progress')
+        let allProgress: Record<string, { tier: 1 | 2 | 3; progress: number }> = {}
+        if (savedProgress) {
+          try {
+            allProgress = JSON.parse(savedProgress)
+          } catch (e) {
+            console.error('Failed to parse playlist progress:', e)
+          }
+        }
+        if (playlist) {
+          allProgress[playlist] = { tier: currentTier, progress: newProgress }
+          localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+          console.log('💾 Saved progress to localStorage:', allProgress)
+        }
+      }
+      
       setTempFilledSegments(new Set()) // Clear temp fills after permanent update
     }, totalAnimationTime)
   }
@@ -3142,7 +3215,8 @@ const Game = () => {
         selectedSpecialQuestions = [selectedQuestion]
         
         // Assign a random type to this special question
-        const allTypes: ('time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['time-warp', 'slo-mo', 'hyperspeed', 'song-trivia', 'finish-the-lyric']
+        // NOTE: Time Warp and Slo-Mo are disabled
+        const allTypes: ('hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['hyperspeed', 'song-trivia', 'finish-the-lyric']
         const typeIndex = Math.floor(Math.random() * allTypes.length)
         assignedTypes[selectedQuestion] = allTypes[typeIndex]
         
@@ -4718,6 +4792,15 @@ const Game = () => {
     setTargetXPPosition(0)
     setShowSongList(false)
     
+    // Reset Playlist Meter animation states
+    setXpBarFlyLeft(false)
+    setShowPlaylistMeter(false)
+    setFlyingNotes([])
+    setFillingSegmentIndex(null)
+    setTempFilledSegments(new Set())
+    hasRunMusicNoteAnimations.current = false // Reset animation flag for new game
+    setShowRankUpModal(false) // Reset rank-up modal
+    
     startNewQuestion()
   }
 
@@ -4777,6 +4860,7 @@ const Game = () => {
     hasShownLifelineEntrance.current = false
     hasStartedInitialQuestion.current = false
     isLoadingQuestionRef.current = false
+    hasRunMusicNoteAnimations.current = false // Reset animation flag for next game
     
     navigate('/')
   }
@@ -5562,6 +5646,32 @@ const Game = () => {
                 />
               </div>
               <button className="level-up-confirm-btn" onClick={closeHatUnlockModal}>
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Rank Up Modal */}
+        {showRankUpModal && (
+          <div className="level-up-modal-overlay">
+            <div className="level-up-modal rank-up-modal">
+              <h2 className="level-up-title rank-up-title">Rank Up!</h2>
+              <div className="rank-up-medal-display">
+                <img 
+                  src={rankUpTier === 2 ? '/assets/MedalSilver.png' : '/assets/MedalGold.png'}
+                  alt={`${rankUpTier === 2 ? 'Silver' : 'Gold'} Medal`}
+                  className="rank-up-medal-image"
+                />
+              </div>
+              <div className="rank-up-description">
+                {rankUpTier === 2 && 'Special Questions Unlocked!'}
+                {rankUpTier === 3 && 'Master Mode Unlocked!'}
+              </div>
+              <button 
+                className="level-up-confirm-btn" 
+                onClick={() => setShowRankUpModal(false)}
+              >
                 Continue
               </button>
             </div>

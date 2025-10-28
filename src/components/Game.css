@@ -6849,6 +6849,64 @@
   animation: iconBounce 1s ease-in-out infinite;
 }
 
+/* Rank Up Modal */
+.rank-up-modal {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 100px rgba(240, 147, 251, 0.4),
+    inset 0 2px 20px rgba(255, 255, 255, 0.2);
+}
+
+.rank-up-title {
+  font-size: 3rem;
+  font-weight: 800;
+  color: white;
+  text-shadow: 
+    0 2px 10px rgba(0, 0, 0, 0.3),
+    0 0 30px rgba(255, 255, 255, 0.5);
+  margin-bottom: 2rem;
+  animation: bounceIn 0.6s ease-out;
+}
+
+.rank-up-medal-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem 0;
+}
+
+.rank-up-medal-image {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+  animation: medalReveal 0.8s ease-out;
+}
+
+@keyframes medalReveal {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.rank-up-description {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  margin: 1.5rem 0;
+  animation: fadeIn 1s ease-out;
+}
+
 .level-up-lifeline-name {
   font-size: 1.8rem;
   font-weight: 700;
