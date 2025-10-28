@@ -460,6 +460,7 @@ const Game = () => {
   // Rank Up Modal state
   const [showRankUpModal, setShowRankUpModal] = useState(false)
   const [rankUpTier, setRankUpTier] = useState<2 | 3>(2) // The tier we just upgraded TO
+  const pendingOverflowNotes = useRef<number>(0) // Number of overflow notes to animate after modal closes
   
   // Flying music notes state
   interface FlyingNote {
@@ -616,30 +617,29 @@ const Game = () => {
       // Check if we need to upgrade tier
       if (newProgress >= maxSegmentsForTier && currentTier < 3) {
         const newTier = (currentTier + 1) as 2 | 3
-        const overflowProgress = newProgress - maxSegmentsForTier // Calculate overflow notes
+        const overflowCount = newProgress - maxSegmentsForTier // Calculate overflow notes
         console.log(`🎉 TIER UP! ${currentTier} → ${newTier}`)
-        console.log(`📊 Overflow calculation: ${newProgress} total - ${maxSegmentsForTier} max = ${overflowProgress} overflow`)
+        console.log(`📊 Overflow calculation: ${newProgress} total - ${maxSegmentsForTier} max = ${overflowCount} overflow`)
+        
+        // Store overflow notes to animate AFTER modal closes (unless Tier 3)
+        pendingOverflowNotes.current = newTier === 3 ? 0 : overflowCount
+        console.log(`💾 Stored ${pendingOverflowNotes.current} overflow notes to animate after modal`)
         
         // Show rank-up modal FIRST (immediately) so it covers the screen
         setRankUpTier(newTier)
         setShowRankUpModal(true)
         
         // Then update the tier state WHILE the modal is visible (after modal fade-in)
-        // This way players never see the tier change on the meter
+        // Keep progress at 0 - overflow notes will animate AFTER modal is dismissed
         setTimeout(() => {
           console.log('🔄 Updating tier state behind the modal...')
           
-          // Update state with new tier and overflow progress
-          // For Tier 3 (Gold), progress should always be 0 since it's maxed out
-          const finalProgress = newTier === 3 ? 0 : overflowProgress
-          console.log(`💾 Setting new tier ${newTier} with progress: ${finalProgress}`)
-          
           setPlaylistProgress({
             tier: newTier,
-            progress: finalProgress
+            progress: 0 // Start at 0, overflow will animate after modal closes
           })
           
-          // Save to localStorage
+          // Save to localStorage with 0 progress initially
           const savedProgress = localStorage.getItem('playlist_progress')
           let allProgress: Record<string, { tier: 1 | 2 | 3; progress: number }> = {}
           if (savedProgress) {
@@ -650,9 +650,9 @@ const Game = () => {
             }
           }
           if (playlist) {
-            allProgress[playlist] = { tier: newTier, progress: finalProgress }
+            allProgress[playlist] = { tier: newTier, progress: 0 }
             localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
-            console.log('💾 Saved tier upgrade to localStorage (behind modal):', allProgress)
+            console.log('💾 Saved tier upgrade to localStorage (progress: 0, overflow will animate):', allProgress)
           }
         }, 400) // Update after modal is fully visible
       } else {
@@ -680,6 +680,64 @@ const Game = () => {
       }
       
       setTempFilledSegments(new Set()) // Clear temp fills after permanent update
+    }, totalAnimationTime)
+  }
+  
+  // Animate overflow notes after rank-up modal is dismissed
+  const animateOverflowNotes = () => {
+    const overflowCount = pendingOverflowNotes.current
+    console.log(`🎵 OVERFLOW: Starting overflow note animations for ${overflowCount} notes`)
+    
+    if (overflowCount === 0) {
+      console.log('⚠️ No overflow notes to animate')
+      return
+    }
+    
+    // Get the last few badges (the overflow songs)
+    const totalSongs = allAttemptedSongs.length
+    const overflowStartIndex = totalSongs - overflowCount
+    
+    console.log(`📊 OVERFLOW: Total songs: ${totalSongs}, Overflow start index: ${overflowStartIndex}`)
+    
+    // Calculate total animation time
+    const totalAnimationTime = overflowCount * 350 + 800 + 600 - 350
+    
+    // Animate each overflow note with staggered timing
+    let delay = 0
+    for (let i = 0; i < overflowCount; i++) {
+      const songIndex = overflowStartIndex + i
+      setTimeout(() => {
+        animateSingleNote(songIndex, i, 0, false) // Start from segment 0 in new tier
+      }, delay)
+      delay += 350 // Stagger animations
+    }
+    
+    // After all animations complete, update progress and save
+    setTimeout(() => {
+      console.log(`✅ OVERFLOW: All overflow animations complete! Setting progress to ${overflowCount}`)
+      setPlaylistProgress(prev => ({
+        ...prev,
+        progress: overflowCount
+      }))
+      
+      // Save to localStorage
+      const savedProgress = localStorage.getItem('playlist_progress')
+      let allProgress: Record<string, { tier: 1 | 2 | 3; progress: number }> = {}
+      if (savedProgress) {
+        try {
+          allProgress = JSON.parse(savedProgress)
+        } catch (e) {
+          console.error('Failed to parse playlist progress:', e)
+        }
+      }
+      if (playlist) {
+        allProgress[playlist] = { tier: playlistProgress.tier, progress: overflowCount }
+        localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+        console.log('💾 OVERFLOW: Saved overflow progress to localStorage:', allProgress)
+      }
+      
+      setTempFilledSegments(new Set())
+      pendingOverflowNotes.current = 0 // Clear pending overflow
     }, totalAnimationTime)
   }
   
@@ -4800,6 +4858,7 @@ const Game = () => {
     setTempFilledSegments(new Set())
     hasRunMusicNoteAnimations.current = false // Reset animation flag for new game
     setShowRankUpModal(false) // Reset rank-up modal
+    pendingOverflowNotes.current = 0 // Reset overflow notes
     
     startNewQuestion()
   }
@@ -4861,6 +4920,7 @@ const Game = () => {
     hasStartedInitialQuestion.current = false
     isLoadingQuestionRef.current = false
     hasRunMusicNoteAnimations.current = false // Reset animation flag for next game
+    pendingOverflowNotes.current = 0 // Reset overflow notes
     
     navigate('/')
   }
@@ -5670,7 +5730,13 @@ const Game = () => {
               </div>
               <button 
                 className="level-up-confirm-btn" 
-                onClick={() => setShowRankUpModal(false)}
+                onClick={() => {
+                  setShowRankUpModal(false)
+                  // Trigger overflow note animations after modal closes
+                  setTimeout(() => {
+                    animateOverflowNotes()
+                  }, 300) // Small delay for modal close animation
+                }}
               >
                 Continue
               </button>
