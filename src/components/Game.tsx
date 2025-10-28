@@ -625,21 +625,34 @@ const Game = () => {
         pendingOverflowNotes.current = newTier === 3 ? 0 : overflowCount
         console.log(`💾 Stored ${pendingOverflowNotes.current} overflow notes to animate after modal`)
         
-        // Show rank-up modal FIRST (immediately) so it covers the screen
+        // Update progress to MAX for current tier (keeps all segments filled)
+        setPlaylistProgress({
+          tier: currentTier,
+          progress: maxSegmentsForTier
+        })
+        console.log(`📊 Set progress to max (${maxSegmentsForTier}) to keep segments filled`)
+        
+        // Show rank-up modal immediately
         setRankUpTier(newTier)
         setShowRankUpModal(true)
+        console.log('🎭 Rank-up modal shown')
         
-        // Then update the tier state WHILE the modal is visible (after modal fade-in)
-        // Keep progress at 0 - overflow notes will animate AFTER modal is dismissed
+        // Update tier BEHIND the modal after it's visible
         setTimeout(() => {
-          console.log('🔄 Updating tier state behind the modal...')
+          console.log('🔄 Updating tier behind modal...')
           
+          // Clear all animation states from previous tier
+          setTempFilledSegments(new Set())
+          setFillingSegmentIndex(null)
+          setFlyingNotes([])
+          
+          // Update to new tier with progress 0
           setPlaylistProgress({
             tier: newTier,
-            progress: 0 // Start at 0, overflow will animate after modal closes
+            progress: 0
           })
           
-          // Save to localStorage with 0 progress initially
+          // Save to localStorage
           const savedProgress = localStorage.getItem('playlist_progress')
           let allProgress: Record<string, { tier: 1 | 2 | 3; progress: number }> = {}
           if (savedProgress) {
@@ -652,9 +665,9 @@ const Game = () => {
           if (playlist) {
             allProgress[playlist] = { tier: newTier, progress: 0 }
             localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
-            console.log('💾 Saved tier upgrade to localStorage (progress: 0, overflow will animate):', allProgress)
+            console.log('💾 Saved tier upgrade to localStorage (behind modal):', allProgress)
           }
-        }, 400) // Update after modal is fully visible
+        }, 400) // Wait for modal fade-in animation
       } else {
         // Just update progress, no tier change
         setPlaylistProgress(prev => ({
@@ -5731,11 +5744,15 @@ const Game = () => {
               <button 
                 className="level-up-confirm-btn" 
                 onClick={() => {
+                  console.log('🎭 Rank-up Continue clicked, closing modal...')
+                  
+                  // Close modal (tier already updated behind it)
                   setShowRankUpModal(false)
-                  // Trigger overflow note animations after modal closes
+                  
+                  // After modal closes, start overflow animations
                   setTimeout(() => {
                     animateOverflowNotes()
-                  }, 300) // Small delay for modal close animation
+                  }, 300) // Wait for modal close animation
                 }}
               >
                 Continue
