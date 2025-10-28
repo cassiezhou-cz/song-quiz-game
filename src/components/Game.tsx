@@ -4379,12 +4379,8 @@ const Game = () => {
       console.log('Multiple Choice Artist booster activated!')
       
       if (currentQuestion) {
-        // Get current playlist songs
-        let playlistSongs: Song[] = []
-        if (playlist === '2010s') playlistSongs = songs2010s
-        else if (playlist === '2000s') playlistSongs = songs2000s
-        else if (playlist === '2020s') playlistSongs = songs2020s
-        else if (playlist === '90s') playlistSongs = songs90s
+        // Get current playlist songs (now supports all 6 playlists)
+        const playlistSongs = getPlaylistSongs(playlist)
         
         const correctArtist = currentQuestion.song.artist
         
@@ -4406,12 +4402,8 @@ const Game = () => {
       console.log('Multiple Choice Song booster activated!')
       
       if (currentQuestion) {
-        // Get current playlist songs
-        let playlistSongs: Song[] = []
-        if (playlist === '2010s') playlistSongs = songs2010s
-        else if (playlist === '2000s') playlistSongs = songs2000s
-        else if (playlist === '2020s') playlistSongs = songs2020s
-        else if (playlist === '90s') playlistSongs = songs90s
+        // Get current playlist songs (now supports all 6 playlists)
+        const playlistSongs = getPlaylistSongs(playlist)
         
         const correctSong = currentQuestion.song.title
         
