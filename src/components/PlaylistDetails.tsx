@@ -69,13 +69,6 @@ const PlaylistDetails = ({ playlist, tier, isMasterMode, onClose }: PlaylistDeta
     }
   }
 
-  // Get all songs for this playlist to display collection
-  const getAllPlaylistSongs = () => {
-    // This will need to match your song structure
-    // For now, returning completed songs as IDs
-    return stats.completedSongs
-  }
-
   const getMedalImage = (tier: number): string => {
     if (tier === 1) return '/assets/MedalBronze.png'
     if (tier === 2) return '/assets/MedalSilver.png'
@@ -113,48 +106,6 @@ const PlaylistDetails = ({ playlist, tier, isMasterMode, onClose }: PlaylistDeta
               <div className="stat-value">{stats.highestScore}</div>
               <div className="stat-label">Highest Score</div>
             </div>
-          </div>
-        </div>
-
-        <div className="collection-section">
-          <h2 className="section-title">
-            Your Collection 
-            <span className="collection-count">({stats.completedSongs.length} songs)</span>
-          </h2>
-          <div className="collection-grid">
-            {stats.completedSongs.length === 0 ? (
-              <div className="empty-collection">
-                <div className="empty-icon">🎵</div>
-                <p>No songs completed yet</p>
-                <p className="empty-subtitle">Start playing to build your collection!</p>
-              </div>
-            ) : (
-              stats.completedSongs.map((song, index) => (
-                <div key={song.id || index} className="collection-item">
-                  <img 
-                    src={song.albumArt} 
-                    alt={`${song.song} by ${song.artist}`}
-                    className="collection-album-art"
-                    onError={(e) => {
-                      // Fallback to placeholder if image fails to load
-                      const target = e.target as HTMLImageElement
-                      target.style.display = 'none'
-                      const placeholder = target.nextElementSibling as HTMLElement
-                      if (placeholder) {
-                        placeholder.style.display = 'flex'
-                      }
-                    }}
-                  />
-                  <div className="collection-item-placeholder" style={{ display: 'none' }}>
-                    <span className="note-icon">🎵</span>
-                  </div>
-                  <div className="collection-item-info">
-                    <div className="collection-item-song">{song.song}</div>
-                    <div className="collection-item-artist">{song.artist}</div>
-                  </div>
-                </div>
-              ))
-            )}
           </div>
         </div>
 

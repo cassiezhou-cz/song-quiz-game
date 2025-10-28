@@ -1,0 +1,324 @@
+.collection-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.collection-menu-modal {
+  background: linear-gradient(135deg, rgba(30, 30, 50, 0.98) 0%, rgba(50, 50, 80, 0.98) 100%);
+  border: 3px solid rgba(78, 205, 196, 0.4);
+  border-radius: 25px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 191, 255, 0.4), 0 0 40px rgba(78, 205, 196, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+/* Custom scrollbar for modal */
+.collection-menu-modal::-webkit-scrollbar {
+  width: 10px;
+}
+
+.collection-menu-modal::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 0 25px 25px 0;
+}
+
+.collection-menu-modal::-webkit-scrollbar-thumb {
+  background: rgba(78, 205, 196, 0.4);
+  border-radius: 5px;
+}
+
+.collection-menu-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(78, 205, 196, 0.6);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.collection-menu-content {
+  padding: 2.5rem;
+}
+
+/* Header */
+.collection-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+}
+
+.collection-title-large {
+  text-align: center;
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 900;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  margin: 0;
+}
+
+.collection-medal-large {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+}
+
+/* Collection Section */
+.collection-section {
+  margin-bottom: 2.5rem;
+}
+
+.section-title {
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.collection-count {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.2rem;
+  font-weight: 400;
+  margin-left: 0.5rem;
+}
+
+.collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1.25rem;
+  padding: 0.75rem 0;
+}
+
+.empty-collection {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-collection p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.2rem;
+  margin: 0.5rem 0;
+}
+
+.empty-subtitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem !important;
+}
+
+.collection-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  overflow: visible;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.collection-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(78, 205, 196, 0.5);
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+}
+
+.collection-new-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: linear-gradient(135deg, #ff6b6b, #ff5252);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    0 4px 12px rgba(255, 107, 107, 0.6),
+    0 0 20px rgba(255, 82, 82, 0.4);
+  z-index: 10;
+  animation: collectionNewBadgePulse 2s ease-in-out infinite;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
+@keyframes collectionNewBadgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 4px 12px rgba(255, 107, 107, 0.6),
+      0 0 20px rgba(255, 82, 82, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 
+      0 6px 16px rgba(255, 107, 107, 0.8),
+      0 0 30px rgba(255, 82, 82, 0.6);
+  }
+}
+
+.collection-album-art {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: block;
+}
+
+.collection-item-placeholder {
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.3), rgba(69, 183, 209, 0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.note-icon {
+  font-size: 2.5rem;
+}
+
+.collection-item-info {
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.collection-item-song {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collection-item-artist {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Action Section */
+.action-section {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.close-collection-button {
+  background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+  border: none;
+  border-radius: 12px;
+  padding: 1.25rem 3rem;
+  color: white;
+  font-size: 1.3rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.close-collection-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(78, 205, 196, 0.6);
+  background: linear-gradient(135deg, #5ed9d1, #52c5db);
+}
+
+.close-collection-button:active {
+  transform: translateY(-1px);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .collection-menu-backdrop {
+    padding: 0.5rem;
+  }
+
+  .collection-menu-modal {
+    max-height: 95vh;
+    max-width: 95%;
+  }
+
+  .collection-menu-content {
+    padding: 2rem 1.5rem;
+  }
+
+  .collection-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .collection-title-large {
+    font-size: 1.75rem;
+  }
+
+  .collection-medal-large {
+    width: 55px;
+    height: 55px;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+  }
+
+  .collection-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 1rem;
+  }
+
+  .close-collection-button {
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+  }
+}
+

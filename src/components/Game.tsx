@@ -5058,12 +5058,55 @@ const Game = () => {
     stats.highestScore = Math.max(stats.highestScore, finalScore)
     
     // Add newly completed songs (avoid duplicates)
+    let hasNewSongs = false
+    const newSongIds: string[] = []
     completedSongs.forEach(song => {
       const exists = stats.completedSongs.some(s => s.id === song.id)
       if (!exists) {
         stats.completedSongs.push(song)
+        hasNewSongs = true
+        newSongIds.push(song.id)
       }
     })
+
+    // If new songs were added, mark this playlist as having new songs
+    if (hasNewSongs) {
+      // Mark playlist as having new songs (for main menu badge)
+      const savedNewSongs = localStorage.getItem('playlists_with_new_songs')
+      let playlistsWithNew: string[] = []
+      if (savedNewSongs) {
+        try {
+          playlistsWithNew = JSON.parse(savedNewSongs)
+        } catch (e) {
+          console.error('Failed to parse playlists with new songs:', e)
+        }
+      }
+      if (!playlistsWithNew.includes(playlist)) {
+        playlistsWithNew.push(playlist)
+        localStorage.setItem('playlists_with_new_songs', JSON.stringify(playlistsWithNew))
+        console.log(`✨ NEW songs badge set for ${playlist}`)
+      }
+
+      // Track individual new song IDs (for collection menu badges)
+      const newSongsKey = `new_songs_${playlist}`
+      const savedIndividualNewSongs = localStorage.getItem(newSongsKey)
+      let individualNewSongs: string[] = []
+      if (savedIndividualNewSongs) {
+        try {
+          individualNewSongs = JSON.parse(savedIndividualNewSongs)
+        } catch (e) {
+          console.error('Failed to parse individual new songs:', e)
+        }
+      }
+      // Add new song IDs to the list
+      newSongIds.forEach(id => {
+        if (!individualNewSongs.includes(id)) {
+          individualNewSongs.push(id)
+        }
+      })
+      localStorage.setItem(newSongsKey, JSON.stringify(individualNewSongs))
+      console.log(`✨ Added ${newSongIds.length} new song(s) to ${playlist} collection`)
+    }
 
     // Save back to localStorage
     localStorage.setItem(statsKey, JSON.stringify(stats))

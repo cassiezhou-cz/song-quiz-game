@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import PlaylistDetails from './PlaylistDetails'
+import CollectionMenu from './CollectionMenu'
 import './PlaylistSelection.css'
 
 type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
@@ -27,6 +28,9 @@ const PlaylistSelection = () => {
   const [modalPlaylist, setModalPlaylist] = useState('')
   const [modalTier, setModalTier] = useState<PlaylistTier>(1)
   const [modalIsMasterMode, setModalIsMasterMode] = useState(false)
+  const [showCollectionMenu, setShowCollectionMenu] = useState(false)
+  const [collectionPlaylist, setCollectionPlaylist] = useState('')
+  const [collectionTier, setCollectionTier] = useState<PlaylistTier>(1)
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
   const [actualXP, setActualXP] = useState(0) // Actual XP value (not percentage)
   const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
@@ -49,6 +53,9 @@ const PlaylistSelection = () => {
     'Iconic Songs': { tier: 1, progress: 0 },
     'Most Streamed Songs': { tier: 1, progress: 0 }
   })
+
+  // Track which playlists have new songs
+  const [playlistsWithNewSongs, setPlaylistsWithNewSongs] = useState<Set<string>>(new Set())
 
   // Load data whenever we navigate to this page
   useEffect(() => {
@@ -101,6 +108,18 @@ const PlaylistSelection = () => {
         console.error('Failed to parse playlist progress:', e)
       }
     }
+
+    // Load playlists with new songs
+    const savedNewSongs = localStorage.getItem('playlists_with_new_songs')
+    if (savedNewSongs) {
+      try {
+        const parsed = JSON.parse(savedNewSongs) as string[]
+        setPlaylistsWithNewSongs(new Set(parsed))
+        console.log('✨ Loaded playlists with new songs:', parsed)
+      } catch (e) {
+        console.error('Failed to parse playlists with new songs:', e)
+      }
+    }
   }, [location])
 
   // Helper function to get max segments for a tier
@@ -117,55 +136,27 @@ const PlaylistSelection = () => {
     return '/assets/MedalGold.png'
   }
 
-  // Debug function: Add 1 segment to playlist
-  const handleAddOneSegment = (playlist: string) => {
-    setPlaylistProgress(prev => {
-      const current = prev[playlist]
-      const maxSegments = getTierMaxSegments(current.tier)
-      
-      let newProgress = current.progress + 1
-      let newTier = current.tier
-
-      // Check if we need to upgrade tier
-      if (newProgress >= maxSegments && current.tier < 3) {
-        newTier = (current.tier + 1) as PlaylistTier
-        newProgress = 0
-        console.log(`🎉 ${playlist} upgraded to Tier ${newTier}!`)
-      } else if (current.tier === 3) {
-        // Can't add more at max tier
-        console.log(`${playlist} is already at max tier (3)`)
-        return prev
-      }
-
-      const updated = {
-        ...prev,
-        [playlist]: { tier: newTier, progress: newProgress }
-      }
-      localStorage.setItem('playlist_progress', JSON.stringify(updated))
+  // Handler for medal button clicks
+  const handleMedalClick = (playlist: string, tier: PlaylistTier) => {
+    console.log(`Medal clicked for ${playlist} - Tier ${tier}`)
+    setCollectionPlaylist(playlist)
+    setCollectionTier(tier)
+    setShowCollectionMenu(true)
+    
+    // Clear the "new songs" badge for this playlist
+    setPlaylistsWithNewSongs(prev => {
+      const updated = new Set(prev)
+      updated.delete(playlist)
+      localStorage.setItem('playlists_with_new_songs', JSON.stringify([...updated]))
+      console.log(`✅ Cleared NEW badge for ${playlist}`)
       return updated
     })
   }
 
-  // Debug function: Fill playlist completely and upgrade tier
-  const handleFillPlaylist = (playlist: string) => {
-    setPlaylistProgress(prev => {
-      const current = prev[playlist]
-      
-      if (current.tier === 3) {
-        console.log(`${playlist} is already at max tier (3)`)
-        return prev
-      }
-
-      const newTier = (current.tier + 1) as PlaylistTier
-      console.log(`🎉 ${playlist} upgraded to Tier ${newTier}!`)
-
-      const updated = {
-        ...prev,
-        [playlist]: { tier: newTier, progress: 0 }
-      }
-      localStorage.setItem('playlist_progress', JSON.stringify(updated))
-      return updated
-    })
+  const handleCloseCollectionMenu = () => {
+    setShowCollectionMenu(false)
+    setCollectionPlaylist('')
+    setCollectionTier(1)
   }
 
   const handlePlaylistSelect = (playlist: string, isMasterMode: boolean = false) => {
@@ -214,10 +205,12 @@ const PlaylistSelection = () => {
     localStorage.removeItem('player_name')
     localStorage.removeItem('playlist_progress')
     localStorage.removeItem('completed_songs')
+    localStorage.removeItem('playlists_with_new_songs')
     
     // Clear all playlist stats (including collections)
     playlists.forEach(playlist => {
       localStorage.removeItem(`playlist_stats_${playlist}`)
+      localStorage.removeItem(`new_songs_${playlist}`)
     })
     setXpProgress(0)
     setActualXP(0)
@@ -227,6 +220,7 @@ const PlaylistSelection = () => {
     setHatUnlocked(false)
     setPlayerName('')
     setShowNamePrompt(true)
+    setPlaylistsWithNewSongs(new Set())
     // Reset all playlist progress to Tier 1 with 0 segments
     setPlaylistProgress({
       '2020s': { tier: 1, progress: 0 },
@@ -236,7 +230,7 @@ const PlaylistSelection = () => {
       'Iconic Songs': { tier: 1, progress: 0 },
       'Most Streamed Songs': { tier: 1, progress: 0 }
     })
-    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, and all playlist tiers reset to Tier 1')
+    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist tiers reset to Tier 1, and NEW badges cleared')
   }
 
   return (
@@ -332,24 +326,6 @@ const PlaylistSelection = () => {
 
                 return (
                   <div key={playlist} className="playlist-item-with-meter">
-                    {/* Debug Buttons - Top Right Corner */}
-                    <div className="playlist-debug-buttons">
-                      <button 
-                        className="playlist-debug-btn"
-                        onClick={() => handleAddOneSegment(playlist)}
-                        disabled={progress.tier === 3}
-                      >
-                        1
-                      </button>
-                      <button 
-                        className="playlist-debug-btn"
-                        onClick={() => handleFillPlaylist(playlist)}
-                        disabled={progress.tier === 3}
-                      >
-                        Full
-                      </button>
-                    </div>
-
                     <button 
                       className={`playlist-button ${classNameMap[playlist]}`}
                       onClick={() => handlePlaylistSelect(playlist)}
@@ -382,12 +358,26 @@ const PlaylistSelection = () => {
                         </button>
                       )}
 
-                      {/* Medal Icon */}
-                      <img 
-                        src={getMedalImage(progress.tier)}
-                        alt={`Tier ${progress.tier} Medal`}
-                        className="playlist-medal-icon"
-                      />
+                      {/* Medal Button */}
+                      <div className="playlist-medal-wrapper">
+                        {playlistsWithNewSongs.has(playlist) && (
+                          <div className="new-songs-badge">NEW</div>
+                        )}
+                        <button
+                          className="playlist-medal-button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleMedalClick(playlist, progress.tier)
+                          }}
+                          aria-label={`View ${playlist} Tier ${progress.tier} details`}
+                        >
+                          <img 
+                            src={getMedalImage(progress.tier)}
+                            alt={`Tier ${progress.tier} Medal`}
+                            className="playlist-medal-icon"
+                          />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
@@ -422,6 +412,15 @@ const PlaylistSelection = () => {
           tier={modalTier}
           isMasterMode={modalIsMasterMode}
           onClose={handleCloseModal}
+        />
+      )}
+
+      {/* Collection Menu Modal */}
+      {showCollectionMenu && (
+        <CollectionMenu
+          playlist={collectionPlaylist}
+          tier={collectionTier}
+          onClose={handleCloseCollectionMenu}
         />
       )}
     </div>
