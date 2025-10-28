@@ -402,6 +402,9 @@ const Game = () => {
   // Completed songs tracking (for NEW indicators)
   const [completedSongs, setCompletedSongs] = useState<Set<string>>(new Set())
   
+  // Track all songs where player earned points (for collection)
+  const [songsWithPoints, setSongsWithPoints] = useState<Array<{id: string, artist: string, song: string, albumArt: string}>>([])
+  
   // Load completed songs from localStorage on mount
   useEffect(() => {
     const savedCompletedSongs = localStorage.getItem('completed_songs')
@@ -3203,6 +3206,14 @@ const Game = () => {
     }
   }, [version, isTimerRunning, timeRemaining])
 
+  // Save playlist statistics when game completes
+  useEffect(() => {
+    if (gameComplete && playlist) {
+      // Use the songsWithPoints state which tracks all songs where player earned points
+      savePlaylistStats(score, songsWithPoints)
+    }
+  }, [gameComplete, playlist, score, songsWithPoints])
+
   // Version B per-question timer effect
   useEffect(() => {
     if (version === 'Version B' && versionBTimerRunning && versionBTimeRemaining > 0 && !showFeedback) {
@@ -3933,6 +3944,25 @@ const Game = () => {
     setSongCorrect(songCorrect)
     setIsCorrect(finalPoints > 0) // Player gets credit for positive points only
     setPointsEarned(finalPoints)
+    
+    // Track song for collection if points were earned
+    if (finalPoints > 0 && currentQuestion) {
+      const songData = {
+        id: currentQuestion.song.id,
+        artist: currentQuestion.song.artist,
+        song: currentQuestion.song.title,
+        albumArt: currentQuestion.song.albumArt
+      }
+      
+      // Add to collection if not already there
+      setSongsWithPoints(prev => {
+        const exists = prev.some(s => s.id === songData.id)
+        if (!exists) {
+          return [...prev, songData]
+        }
+        return prev
+      })
+    }
     
     // Record base correctness for percentage calculation (Version B)
     setQuestionsCorrectness(prev => [...prev, { artistCorrect, songCorrect }])
@@ -4808,6 +4838,48 @@ const Game = () => {
     if (streak >= 4) return 3 // 3x multiplier at 4 streak
     if (streak >= 3) return 2 // 2x multiplier at 3 streak
     return 1 // No multiplier below 3 streak
+  }
+
+  // Save playlist statistics to localStorage
+  const savePlaylistStats = (finalScore: number, completedSongs: Array<{id: string, artist: string, song: string, albumArt: string}>) => {
+    if (!playlist) return
+
+    const statsKey = `playlist_stats_${playlist}`
+    const savedStats = localStorage.getItem(statsKey)
+    
+    let stats = {
+      timesPlayed: 0,
+      totalScoreSum: 0,
+      averageScore: 0,
+      highestScore: 0,
+      completedSongs: [] as Array<{id: string, artist: string, song: string, albumArt: string}>
+    }
+
+    if (savedStats) {
+      try {
+        stats = JSON.parse(savedStats)
+      } catch (e) {
+        console.error('Failed to parse saved stats:', e)
+      }
+    }
+
+    // Update stats
+    stats.timesPlayed += 1
+    stats.totalScoreSum = (stats.totalScoreSum || 0) + finalScore
+    stats.averageScore = Math.round(stats.totalScoreSum / stats.timesPlayed)
+    stats.highestScore = Math.max(stats.highestScore, finalScore)
+    
+    // Add newly completed songs (avoid duplicates)
+    completedSongs.forEach(song => {
+      const exists = stats.completedSongs.some(s => s.id === song.id)
+      if (!exists) {
+        stats.completedSongs.push(song)
+      }
+    })
+
+    // Save back to localStorage
+    localStorage.setItem(statsKey, JSON.stringify(stats))
+    console.log('📊 Saved playlist stats:', stats)
   }
 
   // Calculate correct rate based on base correctness (no bonuses)

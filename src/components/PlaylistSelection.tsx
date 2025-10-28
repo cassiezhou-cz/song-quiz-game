@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import PlaylistDetails from './PlaylistDetails'
 import './PlaylistSelection.css'
 
 type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
@@ -22,6 +23,10 @@ const PlaylistSelection = () => {
   const location = useLocation()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
   const [selectedMasterMode, setSelectedMasterMode] = useState(false)
+  const [showDetailsModal, setShowDetailsModal] = useState(false)
+  const [modalPlaylist, setModalPlaylist] = useState('')
+  const [modalTier, setModalTier] = useState<PlaylistTier>(1)
+  const [modalIsMasterMode, setModalIsMasterMode] = useState(false)
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
   const [actualXP, setActualXP] = useState(0) // Actual XP value (not percentage)
   const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
@@ -165,16 +170,25 @@ const PlaylistSelection = () => {
   const handlePlaylistSelect = (playlist: string, isMasterMode: boolean = false) => {
     setSelectedPlaylist(playlist)
     setSelectedMasterMode(isMasterMode)
-    const tier = playlistProgress[playlist]?.tier || 1
-    const gameVersion = isMasterMode ? 'Version C' : 'Version B'
-    console.log(`Selected playlist: ${playlist}, Version: ${gameVersion}, Tier: ${tier}, Master Mode: ${isMasterMode}`)
+    console.log(`Selected playlist: ${playlist}, Master Mode: ${isMasterMode}`)
     
-    // Navigate to game with appropriate version and tier info after a brief moment to show selection feedback
-    const url = `/game/${playlist}?version=${encodeURIComponent(gameVersion)}&tier=${tier}`
-    console.log('🚀 NAVIGATING TO:', url, 'Version:', gameVersion, 'Tier:', tier)
+    const tier = playlistProgress[playlist]?.tier || 1
+    
+    // Show modal after a brief moment to show selection feedback
     setTimeout(() => {
-      navigate(url)
+      setModalPlaylist(playlist)
+      setModalTier(tier)
+      setModalIsMasterMode(isMasterMode)
+      setShowDetailsModal(true)
+      setSelectedPlaylist(null) // Reset selection feedback
     }, 1000)
+  }
+
+  const handleCloseModal = () => {
+    setShowDetailsModal(false)
+    setModalPlaylist('')
+    setModalTier(1)
+    setModalIsMasterMode(false)
   }
 
   const handleNameSubmit = () => {
@@ -199,6 +213,11 @@ const PlaylistSelection = () => {
     localStorage.removeItem('player_name')
     localStorage.removeItem('playlist_progress')
     localStorage.removeItem('completed_songs')
+    
+    // Clear all playlist stats (including collections)
+    playlists.forEach(playlist => {
+      localStorage.removeItem(`playlist_stats_${playlist}`)
+    })
     setXpProgress(0)
     setActualXP(0)
     setPlayerLevel(1)
@@ -394,6 +413,16 @@ const PlaylistSelection = () => {
           </button>
         </div>
       </div>
+
+      {/* Playlist Details Modal */}
+      {showDetailsModal && (
+        <PlaylistDetails
+          playlist={modalPlaylist}
+          tier={modalTier}
+          isMasterMode={modalIsMasterMode}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   )
 }
