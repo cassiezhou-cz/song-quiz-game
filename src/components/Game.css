@@ -272,7 +272,7 @@
 /* Version C progress bar positioning */
 .version-c .progress-bar {
   position: fixed;
-  bottom: 2rem;
+  bottom: calc(2rem + 400px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 80;
@@ -332,6 +332,11 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 80;
+}
+
+/* Version C control buttons positioning - must come after base .control-buttons */
+.version-c .control-buttons {
+  bottom: calc(2rem + 300px) !important;
 }
 
 .control-btn {
@@ -422,6 +427,11 @@
 .player-container {
   bottom: calc(30% + 60px);
   left: calc(8% + 30px);
+}
+
+/* Version C player avatar positioned higher */
+.version-c .player-container {
+  bottom: calc(30% + 360px);
 }
 
 .opponent-container {
@@ -1447,6 +1457,11 @@
   .player-container {
     bottom: calc(27% + 60px);
     left: calc(5% + 30px);
+  }
+  
+  /* Version C mobile player avatar positioned higher */
+  .version-c .player-container {
+    bottom: calc(27% + 360px);
   }
   
   .opponent-container {
@@ -5844,6 +5859,179 @@
   font-weight: 600;
 }
 
+/* Weekly Leaderboard Styles */
+.weekly-leaderboard {
+  width: 350px;
+  margin-left: auto;
+  margin-right: -200px;
+  margin-top: -360px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  padding: 20px;
+  padding-left: 90px;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+  overflow: visible;
+}
+
+.leaderboard-title {
+  color: #ffd700;
+  font-size: 20px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 15px;
+  text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+  letter-spacing: 0.5px;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.leaderboard-entry {
+  display: grid;
+  grid-template-columns: 45px 1fr 80px;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.leaderboard-entry:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(5px);
+}
+
+/* Top 3 rankings special styling */
+.leaderboard-entry.rank-1 {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.leaderboard-entry.rank-2 {
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.15), rgba(192, 192, 192, 0.05));
+  border-color: rgba(192, 192, 192, 0.3);
+}
+
+.leaderboard-entry.rank-3 {
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.15), rgba(205, 127, 50, 0.05));
+  border-color: rgba(205, 127, 50, 0.3);
+}
+
+/* Player's own entry */
+.leaderboard-entry.player-entry {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.4), rgba(68, 160, 141, 0.2));
+  border: 3px solid rgba(78, 205, 196, 0.8);
+  box-shadow: 0 0 30px rgba(78, 205, 196, 0.6), 0 0 50px rgba(78, 205, 196, 0.3), inset 0 0 20px rgba(78, 205, 196, 0.2);
+  animation: playerGlow 1.5s ease-in-out infinite, playerPulse 2s ease-in-out infinite;
+  transform: scale(1.05);
+  position: relative;
+  overflow: visible;
+}
+
+.leaderboard-entry.player-entry::before {
+  content: '⭐ YOU ⭐';
+  position: absolute;
+  left: -80px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.5);
+  animation: youBadgePulse 2s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+@keyframes youBadgePulse {
+  0%, 100% {
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.1);
+  }
+}
+
+@keyframes playerGlow {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(78, 205, 196, 0.6), 0 0 50px rgba(78, 205, 196, 0.3), inset 0 0 20px rgba(78, 205, 196, 0.2);
+    border-color: rgba(78, 205, 196, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(78, 205, 196, 0.8), 0 0 60px rgba(78, 205, 196, 0.5), inset 0 0 30px rgba(78, 205, 196, 0.3);
+    border-color: rgba(78, 205, 196, 1);
+  }
+}
+
+@keyframes playerPulse {
+  0%, 100% {
+    transform: scale(1.05);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.entry-rank {
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.leaderboard-entry.rank-1 .entry-rank,
+.leaderboard-entry.rank-2 .entry-rank,
+.leaderboard-entry.rank-3 .entry-rank {
+  font-size: 24px;
+}
+
+.entry-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-entry.player-entry .entry-name {
+  color: #5fd9cf;
+  font-weight: 800;
+  text-shadow: 0 2px 10px rgba(78, 205, 196, 0.8);
+  font-size: 16px;
+}
+
+.leaderboard-entry.player-entry .entry-rank {
+  color: #5fd9cf;
+  text-shadow: 0 2px 10px rgba(78, 205, 196, 0.8);
+}
+
+.leaderboard-entry.player-entry .entry-score {
+  color: #5fd9cf;
+  text-shadow: 0 2px 10px rgba(78, 205, 196, 0.8);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.entry-score {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffd700;
+  text-align: right;
+  text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
 .comprehensive-summary {
   width: 100%;
   max-width: 1000px;
@@ -6332,6 +6520,64 @@
   
   .rapid-fire-stats {
     gap: 20px;
+  }
+  
+  /* Mobile responsive for leaderboard */
+  .weekly-leaderboard {
+    width: 90%;
+    margin: 30px auto;
+    margin-top: 20px;
+    padding: 15px;
+    padding-left: 40px;
+  }
+  
+  .leaderboard-title {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  
+  .leaderboard-entry {
+    grid-template-columns: 40px 1fr 70px;
+    padding: 8px 10px;
+  }
+  
+  .leaderboard-entry.player-entry {
+    transform: scale(1.03);
+  }
+  
+  .leaderboard-entry.player-entry::before {
+    content: '⭐';
+    left: -30px;
+    font-size: 16px;
+    padding: 2px 6px;
+    background: transparent;
+    box-shadow: none;
+  }
+  
+  .entry-rank {
+    font-size: 16px;
+  }
+  
+  .leaderboard-entry.rank-1 .entry-rank,
+  .leaderboard-entry.rank-2 .entry-rank,
+  .leaderboard-entry.rank-3 .entry-rank {
+    font-size: 22px;
+  }
+  
+  .entry-name {
+    font-size: 13px;
+  }
+  
+  .leaderboard-entry.player-entry .entry-name {
+    font-size: 14px;
+  }
+  
+  .entry-score {
+    font-size: 14px;
+  }
+  
+  .leaderboard-entry.player-entry .entry-score {
+    font-size: 16px;
   }
   
   .stat-item {

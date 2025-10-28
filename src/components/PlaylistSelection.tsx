@@ -21,6 +21,7 @@ const PlaylistSelection = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
+  const [selectedMasterMode, setSelectedMasterMode] = useState(false)
   const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
   const [actualXP, setActualXP] = useState(0) // Actual XP value (not percentage)
   const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
@@ -161,14 +162,16 @@ const PlaylistSelection = () => {
     })
   }
 
-  const handlePlaylistSelect = (playlist: string) => {
+  const handlePlaylistSelect = (playlist: string, isMasterMode: boolean = false) => {
     setSelectedPlaylist(playlist)
+    setSelectedMasterMode(isMasterMode)
     const tier = playlistProgress[playlist]?.tier || 1
-    console.log(`Selected playlist: ${playlist}, Version: Version B, Tier: ${tier}`)
+    const gameVersion = isMasterMode ? 'Version C' : 'Version B'
+    console.log(`Selected playlist: ${playlist}, Version: ${gameVersion}, Tier: ${tier}, Master Mode: ${isMasterMode}`)
     
-    // Navigate to game with Version B and tier info after a brief moment to show selection feedback
-    const url = `/game/${playlist}?version=Version%20B&tier=${tier}`
-    console.log('🚀 NAVIGATING TO:', url, 'Version: Version B, Tier:', tier)
+    // Navigate to game with appropriate version and tier info after a brief moment to show selection feedback
+    const url = `/game/${playlist}?version=${encodeURIComponent(gameVersion)}&tier=${tier}`
+    console.log('🚀 NAVIGATING TO:', url, 'Version:', gameVersion, 'Tier:', tier)
     setTimeout(() => {
       navigate(url)
     }, 1000)
@@ -347,7 +350,14 @@ const PlaylistSelection = () => {
                           ))}
                         </div>
                       ) : (
-                        <button className="master-mode-button">
+                        <button 
+                          className="master-mode-button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handlePlaylistSelect(playlist, true)
+                          }}
+                          disabled={selectedPlaylist !== null}
+                        >
                           Master Mode
                         </button>
                       )}
@@ -366,8 +376,8 @@ const PlaylistSelection = () => {
 
             {selectedPlaylist && (
               <div className="selection-feedback">
-                <p>✨ You selected the <strong>{selectedPlaylist}</strong> playlist!</p>
-                <p><em>Starting game...</em></p>
+                <p>✨ You selected the <strong>{selectedPlaylist}</strong> playlist{selectedMasterMode ? ' - Master Mode!' : '!'}</p>
+                <p><em>{selectedMasterMode ? '⚡ Entering speed challenge...' : 'Starting game...'}</em></p>
               </div>
             )}
           </section>

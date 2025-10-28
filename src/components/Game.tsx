@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getAvailableSongs, addPlayedSong } from '../utils/songTracker'
 import './Game.css'
@@ -4738,6 +4738,66 @@ const Game = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
+  // Generate fake leaderboard data for Master Mode - Memoized to prevent re-generation on re-renders
+  const leaderboardData = useMemo(() => {
+    if (!gameComplete || version !== 'Version C') {
+      return []
+    }
+    
+    const fakeNames = [
+      'MusicMaster',
+      'SongSlayer',
+      'BeatBoss',
+      'MelodyKing',
+      'RhythmQueen',
+      'VibeChecker',
+      'TuneHunter',
+      'AudioAce',
+      'SoundSavant',
+      'TrackTitan'
+    ]
+    
+    // Generate random scores between 100-300
+    const leaderboard: Array<{rank: number; name: string; score: number; isPlayer?: boolean}> = fakeNames.map((name, index) => ({
+      rank: index + 1,
+      name,
+      score: Math.floor(Math.random() * 201) + 100 // Random score between 100-300
+    }))
+    
+    // Sort by score descending
+    leaderboard.sort((a, b) => b.score - a.score)
+    
+    // Re-assign ranks after sorting
+    leaderboard.forEach((entry, index) => {
+      entry.rank = index + 1
+    })
+    
+    // Insert player's score if it's competitive
+    const playerName = localStorage.getItem('player_name') || 'You'
+    const playerEntry = {
+      rank: 0,
+      name: playerName,
+      score: score,
+      isPlayer: true
+    }
+    
+    // Find where player would rank
+    const insertIndex = leaderboard.findIndex(entry => score > entry.score)
+    if (insertIndex !== -1) {
+      leaderboard.splice(insertIndex, 0, playerEntry)
+    } else {
+      leaderboard.push(playerEntry)
+    }
+    
+    // Re-assign ranks and limit to 10
+    const finalLeaderboard = leaderboard.slice(0, 10).map((entry, index) => ({
+      ...entry,
+      rank: index + 1
+    }))
+    
+    return finalLeaderboard
+  }, [gameComplete, score, version])
+
   // Version C Streak Multiplier Functions
 
   // activateBonusTime function removed - bonus time now automatically triggers on any points scored
@@ -5158,6 +5218,26 @@ const Game = () => {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Weekly Leaderboard */}
+                  <div className="weekly-leaderboard">
+                    <h4 className="leaderboard-title">🏆 Weekly Leaderboard 🏆</h4>
+                    <div className="leaderboard-list">
+                      {leaderboardData.map((entry) => (
+                        <div 
+                          key={entry.rank} 
+                          className={`leaderboard-entry ${entry.isPlayer ? 'player-entry' : ''} ${entry.rank <= 3 ? `rank-${entry.rank}` : ''}`}
+                        >
+                          <div className="entry-rank">
+                            {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`}
+                          </div>
+                          <div className="entry-name">{entry.name}</div>
+                          <div className="entry-score">{entry.score} pts</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
                   <div className="comprehensive-summary">
                     <h4>Complete Song Summary</h4>
                     <div className="song-attempts-grid">
@@ -5243,7 +5323,11 @@ const Game = () => {
             {version === 'Version B' ? null : (
               <div className="avatar-container player-container">
                 <img 
-                  src="/assets/YourAvatar.png" 
+                  src={
+                    version === 'Version C'
+                      ? (hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png")
+                      : "/assets/YourAvatar.png"
+                  }
                   alt="Your Avatar" 
                   className="avatar player-avatar"
                 />
@@ -6253,7 +6337,17 @@ const Game = () => {
               
               
               <img 
-                src="/assets/YourAvatar.png" 
+                src={
+                  version === 'Version C'
+                    ? (hatUnlocked
+                        ? (showVersionCFeedback 
+                            ? (pointsEarned > 0 ? "/assets/CatHatHappy.png" : "/assets/CatHatSad.png")
+                            : "/assets/CatHatNeutral.png")
+                        : (showVersionCFeedback 
+                            ? (pointsEarned > 0 ? "/assets/CatHappy.png" : "/assets/CatSad.png")
+                            : "/assets/CatNeutral.png"))
+                    : "/assets/YourAvatar.png"
+                }
                 alt="Your Avatar" 
                 className={`avatar player-avatar ${showFeedback && isCorrect ? 'celebrating' : ''}`}
               />
