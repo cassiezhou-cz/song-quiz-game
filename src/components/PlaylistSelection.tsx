@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import PlaylistDetails from './PlaylistDetails'
 import CollectionMenu from './CollectionMenu'
 import './PlaylistSelection.css'
 
@@ -24,10 +23,8 @@ const PlaylistSelection = () => {
   const location = useLocation()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
   const [selectedMasterMode, setSelectedMasterMode] = useState(false)
-  const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [modalPlaylist, setModalPlaylist] = useState('')
-  const [modalTier, setModalTier] = useState<PlaylistTier>(1)
-  const [modalIsMasterMode, setModalIsMasterMode] = useState(false)
+  const [hoveredPlaylist, setHoveredPlaylist] = useState<string | null>(null)
+  const [playlistStats, setPlaylistStats] = useState<Record<string, any>>({})
   const [showCollectionMenu, setShowCollectionMenu] = useState(false)
   const [collectionPlaylist, setCollectionPlaylist] = useState('')
   const [collectionTier, setCollectionTier] = useState<PlaylistTier>(1)
@@ -120,6 +117,25 @@ const PlaylistSelection = () => {
         console.error('Failed to parse playlists with new songs:', e)
       }
     }
+
+    // Load stats for all playlists
+    const stats: Record<string, any> = {}
+    playlists.forEach(playlist => {
+      const statsKey = `playlist_stats_${playlist}`
+      const savedStats = localStorage.getItem(statsKey)
+      if (savedStats) {
+        try {
+          stats[playlist] = JSON.parse(savedStats)
+        } catch (e) {
+          console.error(`Failed to parse stats for ${playlist}:`, e)
+          stats[playlist] = { timesPlayed: 0, averageScore: 0, highestScore: 0, completedSongs: [] }
+        }
+      } else {
+        stats[playlist] = { timesPlayed: 0, averageScore: 0, highestScore: 0, completedSongs: [] }
+      }
+    })
+    setPlaylistStats(stats)
+    console.log('📊 Loaded all playlist stats:', stats)
   }, [location])
 
   // Helper function to get max segments for a tier
@@ -166,21 +182,12 @@ const PlaylistSelection = () => {
     
     const tier = playlistProgress[playlist]?.tier || 1
     
-    // Show modal after a brief moment to show selection feedback
+    // Navigate directly to game after brief selection feedback
     setTimeout(() => {
-      setModalPlaylist(playlist)
-      setModalTier(tier)
-      setModalIsMasterMode(isMasterMode)
-      setShowDetailsModal(true)
-      setSelectedPlaylist(null) // Reset selection feedback
+      const gameVersion = isMasterMode ? 'Version C' : 'Version B'
+      const url = `/game/${playlist}?version=${encodeURIComponent(gameVersion)}&tier=${tier}`
+      navigate(url)
     }, 1000)
-  }
-
-  const handleCloseModal = () => {
-    setShowDetailsModal(false)
-    setModalPlaylist('')
-    setModalTier(1)
-    setModalIsMasterMode(false)
   }
 
   const handleNameSubmit = () => {
@@ -324,8 +331,37 @@ const PlaylistSelection = () => {
                   'Most Streamed Songs': 'playlist-most-streamed'
                 }
 
+                const stats = playlistStats[playlist] || { timesPlayed: 0, averageScore: 0, highestScore: 0 }
+                const isHovered = hoveredPlaylist === playlist
+
                 return (
-                  <div key={playlist} className="playlist-item-with-meter">
+                  <div 
+                    key={playlist} 
+                    className="playlist-item-with-meter"
+                    onMouseEnter={() => setHoveredPlaylist(playlist)}
+                    onMouseLeave={() => setHoveredPlaylist(null)}
+                  >
+                    {/* Inline Stats Display */}
+                    <div className={`inline-stats ${isHovered ? 'visible' : ''}`}>
+                      <div className="inline-stats-content">
+                        <div className="inline-stat">
+                          <div className="inline-stat-icon">🎮</div>
+                          <div className="inline-stat-value">{stats.timesPlayed}</div>
+                          <div className="inline-stat-label">Played</div>
+                        </div>
+                        <div className="inline-stat">
+                          <div className="inline-stat-icon">📊</div>
+                          <div className="inline-stat-value">{stats.averageScore.toFixed(0)}</div>
+                          <div className="inline-stat-label">Avg Score</div>
+                        </div>
+                        <div className="inline-stat">
+                          <div className="inline-stat-icon">🏆</div>
+                          <div className="inline-stat-value">{stats.highestScore}</div>
+                          <div className="inline-stat-label">High Score</div>
+                        </div>
+                      </div>
+                    </div>
+
                     <button 
                       className={`playlist-button ${classNameMap[playlist]}`}
                       onClick={() => handlePlaylistSelect(playlist)}
@@ -404,16 +440,6 @@ const PlaylistSelection = () => {
           </button>
         </div>
       </div>
-
-      {/* Playlist Details Modal */}
-      {showDetailsModal && (
-        <PlaylistDetails
-          playlist={modalPlaylist}
-          tier={modalTier}
-          isMasterMode={modalIsMasterMode}
-          onClose={handleCloseModal}
-        />
-      )}
 
       {/* Collection Menu Modal */}
       {showCollectionMenu && (
