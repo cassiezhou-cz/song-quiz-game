@@ -1860,7 +1860,10 @@ const Game = () => {
       artist: 'Toto', 
       file: '/songs/Iconic Songs/AfricaToto.mp3', 
       albumArt: '/assets/album-art/Iconic Songs/AfricaToto.jpeg',
-      alternatives: ['Rosanna - Toto', 'Hold the Line - Toto', 'I Won\'t Hold You Back - Toto']
+      alternatives: ['Rosanna - Toto', 'Hold the Line - Toto', 'I Won\'t Hold You Back - Toto'],
+      triviaQuestion: 'What year was "Africa" by Toto released?',
+      triviaOptions: ['1980', '1982', '1984', '1986'],
+      triviaCorrectAnswer: '1982'
     },
     { 
       id: '2', 
@@ -1868,7 +1871,10 @@ const Game = () => {
       artist: 'Smash Mouth', 
       file: '/songs/Iconic Songs/AllStarSmashMouth.mp3', 
       albumArt: '/assets/album-art/Iconic Songs/AllStarSmashMouth.jpeg',
-      alternatives: ['I\'m a Believer - Smash Mouth', 'Walkin\' on the Sun - Smash Mouth', 'Then the Morning Comes - Smash Mouth']
+      alternatives: ['I\'m a Believer - Smash Mouth', 'Walkin\' on the Sun - Smash Mouth', 'Then the Morning Comes - Smash Mouth'],
+      triviaQuestion: 'Which animated movie franchise famously features "All Star" by Smash Mouth?',
+      triviaOptions: ['Shrek', 'Ice Age', 'Despicable Me', 'Kung Fu Panda'],
+      triviaCorrectAnswer: 'Shrek'
     },
     { 
       id: '3', 
@@ -1901,7 +1907,10 @@ const Game = () => {
       artist: 'Michael Jackson', 
       file: '/songs/Iconic Songs/BeatItMichaelJackson.mp3', 
       albumArt: '/assets/album-art/Iconic Songs/BeatItMichaelJackson.jpeg',
-      alternatives: ['Billie Jean - Michael Jackson', 'Thriller - Michael Jackson', 'Smooth Criminal - Michael Jackson']
+      alternatives: ['Billie Jean - Michael Jackson', 'Thriller - Michael Jackson', 'Smooth Criminal - Michael Jackson'],
+      triviaQuestion: 'Which famous guitarist performed the guitar solo on "Beat It"?',
+      triviaOptions: ['Eddie Van Halen', 'Slash', 'Eric Clapton', 'Jimi Hendrix'],
+      triviaCorrectAnswer: 'Eddie Van Halen'
     },
     { 
       id: '7', 
@@ -1917,7 +1926,10 @@ const Game = () => {
       artist: 'Journey', 
       file: '/songs/Iconic Songs/Don\'tStopBelievin\'Journey.mp3', 
       albumArt: '/assets/album-art/Iconic Songs/Don\'tStopBelievin\'Journey.jpeg',
-      alternatives: ['Faithfully - Journey', 'Open Arms - Journey', 'Separate Ways - Journey']
+      alternatives: ['Faithfully - Journey', 'Open Arms - Journey', 'Separate Ways - Journey'],
+      triviaQuestion: 'Which TV show helped bring "Don\'t Stop Believin\'" back to prominence in 2007?',
+      triviaOptions: ['Glee', 'The Sopranos', 'American Idol', 'Lost'],
+      triviaCorrectAnswer: 'The Sopranos'
     },
     { 
       id: '9', 
@@ -1925,7 +1937,10 @@ const Game = () => {
       artist: 'Survivor', 
       file: '/songs/Iconic Songs/EyeoftheTigerSurvivor.mp3', 
       albumArt: '/assets/album-art/Iconic Songs/EyeoftheTigerSurvivor.jpeg',
-      alternatives: ['Burning Heart - Survivor', 'The Search Is Over - Survivor', 'High on You - Survivor']
+      alternatives: ['Burning Heart - Survivor', 'The Search Is Over - Survivor', 'High on You - Survivor'],
+      triviaQuestion: 'Which Rocky movie features "Eye of the Tiger" as its theme song?',
+      triviaOptions: ['Rocky II', 'Rocky III', 'Rocky IV', 'Rocky V'],
+      triviaCorrectAnswer: 'Rocky III'
     },
     { 
       id: '10', 
@@ -1943,7 +1958,10 @@ const Game = () => {
       file: '/songs/Iconic Songs/HeyYa!Outkast.mp3', 
       albumArt: '/assets/album-art/Iconic Songs/HeyYa!Outkast.jpeg',
       alternatives: ['Ms. Jackson - OutKast', 'The Way You Move - OutKast', 'So Fresh, So Clean - OutKast'],
-      artistAlternatives: ['Outkast', 'Out Kast']
+      artistAlternatives: ['Outkast', 'Out Kast'],
+      triviaQuestion: 'Which member of OutKast performs "Hey Ya!"?',
+      triviaOptions: ['André 3000', 'Big Boi', 'Both members', 'Neither, it\'s a guest artist'],
+      triviaCorrectAnswer: 'André 3000'
     },
     { 
       id: '12', 
@@ -2066,7 +2084,10 @@ const Game = () => {
       artist: 'Spice Girls', 
       file: '/songs/Iconic Songs/WannabeSpiceGirls.mp3', 
       albumArt: '/assets/album-art/Iconic Songs/WannabeSpiceGirls.jpeg',
-      alternatives: ['Say You\'ll Be There - Spice Girls', 'Spice Up Your Life - Spice Girls', '2 Become 1 - Spice Girls']
+      alternatives: ['Say You\'ll Be There - Spice Girls', 'Spice Up Your Life - Spice Girls', '2 Become 1 - Spice Girls'],
+      triviaQuestion: 'In what year did the Spice Girls release "Wannabe"?',
+      triviaOptions: ['1994', '1996', '1998', '2000'],
+      triviaCorrectAnswer: '1996'
     },
     { 
       id: '27', 
@@ -2074,7 +2095,10 @@ const Game = () => {
       artist: 'Queen', 
       file: '/songs/Iconic Songs/WeWillRockYouQueen.mp3', 
       albumArt: '/assets/album-art/Iconic Songs/WeWillRockYouQueen.jpeg',
-      alternatives: ['We Are the Champions - Queen', 'Bohemian Rhapsody - Queen', 'Another One Bites the Dust - Queen']
+      alternatives: ['We Are the Champions - Queen', 'Bohemian Rhapsody - Queen', 'Another One Bites the Dust - Queen'],
+      triviaQuestion: 'Who is the lead vocalist of Queen?',
+      triviaOptions: ['Freddie Mercury', 'Brian May', 'Roger Taylor', 'John Deacon'],
+      triviaCorrectAnswer: 'Freddie Mercury'
     },
     { 
       id: '28', 
@@ -2110,7 +2134,10 @@ const Game = () => {
       artist: 'Harry Styles', 
       file: '/songs/Most Streamed Songs/AsItWasHarryStyles.mp3', 
       albumArt: '/assets/album-art/Most Streamed Songs/AsItWasHarryStyles.jpeg',
-      alternatives: ['Watermelon Sugar - Harry Styles', 'Sign of the Times - Harry Styles', 'Adore You - Harry Styles']
+      alternatives: ['Watermelon Sugar - Harry Styles', 'Sign of the Times - Harry Styles', 'Adore You - Harry Styles'],
+      triviaQuestion: 'What boy band was Harry Styles originally a member of?',
+      triviaOptions: ['One Direction', 'NSYNC', 'Backstreet Boys', 'Take That'],
+      triviaCorrectAnswer: 'One Direction'
     },
     { 
       id: '3', 
@@ -2118,7 +2145,10 @@ const Game = () => {
       artist: 'Billie Eilish', 
       file: '/songs/Most Streamed Songs/badguyBillieEilish.mp3', 
       albumArt: '/assets/album-art/Most Streamed Songs/badguyBillieEilish.jpeg',
-      alternatives: ['lovely - Billie Eilish', 'ocean eyes - Billie Eilish', 'when the party\'s over - Billie Eilish']
+      alternatives: ['lovely - Billie Eilish', 'ocean eyes - Billie Eilish', 'when the party\'s over - Billie Eilish'],
+      triviaQuestion: 'Who is Billie Eilish\'s brother and frequent collaborator?',
+      triviaOptions: ['Finneas O\'Connell', 'Phineas Flynn', 'Felix O\'Connor', 'Francis O\'Neill'],
+      triviaCorrectAnswer: 'Finneas O\'Connell'
     },
     { 
       id: '4', 
@@ -2134,7 +2164,10 @@ const Game = () => {
       artist: 'The Weeknd', 
       file: '/songs/Most Streamed Songs/BlindingLightsTheWeeknd.mp3', 
       albumArt: '/assets/album-art/Most Streamed Songs/BlindingLightsTheWeeknd.jpeg',
-      alternatives: ['Starboy - The Weeknd', 'Save Your Tears - The Weeknd', 'I Feel It Coming - The Weeknd']
+      alternatives: ['Starboy - The Weeknd', 'Save Your Tears - The Weeknd', 'I Feel It Coming - The Weeknd'],
+      triviaQuestion: '"Blinding Lights" became the longest-charting song on which chart?',
+      triviaOptions: ['Billboard Hot 100', 'UK Singles Chart', 'Canadian Hot 100', 'ARIA Singles Chart'],
+      triviaCorrectAnswer: 'Billboard Hot 100'
     },
     { 
       id: '6', 
@@ -2239,7 +2272,10 @@ const Game = () => {
       artist: 'Ed Sheeran', 
       file: '/songs/Most Streamed Songs/PerfectEdSheeran.mp3', 
       albumArt: '/assets/album-art/Most Streamed Songs/PerfectEdSheeran.jpeg',
-      alternatives: ['Shape of You - Ed Sheeran', 'Thinking Out Loud - Ed Sheeran', 'Photograph - Ed Sheeran']
+      alternatives: ['Shape of You - Ed Sheeran', 'Thinking Out Loud - Ed Sheeran', 'Photograph - Ed Sheeran'],
+      triviaQuestion: 'Which album features Ed Sheeran\'s "Perfect"?',
+      triviaOptions: ['X (Multiply)', '÷ (Divide)', '+ (Plus)', '= (Equals)'],
+      triviaCorrectAnswer: '÷ (Divide)'
     },
     { 
       id: '19', 
@@ -2255,7 +2291,10 @@ const Game = () => {
       artist: 'Lady Gaga', 
       file: '/songs/Most Streamed Songs/ShallowLadyGaga.mp3', 
       albumArt: '/assets/album-art/Most Streamed Songs/ShallowLadyGaga.jpeg',
-      alternatives: ['Bad Romance - Lady Gaga', 'Poker Face - Lady Gaga', 'Born This Way - Lady Gaga']
+      alternatives: ['Bad Romance - Lady Gaga', 'Poker Face - Lady Gaga', 'Born This Way - Lady Gaga'],
+      triviaQuestion: 'Which movie soundtrack features "Shallow" by Lady Gaga and Bradley Cooper?',
+      triviaOptions: ['A Star Is Born', 'The Greatest Showman', 'Bohemian Rhapsody', 'Rocketman'],
+      triviaCorrectAnswer: 'A Star Is Born'
     },
     { 
       id: '21', 
@@ -2263,7 +2302,10 @@ const Game = () => {
       artist: 'Adele', 
       file: '/songs/Most Streamed Songs/SomeoneLikeYouAdele.mp3', 
       albumArt: '/assets/album-art/Most Streamed Songs/SomeoneLikeYouAdele.jpeg',
-      alternatives: ['Hello - Adele', 'Rolling in the Deep - Adele', 'Set Fire to the Rain - Adele']
+      alternatives: ['Hello - Adele', 'Rolling in the Deep - Adele', 'Set Fire to the Rain - Adele'],
+      triviaQuestion: 'Which album features Adele\'s "Someone Like You"?',
+      triviaOptions: ['19', '21', '25', '30'],
+      triviaCorrectAnswer: '21'
     },
     { 
       id: '22', 
@@ -2303,7 +2345,10 @@ const Game = () => {
       artist: 'Harry Styles', 
       file: '/songs/Most Streamed Songs/WatermelonSugarHarryStyles.mp3', 
       albumArt: '/assets/album-art/Most Streamed Songs/WatermelonSugarHarryStyles.jpeg',
-      alternatives: ['As It Was - Harry Styles', 'Adore You - Harry Styles', 'Golden - Harry Styles']
+      alternatives: ['As It Was - Harry Styles', 'Adore You - Harry Styles', 'Golden - Harry Styles'],
+      triviaQuestion: 'What year did "Watermelon Sugar" win the Grammy for Best Pop Solo Performance?',
+      triviaOptions: ['2019', '2020', '2021', '2022'],
+      triviaCorrectAnswer: '2021'
     },
     { 
       id: '27', 
