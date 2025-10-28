@@ -2942,10 +2942,14 @@ const Game = () => {
       } else {
         // For non-first questions or after Song Swap, manage timer
         if (preserveTimer) {
-          // When preserving timer (e.g., Song Swap), keep timer running
-          console.log('🎯 VERSION B: Preserving timer, keeping it running')
-          // Timer bonus was already added by Song Swap, don't restart it
-          // Don't reset question start time - keep existing timer state
+          // When preserving timer (e.g., Song Swap), ensure timer continues running
+          console.log('🎯 VERSION B: Preserving timer, ensuring it continues running')
+          // Explicitly restart timer to ensure it continues
+          setVersionBTimerRunning(false)
+          setTimeout(() => {
+            setVersionBTimerRunning(true)
+          }, 10) // Brief delay to ensure state update
+          // Don't reset question start time - keep existing timer state for time bonus
         } else {
           // For regular new questions, restart timer
           setVersionBTimerRunning(false)
