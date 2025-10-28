@@ -5012,6 +5012,21 @@ const Game = () => {
     return finalLeaderboard
   }, [gameComplete, score, version])
 
+  // Save Master Mode rank when leaderboard is generated
+  useEffect(() => {
+    if (version === 'Version C' && gameComplete && leaderboardData.length > 0 && playlist) {
+      const playerEntry = leaderboardData.find(entry => entry.isPlayer)
+      if (playerEntry && playerEntry.rank <= 10) {
+        const masterModeRankKey = `master_mode_rank_${playlist}`
+        const currentBestRank = parseInt(localStorage.getItem(masterModeRankKey) || '999')
+        if (playerEntry.rank < currentBestRank) {
+          localStorage.setItem(masterModeRankKey, playerEntry.rank.toString())
+          console.log(`🏆 Saved Master Mode best rank for ${playlist}: #${playerEntry.rank}`)
+        }
+      }
+    }
+  }, [version, gameComplete, leaderboardData, playlist])
+
   // Version C Streak Multiplier Functions
 
   // activateBonusTime function removed - bonus time now automatically triggers on any points scored
@@ -5052,6 +5067,16 @@ const Game = () => {
     stats.totalScoreSum = (stats.totalScoreSum || 0) + finalScore
     stats.averageScore = Math.round(stats.totalScoreSum / stats.timesPlayed)
     stats.highestScore = Math.max(stats.highestScore, finalScore)
+    
+    // Save Master Mode high score separately (rank is saved via leaderboardData useEffect)
+    if (version === 'Version C') {
+      const masterModeKey = `master_mode_high_score_${playlist}`
+      const currentMasterHighScore = parseInt(localStorage.getItem(masterModeKey) || '0')
+      if (finalScore > currentMasterHighScore) {
+        localStorage.setItem(masterModeKey, finalScore.toString())
+        console.log(`🏆 New Master Mode high score for ${playlist}: ${finalScore}`)
+      }
+    }
     
     // Add newly completed songs (avoid duplicates)
     let hasNewSongs = false
@@ -5847,6 +5872,19 @@ const Game = () => {
             })()}
             {version === 'Version C' && !gameComplete ? (
               <div className="version-c-timer">
+                {/* Debug: FINISH Button */}
+                <button
+                  className="debug-finish-button"
+                  onClick={() => {
+                    setIsTimerRunning(false)
+                    setGameComplete(true)
+                    console.log('🎯 DEBUG: Game ended instantly')
+                  }}
+                  title="Instantly finish the game"
+                >
+                  FINISH
+                </button>
+                
                 <div className="timer-spectrometer">
                   <div className="timer-label">Time Remaining: {timeRemaining} Second{timeRemaining !== 1 ? 's' : ''}</div>
                   <div className="spectrometer-container">

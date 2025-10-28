@@ -340,6 +340,34 @@
   z-index: 100;
 }
 
+/* Debug: 100% Button */
+.debug-tier-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 200;
+  padding: 0.3rem 0.6rem;
+  background: rgba(255, 0, 0, 0.8);
+  border: 2px solid rgba(255, 0, 0, 1);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.4);
+}
+
+.debug-tier-button:hover {
+  background: rgba(255, 50, 50, 0.9);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.6);
+}
+
+.debug-tier-button:active {
+  transform: scale(0.95);
+}
+
 /* Inline Stats Display */
 .inline-stats {
   position: absolute;
@@ -352,7 +380,8 @@
 
 .inline-stats-content {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
   padding: 1rem;
   padding-bottom: 1.5rem;
   background: rgb(100, 90, 140);
@@ -368,6 +397,59 @@
 .inline-stats.visible .inline-stats-content {
   transform: translateY(-100%);
   opacity: 1;
+}
+
+/* Master Mode Rank Section - Appears above other stats */
+.master-rank-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.2));
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.master-rank-section:hover {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 140, 0, 0.3));
+  border-color: rgba(255, 215, 0, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.master-rank-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+}
+
+.master-rank-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rank-emoji {
+  font-size: 2.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 10px rgba(255, 215, 0, 0.4));
+}
+
+.rank-number {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffd700;
+  text-shadow: 0 2px 12px rgba(255, 215, 0, 0.7);
+}
+
+/* Regular stats row */
+.inline-stats-row {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .inline-stat {

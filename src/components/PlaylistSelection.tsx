@@ -240,6 +240,18 @@ const PlaylistSelection = () => {
     console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist tiers reset to Tier 1, and NEW badges cleared')
   }
 
+  // Debug: Advance playlist to Tier 3
+  const handleAdvanceToTier3 = (playlist: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const updatedProgress = {
+      ...playlistProgress,
+      [playlist]: { tier: 3, progress: 0 }
+    }
+    setPlaylistProgress(updatedProgress)
+    localStorage.setItem('playlist_progress', JSON.stringify(updatedProgress))
+    console.log(`🎯 DEBUG: Advanced ${playlist} to Tier 3`)
+  }
+
   return (
     <div className="playlist-container">
       {/* Player Avatar */}
@@ -344,23 +356,60 @@ const PlaylistSelection = () => {
                     {/* Inline Stats Display */}
                     <div className={`inline-stats ${isHovered ? 'visible' : ''}`}>
                       <div className="inline-stats-content">
-                        <div className="inline-stat">
-                          <div className="inline-stat-icon">🎮</div>
-                          <div className="inline-stat-value">{stats.timesPlayed}</div>
-                          <div className="inline-stat-label">Played</div>
-                        </div>
-                        <div className="inline-stat">
-                          <div className="inline-stat-icon">📊</div>
-                          <div className="inline-stat-value">{stats.averageScore.toFixed(0)}</div>
-                          <div className="inline-stat-label">Avg Score</div>
-                        </div>
-                        <div className="inline-stat">
-                          <div className="inline-stat-icon">🏆</div>
-                          <div className="inline-stat-value">{stats.highestScore}</div>
-                          <div className="inline-stat-label">High Score</div>
+                        {/* Master Mode Rank - Only show if player has attempted Master Mode */}
+                        {(() => {
+                          const masterModeRankKey = `master_mode_rank_${playlist}`
+                          const bestRank = parseInt(localStorage.getItem(masterModeRankKey) || '0')
+                          
+                          if (bestRank > 0 && bestRank <= 10) {
+                            return (
+                              <div className="master-rank-section">
+                                <div className="master-rank-label">Master Mode Rank</div>
+                                <div className="master-rank-display">
+                                  {bestRank === 1 ? (
+                                    <div className="rank-emoji">🥇</div>
+                                  ) : bestRank === 2 ? (
+                                    <div className="rank-emoji">🥈</div>
+                                  ) : bestRank === 3 ? (
+                                    <div className="rank-emoji">🥉</div>
+                                  ) : (
+                                    <div className="rank-number">#{bestRank}</div>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          }
+                          return null
+                        })()}
+                        
+                        <div className="inline-stats-row">
+                          <div className="inline-stat">
+                            <div className="inline-stat-icon">🎮</div>
+                            <div className="inline-stat-value">{stats.timesPlayed}</div>
+                            <div className="inline-stat-label">Played</div>
+                          </div>
+                          <div className="inline-stat">
+                            <div className="inline-stat-icon">📊</div>
+                            <div className="inline-stat-value">{stats.averageScore.toFixed(0)}</div>
+                            <div className="inline-stat-label">Avg Score</div>
+                          </div>
+                          <div className="inline-stat">
+                            <div className="inline-stat-icon">🏆</div>
+                            <div className="inline-stat-value">{stats.highestScore}</div>
+                            <div className="inline-stat-label">High Score</div>
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    {/* Debug: 100% Button */}
+                    <button
+                      className="debug-tier-button"
+                      onClick={(e) => handleAdvanceToTier3(playlist, e)}
+                      title={`Advance ${playlist} to Tier 3`}
+                    >
+                      100%
+                    </button>
 
                     <button 
                       className={`playlist-button ${classNameMap[playlist]}`}
