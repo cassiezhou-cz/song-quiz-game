@@ -587,15 +587,16 @@ const Game = () => {
     }
     
     // Calculate total animation time for all notes
-    const totalAnimationTime = newlyCompletedIndices.length * 800 + 800 + 600 // delays + last note animation + fill animation
+    // Each note starts 350ms after the previous one (25% through), last note takes 800ms to fly + 600ms to fill
+    const totalAnimationTime = newlyCompletedIndices.length * 350 + 800 + 600 - 350 // delays + last note animation + fill animation
     
-    // Animate each note one by one
+    // Animate each note with overlap - next note starts 25% through previous animation
     let delay = 0
     newlyCompletedIndices.forEach((songIndex, arrayIndex) => {
       setTimeout(() => {
         animateSingleNote(songIndex, arrayIndex, initialProgress, false)
       }, delay)
-      delay += 800 // 0.8s between each note animation
+      delay += 350 // 0.35s between each note (25% through the 1.4s total animation)
     })
     
     // After ALL animations complete, update the progress state once and clear temp filled segments
@@ -3379,9 +3380,9 @@ const Game = () => {
                   const newLevelUpCount = currentLevelUpCount + levelsGained
                   localStorage.setItem('level_up_count', newLevelUpCount.toString())
                   
-                  // After bar fills to 100%, update level with animation, then show modals
+                  // After bar fills to 100%, wait for XP counter animation to complete (2s), then update level
                   setTimeout(() => {
-                    // Update player level AFTER bar finishes filling
+                    // Update player level AFTER XP counter finishes animating (2s)
                     const newPlayerLevel = playerLevel + levelsGained
                     setPlayerLevel(newPlayerLevel)
                     localStorage.setItem('player_level', newPlayerLevel.toString())
@@ -3444,12 +3445,19 @@ const Game = () => {
                     
                     // Wait for modal to fully appear before draining bar
                     setTimeout(() => {
-                      // Drain bar to 0% instantaneously behind the modal (player won't see this happen)
-                      console.log('🎯 Level up! Draining bar to 0% instantly (behind modal)')
-                      setSkipXPTransition(true) // Disable transition for instant drain
-                      setXpProgress(0)
-                      setDisplayedXP(0) // Also update displayed counter immediately
-                      setStartingXP(0) // Set starting point for next animation
+                      // Update displayLevel now that modal is showing (hides the XP requirement change)
+                      setDisplayLevel(newPlayerLevel)
+                      console.log('🎯 Updated displayLevel to', newPlayerLevel, '(hidden behind modal)')
+                      
+                      // Small additional delay to ensure modal is fully rendered and covering the XP bar
+                      setTimeout(() => {
+                        // Drain bar to 0% instantaneously behind the modal (player won't see this happen)
+                        console.log('🎯 Level up! Draining bar to 0% instantly (hidden behind modal)')
+                        setSkipXPTransition(true) // Disable transition for instant drain
+                        setStartingXP(0) // Set starting point first
+                        setDisplayedXP(0) // Update displayed counter
+                        setXpProgress(0) // Then drain the bar
+                      }, 100) // Extra 100ms to ensure modal is fully visible
                     }, 700) // Wait 0.5s pause + 0.2s for modal to render
                     
                     // Set up pending refill (from 0% to overflow) that will execute after all modals are closed
@@ -3460,7 +3468,7 @@ const Game = () => {
                     })
                     console.log('🎯 Pending XP refill to:', finalXP, 'after', totalModalsToShow, 'modal(s) close')
                     }, 1500) // Wait for level-up animation (1.5s)
-                  }, 800) // Wait for fill to 100% animation
+                  }, 2100) // Wait for XP counter animation to complete (2s) plus small buffer
                 } else {
                   // No level up, just save the new XP
                   // Update startingXP after animation completes (2 seconds)
@@ -3576,33 +3584,58 @@ const Game = () => {
     }
   }, [gameComplete, version, showXPAnimation, unlockedLifelines, hatUnlocked])
 
-  // Animate XP counter counting up
+  // Animate XP counter counting up - use refs to prevent mid-animation restarts
+  const animatingRef = useRef(false)
+  const displayLevelRef = useRef(displayLevel)
+  const playerLevelRef = useRef(playerLevel)
+  
+  // Keep refs in sync
+  useEffect(() => {
+    displayLevelRef.current = displayLevel
+    playerLevelRef.current = playerLevel
+  }, [displayLevel, playerLevel])
+  
   useEffect(() => {
     if (skipXPTransition) {
       // For instant transitions (like level-up drain), update immediately
-      setDisplayedXP(xpProgress)
+      animatingRef.current = false
+      setDisplayedXP(startingXP)
       return
     }
 
-    // If not showing XP animation or values haven't changed, sync displayedXP to xpProgress
+    // If not showing XP animation, sync displayedXP to startingXP
     if (!showXPAnimation) {
-      setDisplayedXP(xpProgress)
+      animatingRef.current = false
+      setDisplayedXP(startingXP)
       return
     }
 
-    // If XP hasn't changed, don't animate
-    if (xpProgress === startingXP) {
-      setDisplayedXP(xpProgress)
+    // Capture playerLevel at animation start to prevent it from changing mid-animation
+    const capturedPlayerLevel = playerLevelRef.current
+    
+    // Calculate target XP value from percentage using captured level
+    const xpRequired = getXPRequiredForLevel(capturedPlayerLevel)
+    const targetXP = Math.round((xpProgress / 100) * xpRequired)
+    
+    // If XP hasn't changed or animation is already running, don't start new animation
+    if (targetXP === startingXP || animatingRef.current) {
       return
     }
 
-    // Count up from startingXP to xpProgress over 2 seconds
+    // Mark animation as running
+    animatingRef.current = true
+
+    // Capture values at start to prevent mid-animation changes
     const start = startingXP
-    const end = xpProgress
+    const end = targetXP
     const duration = 2000 // 2 seconds to match CSS transition
     const steps = 60 // Update 60 times over 2 seconds (~30fps)
     const increment = (end - start) / steps
     const intervalTime = duration / steps
+    
+    // Capture displayLevel at animation start to prevent it from changing mid-animation
+    const capturedDisplayLevel = displayLevelRef.current
+    const displayedLevelCap = getXPRequiredForLevel(capturedDisplayLevel)
 
     // Set initial value
     setDisplayedXP(start)
@@ -3613,14 +3646,18 @@ const Game = () => {
       const newValue = start + (increment * currentStep)
       
       if (currentStep >= steps) {
-        setDisplayedXP(end) // Ensure we end at exact value
+        setDisplayedXP(Math.min(end, displayedLevelCap)) // Cap at displayed level's requirement
+        animatingRef.current = false // Mark animation as complete
         clearInterval(counter)
       } else {
-        setDisplayedXP(newValue)
+        setDisplayedXP(Math.min(newValue, displayedLevelCap)) // Cap during animation too
       }
     }, intervalTime)
 
-    return () => clearInterval(counter)
+    return () => {
+      clearInterval(counter)
+      animatingRef.current = false
+    }
   }, [xpProgress, startingXP, skipXPTransition, showXPAnimation])
 
   useEffect(() => {
@@ -4541,9 +4578,6 @@ const Game = () => {
     setShowLevelUpModal(false)
     setNewlyUnlockedLifeline(null)
     
-    // Update display level to match actual level (show new icon after modal dismissed)
-    setDisplayLevel(playerLevel)
-    
     // Increment closed modal count for XP refill tracking
     if (pendingXPDrain) {
       setPendingXPDrain({
@@ -4556,9 +4590,6 @@ const Game = () => {
 
   const closeHatUnlockModal = () => {
     setShowHatUnlockModal(false)
-    
-    // Update display level to match actual level (show new icon after modal dismissed)
-    setDisplayLevel(playerLevel)
     
     // Increment closed modal count for XP refill tracking
     if (pendingXPDrain) {
@@ -5043,7 +5074,7 @@ const Game = () => {
                               width: `${xpProgress}%` 
                             }}
                           ></div>
-                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/{getXPRequiredForLevel(playerLevel)}</div>
+                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/{getXPRequiredForLevel(displayLevel)}</div>
                         </div>
                         {/* XP Gain Indicator - positioned at TARGET end of fill, outside bar to avoid clipping */}
                         <div 
@@ -5079,7 +5110,7 @@ const Game = () => {
                           {/* Tier Meter (only show if not Tier 3) */}
                           {playlistProgress.tier < 3 ? (
                             <div className="results-playlist-tier-meter">
-                              {Array.from({ length: 5 }).map((_, index) => {
+                              {Array.from({ length: playlistProgress.tier === 1 ? 5 : 10 }).map((_, index) => {
                                 const isPermanentlyFilled = index < playlistProgress.progress
                                 const isTempFilled = tempFilledSegments.has(index)
                                 const isCurrentlyFilling = fillingSegmentIndex === index
@@ -5219,7 +5250,7 @@ const Game = () => {
                               width: `${xpProgress}%` 
                             }}
                           ></div>
-                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/{getXPRequiredForLevel(playerLevel)}</div>
+                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/{getXPRequiredForLevel(displayLevel)}</div>
                         </div>
                         <div className="xp-mystery-circle-final">
                           <span className="treasure-icon-final">

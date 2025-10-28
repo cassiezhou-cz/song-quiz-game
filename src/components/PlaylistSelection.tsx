@@ -105,7 +105,8 @@ const PlaylistSelection = () => {
 
   // Helper function to get max segments for a tier
   const getTierMaxSegments = (tier: PlaylistTier): number => {
-    if (tier === 1 || tier === 2) return 5
+    if (tier === 1) return 5
+    if (tier === 2) return 10
     return 0 // Tier 3 doesn't have segments
   }
 
