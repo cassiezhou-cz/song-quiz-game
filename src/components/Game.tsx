@@ -353,11 +353,8 @@ const Game = () => {
   const [opponentPointsEarned, setOpponentPointsEarned] = useState(0)
   const [gameComplete, setGameComplete] = useState(false)
   
-  // Version B floating points animation
-  const [showFloatingPoints, setShowFloatingPoints] = useState(false)
-  const [floatingPointsValue, setFloatingPointsValue] = useState(0)
-  const [isFloatingPointsSpecial, setIsFloatingPointsSpecial] = useState(false)
-  const [isFloatingPointsTimeBonus, setIsFloatingPointsTimeBonus] = useState(false)
+  // Version B time bonus tracking
+  const [timeBonusPoints, setTimeBonusPoints] = useState(0)
   
   // Version B confetti effect
   const [activeConfetti, setActiveConfetti] = useState<number[]>([])
@@ -3438,17 +3435,6 @@ const Game = () => {
     }
   }, [version, versionBTimerRunning, versionBTimeRemaining, showFeedback, selectedAnswer])
 
-  // Auto-hide floating points animation after delay
-  useEffect(() => {
-    if (showFloatingPoints) {
-      const timer = setTimeout(() => {
-        setShowFloatingPoints(false)
-      }, 2000) // Hide after 2 seconds
-      
-      return () => clearTimeout(timer)
-    }
-  }, [showFloatingPoints])
-
   // Load XP and unlocked lifelines on mount
   useEffect(() => {
     // Load player level first
@@ -4125,18 +4111,6 @@ const Game = () => {
       playCorrectAnswerSfx()
     }
     
-    // Check for time bonus (answered within 5 seconds and no lifeline used)
-    const elapsedTime = Date.now() - questionStartTime
-    const hasTimeBonus = points > 0 && elapsedTime <= 5000 && !lifelineUsedThisQuestion
-    let finalPoints = points
-    
-    if (hasTimeBonus) {
-      finalPoints = points * 2
-      console.log('⏱️ TIME BONUS: Answered in', (elapsedTime / 1000).toFixed(1), 'seconds! Points doubled from', points, 'to', finalPoints)
-    } else if (points > 0 && elapsedTime <= 5000 && lifelineUsedThisQuestion) {
-      console.log('⏱️ TIME BONUS: Not awarded - lifeline was used on this question')
-    }
-    
     let artistCorrect = false
     let songCorrect = false
     
@@ -4170,6 +4144,24 @@ const Game = () => {
       }
       // For scoreType === 'none' or 0 points, both remain false
     }
+    
+    // Calculate time bonus: max 20 points, decrements by 1 for every 1 second elapsed
+    // Only awarded if BOTH artist and song are correct (not special questions)
+    // Only available for the first 20 seconds (when 20+ seconds remain)
+    let timeBonus = 0
+    if (!specialQuestionNumbers.includes(questionNumber) && artistCorrect && songCorrect) {
+      if (versionBTimeRemaining > 20) {
+        const timeElapsed = 40 - versionBTimeRemaining
+        timeBonus = Math.max(0, 20 - timeElapsed)
+        console.log('⏱️ TIME BONUS: Time remaining:', versionBTimeRemaining, 'seconds. Time elapsed:', timeElapsed, 'Bonus points:', timeBonus)
+      } else {
+        console.log('⏱️ TIME BONUS: Not available (less than 20 seconds remaining)')
+      }
+    }
+    setTimeBonusPoints(timeBonus)
+    const finalPoints = points + timeBonus
+    
+    console.log('📊 FINAL SCORING: Base points:', points, '+ Time bonus:', timeBonus, '= Total:', finalPoints)
     
     setArtistCorrect(artistCorrect)
     setSongCorrect(songCorrect)
@@ -4235,11 +4227,6 @@ const Game = () => {
     
     if (finalPoints > 0) {
       playCorrectAnswerSfx()
-      // Trigger floating points animation
-      setFloatingPointsValue(finalPoints)
-      setIsFloatingPointsSpecial(specialQuestionNumbers.includes(questionNumber))
-      setIsFloatingPointsTimeBonus(hasTimeBonus)
-      setShowFloatingPoints(true)
       // Trigger confetti effect
       if (version === 'Version B') {
         const confettiId = Date.now()
@@ -4265,8 +4252,8 @@ const Game = () => {
       setCurrentTime(0)
     }
     
-    // Award points to player
-    const newScore = score + points
+    // Award points to player (including time bonus)
+    const newScore = score + finalPoints
     setScore(newScore)
   }
 
@@ -4679,9 +4666,6 @@ const Game = () => {
   }
 
   const nextQuestion = () => {
-    // Hide floating points animation immediately
-    setShowFloatingPoints(false)
-    
     // First, properly stop and cleanup current audio
     const audio = audioRef.current
     if (audio) {
@@ -5921,7 +5905,7 @@ const Game = () => {
                   <div className="timer-label">Time Remaining: {timeRemaining} Second{timeRemaining !== 1 ? 's' : ''}</div>
                   <div className="spectrometer-container">
                     <div 
-                      className={`spectrometer-bar ${timeRemaining >= 45 ? 'spectrometer-bonus' : timeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'}`}
+                      className={`spectrometer-bar ${timeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'}`}
                       style={{ width: `${(timeRemaining / 60) * 100}%` }}
                     ></div>
                   </div>
@@ -5944,7 +5928,7 @@ const Game = () => {
                     <div className="timer-label">Time Remaining</div>
                     <div className="spectrometer-container">
                       <div 
-                        className={`spectrometer-bar ${versionBTimeRemaining >= 35 && !lifelineUsedThisQuestion ? 'spectrometer-bonus' : versionBTimeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'} ${isTimerRefilling ? 'spectrometer-refill' : ''}`}
+                        className={`spectrometer-bar ${versionBTimeRemaining <= 10 ? 'spectrometer-urgent' : 'spectrometer-normal'} ${isTimerRefilling ? 'spectrometer-refill' : ''}`}
                         style={{ width: `${Math.min((versionBTimeRemaining / 40) * 100, 100)}%` }}
                       ></div>
                     </div>
@@ -6452,19 +6436,6 @@ const Game = () => {
               </div>
             )}
             
-            {/* Version B Floating Points Animation */}
-            {version === 'Version B' && showFloatingPoints && (
-              <div className="floating-points">
-                {isFloatingPointsSpecial && (
-                  <div className="floating-points-special">Special Question 2X</div>
-                )}
-                {isFloatingPointsTimeBonus && (
-                  <div className="floating-points-time-bonus">Speed Bonus 2X</div>
-                )}
-                <div className="floating-points-value">+{floatingPointsValue}</div>
-              </div>
-            )}
-            
             {/* Version C Rapid-Fire Scoring */}
             {(() => {
               console.log('🎯 VERSION C SCORING BUTTONS CHECK:', { version, isVersionC: version === 'Version C', selectedAnswer, showFeedback });
@@ -6576,13 +6547,13 @@ const Game = () => {
                         {/* For partial credit (10-point base), don't show indicators */}
                         {isPartialCredit ? (
                           <>
-                            <p>Artist: {currentQuestion.song.artist}</p>
-                            <p>Song: {currentQuestion.song.title}</p>
+                            <p><strong>Artist:</strong> {currentQuestion.song.artist}</p>
+                            <p><strong>Song:</strong> {currentQuestion.song.title}</p>
                           </>
                         ) : (
                           <>
-                            <p>{artistCorrect ? '✅' : '❌'} Artist: {currentQuestion.song.artist} {artistCorrect ? '(+10 points)' : ''}</p>
-                            <p>{songCorrect ? '✅' : '❌'} Song: {currentQuestion.song.title} {songCorrect ? '(+10 points)' : ''}</p>
+                            <p>{artistCorrect ? '✅' : '❌'} <strong>Artist:</strong> {currentQuestion.song.artist} {artistCorrect ? '(+10 points)' : ''}</p>
+                            <p>{songCorrect ? '✅' : '❌'} <strong>Song:</strong> {currentQuestion.song.title} {songCorrect ? '(+10 points)' : ''}</p>
                           </>
                         )}
                       </div>
@@ -6601,8 +6572,8 @@ const Game = () => {
                         {/* For 10 points with no specific correctness or Finish The Lyric, don't show indicators */}
                         {(pointsEarned === 10 && !artistCorrect && !songCorrect) || currentQuestion.isFinishTheLyric ? (
                           <>
-                            <p>Artist: {currentQuestion.song.artist}</p>
-                            <p>Song: {currentQuestion.song.title}</p>
+                            <p><strong>Artist:</strong> {currentQuestion.song.artist}</p>
+                            <p><strong>Song:</strong> {currentQuestion.song.title}</p>
                             {currentQuestion.isFinishTheLyric && currentQuestion.lyricAnswer && (
                               <div style={{ marginTop: '1rem' }}>
                                 <div className="answer-feedback-label">Correct Lyric</div>
@@ -6615,12 +6586,12 @@ const Game = () => {
                         ) : currentQuestion.isSongTrivia ? (
                           <>
                             <p className="trivia-question-text">{currentQuestion.triviaQuestionText}</p>
-                            <p className="trivia-correct-answer">
-                              {pointsEarned > 0 ? '✅' : '❌'} Correct Answer: <strong>{currentQuestion.correctAnswer}</strong>
+                            <p className="trivia-correct-answer result-row">
+                              <span>{pointsEarned > 0 ? '✅' : '❌'} Correct Answer: <strong>{currentQuestion.correctAnswer}</strong></span>
+                              <span className="points-value">{pointsEarned > 0 ? `+${pointsEarned - timeBonusPoints}` : '+0'}</span>
                             </p>
                             {pointsEarned > 0 && (
                               <>
-                                <p>Points Earned: {pointsEarned}</p>
                                 {/* Show bonus indicators */}
                                 {version === 'Version B' && (
                                   <>
@@ -6629,13 +6600,15 @@ const Game = () => {
                                         🎯 Special Question 2x
                                       </div>
                                     )}
-                                    {isFloatingPointsTimeBonus && (
-                                      <div className="bonus-indicator speed-bonus">
-                                        ⚡ Speed Bonus 2x
+                                    {timeBonusPoints > 0 && (
+                                      <div className="result-row">
+                                        <div className="result-category bonus-indicator time-bonus">⏱️ Time Bonus</div>
+                                        <div className="result-points">+{timeBonusPoints}</div>
                                       </div>
                                     )}
                                   </>
                                 )}
+                                <p className="points-earned-display">Points Earned: {pointsEarned}</p>
                               </>
                             )}
                           </>
@@ -6644,33 +6617,44 @@ const Game = () => {
                             {/* Regular questions: Show artist and song */}
                             {pointsEarned === 10 && !artistCorrect && !songCorrect ? (
                               <>
-                                <p>Artist: {currentQuestion.song.artist}</p>
-                                <p>Song: {currentQuestion.song.title}</p>
+                                <div className="result-row result-row-animate" style={{ animationDelay: '0.1s' }}>
+                                  <div className="result-category"><strong>Artist:</strong> {currentQuestion.song.artist}</div>
+                                </div>
+                                <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
+                                  <div className="result-category"><strong>Song:</strong> {currentQuestion.song.title}</div>
+                                </div>
                               </>
                             ) : (
                               <>
-                                <p>{artistCorrect ? '✅' : '❌'} Artist: {currentQuestion.song.artist}</p>
-                                <p>{songCorrect ? '✅' : '❌'} Song: {currentQuestion.song.title}</p>
+                                <div className="result-row result-row-animate" style={{ animationDelay: '0.1s' }}>
+                                  <div className="result-category">{artistCorrect ? '✅' : '❌'} <strong>Artist:</strong> {currentQuestion.song.artist}</div>
+                                  <div className="result-points">{artistCorrect ? '+10' : '+0'}</div>
+                                </div>
+                                <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
+                                  <div className="result-category">{songCorrect ? '✅' : '❌'} <strong>Song:</strong> {currentQuestion.song.title}</div>
+                                  <div className="result-points">{songCorrect ? '+10' : '+0'}</div>
+                                </div>
                               </>
                             )}
                             {pointsEarned > 0 && (
                               <>
-                                <p>Points Earned: {pointsEarned}</p>
                                 {/* Show bonus indicators */}
                                 {version === 'Version B' && (
                                   <>
                                     {specialQuestionNumbers.includes(questionNumber) && (
-                                      <div className="bonus-indicator special-question-bonus">
+                                      <div className="bonus-indicator special-question-bonus result-row-animate" style={{ animationDelay: '0.3s' }}>
                                         🎯 Special Question 2x
                                       </div>
                                     )}
-                                    {isFloatingPointsTimeBonus && (
-                                      <div className="bonus-indicator speed-bonus">
-                                        ⚡ Speed Bonus 2x
+                                    {timeBonusPoints > 0 && (
+                                      <div className="result-row result-row-animate" style={{ animationDelay: specialQuestionNumbers.includes(questionNumber) ? '0.4s' : '0.3s' }}>
+                                        <div className="result-category bonus-indicator time-bonus">⏱️ Time Bonus</div>
+                                        <div className="result-points">+{timeBonusPoints}</div>
                                       </div>
                                     )}
                                   </>
                                 )}
+                                <p className="points-earned-display points-earned-animate" style={{ animationDelay: (version === 'Version B' && (specialQuestionNumbers.includes(questionNumber) || timeBonusPoints > 0)) ? '0.5s' : '0.3s' }}>Points Earned: {pointsEarned}</p>
                               </>
                             )}
                           </>
@@ -6683,10 +6667,10 @@ const Game = () => {
                     <>
                       {pointsEarned > 0 && (
                         <div className="breakdown-details">
-                          {artistCorrect && <p>✅ Artist: {currentQuestion.song.artist} (+10 points)</p>}
-                          {songCorrect && <p>✅ Song: {currentQuestion.song.title} (+10 points)</p>}
-                          {!artistCorrect && pointsEarned > 0 && <p>❌ Artist: {currentQuestion.song.artist}</p>}
-                          {!songCorrect && pointsEarned > 0 && <p>❌ Song: {currentQuestion.song.title}</p>}
+                          {artistCorrect && <p>✅ <strong>Artist:</strong> {currentQuestion.song.artist} (+10 points)</p>}
+                          {songCorrect && <p>✅ <strong>Song:</strong> {currentQuestion.song.title} (+10 points)</p>}
+                          {!artistCorrect && pointsEarned > 0 && <p>❌ <strong>Artist:</strong> {currentQuestion.song.artist}</p>}
+                          {!songCorrect && pointsEarned > 0 && <p>❌ <strong>Song:</strong> {currentQuestion.song.title}</p>}
                         </div>
                       )}
                       {pointsEarned === 0 && (

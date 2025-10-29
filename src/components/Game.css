@@ -1655,7 +1655,7 @@
 /* Score Breakdown Styles */
 .score-breakdown {
   background: rgba(0, 0, 0, 0.5);
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   margin: calc(1rem + 25px) auto 2rem auto;
@@ -1672,7 +1672,7 @@
 }
 
 .breakdown-details {
-  margin: 1rem 0;
+  margin: 0.5rem 0;
 }
 
 .breakdown-details p {
@@ -1686,6 +1686,57 @@
 
 .breakdown-details p strong {
   color: #ffffff;
+}
+
+.result-row {
+  display: grid;
+  grid-template-columns: 1fr 70px;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.result-row-animate {
+  opacity: 0;
+  animation: resultRowCascade 0.3s ease-out forwards;
+}
+
+@keyframes resultRowCascade {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.result-category {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  min-width: 0; /* Allow text to wrap if needed */
+  text-align: right;
+}
+
+.result-points {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 0.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  color: #4ecdc4;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.points-value {
+  font-weight: 700;
+  color: #4ecdc4;
+  font-size: 1.2rem;
+  text-align: right;
+  min-width: 60px;
 }
 
 /* Version B Song Trivia Results Styles */
@@ -5036,14 +5087,6 @@
   min-width: 120px;
 }
 
-.timer-value.timer-bonus {
-  background: linear-gradient(135deg, #00ff88, #00d4a0);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: bonusPulse 1.5s ease-in-out infinite;
-}
-
 .timer-value.timer-urgent {
   background: linear-gradient(135deg, #ff6b6b, #ee5a24);
   -webkit-background-clip: text;
@@ -5107,12 +5150,6 @@
   background: linear-gradient(90deg, #4ecdc4, #44a08d);
 }
 
-.spectrometer-bar.spectrometer-bonus {
-  background: linear-gradient(90deg, #00ff88, #00d4a0);
-  animation: spectrometerBonusGlow 1.5s ease-in-out infinite;
-  box-shadow: 0 0 30px rgba(0, 255, 136, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.4);
-}
-
 .spectrometer-bar.spectrometer-urgent {
   background: linear-gradient(90deg, #ff6b6b, #ee5a24);
   animation: spectrometerUrgentGlow 1s ease-in-out infinite;
@@ -5122,15 +5159,6 @@
 }
 
 /* Spectrometer-specific animations that don't interfere with width transition */
-@keyframes spectrometerBonusGlow {
-  0%, 100% {
-    filter: brightness(1) drop-shadow(0 0 8px rgba(0, 255, 136, 0.8));
-  }
-  50% {
-    filter: brightness(1.2) drop-shadow(0 0 15px rgba(0, 255, 136, 1));
-  }
-}
-
 @keyframes spectrometerUrgentGlow {
   0%, 100% {
     filter: brightness(1) drop-shadow(0 0 10px rgba(255, 107, 107, 0.8));
@@ -6731,95 +6759,80 @@
   }
 }
 
-/* Version B Floating Points Animation */
-.floating-points {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-  pointer-events: none;
-  animation: floatUp 2s ease-out forwards;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 1.5rem 2.5rem;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-}
-
-.floating-points-special {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #ffd700;
-  text-shadow: 0 0 15px rgba(255, 215, 0, 0.8),
-               0 0 30px rgba(255, 215, 0, 0.6),
-               0 0 45px rgba(255, 215, 0, 0.4);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.floating-points-time-bonus {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #00d4ff;
-  text-shadow: 0 0 15px rgba(0, 212, 255, 0.8),
-               0 0 30px rgba(0, 212, 255, 0.6),
-               0 0 45px rgba(0, 212, 255, 0.4);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.floating-points-value {
-  font-size: 4rem;
-  font-weight: bold;
-  color: #00ff88;
-  text-shadow: 0 0 20px rgba(0, 255, 136, 0.8),
-               0 0 40px rgba(0, 255, 136, 0.6),
-               0 0 60px rgba(0, 255, 136, 0.4);
-}
-
-@keyframes floatUp {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) translateY(0);
-  }
-  20% {
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) translateY(-100px);
-  }
-}
-
 /* Version B Bonus Indicators */
 .bonus-indicator {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  margin-top: 0.5rem;
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
   border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
 }
 
-.bonus-indicator.special-question-bonus {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+.bonus-indicator.time-bonus {
+  /* Override when used as result-category */
+  margin: 0;
+  padding: 0.75rem 1.5rem;
+  text-align: right;
 }
 
-.bonus-indicator.speed-bonus {
-  background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
-  color: #1a1a1a;
-  border: 2px solid rgba(255, 255, 255, 0.5);
+/* Points Earned Display */
+.points-earned-display {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  padding: 1rem 2rem;
+  background: rgba(78, 205, 196, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(78, 205, 196, 0.2);
+  color: #4ecdc4;
+  text-shadow: 0 0 20px rgba(78, 205, 196, 0.5),
+               0 0 40px rgba(78, 205, 196, 0.3),
+               0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 15px rgba(78, 205, 196, 0.15);
+  animation: pointsEarnedPulse 2s ease-in-out infinite;
+}
+
+.points-earned-animate {
+  opacity: 0;
+  animation: pointsEarnedEntrance 0.5s ease-out forwards, pointsEarnedPulse 2s ease-in-out infinite 0.5s;
+}
+
+@keyframes pointsEarnedEntrance {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+  60% {
+    transform: scale(1.08) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pointsEarnedPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(78, 205, 196, 0.15);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(78, 205, 196, 0.3);
+  }
+}
+
+@media (max-width: 768px) {
+  .points-earned-display {
+    font-size: 1.5rem;
+    padding: 0.75rem 1.5rem;
+  }
 }
 
 /* Level Up Modal */
