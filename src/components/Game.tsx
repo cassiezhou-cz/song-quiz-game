@@ -532,6 +532,164 @@ const Game = () => {
     }
   }, [playlist])
 
+  // Keyboard shortcuts for debug scoring (Version B)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only trigger if debug scoring buttons are visible
+      const isDebugScoringVisible = version === 'Version B' && 
+        !selectedAnswer && 
+        !showFeedback && 
+        !(currentQuestion && currentQuestion.isSongTrivia) && 
+        !(currentQuestion && currentQuestion.isFinishTheLyric)
+      
+      if (!isDebugScoringVisible) return
+      
+      const key = event.key.toLowerCase()
+      
+      switch (key) {
+        case 'q':
+          // None (0 points)
+          handleVersionBScore(0, 'none')
+          break
+        case 'w':
+          // Artist only
+          handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'artist')
+          break
+        case 'e':
+          // Song only
+          handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'song')
+          break
+        case 'r':
+          // Both
+          handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20, 'both')
+          break
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [version, selectedAnswer, showFeedback, currentQuestion])
+
+  // Keyboard shortcuts for Finish the Lyric (Version B)
+  useEffect(() => {
+    const handleFinishLyricKeyDown = (event: KeyboardEvent) => {
+      // Only trigger if Finish the Lyric buttons are visible
+      const isFinishLyricVisible = version === 'Version B' && 
+        currentQuestion && 
+        currentQuestion.isFinishTheLyric && 
+        !selectedAnswer && 
+        !showFeedback
+      
+      if (!isFinishLyricVisible) return
+      
+      const key = event.key.toLowerCase()
+      
+      switch (key) {
+        case 'q':
+          // Incorrect (0 points)
+          handleVersionBScore(0, 'none')
+          break
+        case 'w':
+          // Correct (20 or 40 points based on special question)
+          handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20, 'both')
+          break
+      }
+    }
+    
+    window.addEventListener('keydown', handleFinishLyricKeyDown)
+    return () => window.removeEventListener('keydown', handleFinishLyricKeyDown)
+  }, [version, selectedAnswer, showFeedback, currentQuestion])
+
+  // Keyboard shortcut for Next Question button (Spacebar)
+  useEffect(() => {
+    const handleSpaceBar = (event: KeyboardEvent) => {
+      // Only trigger if feedback/results screen is showing
+      if (!showFeedback || !currentQuestion) return
+      
+      // Trigger on spacebar
+      if (event.code === 'Space' || event.key === ' ') {
+        event.preventDefault() // Prevent page scroll
+        nextQuestion()
+      }
+    }
+    
+    window.addEventListener('keydown', handleSpaceBar)
+    return () => window.removeEventListener('keydown', handleSpaceBar)
+  }, [showFeedback, currentQuestion])
+
+  // Keyboard shortcut for Back to Playlists button (ESC)
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      // Trigger on ESC key
+      if (event.code === 'Escape' || event.key === 'Escape') {
+        event.preventDefault()
+        backToPlaylist()
+      }
+    }
+    
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [])
+
+  // Keyboard shortcut for Level Up Modal (Spacebar)
+  useEffect(() => {
+    const handleLevelUpSpace = (event: KeyboardEvent) => {
+      // Only trigger if Level Up Modal is showing
+      if (!showLevelUpModal) return
+      
+      // Trigger on spacebar
+      if (event.code === 'Space' || event.key === ' ') {
+        event.preventDefault()
+        closeLevelUpModal()
+      }
+    }
+    
+    window.addEventListener('keydown', handleLevelUpSpace)
+    return () => window.removeEventListener('keydown', handleLevelUpSpace)
+  }, [showLevelUpModal])
+
+  // Keyboard shortcut for Hat Unlock Modal (Spacebar)
+  useEffect(() => {
+    const handleHatUnlockSpace = (event: KeyboardEvent) => {
+      // Only trigger if Hat Unlock Modal is showing
+      if (!showHatUnlockModal) return
+      
+      // Trigger on spacebar
+      if (event.code === 'Space' || event.key === ' ') {
+        event.preventDefault()
+        closeHatUnlockModal()
+      }
+    }
+    
+    window.addEventListener('keydown', handleHatUnlockSpace)
+    return () => window.removeEventListener('keydown', handleHatUnlockSpace)
+  }, [showHatUnlockModal])
+
+  // Keyboard shortcut for Rank Up Modal (Spacebar)
+  useEffect(() => {
+    const handleRankUpSpace = (event: KeyboardEvent) => {
+      // Only trigger if Rank Up Modal is showing
+      if (!showRankUpModal) return
+      
+      // Trigger on spacebar
+      if (event.code === 'Space' || event.key === ' ') {
+        event.preventDefault()
+        console.log('🎭 Rank-up spacebar pressed, closing modal...')
+        
+        // Close modal (tier already updated behind it)
+        setShowRankUpModal(false)
+        
+        // After modal closes, start overflow animations
+        setTimeout(() => {
+          animateOverflowNotes()
+        }, 300)
+      }
+    }
+    
+    window.addEventListener('keydown', handleRankUpSpace)
+    return () => window.removeEventListener('keydown', handleRankUpSpace)
+  }, [showRankUpModal])
+
   // Trigger playlist tier update sequence after song list appears
   useEffect(() => {
     if (showSongList && version === 'Version B' && !hasRunMusicNoteAnimations.current) {
@@ -5297,6 +5455,7 @@ const Game = () => {
           <header className="game-header">
             {/* Back to Playlists button in top left */}
             <button className="results-back-btn" onClick={backToPlaylist}>
+              <span style={{ position: 'absolute', top: '-8px', right: '-2px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.7rem', fontWeight: 'bold' }}>ESC</span>
               ← Back to Playlists
             </button>
           </header>
@@ -6382,27 +6541,35 @@ const Game = () => {
                     <button
                       className="score-button score-0"
                       onClick={() => handleVersionBScore(0, 'none')}
+                      style={{ position: 'relative' }}
                     >
+                      <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>Q</span>
                       None
                     </button>
                   <div className="score-button-group">
                     <button
                       className="score-button score-10 score-half"
                       onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'artist')}
+                      style={{ position: 'relative' }}
                     >
+                      <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>W</span>
                       A
                     </button>
                     <button
                       className="score-button score-10 score-half"
                       onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'song')}
+                      style={{ position: 'relative' }}
                     >
+                      <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>E</span>
                       S
                     </button>
                   </div>
                   <button
                     className="score-button score-20"
                     onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20, 'both')}
+                    style={{ position: 'relative' }}
                   >
+                    <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>R</span>
                     Both
                   </button>
                     {/* No special scoring for question 7 since it's now a special question */}
@@ -6427,13 +6594,17 @@ const Game = () => {
                     <button
                       className="score-button score-0"
                       onClick={() => handleVersionBScore(0, 'none')}
+                      style={{ position: 'relative' }}
                     >
+                      <span style={{ position: 'absolute', top: '-8px', right: '2px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>Q</span>
                       Incorrect
                     </button>
                     <button
                       className="score-button score-20"
                       onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20, 'both')}
+                      style={{ position: 'relative' }}
                     >
+                      <span style={{ position: 'absolute', top: '-8px', right: '2px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>W</span>
                       Correct
                     </button>
                   </div>
@@ -6719,7 +6890,8 @@ const Game = () => {
                 </div>
 
 
-                <button className="next-question-btn" onClick={nextQuestion}>
+                <button className="next-question-btn" onClick={nextQuestion} style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', top: '-8px', right: '2px', background: '#000', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>SPACE</span>
                   {questionNumber >= totalQuestions ? 'Finish Quiz' : 'Next Question →'}
                 </button>
               </div>
@@ -6917,6 +7089,7 @@ const Game = () => {
           className="back-to-playlists-btn"
           onClick={backToPlaylist}
         >
+          <span style={{ position: 'absolute', top: '-8px', right: '-2px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.7rem', fontWeight: 'bold' }}>ESC</span>
           ← Back to Playlists
         </button>
 
