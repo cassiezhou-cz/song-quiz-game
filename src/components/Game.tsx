@@ -6550,8 +6550,14 @@ const Game = () => {
                   {version === 'Version A' && (
                     <div className="version-a-breakdown">
                       <div className="breakdown-details artist-title-section">
-                        {/* For partial credit (10-point base), don't show indicators */}
-                        {isPartialCredit ? (
+                        {/* Song Trivia Questions */}
+                        {currentQuestion.isSongTrivia ? (
+                          <>
+                            <p className="trivia-question-text">{currentQuestion.triviaQuestionText}</p>
+                            <p>{pointsEarned > 0 ? '✅' : '❌'} <strong>Correct Answer:</strong> {currentQuestion.correctAnswer} {pointsEarned > 0 ? `(+${pointsEarned})` : ''}</p>
+                          </>
+                        ) : isPartialCredit ? (
+                          /* For partial credit (10-point base), don't show indicators */
                           <>
                             <p><strong>Artist:</strong> {currentQuestion.song.artist}</p>
                             <p><strong>Song:</strong> {currentQuestion.song.title}</p>
@@ -6569,6 +6575,9 @@ const Game = () => {
                           {isOnStreak && streak >= 3 && <p>🔥 Streak Bonus (+10 points)</p>}
                         </div>
                       )}
+                      <div className="breakdown-details">
+                        <p><strong>Points Earned: {pointsEarned}</strong></p>
+                      </div>
                     </div>
                   )}
                   
@@ -6592,31 +6601,28 @@ const Game = () => {
                         ) : currentQuestion.isSongTrivia ? (
                           <>
                             <p className="trivia-question-text">{currentQuestion.triviaQuestionText}</p>
-                            <p className="trivia-correct-answer result-row">
-                              <span>{pointsEarned > 0 ? '✅' : '❌'} Correct Answer: <strong>{currentQuestion.correctAnswer}</strong></span>
-                              <span className="points-value">{pointsEarned > 0 ? `+${pointsEarned - timeBonusPoints}` : '+0'}</span>
-                            </p>
+                            <div className="result-row result-row-animate" style={{ animationDelay: '0.1s' }}>
+                              <div className={`result-category ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}><strong>Correct Answer:</strong> {currentQuestion.correctAnswer}</div>
+                              <div className={`result-points ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}>{pointsEarned > 0 ? `+${specialQuestionNumbers.includes(questionNumber) ? (pointsEarned - timeBonusPoints) / 2 : pointsEarned - timeBonusPoints}` : '+0'}</div>
+                            </div>
                             {pointsEarned > 0 && (
                               <>
                                 {/* Show bonus indicators */}
-                                {version === 'Version B' && (
-                                  <>
-                                    {specialQuestionNumbers.includes(questionNumber) && (
-                                      <div className="bonus-indicator special-question-bonus">
-                                        🎯 Special Question 2x
-                                      </div>
-                                    )}
-                                    {timeBonusPoints > 0 && (
-                                      <div className="result-row">
-                                        <div className="result-category bonus-indicator time-bonus">⏱️ Time Bonus</div>
-                                        <div className="result-points">+{timeBonusPoints}</div>
-                                      </div>
-                                    )}
-                                  </>
+                                {specialQuestionNumbers.includes(questionNumber) && (
+                                  <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
+                                    <div className="result-category bonus-indicator special-question-bonus" style={{ textAlign: 'right' }}>✨ Special Question</div>
+                                    <div className="result-points bonus-indicator special-question-bonus">2x</div>
+                                  </div>
                                 )}
-                                <p className="points-earned-display">Points Earned: {pointsEarned}</p>
+                                {timeBonusPoints > 0 && (
+                                  <div className="result-row result-row-animate" style={{ animationDelay: specialQuestionNumbers.includes(questionNumber) ? '0.3s' : '0.2s' }}>
+                                    <div className="result-category bonus-indicator time-bonus">⏱️ Time Bonus</div>
+                                    <div className="result-points">+{timeBonusPoints}</div>
+                                  </div>
+                                )}
                               </>
                             )}
+                            <p className="points-earned-display points-earned-animate" style={{ animationDelay: (specialQuestionNumbers.includes(questionNumber) && timeBonusPoints > 0) ? '0.4s' : (specialQuestionNumbers.includes(questionNumber) || timeBonusPoints > 0) ? '0.3s' : '0.2s' }}>Points Earned: {pointsEarned}</p>
                           </>
                         ) : (
                           <>
@@ -6671,19 +6677,32 @@ const Game = () => {
                   
                   {version !== 'Version A' && version !== 'Version B' && (
                     <>
-                      {pointsEarned > 0 && (
+                      {currentQuestion.isSongTrivia ? (
+                        /* Song Trivia Questions */
                         <div className="breakdown-details">
-                          {artistCorrect && <p>✅ <strong>Artist:</strong> {currentQuestion.song.artist} (+10 points)</p>}
-                          {songCorrect && <p>✅ <strong>Song:</strong> {currentQuestion.song.title} (+10 points)</p>}
-                          {!artistCorrect && pointsEarned > 0 && <p>❌ <strong>Artist:</strong> {currentQuestion.song.artist}</p>}
-                          {!songCorrect && pointsEarned > 0 && <p>❌ <strong>Song:</strong> {currentQuestion.song.title}</p>}
+                          <p className="trivia-question-text">{currentQuestion.triviaQuestionText}</p>
+                          <p>{pointsEarned > 0 ? '✅' : '❌'} <strong>Correct Answer:</strong> {currentQuestion.correctAnswer} {pointsEarned > 0 ? `(+${pointsEarned})` : ''}</p>
+                          <p><strong>Points Earned: {pointsEarned}</strong></p>
                         </div>
-                      )}
-                      {pointsEarned === 0 && (
-                        <div className="breakdown-details">
-                          <p>The correct answer was:</p>
-                          <p><strong>{currentQuestion.song.title}</strong> by <strong>{currentQuestion.song.artist}</strong></p>
-                        </div>
+                      ) : (
+                        <>
+                          {pointsEarned > 0 && (
+                            <div className="breakdown-details">
+                              {artistCorrect && <p>✅ <strong>Artist:</strong> {currentQuestion.song.artist} (+10 points)</p>}
+                              {songCorrect && <p>✅ <strong>Song:</strong> {currentQuestion.song.title} (+10 points)</p>}
+                              {!artistCorrect && pointsEarned > 0 && <p>❌ <strong>Artist:</strong> {currentQuestion.song.artist}</p>}
+                              {!songCorrect && pointsEarned > 0 && <p>❌ <strong>Song:</strong> {currentQuestion.song.title}</p>}
+                              <p><strong>Points Earned: {pointsEarned}</strong></p>
+                            </div>
+                          )}
+                          {pointsEarned === 0 && (
+                            <div className="breakdown-details">
+                              <p>The correct answer was:</p>
+                              <p><strong>{currentQuestion.song.title}</strong> by <strong>{currentQuestion.song.artist}</strong></p>
+                              <p><strong>Points Earned: {pointsEarned}</strong></p>
+                            </div>
+                          )}
+                        </>
                       )}
                     </>
                   )}
