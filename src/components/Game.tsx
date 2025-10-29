@@ -6421,7 +6421,6 @@ const Game = () => {
               <div className="finish-the-lyric-container">
                 <div className="finish-the-lyric-header">
                   <div className="finish-the-lyric-title">🎤 FINISH THE LYRIC</div>
-                  <div className="finish-the-lyric-subtitle">Complete the line to earn 30 points!</div>
                 </div>
                 <div className="manual-scoring">
                   <div className="score-buttons">
@@ -6429,13 +6428,13 @@ const Game = () => {
                       className="score-button score-0"
                       onClick={() => handleVersionBScore(0, 'none')}
                     >
-                      0 Points
+                      Incorrect
                     </button>
                     <button
                       className="score-button score-20"
-                      onClick={() => handleVersionBScore(30, 'both')}
+                      onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20, 'both')}
                     >
-                      30 Points
+                      Correct
                     </button>
                   </div>
                 </div>
@@ -6584,19 +6583,30 @@ const Game = () => {
                   {version === 'Version B' && (
                     <div className="version-b-breakdown">
                       <div className="breakdown-details artist-title-section">
-                        {/* For 10 points with no specific correctness or Finish The Lyric, don't show indicators */}
-                        {(pointsEarned === 10 && !artistCorrect && !songCorrect) || currentQuestion.isFinishTheLyric ? (
+                        {currentQuestion.isFinishTheLyric ? (
+                          <>
+                            {/* Finish the Lyric Questions */}
+                            <p className="result-row-animate" style={{ animationDelay: '0.1s', fontSize: '1.1rem', marginBottom: '1rem' }}>
+                              <strong>{currentQuestion.song.title}</strong> by {currentQuestion.song.artist}
+                            </p>
+                            <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
+                              <div className="result-category" style={{ color: '#ffffff' }}>
+                                🎤 "{formatFinishTheLyricAnswer(currentQuestion.lyricAnswer, pointsEarned > 0)}"
+                              </div>
+                              <div className={`result-points ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}>{pointsEarned > 0 ? `+${specialQuestionNumbers.includes(questionNumber) ? (pointsEarned - timeBonusPoints) / 2 : pointsEarned - timeBonusPoints}` : '+0'}</div>
+                            </div>
+                            {pointsEarned > 0 && specialQuestionNumbers.includes(questionNumber) && (
+                              <div className="result-row result-row-animate" style={{ animationDelay: '0.3s' }}>
+                                <div className="result-category bonus-indicator special-question-bonus" style={{ textAlign: 'right' }}>✨ Special Question</div>
+                                <div className="result-points bonus-indicator special-question-bonus">2x</div>
+                              </div>
+                            )}
+                            <p className="points-earned-display points-earned-animate" style={{ animationDelay: (pointsEarned > 0 && specialQuestionNumbers.includes(questionNumber)) ? '0.4s' : '0.3s' }}>Points Earned: {pointsEarned}</p>
+                          </>
+                        ) : (pointsEarned === 10 && !artistCorrect && !songCorrect) ? (
                           <>
                             <p><strong>Artist:</strong> {currentQuestion.song.artist}</p>
                             <p><strong>Song:</strong> {currentQuestion.song.title}</p>
-                            {currentQuestion.isFinishTheLyric && currentQuestion.lyricAnswer && (
-                              <div style={{ marginTop: '1rem' }}>
-                                <div className="answer-feedback-label">Correct Lyric</div>
-                                <div className="answer-feedback-value">
-                                  {formatFinishTheLyricAnswer(currentQuestion.lyricAnswer, pointsEarned > 0)}
-                                </div>
-                              </div>
-                            )}
                           </>
                         ) : currentQuestion.isSongTrivia ? (
                           <>
