@@ -1721,14 +1721,34 @@
   text-align: right;
 }
 
+.result-category.correct {
+  color: #5fff5f; /* Bright green for correct answers */
+}
+
+.result-category.incorrect {
+  color: #ff6b6b; /* Red for incorrect answers */
+}
+
 .result-points {
   background: rgba(255, 255, 255, 0.05);
   padding: 0.5rem 0.5rem;
   border-radius: 8px;
   font-weight: 700;
-  color: #4ecdc4;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 1.2rem;
   text-align: center;
+}
+
+.result-points.correct {
+  color: #5fff5f; /* Bright green for correct answers */
+}
+
+.result-points.incorrect {
+  color: #ff6b6b; /* Red for incorrect answers */
+}
+
+.result-points.time-bonus-points {
+  color: #4ecdc4; /* Light blue/cyan to match time bonus text */
 }
 
 .points-value {
@@ -4293,6 +4313,15 @@
   animation: zoomInQuick 0.4s ease-out forwards;
 }
 
+.final-score-value {
+  color: #ffffff;
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: #ffffff;
+  background-clip: initial;
+  text-shadow: 0 4px 20px rgba(255, 255, 255, 0.5);
+}
+
 /* Mobile adjustments for Version B elements */
 @media (max-width: 768px) {
   /* Question Progress Indicator Mobile */
@@ -6777,6 +6806,11 @@
   margin: 0;
   padding: 0.75rem 1.5rem;
   text-align: right;
+  color: #4ecdc4; /* Light blue/cyan to match point value */
+}
+
+.bonus-indicator.special-question-bonus {
+  color: #ffeb3b; /* Bright yellow for special question indicator */
 }
 
 /* Points Earned Display */

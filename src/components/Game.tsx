@@ -4116,16 +4116,22 @@ const Game = () => {
     
     // Check if this is the special question
     if (specialQuestionNumbers.includes(questionNumber)) {
-      console.log('🎯 SPECIAL QUESTION: Scoring Question', questionNumber, 'with special points:', points)
-      // Special Question: 50-100 points
-      if (points >= 100) {
+      console.log('🎯 SPECIAL QUESTION: Scoring Question', questionNumber, 'with special points:', points, 'scoreType:', scoreType)
+      // Special Question: 20 points per answer (40 for both)
+      if (scoreType === 'artist') {
+        // Artist only - 20 points
+        artistCorrect = true
+        songCorrect = false
+      } else if (scoreType === 'song') {
+        // Song only - 20 points
+        artistCorrect = false
+        songCorrect = true
+      } else if (scoreType === 'both' || points >= 40) {
+        // Both correct - 40 points
         artistCorrect = true
         songCorrect = true
-      } else if (points >= 50) {
-        // Partial credit for 50 points
-        artistCorrect = false
-        songCorrect = false
       }
+      // For scoreType === 'none' or 0 points, both remain false
     } else {
       console.log('🎵 NORMAL QUESTION: Scoring Question', questionNumber, 'with normal points:', points, 'scoreType:', scoreType)
       // Questions 1-6: 0, 10, or 20 points
@@ -5308,7 +5314,7 @@ const Game = () => {
                   )}
                   
                   {showFinalScore && (
-                    <p className="final-score-text">Final Score: {displayedScore}</p>
+                    <p className="final-score-text">Final Score: <span className="final-score-value">{displayedScore}</span></p>
                   )}
                   
                   {/* Wrapper to contain both XP bar and Playlist meter */}
@@ -6627,12 +6633,12 @@ const Game = () => {
                             ) : (
                               <>
                                 <div className="result-row result-row-animate" style={{ animationDelay: '0.1s' }}>
-                                  <div className="result-category">{artistCorrect ? '✅' : '❌'} <strong>Artist:</strong> {currentQuestion.song.artist}</div>
-                                  <div className="result-points">{artistCorrect ? '+10' : '+0'}</div>
+                                  <div className={`result-category ${artistCorrect ? 'correct' : 'incorrect'}`}><strong>Artist:</strong> {currentQuestion.song.artist}</div>
+                                  <div className={`result-points ${artistCorrect ? 'correct' : 'incorrect'}`}>{artistCorrect ? (specialQuestionNumbers.includes(questionNumber) ? '+20' : '+10') : '+0'}</div>
                                 </div>
                                 <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
-                                  <div className="result-category">{songCorrect ? '✅' : '❌'} <strong>Song:</strong> {currentQuestion.song.title}</div>
-                                  <div className="result-points">{songCorrect ? '+10' : '+0'}</div>
+                                  <div className={`result-category ${songCorrect ? 'correct' : 'incorrect'}`}><strong>Song:</strong> {currentQuestion.song.title}</div>
+                                  <div className={`result-points ${songCorrect ? 'correct' : 'incorrect'}`}>{songCorrect ? (specialQuestionNumbers.includes(questionNumber) ? '+20' : '+10') : '+0'}</div>
                                 </div>
                               </>
                             )}
@@ -6649,7 +6655,7 @@ const Game = () => {
                                     {timeBonusPoints > 0 && (
                                       <div className="result-row result-row-animate" style={{ animationDelay: specialQuestionNumbers.includes(questionNumber) ? '0.4s' : '0.3s' }}>
                                         <div className="result-category bonus-indicator time-bonus">⏱️ Time Bonus</div>
-                                        <div className="result-points">+{timeBonusPoints}</div>
+                                        <div className="result-points time-bonus-points">+{timeBonusPoints}</div>
                                       </div>
                                     )}
                                   </>
