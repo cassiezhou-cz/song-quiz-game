@@ -270,6 +270,64 @@ const finishTheLyricSongs: { [playlist: string]: FinishTheLyricSong[] } = {
       lyricAnswer: 'The way you sold me for parts as you **sunk your teeth into me**',
       acceptableAnswers: ['But you made me look so naive. The way you sold me for parts as you sunk your teeth into me']
     }
+  ],
+  'Iconic Songs': [
+    {
+      id: 'AnotherOneBitesTheDustQueen',
+      title: 'Another One Bites the Dust',
+      artist: 'Queen',
+      file: '/songs/Iconic Songs/Finish the Lyric/AnotherOneBitestheDustQueen.mp3',
+      lyricPrompt: 'You took me for _____ _____ _____ _____',
+      lyricAnswer: 'You took me for **everything that I had**',
+      acceptableAnswers: ['You took me for everything that I had']
+    },
+    {
+      id: 'BarbieGirlAqua',
+      title: 'Barbie Girl',
+      artist: 'Aqua',
+      file: '/songs/Iconic Songs/Finish the Lyric/BarbieGirlAqua.mp3',
+      lyricPrompt: 'I\'m a Barbie girl in _____ _____ _____',
+      lyricAnswer: 'I\'m a Barbie girl in **the Barbie world**',
+      acceptableAnswers: ['I\'m a Barbie girl in the Barbie world']
+    },
+    {
+      id: 'AllIWantForChristmasIsYouMariahCarey',
+      title: 'All I Want For Christmas Is You',
+      artist: 'Mariah Carey',
+      file: '/songs/Iconic Songs/Finish the Lyric/AllIWantForChristmasIsYouMariahCarey.mp3',
+      lyricPrompt: 'Don\'t care about the presents _____ _____ _____ _____',
+      lyricAnswer: 'Don\'t care about the presents **underneath the Christmas tree**',
+      acceptableAnswers: ['Don\'t care about the presents underneath the Christmas tree']
+    }
+  ],
+  'Most Streamed Songs': [
+    {
+      id: 'HaloBeyonce',
+      title: 'Halo',
+      artist: 'Beyoncé',
+      file: '/songs/Most Streamed Songs/Finish the Lyric/HaloBeyonce.mp3',
+      lyricPrompt: 'Baby, I can feel your halo _____ _____ _____ _____ _____',
+      lyricAnswer: 'Baby, I can feel your halo, **pray it won\'t fade away**',
+      acceptableAnswers: ['Baby, I can feel your halo, pray it won\'t fade away']
+    },
+    {
+      id: 'OldTownRoadLilNasX',
+      title: 'Old Town Road',
+      artist: 'Lil Nas X',
+      file: '/songs/Most Streamed Songs/Finish the Lyric/OldTownRoadLilNasX.mp3',
+      lyricPrompt: 'I\'m gonna ride \'til I _____ _____ _____',
+      lyricAnswer: 'I\'m gonna ride \'til I **can\'t no more**',
+      acceptableAnswers: ['I\'m gonna ride \'til I can\'t no more']
+    },
+    {
+      id: 'SugarMaroon5',
+      title: 'Sugar',
+      artist: 'Maroon 5',
+      file: '/songs/Most Streamed Songs/Finish the Lyric/SugarMaroon5.mp3',
+      lyricPrompt: 'Your sugar, yes, please. _____ _____ _____ _____ _____ _____ _____ _____ _____',
+      lyricAnswer: 'Your sugar, yes, please. **Won\'t you come and put it down on me?**',
+      acceptableAnswers: ['Your sugar, yes, please. Won\'t you come and put it down on me?']
+    }
   ]
 }
 
