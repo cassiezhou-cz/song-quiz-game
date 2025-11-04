@@ -401,6 +401,7 @@ const Game = () => {
   const [artistCorrect, setArtistCorrect] = useState(false)
   const [songCorrect, setSongCorrect] = useState(false)
   const [isPartialCredit, setIsPartialCredit] = useState(false) // Track 10-point partial credit scenarios
+  const [isNewCompletion, setIsNewCompletion] = useState(false) // Track if current answer is a first-time completion
   
   // Track base correctness for each question (for accurate percentage calculation without bonuses)
   const [questionsCorrectness, setQuestionsCorrectness] = useState<Array<{artistCorrect: boolean, songCorrect: boolean}>>([])
@@ -3024,6 +3025,7 @@ const Game = () => {
     setArtistCorrect(false)
     setSongCorrect(false)
     setIsPartialCredit(false)
+    setIsNewCompletion(false)
     setPointsEarned(0)
     setArtistLetterRevealText(null) // Reset letter reveal info for new question
     setSongLetterRevealText(null)
@@ -4094,8 +4096,9 @@ const Game = () => {
       artistCorrect = true
       songCorrect = true
     } else if (points >= 10) {
-      // For 10 points, don't set correctness indicators (as per previous fix)
-      artistCorrect = false
+      // For 10 points, assume partial credit (half-correct)
+      // Set either artist or song as correct (we'll use artist for simplicity)
+      artistCorrect = true
       songCorrect = false
     }
     
@@ -4346,7 +4349,8 @@ const Game = () => {
       const songId = `${currentQuestion.song.title}-${currentQuestion.song.artist}`.toLowerCase()
       
       // Check if this is the first time the song is being completed correctly
-      const isNewlyCompleted = artistCorrect && songCorrect && !completedSongs.has(songId)
+      // Now counts as completed if player got either artist OR song correct (half-credit counts!)
+      const isNewlyCompleted = (artistCorrect || songCorrect) && !completedSongs.has(songId)
       
       // If newly completed, add to completed songs and save to localStorage
       if (isNewlyCompleted) {
@@ -4357,6 +4361,9 @@ const Game = () => {
           console.log('🎉 NEW SONG COMPLETED:', songId)
           return updated
         })
+        setIsNewCompletion(true) // Mark as new completion for feedback display
+      } else {
+        setIsNewCompletion(false)
       }
       
       setAllAttemptedSongs(prev => [...prev, {
@@ -4523,6 +4530,7 @@ const Game = () => {
       setArtistCorrect(false)
       setSongCorrect(false)
       setIsPartialCredit(false)
+      setIsNewCompletion(false)
       setPointsEarned(0)
       setArtistLetterRevealText(null) // Clear letter reveal info
       setSongLetterRevealText(null)
@@ -4754,10 +4762,30 @@ const Game = () => {
       
       // Record base correctness for percentage calculation
       setQuestionsCorrectness(prev => [...prev, { artistCorrect: true, songCorrect: true }])
+      
+      // Check if this is a new completion (Version A)
+      if (currentQuestion) {
+        const songId = `${currentQuestion.song.title}-${currentQuestion.song.artist}`.toLowerCase()
+        const isNewlyCompleted = !completedSongs.has(songId)
+        
+        if (isNewlyCompleted) {
+          setCompletedSongs(prev => {
+            const updated = new Set(prev)
+            updated.add(songId)
+            localStorage.setItem('completed_songs', JSON.stringify(Array.from(updated)))
+            console.log('🎉 NEW SONG COMPLETED (Version A):', songId)
+            return updated
+          })
+          setIsNewCompletion(true)
+        } else {
+          setIsNewCompletion(false)
+        }
+      }
     } else {
       setArtistCorrect(false)
       setSongCorrect(false)
       setPointsEarned(0)
+      setIsNewCompletion(false)
       
       // Record base correctness for percentage calculation
       setQuestionsCorrectness(prev => [...prev, { artistCorrect: false, songCorrect: false }])
@@ -5583,7 +5611,7 @@ const Game = () => {
                             <img 
                               src={attempt.song.albumArt} 
                               alt={`${attempt.song.title} album art`}
-                              className="song-result-image"
+                              className={`song-result-image ${attempt.pointsEarned === 0 ? 'grayed-out' : ''}`}
                             />
                           </div>
                           <div className="song-result-details">
@@ -5753,7 +5781,7 @@ const Game = () => {
                             <img 
                               src={attempt.song.albumArt} 
                               alt={`${attempt.song.title} album art`}
-                              className="attempt-album-image"
+                              className={`attempt-album-image ${attempt.pointsEarned === 0 ? 'grayed-out' : ''}`}
                             />
                           </div>
                           <div className="attempt-info">
@@ -6703,6 +6731,12 @@ const Game = () => {
             {showFeedback && currentQuestion && (
               <div className="feedback-container">
                 <div className="album-art-display">
+                  {/* NEW indicator for first-time completions */}
+                  {isNewCompletion && (
+                    <div className="feedback-new-badge">
+                      NEW
+                    </div>
+                  )}
                   <img 
                     src={currentQuestion.song.albumArt} 
                     alt={`${currentQuestion.song.title} album art`}

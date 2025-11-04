@@ -206,6 +206,44 @@
   max-width: 90vw;
 }
 
+/* NEW badge on feedback screen album art */
+.feedback-new-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.3));
+  color: #ffd700;
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 0.3rem 0.5rem;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 
+    0 4px 12px rgba(255, 215, 0, 0.6),
+    0 0 20px rgba(255, 215, 0, 0.4);
+  z-index: 10;
+  animation: feedbackNewBadgePulse 2s ease-in-out infinite, zoomInQuick 0.5s ease-out;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.6);
+  border: 1.5px solid rgba(255, 215, 0, 0.6);
+  backdrop-filter: blur(5px);
+}
+
+@keyframes feedbackNewBadgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 4px 12px rgba(255, 215, 0, 0.6),
+      0 0 20px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 
+      0 6px 16px rgba(255, 215, 0, 0.8),
+      0 0 30px rgba(255, 215, 0, 0.6);
+  }
+}
+
 .album-art {
   width: 200px;
   height: 200px;
@@ -1801,7 +1839,7 @@
 }
 
 .feedback-container .album-art-display {
-  position: relative;
+  position: relative; /* Keep relative for badge positioning */
   top: auto;
   left: auto;
   transform: none;
@@ -6240,6 +6278,14 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Grayed out album art for 0-point songs */
+.song-result-image.grayed-out,
+.attempt-album-image.grayed-out {
+  filter: grayscale(100%) brightness(0.5);
+  opacity: 0.4;
+  transition: all 0.3s ease;
 }
 
 .attempt-info {
