@@ -347,10 +347,10 @@ interface QuizQuestion {
 const NOTE_OFFSET_X = 50 // How much to move note left from center (increase = more left, decrease = more right)
 const NOTE_OFFSET_Y = -15 // How much to move note up from center (increase = more down, decrease = more up)
 
-// PROGRESSIVE XP SYSTEM - Each level requires 50 more XP than the previous
-// Level 1: 100 XP, Level 2: 150 XP, Level 3: 200 XP, etc.
+// PROGRESSIVE XP SYSTEM - Each level requires 30 more XP than the previous
+// Level 1: 100 XP, Level 2: 130 XP, Level 3: 160 XP, etc.
 const getXPRequiredForLevel = (level: number): number => {
-  return 50 + (level * 50) // Level 1: 100, Level 2: 150, Level 3: 200, etc.
+  return 100 + ((level - 1) * 30) // Level 1: 100, Level 2: 130, Level 3: 160, etc.
 }
 
 const getTotalXPForLevel = (level: number): number => {
@@ -756,6 +756,40 @@ const Game = () => {
     window.addEventListener('keydown', handleRankUpSpace)
     return () => window.removeEventListener('keydown', handleRankUpSpace)
   }, [showRankUpModal, rankUpTo])
+
+  // Version C: Debug hotkey to instantly end the run
+  useEffect(() => {
+    const handleVersionCDebugEnd = (event: KeyboardEvent) => {
+      // Only trigger in Version C during active gameplay (not on results screen)
+      if (version !== 'Version C' || gameComplete) return
+      
+      // Trigger on '0' key
+      if (event.key === '0') {
+        event.preventDefault()
+        console.log('🐛 DEBUG: Instant end triggered for Version C')
+        
+        // Stop the timer
+        setIsTimerRunning(false)
+        if (timerRef.current) {
+          clearTimeout(timerRef.current)
+          timerRef.current = null
+        }
+        
+        // End the game
+        setGameComplete(true)
+        
+        // Pause current audio
+        const audio = audioRef.current
+        if (audio) {
+          audio.pause()
+          setIsPlaying(false)
+        }
+      }
+    }
+    
+    window.addEventListener('keydown', handleVersionCDebugEnd)
+    return () => window.removeEventListener('keydown', handleVersionCDebugEnd)
+  }, [version, gameComplete])
 
   // Trigger playlist tier update sequence after song list appears
   useEffect(() => {

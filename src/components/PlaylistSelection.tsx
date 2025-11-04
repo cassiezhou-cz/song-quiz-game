@@ -11,10 +11,10 @@ interface PlaylistProgress {
   progress: number // Number of segments filled (0-15)
 }
 
-// PROGRESSIVE XP SYSTEM - Each level requires 50 more XP than the previous
-// Level 1: 100 XP, Level 2: 150 XP, Level 3: 200 XP, etc.
+// PROGRESSIVE XP SYSTEM - Each level requires 30 more XP than the previous
+// Level 1: 100 XP, Level 2: 130 XP, Level 3: 160 XP, etc.
 const getXPRequiredForLevel = (level: number): number => {
-  return 50 + (level * 50) // Level 1: 100, Level 2: 150, Level 3: 200, etc.
+  return 100 + ((level - 1) * 30) // Level 1: 100, Level 2: 130, Level 3: 160, etc.
 }
 
 const PlaylistSelection = () => {
@@ -280,6 +280,24 @@ const PlaylistSelection = () => {
     console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist progress reset to 0, NEW badges cleared, and all stats (including Master Mode ranks) cleared')
   }
 
+  // Debug hotkey: Press Up arrow while hovering over a playlist to rank it up
+  useEffect(() => {
+    const handleDebugHotkey = (event: KeyboardEvent) => {
+      // Only trigger if a playlist is hovered
+      if (!hoveredPlaylist) return
+      
+      // Trigger on ArrowUp key
+      if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        console.log('🐛 DEBUG: Up arrow pressed for', hoveredPlaylist)
+        handleDebugRankUp(hoveredPlaylist)
+      }
+    }
+    
+    window.addEventListener('keydown', handleDebugHotkey)
+    return () => window.removeEventListener('keydown', handleDebugHotkey)
+  }, [hoveredPlaylist, playlistProgress])
+
 
   return (
     <div className="playlist-container">
@@ -384,18 +402,6 @@ const PlaylistSelection = () => {
                     onMouseEnter={() => setHoveredPlaylist(playlist)}
                     onMouseLeave={() => setHoveredPlaylist(null)}
                   >
-                    {/* Debug Rank Up Button */}
-                    <button 
-                      className="debug-rank-up-btn"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDebugRankUp(playlist)
-                      }}
-                      title="DEBUG: Add 5 segments"
-                    >
-                      UP
-                    </button>
-                    
                     {/* Inline Stats Display */}
                     <div className={`inline-stats ${isHovered ? 'visible' : ''}`}>
                       <div className="inline-stats-content">

@@ -340,37 +340,6 @@
   z-index: 100;
 }
 
-/* Debug Rank Up Button */
-.debug-rank-up-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(255, 165, 0, 0.8);
-  border: 2px solid rgba(255, 140, 0, 0.9);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 800;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
-  cursor: pointer;
-  z-index: 1000;
-  transition: all 0.2s ease;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  letter-spacing: 0.5px;
-}
-
-.debug-rank-up-btn:hover {
-  background: rgba(255, 140, 0, 1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.5);
-}
-
-.debug-rank-up-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
 /* Inline Stats Display */
 .inline-stats {
   position: absolute;
