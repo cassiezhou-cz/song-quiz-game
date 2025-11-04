@@ -509,6 +509,7 @@ const Game = () => {
   
   // Playlist Progress Update Sequence state
   const [xpBarFlyLeft, setXpBarFlyLeft] = useState(false) // Trigger XP bar fly-left animation
+  const [finalScoreFlyLeft, setFinalScoreFlyLeft] = useState(false) // Trigger final score fly-left animation
   const [showPlaylistMeter, setShowPlaylistMeter] = useState(false) // Show playlist meter on results screen
   const [playlistProgress, setPlaylistProgress] = useState<{ progress: number }>({ progress: 0 }) // 0-15 segments
   
@@ -516,6 +517,7 @@ const Game = () => {
   const [showRankUpModal, setShowRankUpModal] = useState(false)
   const [rankUpTo, setRankUpTo] = useState<'silver' | 'gold' | 'platinum'>('silver') // The rank we just upgraded TO
   const [displayedProgress, setDisplayedProgress] = useState(0) // Progress shown on medal (lags behind actual during animations)
+  const [showPlaylistMastered, setShowPlaylistMastered] = useState(false) // Show "Playlist Mastered" text for platinum
   
   // Flying music notes state
   interface FlyingNote {
@@ -735,14 +737,24 @@ const Game = () => {
         event.preventDefault()
         console.log('🎭 Rank-up spacebar pressed, closing modal...')
         
+        const isPlatinum = rankUpTo === 'platinum'
+        
         // Close modal (tier already updated behind it)
         setShowRankUpModal(false)
+        
+        // If platinum, show "Playlist Mastered" text after modal closes
+        if (isPlatinum) {
+          setTimeout(() => {
+            setShowPlaylistMastered(true)
+            console.log('💎 Showing Playlist Mastered text after modal close!')
+          }, 300) // Small delay after modal closes
+        }
       }
     }
     
     window.addEventListener('keydown', handleRankUpSpace)
     return () => window.removeEventListener('keydown', handleRankUpSpace)
-  }, [showRankUpModal])
+  }, [showRankUpModal, rankUpTo])
 
   // Trigger playlist tier update sequence after song list appears
   useEffect(() => {
@@ -759,10 +771,11 @@ const Game = () => {
         console.log('✅ Triggering playlist tier update sequence!')
         hasRunMusicNoteAnimations.current = true // Set flag to prevent re-run
         
-        // Wait a brief moment after song list appears, then fly XP bar left
+        // Wait a brief moment after song list appears, then fly XP bar and final score left
         setTimeout(() => {
           setXpBarFlyLeft(true)
-          console.log('⬅️ XP bar flying left...')
+          setFinalScoreFlyLeft(true)
+          console.log('⬅️ XP bar and Final Score flying left...')
           
           // After XP bar flies off (0.8s animation), show playlist meter flying in
           setTimeout(() => {
@@ -5022,7 +5035,9 @@ const Game = () => {
     
     // Reset Playlist Meter animation states
     setXpBarFlyLeft(false)
+    setFinalScoreFlyLeft(false)
     setShowPlaylistMeter(false)
+    setShowPlaylistMastered(false) // Reset playlist mastered text
     setFlyingNotes([])
     setFillingSegmentIndex(null)
     setTempFilledSegments(new Set())
@@ -5440,7 +5455,7 @@ const Game = () => {
                   )}
                   
                   {showFinalScore && (
-                    <p className="final-score-text">Final Score: <span className="final-score-value">{displayedScore}</span></p>
+                    <p className={`final-score-text ${finalScoreFlyLeft ? 'fly-left' : ''}`}>Final Score: <span className="final-score-value">{displayedScore}</span></p>
                   )}
                   
                   {/* Wrapper to contain both XP bar and Playlist meter */}
@@ -5484,6 +5499,11 @@ const Game = () => {
                     {/* Playlist Tier Meter (flies in after XP bar flies out) */}
                     {showPlaylistMeter && (
                       <div className={`results-playlist-meter-container ${showPlaylistMeter ? 'fly-in' : ''}`}>
+                        {/* Playlist Mastered Title - Only shows when platinum rank achieved */}
+                        {showPlaylistMastered && (
+                          <div className="playlist-mastered-title">Playlist Mastered!</div>
+                        )}
+                        
                         {/* Playlist Name on the left */}
                         <div className="results-playlist-name">{playlist}</div>
                         
@@ -5973,8 +5993,18 @@ const Game = () => {
                 onClick={() => {
                   console.log('🎭 Rank-up Continue clicked, closing modal...')
                   
+                  const isPlatinum = rankUpTo === 'platinum'
+                  
                   // Close modal
                   setShowRankUpModal(false)
+                  
+                  // If platinum, show "Playlist Mastered" text after modal closes
+                  if (isPlatinum) {
+                    setTimeout(() => {
+                      setShowPlaylistMastered(true)
+                      console.log('💎 Showing Playlist Mastered text after modal close!')
+                    }, 300) // Small delay after modal closes
+                  }
                 }}
               >
                 Continue
