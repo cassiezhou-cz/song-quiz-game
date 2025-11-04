@@ -4632,7 +4632,7 @@
   transform: translateY(-50%) translateX(50%);
   width: 83px;
   height: 83px;
-  background: rgba(0, 0, 0, 0.85);
+  background: #000000;
   border: 4px solid rgba(0, 191, 255, 0.6);
   border-radius: 50%;
   display: flex;
