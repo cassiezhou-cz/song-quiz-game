@@ -340,6 +340,37 @@
   z-index: 100;
 }
 
+/* Debug Rank Up Button */
+.debug-rank-up-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 165, 0, 0.8);
+  border: 2px solid rgba(255, 140, 0, 0.9);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.debug-rank-up-btn:hover {
+  background: rgba(255, 140, 0, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 140, 0, 0.5);
+}
+
+.debug-rank-up-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
 /* Inline Stats Display */
 .inline-stats {
   position: absolute;
@@ -491,16 +522,45 @@
 .playlist-segment {
   flex: 1;
   height: 20px;
-  background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.playlist-segment.filled {
-  background: linear-gradient(135deg, #4ecdc4, #44a3a0);
-  box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
-  border-color: rgba(78, 205, 196, 0.5);
+/* Bronze segments (0-4) */
+.playlist-segment.bronze-segment {
+  background: rgba(205, 127, 50, 0.15);
+  border-color: rgba(205, 127, 50, 0.2);
+}
+
+.playlist-segment.bronze-segment.filled {
+  background: linear-gradient(135deg, #cd7f32, #b86f2c);
+  box-shadow: 0 0 10px rgba(205, 127, 50, 0.5);
+  border-color: rgba(205, 127, 50, 0.5);
+}
+
+/* Silver segments (5-9) */
+.playlist-segment.silver-segment {
+  background: rgba(192, 192, 192, 0.15);
+  border-color: rgba(192, 192, 192, 0.2);
+}
+
+.playlist-segment.silver-segment.filled {
+  background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+  box-shadow: 0 0 10px rgba(192, 192, 192, 0.5);
+  border-color: rgba(192, 192, 192, 0.5);
+}
+
+/* Gold segments (10-14) */
+.playlist-segment.gold-segment {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: rgba(255, 215, 0, 0.2);
+}
+
+.playlist-segment.gold-segment.filled {
+  background: linear-gradient(135deg, #ffd700, #daa520);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  border-color: rgba(255, 215, 0, 0.5);
 }
 
 .master-mode-button {

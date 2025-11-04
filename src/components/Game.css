@@ -7178,18 +7178,12 @@
 
 @keyframes segmentFillFromNote {
   0% {
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: none;
+    transform: scale(1);
   }
   50% {
-    background: linear-gradient(135deg, #4ecdc4, #44a3a0);
-    box-shadow: 0 0 25px rgba(78, 205, 196, 1), 0 0 40px rgba(78, 205, 196, 0.6);
     transform: scale(1.15);
   }
   100% {
-    background: linear-gradient(135deg, #4ecdc4, #44a3a0);
-    box-shadow: 0 0 15px rgba(78, 205, 196, 0.6);
-    border-color: rgba(78, 205, 196, 0.5);
     transform: scale(1);
   }
 }
@@ -7220,6 +7214,14 @@
   animation: playlistMeterFlyIn 0.8s ease-out forwards;
 }
 
+.results-playlist-name-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
 .results-playlist-name {
   font-size: 1.8rem; /* Slightly smaller */
   font-weight: 800;
@@ -7227,7 +7229,20 @@
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
   letter-spacing: 1px;
   white-space: nowrap; /* Prevent wrapping */
-  flex-shrink: 0; /* Don't shrink */
+}
+
+.playlist-mastered-badge {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.3), rgba(169, 169, 169, 0.3));
+  border: 2px solid rgba(192, 192, 192, 0.5);
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(192, 192, 192, 0.3);
+  animation: fadeIn 0.5s ease-out;
 }
 
 .results-playlist-meter-row {
@@ -7249,17 +7264,46 @@
 .results-playlist-segment {
   width: 35px;
   height: 30px;
-  background: rgba(255, 255, 255, 0.15);
   border-radius: 6px;
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0; /* Prevent shrinking */
 }
 
-.results-playlist-segment.filled {
-  background: linear-gradient(135deg, #4ecdc4, #44a3a0);
-  box-shadow: 0 0 15px rgba(78, 205, 196, 0.6);
-  border-color: rgba(78, 205, 196, 0.5);
+/* Bronze segments (0-4) */
+.results-playlist-segment.bronze-segment {
+  background: rgba(205, 127, 50, 0.15);
+  border-color: rgba(205, 127, 50, 0.2);
+}
+
+.results-playlist-segment.bronze-segment.filled {
+  background: linear-gradient(135deg, #cd7f32, #b86f2c);
+  box-shadow: 0 0 15px rgba(205, 127, 50, 0.6);
+  border-color: rgba(205, 127, 50, 0.5);
+}
+
+/* Silver segments (5-9) */
+.results-playlist-segment.silver-segment {
+  background: rgba(192, 192, 192, 0.15);
+  border-color: rgba(192, 192, 192, 0.2);
+}
+
+.results-playlist-segment.silver-segment.filled {
+  background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+  box-shadow: 0 0 15px rgba(192, 192, 192, 0.6);
+  border-color: rgba(192, 192, 192, 0.5);
+}
+
+/* Gold segments (10-14) */
+.results-playlist-segment.gold-segment {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: rgba(255, 215, 0, 0.2);
+}
+
+.results-playlist-segment.gold-segment.filled {
+  background: linear-gradient(135deg, #ffd700, #daa520);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+  border-color: rgba(255, 215, 0, 0.5);
 }
 
 .results-playlist-master-text {
@@ -7278,6 +7322,40 @@
   object-fit: contain;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.6));
   flex-shrink: 0;
+  transition: filter 0.3s ease;
+}
+
+/* Medal swap animation when rank changes */
+.results-playlist-medal-icon.medal-swap {
+  animation: medalSwapAnimation 0.8s ease-in-out;
+}
+
+@keyframes medalSwapAnimation {
+  0% {
+    opacity: 1;
+    transform: scale(1) rotateY(0deg);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.6));
+  }
+  25% {
+    opacity: 0.8;
+    transform: scale(1.15) rotateY(90deg);
+    filter: drop-shadow(0 8px 16px rgba(255, 215, 0, 0.8)) brightness(1.3);
+  }
+  50% {
+    opacity: 0;
+    transform: scale(0.8) rotateY(180deg);
+    filter: drop-shadow(0 0px 0px rgba(0, 0, 0, 0));
+  }
+  75% {
+    opacity: 0.8;
+    transform: scale(1.15) rotateY(270deg);
+    filter: drop-shadow(0 8px 16px rgba(255, 215, 0, 0.8)) brightness(1.3);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotateY(360deg);
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.6));
+  }
 }
 
 /* Wrapper to contain both XP bar and Playlist meter in same visual space */

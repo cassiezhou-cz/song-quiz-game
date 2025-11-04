@@ -15,13 +15,15 @@ interface PlaylistStats {
   completedSongs: CompletedSong[]
 }
 
+type PlaylistRank = 'bronze' | 'silver' | 'gold' | 'platinum'
+
 interface CollectionMenuProps {
   playlist: string
-  tier: number
+  rank: PlaylistRank
   onClose: () => void
 }
 
-const CollectionMenu = ({ playlist, tier, onClose }: CollectionMenuProps) => {
+const CollectionMenu = ({ playlist, rank, onClose }: CollectionMenuProps) => {
   const [stats, setStats] = useState<PlaylistStats>({
     timesPlayed: 0,
     averageScore: 0,
@@ -102,10 +104,11 @@ const CollectionMenu = ({ playlist, tier, onClose }: CollectionMenuProps) => {
     }
   }
 
-  const getMedalImage = (tier: number): string => {
-    if (tier === 1) return '/assets/MedalBronze.png'
-    if (tier === 2) return '/assets/MedalSilver.png'
-    return '/assets/MedalGold.png'
+  const getMedalImage = (rank: PlaylistRank): string => {
+    if (rank === 'bronze') return '/assets/MedalBronze.png'
+    if (rank === 'silver') return '/assets/MedalSilver.png'
+    if (rank === 'gold') return '/assets/MedalGold.png'
+    return '/assets/MedalPlatinum.png'
   }
 
   return (
@@ -115,8 +118,8 @@ const CollectionMenu = ({ playlist, tier, onClose }: CollectionMenuProps) => {
           <header className="collection-header">
             <h1 className="collection-title-large">{playlist}</h1>
             <img 
-              src={getMedalImage(tier)}
-              alt={`Tier ${tier} Medal`}
+              src={getMedalImage(rank)}
+              alt={`${rank} Medal`}
               className="collection-medal-large"
             />
           </header>

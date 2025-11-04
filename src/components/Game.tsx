@@ -379,7 +379,7 @@ const Game = () => {
   const { playlist } = useParams<{ playlist: string }>()
   const [searchParams] = useSearchParams()
   const version = searchParams.get('version') || 'Version A'
-  const tier = parseInt(searchParams.get('tier') || '1') as 1 | 2 | 3
+  const initialProgress = parseInt(searchParams.get('progress') || '0') // 0-15 segments
   const audioRef = useRef<HTMLAudioElement>(null)
   
   
@@ -507,15 +507,15 @@ const Game = () => {
   const [targetXPPosition, setTargetXPPosition] = useState(0) // Static target for indicator
   const [showSongList, setShowSongList] = useState(false) // Show Your Answers section
   
-  // Playlist Tier Update Sequence state
+  // Playlist Progress Update Sequence state
   const [xpBarFlyLeft, setXpBarFlyLeft] = useState(false) // Trigger XP bar fly-left animation
   const [showPlaylistMeter, setShowPlaylistMeter] = useState(false) // Show playlist meter on results screen
-  const [playlistProgress, setPlaylistProgress] = useState<{ tier: 1 | 2 | 3; progress: number }>({ tier: 1, progress: 0 })
+  const [playlistProgress, setPlaylistProgress] = useState<{ progress: number }>({ progress: 0 }) // 0-15 segments
   
-  // Rank Up Modal state
+  // Rank Up Modal state (shows when reaching thresholds: 5 = silver, 10 = gold, 15 = platinum)
   const [showRankUpModal, setShowRankUpModal] = useState(false)
-  const [rankUpTier, setRankUpTier] = useState<2 | 3>(2) // The tier we just upgraded TO
-  const pendingOverflowNotes = useRef<number>(0) // Number of overflow notes to animate after modal closes
+  const [rankUpTo, setRankUpTo] = useState<'silver' | 'gold' | 'platinum'>('silver') // The rank we just upgraded TO
+  const [displayedProgress, setDisplayedProgress] = useState(0) // Progress shown on medal (lags behind actual during animations)
   
   // Flying music notes state
   interface FlyingNote {
@@ -579,9 +579,10 @@ const Game = () => {
     const savedPlaylistProgress = localStorage.getItem('playlist_progress')
     if (savedPlaylistProgress && playlist) {
       try {
-        const allProgress = JSON.parse(savedPlaylistProgress) as Record<string, { tier: 1 | 2 | 3; progress: number }>
+        const allProgress = JSON.parse(savedPlaylistProgress) as Record<string, { progress: number }>
         if (allProgress[playlist]) {
           setPlaylistProgress(allProgress[playlist])
+          setDisplayedProgress(allProgress[playlist].progress) // Initialize displayed progress
           console.log(`📊 Loaded ${playlist} progress:`, allProgress[playlist])
         }
       } catch (e) {
@@ -736,11 +737,6 @@ const Game = () => {
         
         // Close modal (tier already updated behind it)
         setShowRankUpModal(false)
-        
-        // After modal closes, start overflow animations
-        setTimeout(() => {
-          animateOverflowNotes()
-        }, 300)
       }
     }
     
@@ -755,11 +751,11 @@ const Game = () => {
       const hasNewSongs = allAttemptedSongs.some(song => song.isNewlyCompleted)
       
       // Check if playlist is NOT at Tier 3
-      const isNotMaxTier = playlistProgress.tier < 3
+      const isNotMaxProgress = playlistProgress.progress < 15
       
-      console.log('🎯 Checking tier update conditions:', { hasNewSongs, isNotMaxTier, tier: playlistProgress.tier, hasRunAnimations: hasRunMusicNoteAnimations.current })
+      console.log('🎯 Checking progress update conditions:', { hasNewSongs, isNotMaxProgress, progress: playlistProgress.progress, hasRunAnimations: hasRunMusicNoteAnimations.current })
       
-      if (hasNewSongs && isNotMaxTier) {
+      if (hasNewSongs && isNotMaxProgress) {
         console.log('✅ Triggering playlist tier update sequence!')
         hasRunMusicNoteAnimations.current = true // Set flag to prevent re-run
         
@@ -770,6 +766,7 @@ const Game = () => {
           
           // After XP bar flies off (0.8s animation), show playlist meter flying in
           setTimeout(() => {
+            setDisplayedProgress(playlistProgress.progress) // Initialize displayed progress to current progress
             setShowPlaylistMeter(true)
             console.log('➡️ Playlist meter flying in...')
             
@@ -781,7 +778,7 @@ const Game = () => {
         }, 500) // 0.5s pause after song list appears
       }
     }
-  }, [showSongList, allAttemptedSongs, playlistProgress.tier, version])
+  }, [showSongList, allAttemptedSongs, playlistProgress.progress, version])
   
   // Animate music notes from badges to playlist segments
   const startMusicNoteAnimations = () => {
@@ -798,7 +795,7 @@ const Game = () => {
     
     console.log('🎵 Found newly completed songs at indices:', newlyCompletedIndices)
     console.log('🎵 Number of new songs:', newlyCompletedIndices.length)
-    console.log('📊 Current tier:', playlistProgress.tier)
+    console.log('📊 Current progress:', playlistProgress.progress)
     console.log('📊 Segments that are currently filled:', `0 to ${initialProgress - 1} (${initialProgress} segments filled)`)
     
     if (newlyCompletedIndices.length === 0) {
@@ -819,136 +816,21 @@ const Game = () => {
       delay += 350 // 0.35s between each note (25% through the 1.4s total animation)
     })
     
-    // After ALL animations complete, update the progress state once and clear temp filled segments
+    // After ALL animations complete, update the progress state once and check for rank ups
     setTimeout(() => {
       console.log(`✅ All animations complete! Updating progress from ${initialProgress} to ${initialProgress + newlyCompletedIndices.length}`)
       
-      const newProgress = initialProgress + newlyCompletedIndices.length
-      const currentTier = playlistProgress.tier
-      const maxSegmentsForTier = currentTier === 1 ? 5 : 10
+      const newProgress = Math.min(initialProgress + newlyCompletedIndices.length, 15) // Cap at 15
+      const oldProgress = initialProgress
       
-      // Check if we need to upgrade tier
-      if (newProgress >= maxSegmentsForTier && currentTier < 3) {
-        const newTier = (currentTier + 1) as 2 | 3
-        const overflowCount = newProgress - maxSegmentsForTier // Calculate overflow notes
-        console.log(`🎉 TIER UP! ${currentTier} → ${newTier}`)
-        console.log(`📊 Overflow calculation: ${newProgress} total - ${maxSegmentsForTier} max = ${overflowCount} overflow`)
-        
-        // Store overflow notes to animate AFTER modal closes (unless Tier 3)
-        pendingOverflowNotes.current = newTier === 3 ? 0 : overflowCount
-        console.log(`💾 Stored ${pendingOverflowNotes.current} overflow notes to animate after modal`)
-        
-        // Update progress to MAX for current tier (keeps all segments filled)
-        setPlaylistProgress({
-          tier: currentTier,
-          progress: maxSegmentsForTier
-        })
-        console.log(`📊 Set progress to max (${maxSegmentsForTier}) to keep segments filled`)
-        
-        // Show rank-up modal immediately
-        setRankUpTier(newTier)
-        setShowRankUpModal(true)
-        console.log('🎭 Rank-up modal shown')
-        
-        // Update tier BEHIND the modal after it's visible
-        setTimeout(() => {
-          console.log('🔄 Updating tier behind modal...')
-          
-          // Clear all animation states from previous tier
-          setTempFilledSegments(new Set())
-          setFillingSegmentIndex(null)
-          setFlyingNotes([])
-          
-          // Update to new tier with progress 0
-          setPlaylistProgress({
-            tier: newTier,
-            progress: 0
-          })
-          
-          // Save to localStorage
-          const savedProgress = localStorage.getItem('playlist_progress')
-          let allProgress: Record<string, { tier: 1 | 2 | 3; progress: number }> = {}
-          if (savedProgress) {
-            try {
-              allProgress = JSON.parse(savedProgress)
-            } catch (e) {
-              console.error('Failed to parse playlist progress:', e)
-            }
-          }
-          if (playlist) {
-            allProgress[playlist] = { tier: newTier, progress: 0 }
-            localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
-            console.log('💾 Saved tier upgrade to localStorage (behind modal):', allProgress)
-          }
-        }, 400) // Wait for modal fade-in animation
-      } else {
-        // Just update progress, no tier change
-        setPlaylistProgress(prev => ({
-          ...prev,
-          progress: newProgress
-        }))
-        
-        // Save to localStorage
-        const savedProgress = localStorage.getItem('playlist_progress')
-        let allProgress: Record<string, { tier: 1 | 2 | 3; progress: number }> = {}
-        if (savedProgress) {
-          try {
-            allProgress = JSON.parse(savedProgress)
-          } catch (e) {
-            console.error('Failed to parse playlist progress:', e)
-          }
-        }
-        if (playlist) {
-          allProgress[playlist] = { tier: currentTier, progress: newProgress }
-          localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
-          console.log('💾 Saved progress to localStorage:', allProgress)
-        }
-      }
-      
-      setTempFilledSegments(new Set()) // Clear temp fills after permanent update
-    }, totalAnimationTime)
-  }
-  
-  // Animate overflow notes after rank-up modal is dismissed
-  const animateOverflowNotes = () => {
-    const overflowCount = pendingOverflowNotes.current
-    console.log(`🎵 OVERFLOW: Starting overflow note animations for ${overflowCount} notes`)
-    
-    if (overflowCount === 0) {
-      console.log('⚠️ No overflow notes to animate')
-      return
-    }
-    
-    // Get the last few badges (the overflow songs)
-    const totalSongs = allAttemptedSongs.length
-    const overflowStartIndex = totalSongs - overflowCount
-    
-    console.log(`📊 OVERFLOW: Total songs: ${totalSongs}, Overflow start index: ${overflowStartIndex}`)
-    
-    // Calculate total animation time
-    const totalAnimationTime = overflowCount * 350 + 800 + 600 - 350
-    
-    // Animate each overflow note with staggered timing
-    let delay = 0
-    for (let i = 0; i < overflowCount; i++) {
-      const songIndex = overflowStartIndex + i
-      setTimeout(() => {
-        animateSingleNote(songIndex, i, 0, false) // Start from segment 0 in new tier
-      }, delay)
-      delay += 350 // Stagger animations
-    }
-    
-    // After all animations complete, update progress and save
-    setTimeout(() => {
-      console.log(`✅ OVERFLOW: All overflow animations complete! Setting progress to ${overflowCount}`)
-      setPlaylistProgress(prev => ({
-        ...prev,
-        progress: overflowCount
-      }))
+      // Update progress immediately
+      setPlaylistProgress({
+        progress: newProgress
+      })
       
       // Save to localStorage
       const savedProgress = localStorage.getItem('playlist_progress')
-      let allProgress: Record<string, { tier: 1 | 2 | 3; progress: number }> = {}
+      let allProgress: Record<string, { progress: number }> = {}
       if (savedProgress) {
         try {
           allProgress = JSON.parse(savedProgress)
@@ -957,13 +839,39 @@ const Game = () => {
         }
       }
       if (playlist) {
-        allProgress[playlist] = { tier: playlistProgress.tier, progress: overflowCount }
+        allProgress[playlist] = { progress: newProgress }
         localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
-        console.log('💾 OVERFLOW: Saved overflow progress to localStorage:', allProgress)
+        console.log('💾 Saved progress to localStorage:', allProgress)
       }
       
-      setTempFilledSegments(new Set())
-      pendingOverflowNotes.current = 0 // Clear pending overflow
+      // Check if we crossed a rank threshold (5 = silver, 10 = gold, 15 = platinum)
+      // Show rank up modal AFTER the animations complete
+      let rankUpType: 'silver' | 'gold' | 'platinum' | null = null
+      if (oldProgress < 5 && newProgress >= 5) {
+        rankUpType = 'silver'
+      } else if (oldProgress < 10 && newProgress >= 10) {
+        rankUpType = 'gold'
+      } else if (oldProgress < 15 && newProgress >= 15) {
+        rankUpType = 'platinum'
+      }
+      
+      if (rankUpType) {
+        console.log(`🎉 RANK UP TO ${rankUpType.toUpperCase()}! Showing modal.`)
+        // Show rank up modal immediately after animations complete
+        setRankUpTo(rankUpType!)
+        setShowRankUpModal(true)
+        
+        // Update displayed progress after modal is visible (changes medal behind the modal)
+        setTimeout(() => {
+          setDisplayedProgress(newProgress)
+          console.log('🏅 Medal updated behind modal')
+        }, 100) // Small delay to ensure modal is rendering
+      } else {
+        // No rank up, just update displayed progress immediately
+        setDisplayedProgress(newProgress)
+      }
+      
+      setTempFilledSegments(new Set()) // Clear temp fills after permanent update
     }, totalAnimationTime)
   }
   
@@ -3490,7 +3398,9 @@ const Game = () => {
     
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
-      console.log(`🎮 Starting game with Playlist: ${playlist}, Tier: ${tier}, Total Questions: ${totalQuestions}`)
+      // Determine rank based on progress
+      const rank = initialProgress >= 10 ? 'gold' : initialProgress >= 5 ? 'silver' : 'bronze'
+      console.log(`🎮 Starting game with Playlist: ${playlist}, Progress: ${initialProgress}/15, Rank: ${rank}, Total Questions: ${totalQuestions}`)
       
       // Load latest unlocked lifelines from localStorage
       const savedLifelines = localStorage.getItem('unlocked_lifelines')
@@ -3533,15 +3443,15 @@ const Game = () => {
       // Reset initial question flag for new session
       hasStartedInitialQuestion.current = false
       
-      // Tier-based Special Question Logic
+      // Rank-based Special Question Logic
       let selectedSpecialQuestions: number[] = []
       const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'} = {}
       
-      if (tier === 1) {
-        // Tier 1 (Bronze): No special questions
-        console.log('🎯 TIER 1: No special questions')
-      } else if (tier === 2 || tier === 3) {
-        // Tier 2 (Silver) & Tier 3 (Gold): 1 special question at position 3, 4, or 5
+      if (rank === 'bronze') {
+        // Bronze (0-4): No special questions
+        console.log('🎯 BRONZE RANK: No special questions')
+      } else if (rank === 'silver' || rank === 'gold' || rank === 'platinum') {
+        // Silver (5-9), Gold (10-14), Platinum (15): 1 special question at position 3, 4, or 5
         const availablePositions = [3, 4, 5]
         const randomIndex = Math.floor(Math.random() * availablePositions.length)
         const selectedQuestion = availablePositions[randomIndex]
@@ -3553,8 +3463,8 @@ const Game = () => {
         const typeIndex = Math.floor(Math.random() * allTypes.length)
         assignedTypes[selectedQuestion] = allTypes[typeIndex]
         
-        const tierName = tier === 2 ? 'TIER 2 (Silver)' : 'TIER 3 (Gold)'
-        console.log(`🎯 ${tierName}: 1 Special Question at position ${selectedQuestion} of type ${assignedTypes[selectedQuestion]}`)
+        const rankName = rank === 'silver' ? 'SILVER RANK' : rank === 'gold' ? 'GOLD RANK' : 'PLATINUM RANK'
+        console.log(`🎯 ${rankName}: 1 Special Question at position ${selectedQuestion} of type ${assignedTypes[selectedQuestion]}`)
       }
       
       setSpecialQuestionNumbers(selectedSpecialQuestions)
@@ -4636,7 +4546,7 @@ const Game = () => {
     } else if (lifelineType === 'multipleChoiceArtist') {
       console.log('Multiple Choice Artist booster activated!')
       
-      if (currentQuestion) {
+      if (currentQuestion && playlist) {
         // Get current playlist songs (now supports all 6 playlists)
         const playlistSongs = getPlaylistSongs(playlist)
         
@@ -4659,7 +4569,7 @@ const Game = () => {
     } else if (lifelineType === 'multipleChoiceSong') {
       console.log('Multiple Choice Song booster activated!')
       
-      if (currentQuestion) {
+      if (currentQuestion && playlist) {
         // Get current playlist songs (now supports all 6 playlists)
         const playlistSongs = getPlaylistSongs(playlist)
         
@@ -5118,7 +5028,7 @@ const Game = () => {
     setTempFilledSegments(new Set())
     hasRunMusicNoteAnimations.current = false // Reset animation flag for new game
     setShowRankUpModal(false) // Reset rank-up modal
-    pendingOverflowNotes.current = 0 // Reset overflow notes
+    setDisplayedProgress(playlistProgress.progress) // Sync displayed progress
     
     startNewQuestion()
   }
@@ -5180,7 +5090,6 @@ const Game = () => {
     hasStartedInitialQuestion.current = false
     isLoadingQuestionRef.current = false
     hasRunMusicNoteAnimations.current = false // Reset animation flag for next game
-    pendingOverflowNotes.current = 0 // Reset overflow notes
     
     navigate('/')
   }
@@ -5580,34 +5489,35 @@ const Game = () => {
                         
                         {/* Meter and Medal on the right */}
                         <div className="results-playlist-meter-row">
-                          {/* Tier Meter (only show if not Tier 3) */}
-                          {playlistProgress.tier < 3 ? (
-                            <div className="results-playlist-tier-meter">
-                              {Array.from({ length: playlistProgress.tier === 1 ? 5 : 10 }).map((_, index) => {
-                                const isPermanentlyFilled = index < playlistProgress.progress
-                                const isTempFilled = tempFilledSegments.has(index)
-                                const isCurrentlyFilling = fillingSegmentIndex === index
-                                const shouldShowAsFilled = isPermanentlyFilled || isTempFilled
-                                
-                                return (
-                                  <div
-                                    key={index}
-                                    ref={(el) => {
-                                      if (el) segmentRefsMap.current.set(index, el as HTMLDivElement)
-                                    }}
-                                    className={`results-playlist-segment ${shouldShowAsFilled ? 'filled' : ''} ${isCurrentlyFilling ? 'filling' : ''}`}
-                                  />
-                                )
-                              })}
-                            </div>
-                          ) : (
-                            <div className="results-playlist-master-text">Master Mode</div>
-                          )}
+                          {/* Progress Meter (always show all 15 segments) */}
+                          <div className="results-playlist-tier-meter">
+                            {Array.from({ length: 15 }).map((_, index) => {
+                              const isPermanentlyFilled = index < playlistProgress.progress
+                              const isTempFilled = tempFilledSegments.has(index)
+                              const isCurrentlyFilling = fillingSegmentIndex === index
+                              const shouldShowAsFilled = isPermanentlyFilled || isTempFilled
+                              
+                              // Determine segment rank for background color
+                              let segmentRank: 'bronze' | 'silver' | 'gold' = 'bronze'
+                              if (index >= 10) segmentRank = 'gold'
+                              else if (index >= 5) segmentRank = 'silver'
+                              
+                              return (
+                                <div
+                                  key={index}
+                                  ref={(el) => {
+                                    if (el) segmentRefsMap.current.set(index, el as HTMLDivElement)
+                                  }}
+                                  className={`results-playlist-segment ${segmentRank}-segment ${shouldShowAsFilled ? 'filled' : ''} ${isCurrentlyFilling ? 'filling' : ''}`}
+                                />
+                              )
+                            })}
+                          </div>
                           
                           {/* Medal Icon */}
                           <img 
-                            src={playlistProgress.tier === 1 ? '/assets/MedalBronze.png' : playlistProgress.tier === 2 ? '/assets/MedalSilver.png' : '/assets/MedalGold.png'}
-                            alt={`Tier ${playlistProgress.tier} Medal`}
+                            src={displayedProgress >= 15 ? '/assets/MedalPlatinum.png' : displayedProgress >= 10 ? '/assets/MedalGold.png' : displayedProgress >= 5 ? '/assets/MedalSilver.png' : '/assets/MedalBronze.png'}
+                            alt={`${displayedProgress >= 15 ? 'Platinum' : displayedProgress >= 10 ? 'Gold' : displayedProgress >= 5 ? 'Silver' : 'Bronze'} Medal`}
                             className="results-playlist-medal-icon"
                           />
                         </div>
@@ -6048,27 +5958,23 @@ const Game = () => {
               <h2 className="level-up-title rank-up-title">Rank Up!</h2>
               <div className="rank-up-medal-display">
                 <img 
-                  src={rankUpTier === 2 ? '/assets/MedalSilver.png' : '/assets/MedalGold.png'}
-                  alt={`${rankUpTier === 2 ? 'Silver' : 'Gold'} Medal`}
+                  src={rankUpTo === 'silver' ? '/assets/MedalSilver.png' : rankUpTo === 'gold' ? '/assets/MedalGold.png' : '/assets/MedalPlatinum.png'}
+                  alt={`${rankUpTo === 'silver' ? 'Silver' : rankUpTo === 'gold' ? 'Gold' : 'Platinum'} Medal`}
                   className="rank-up-medal-image"
                 />
               </div>
               <div className="rank-up-description">
-                {rankUpTier === 2 && 'Special Questions Unlocked!'}
-                {rankUpTier === 3 && 'Master Mode Unlocked!'}
+                {rankUpTo === 'silver' && 'Special Questions Unlocked!'}
+                {rankUpTo === 'gold' && 'More Songs Unlocked!'}
+                {rankUpTo === 'platinum' && 'Master Mode Unlocked!'}
               </div>
               <button 
                 className="level-up-confirm-btn" 
                 onClick={() => {
                   console.log('🎭 Rank-up Continue clicked, closing modal...')
                   
-                  // Close modal (tier already updated behind it)
+                  // Close modal
                   setShowRankUpModal(false)
-                  
-                  // After modal closes, start overflow animations
-                  setTimeout(() => {
-                    animateOverflowNotes()
-                  }, 300) // Wait for modal close animation
                 }}
               >
                 Continue
@@ -6820,7 +6726,7 @@ const Game = () => {
                             </p>
                             <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
                               <div className="result-category" style={{ color: '#ffffff' }}>
-                                🎤 "{formatFinishTheLyricAnswer(currentQuestion.lyricAnswer, pointsEarned > 0)}"
+                                🎤 "{formatFinishTheLyricAnswer(currentQuestion.lyricAnswer || '', pointsEarned > 0)}"
                               </div>
                               <div className={`result-points ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}>{pointsEarned > 0 ? `+${specialQuestionNumbers.includes(questionNumber) ? (pointsEarned - timeBonusPoints) / 2 : pointsEarned - timeBonusPoints}` : '+0'}</div>
                             </div>
