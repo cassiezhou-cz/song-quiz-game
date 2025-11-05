@@ -5566,8 +5566,11 @@ const Game = () => {
                           <div className="playlist-mastered-title">Playlist Mastered!</div>
                         )}
                         
-                        {/* Playlist Name on the left */}
-                        <div className="results-playlist-name">{playlist}</div>
+                        {/* Playlist Name with Mastery text directly below */}
+                        <div className="results-playlist-name-container">
+                          <div className="results-playlist-name">{playlist}</div>
+                          <div className="results-playlist-mastery">Mastery</div>
+                        </div>
                         
                         {/* Meter and Medal on the right */}
                         <div className="results-playlist-meter-row">
