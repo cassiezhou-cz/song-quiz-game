@@ -7319,6 +7319,14 @@
   flex-shrink: 0;
 }
 
+.results-playlist-name-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 .results-playlist-name {
   font-size: 1.8rem; /* Slightly smaller */
   font-weight: 800;
@@ -7326,6 +7334,36 @@
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
   letter-spacing: 1px;
   white-space: nowrap; /* Prevent wrapping */
+  text-align: center;
+}
+
+.results-playlist-mastery {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 1.5px;
+  text-align: center;
+  text-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(255, 215, 0, 0.6),
+    0 0 30px rgba(255, 215, 0, 0.4);
+  animation: subtleGlow 2s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+@keyframes subtleGlow {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px rgba(255, 255, 255, 0.8),
+      0 0 20px rgba(255, 215, 0, 0.6),
+      0 0 30px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    text-shadow: 
+      0 0 15px rgba(255, 255, 255, 1),
+      0 0 25px rgba(255, 215, 0, 0.8),
+      0 0 35px rgba(255, 215, 0, 0.6);
+  }
 }
 
 .playlist-mastered-badge {
