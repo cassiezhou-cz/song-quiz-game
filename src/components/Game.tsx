@@ -5731,42 +5731,84 @@ const Game = () => {
                   
                   {/* Wrapper to contain both XP bar and Playlist meter */}
                   <div className="xp-playlist-wrapper">
-                    {/* XP Bar - NEW */}
+                    {/* Circular XP Meter - NEW */}
                     {showXPBar && showXPAnimation && (
-                      <div className={`xp-gain-container ${xpBarFlyLeft ? 'fly-left' : ''}`}>
-                      <div className="xp-bar-final-results">
-                        <div className="xp-bar-final">
-                          <div 
-                            className={`xp-fill-final ${xpAnimationComplete ? 'animate' : ''} ${skipXPTransition ? 'no-transition' : ''}`}
-                            style={{ 
-                              width: `${xpProgress}%` 
-                            }}
-                          ></div>
-                          <div className="xp-bar-text-final">{Math.round(displayedXP)}/{getXPRequiredForLevel(displayLevel)}</div>
-                        </div>
-                        {/* XP Gain Indicator - positioned at TARGET end of fill, outside bar to avoid clipping */}
-                        <div 
-                          className={`xp-gain-indicator ${showLevelUpAnimation ? 'early-fade' : ''}`}
-                          style={{ 
-                            left: `${targetXPPosition}%` 
-                          }}
-                        >
-                          +{score}
-                        </div>
-                        <div className="xp-mystery-circle-final">
+                      <div className={`circular-xp-container ${xpBarFlyLeft ? 'fly-left' : ''}`}>
+                        {/* Circular Progress Meter */}
+                        <div className="circular-progress-wrapper">
+                          {/* Prize Icon Above Level Number Box */}
                           {!(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
-                            <span className={`treasure-icon-final ${animateNextPrize ? 'next-prize-appear' : ''}`}>
+                            <div className={`prize-icon-above ${animateNextPrize ? 'next-prize-appear' : ''}`}>
                               {displayLevel === 3 ? (
                                 <img src="/assets/LevelUp_Present_Closed.png" alt="Present" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                               ) : (
                                 <img src="/assets/LevelUp_TreasureChest_Closed.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                               )}
-                            </span>
+                            </div>
                           )}
-                          <span className={`mystery-icon-final ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
+                          
+                          {/* Level Number Behind Avatar */}
+                          <div className="level-number-display">
+                            <span className={`level-number ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
+                          </div>
+                          
+                          <svg className="circular-progress-svg" viewBox="0 0 200 200">
+                            {/* Background circle */}
+                            <circle
+                              className="circular-progress-bg"
+                              cx="100"
+                              cy="100"
+                              r="85"
+                              fill="none"
+                              stroke="rgba(255, 255, 255, 0.1)"
+                              strokeWidth="12"
+                            />
+                            {/* Progress circle */}
+                            <circle
+                              className={`circular-progress-fill ${xpAnimationComplete ? 'animate' : ''} ${skipXPTransition ? 'no-transition' : ''}`}
+                              cx="100"
+                              cy="100"
+                              r="85"
+                              fill="none"
+                              stroke="url(#xpGradient)"
+                              strokeWidth="12"
+                              strokeLinecap="round"
+                              strokeDasharray="534.07"
+                              strokeDashoffset={534.07 - (534.07 * xpProgress) / 100}
+                              transform="rotate(-90 100 100)"
+                            />
+                            <defs>
+                              <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#4ECDC4" />
+                                <stop offset="100%" stopColor="#44A08D" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                          
+                          {/* Avatar in center */}
+                          <div className="circular-xp-avatar">
+                            <img 
+                              src={
+                                version === 'Version B'
+                                  ? (hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png")
+                                  : "/assets/YourAvatar.png"
+                              }
+                              alt="Player Avatar" 
+                              className="avatar-in-circle"
+                            />
+                          </div>
+                          
+                          {/* XP Text */}
+                          <div className="circular-xp-text">{Math.round(displayedXP)}/{getXPRequiredForLevel(displayLevel)}</div>
+                        </div>
+                        
+                        {/* XP Gain Indicator */}
+                        <div 
+                          className={`xp-gain-indicator-circular ${showLevelUpAnimation ? 'early-fade' : ''}`}
+                        >
+                          +{score}
                         </div>
                       </div>
-                    </div>
                     )}
                     
                     {/* Playlist Tier Meter (flies in after XP bar flies out) */}
