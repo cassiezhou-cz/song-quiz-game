@@ -4660,6 +4660,41 @@
   justify-content: center;
 }
 
+/* Next prize appear animation */
+.treasure-icon-final.next-prize-appear {
+  animation: nextPrizeAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.treasure-icon.next-prize-appear {
+  animation: nextPrizeAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes nextPrizeAppear {
+  0% {
+    transform: scale(0) translateY(20px);
+    opacity: 0;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+  }
+  50% {
+    transform: scale(1.3) translateY(0);
+    opacity: 1;
+    filter: drop-shadow(0 2px 12px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+  }
+  70% {
+    transform: scale(0.9) translateY(0);
+    filter: drop-shadow(0 2px 10px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.4));
+  }
+  85% {
+    transform: scale(1.05) translateY(0);
+    filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.4));
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+  }
+}
+
 .mystery-icon-final {
   font-size: 2.8rem;
   font-weight: bold;
@@ -6936,6 +6971,24 @@
   animation: fadeIn 0.3s ease-out;
 }
 
+/* Overlay fade-out when closing level-up modal */
+.level-up-modal-overlay.overlay-fade-out {
+  animation: overlayFadeOut 0.6s ease-out forwards;
+}
+
+@keyframes overlayFadeOut {
+  from {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    opacity: 1;
+  }
+  to {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    opacity: 0;
+  }
+}
+
 .level-up-modal {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 20px;
@@ -7129,6 +7182,181 @@
 
 .level-up-confirm-btn:active {
   transform: translateY(0);
+}
+
+/* Prize icon large (centered on screen for level-up animation) */
+.prize-icon-large {
+  width: 300px;
+  height: 300px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+  animation: prizeAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10001;
+}
+
+@keyframes prizeAppear {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Shake animation for closed prize */
+.prize-icon-large.shake {
+  animation: prizeShake 0.5s ease-in-out;
+}
+
+@keyframes prizeShake {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translate(-50%, -50%) rotate(-5deg);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translate(-50%, -50%) rotate(5deg);
+  }
+}
+
+/* Prize opening with fireworks */
+.prize-icon-large.prize-opening {
+  animation: prizeOpen 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes prizeOpen {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Fireworks container */
+.fireworks-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10002;
+}
+
+.firework {
+  position: absolute;
+  font-size: 3rem;
+  animation: fireworkExplode 0.8s ease-out forwards;
+  opacity: 1;
+}
+
+@keyframes fireworkExplode {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.firework-1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+  transform: translate(-80px, -80px) scale(1);
+}
+
+.firework-2 {
+  top: 20%;
+  right: 10%;
+  animation-delay: 0.1s;
+  transform: translate(80px, -80px) scale(1);
+}
+
+.firework-3 {
+  top: 50%;
+  left: 5%;
+  animation-delay: 0.2s;
+  transform: translate(-100px, 0) scale(1);
+}
+
+.firework-4 {
+  top: 50%;
+  right: 5%;
+  animation-delay: 0.15s;
+  transform: translate(100px, 0) scale(1);
+}
+
+.firework-5 {
+  bottom: 20%;
+  left: 15%;
+  animation-delay: 0.25s;
+  transform: translate(-70px, 70px) scale(1);
+}
+
+.firework-6 {
+  bottom: 20%;
+  right: 15%;
+  animation-delay: 0.3s;
+  transform: translate(70px, 70px) scale(1);
+}
+
+.firework-7 {
+  top: 35%;
+  left: 50%;
+  animation-delay: 0.05s;
+  transform: translate(-120px, -50px) scale(1);
+}
+
+.firework-8 {
+  top: 65%;
+  left: 50%;
+  animation-delay: 0.2s;
+  transform: translate(120px, 50px) scale(1);
+}
+
+/* Modal fade out animation */
+.level-up-modal.fade-out {
+  animation: modalFadeOut 0.5s ease-out forwards;
+}
+
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Fly down to XP bar animation */
+.level-up-present-icon.fly-down-to-xp {
+  animation: flyDownToXP 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+}
+
+@keyframes flyDownToXP {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, 400px) scale(0.3);
+    opacity: 0;
+  }
 }
 
 /* Confetti effect around cat avatar */

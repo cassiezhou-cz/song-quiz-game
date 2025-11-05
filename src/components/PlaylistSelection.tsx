@@ -39,6 +39,21 @@ const PlaylistSelection = () => {
   const [showNamePrompt, setShowNamePrompt] = useState(false)
   const [nameInput, setNameInput] = useState('')
 
+  // Debug hotkey state
+  const [isHoveringXPBar, setIsHoveringXPBar] = useState(false)
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false)
+  const [newlyUnlockedLifeline, setNewlyUnlockedLifeline] = useState<LifelineType | null>(null)
+  const [showHatUnlockModal, setShowHatUnlockModal] = useState(false)
+  
+  // Multi-stage level-up animation state
+  const [showClosedPrize, setShowClosedPrize] = useState(false)
+  const [shakeClosedPrize, setShakeClosedPrize] = useState(false)
+  const [showOpenPrize, setShowOpenPrize] = useState(false)
+  const [showModalContent, setShowModalContent] = useState(false)
+  const [flyDownPrize, setFlyDownPrize] = useState(false)
+  const [prizeType, setPrizeType] = useState<'treasure' | 'present'>('treasure')
+  const [animateNextPrize, setAnimateNextPrize] = useState(false)
+
   // Playlist progression system state
   const playlists = ['2020s', '2010s', '2000s', '90s', 'Iconic Songs', 'Most Streamed Songs']
   const [playlistProgress, setPlaylistProgress] = useState<Record<string, PlaylistProgress>>({
@@ -137,6 +152,19 @@ const PlaylistSelection = () => {
     console.log('📊 Loaded all playlist stats:', stats)
   }, [location])
 
+  // Debug hotkey: Up arrow when hovering over XP bar to level up
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isHoveringXPBar && event.key === 'ArrowUp') {
+        event.preventDefault()
+        handleDebugLevelUp()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isHoveringXPBar, playerLevel, unlockedLifelines, hatUnlocked])
+
   // Helper function to get rank from progress
   const getRankFromProgress = (progress: number): PlaylistRank => {
     if (progress >= 15) return 'platinum'
@@ -232,6 +260,136 @@ const PlaylistSelection = () => {
     localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
     
     console.log(`🐛 DEBUG: ${playlist} progress ${currentProgress} → ${newProgress}`)
+  }
+
+  // Start the multi-stage level-up animation
+  const startLevelUpAnimation = (lifeline: LifelineType | null, isHatUnlock: boolean = false, specificPlayerLevel?: number) => {
+    // Determine prize type based on actual player level reached (not level-up event count)
+    // If specificPlayerLevel is provided, use it; otherwise fall back to checking stored level
+    const playerLevelForPrize = specificPlayerLevel ?? parseInt(localStorage.getItem('player_level') || '1', 10)
+    setPrizeType(playerLevelForPrize === 4 ? 'present' : 'treasure')
+    console.log('🎁 Prize type determined: playerLevel =', playerLevelForPrize, ', prize =', playerLevelForPrize === 4 ? 'present' : 'treasure')
+    
+    // Stage 1: Show closed prize immediately
+    setShowClosedPrize(true)
+    console.log('🎁 Stage 1: Showing closed prize')
+    
+    // Stage 2: After 1 second, trigger shake
+    setTimeout(() => {
+      setShakeClosedPrize(true)
+      console.log('📦 Stage 2: Shaking prize')
+    }, 1000)
+    
+    // Stage 3: After shake (500ms), swap to open with fireworks
+    setTimeout(() => {
+      setShowClosedPrize(false)
+      setShakeClosedPrize(false)
+      setShowOpenPrize(true)
+      console.log('✨ Stage 3: Prize opening with fireworks')
+    }, 1500)
+    
+    // Stage 4: After fireworks display (800ms), show modal content
+    setTimeout(() => {
+      setShowModalContent(true)
+      if (isHatUnlock) {
+        setShowHatUnlockModal(true)
+      } else {
+        setNewlyUnlockedLifeline(lifeline)
+        setShowLevelUpModal(true)
+      }
+      console.log('📋 Stage 4: Showing modal content')
+    }, 2300)
+  }
+
+  // Debug function to level up player
+  const handleDebugLevelUp = () => {
+    const currentLevel = playerLevel
+    const newLevel = currentLevel + 1
+    
+    // Update level
+    setPlayerLevel(newLevel)
+    setDisplayLevel(newLevel)
+    localStorage.setItem('player_level', newLevel.toString())
+    
+    // Reset XP to 0 for the new level
+    setActualXP(0)
+    setXpProgress(0)
+    localStorage.setItem('player_xp_progress', '0')
+    
+    // Increment level-up count
+    const levelUpCount = parseInt(localStorage.getItem('level_up_count') || '0', 10) + 1
+    localStorage.setItem('level_up_count', levelUpCount.toString())
+    
+    console.log(`🐛 DEBUG: Level up ${currentLevel} → ${newLevel}`)
+    
+    // Check for lifeline unlocks
+    const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+    const nextLifelineToUnlock = lifelineUnlockOrder[unlockedLifelines.length]
+    
+    // Check for hat unlock (when reaching player level 4)
+    if (newLevel === 4 && !hatUnlocked) {
+      setHatUnlocked(true)
+      localStorage.setItem('hat_unlocked', 'true')
+      startLevelUpAnimation(null, true, newLevel)
+      console.log('🎩 DEBUG: Hat unlocked! (reached player level', newLevel, ', level-up event #' + levelUpCount + ')')
+    } else if (nextLifelineToUnlock) {
+      // Show level-up animation with lifeline
+      setUnlockedLifelines([...unlockedLifelines, nextLifelineToUnlock])
+      localStorage.setItem('unlocked_lifelines', JSON.stringify([...unlockedLifelines, nextLifelineToUnlock]))
+      startLevelUpAnimation(nextLifelineToUnlock, false, newLevel)
+      console.log('🐛 DEBUG: Lifeline unlocked:', nextLifelineToUnlock, '(reached player level', newLevel, ', level-up event #' + levelUpCount + ')')
+    }
+  }
+
+  // Close level-up modal
+  const closeLevelUpModal = () => {
+    // Start fly-down animation
+    setFlyDownPrize(true)
+    console.log('🚀 Starting fly-down animation')
+    
+    // After fly-down animation, fade out the overlay and reset
+    setTimeout(() => {
+      setShowLevelUpModal(false)
+      setNewlyUnlockedLifeline(null)
+      setShowOpenPrize(false)
+      setShowModalContent(false)
+      setShowClosedPrize(false)
+      setFlyDownPrize(false)
+      
+      // Immediately animate in the next prize icon (no delay)
+      setAnimateNextPrize(true)
+      console.log('✨ Animating next prize icon into place')
+      
+      // Reset animation state after it completes
+      setTimeout(() => {
+        setAnimateNextPrize(false)
+      }, 800)
+    }, 400)
+  }
+
+  // Close hat unlock modal
+  const closeHatUnlockModal = () => {
+    // Start fly-down animation
+    setFlyDownPrize(true)
+    console.log('🚀 Starting fly-down animation (hat)')
+    
+    // After fly-down animation, fade out the overlay and reset
+    setTimeout(() => {
+      setShowHatUnlockModal(false)
+      setShowOpenPrize(false)
+      setShowModalContent(false)
+      setShowClosedPrize(false)
+      setFlyDownPrize(false)
+      
+      // Immediately animate in the next prize icon (no delay)
+      setAnimateNextPrize(true)
+      console.log('✨ Animating next prize icon into place')
+      
+      // Reset animation state after it completes
+      setTimeout(() => {
+        setAnimateNextPrize(false)
+      }, 800)
+    }, 400)
   }
 
   const handleXPReset = () => {
@@ -354,7 +512,11 @@ const PlaylistSelection = () => {
         </header>
 
         {/* XP Bar */}
-        <div className="xp-bar-container">
+        <div 
+          className="xp-bar-container"
+          onMouseEnter={() => setIsHoveringXPBar(true)}
+          onMouseLeave={() => setIsHoveringXPBar(false)}
+        >
           <div className="xp-bar">
             <div 
               className="xp-fill" 
@@ -363,13 +525,15 @@ const PlaylistSelection = () => {
             <div className="xp-bar-text">{actualXP}/{getXPRequiredForLevel(playerLevel)}</div>
           </div>
           <div className="xp-mystery-circle">
-            <span className="treasure-icon">
-              {displayLevel === 3 ? (
-                '🎁'
-              ) : (
-                <img src="/assets/TreasureChest.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              )}
-            </span>
+            {!(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
+              <span className={`treasure-icon ${animateNextPrize ? 'next-prize-appear' : ''}`}>
+                {displayLevel === 3 ? (
+                  <img src="/assets/LevelUp_Present_Closed.png" alt="Present" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                ) : (
+                  <img src="/assets/LevelUp_TreasureChest_Closed.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                )}
+              </span>
+            )}
             <span className="mystery-icon">{playerLevel}</span>
           </div>
         </div>
@@ -544,6 +708,121 @@ const PlaylistSelection = () => {
           rank={collectionRank}
           onClose={handleCloseCollectionMenu}
         />
+      )}
+
+      {/* Level Up Multi-Stage Animation */}
+      {(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
+        <div className={`level-up-modal-overlay ${flyDownPrize ? 'overlay-fade-out' : ''}`}>
+          {/* Stage 1 & 2: Closed prize (with optional shake) */}
+          {showClosedPrize && (
+            <div className={`prize-icon-large ${shakeClosedPrize ? 'shake' : ''} ${flyDownPrize ? 'fly-down' : ''}`}>
+              <img 
+                src={prizeType === 'present' ? '/assets/LevelUp_Present_Closed.png' : '/assets/LevelUp_TreasureChest_Closed.png'} 
+                alt="Prize" 
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+              />
+            </div>
+          )}
+          
+          {/* Stage 3: Open prize with fireworks */}
+          {showOpenPrize && !showModalContent && (
+            <div className="prize-icon-large prize-opening">
+              <div className="fireworks-container">
+                <div className="firework firework-1">✨</div>
+                <div className="firework firework-2">💫</div>
+                <div className="firework firework-3">⭐</div>
+                <div className="firework firework-4">✨</div>
+                <div className="firework firework-5">💫</div>
+                <div className="firework firework-6">⭐</div>
+                <div className="firework firework-7">✨</div>
+                <div className="firework firework-8">💫</div>
+              </div>
+              <img 
+                src={prizeType === 'present' ? '/assets/LevelUp_Present_Open.png' : '/assets/LevelUp_TreasureChest_Open.png'} 
+                alt="Prize Opening" 
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+              />
+            </div>
+          )}
+          
+          {/* Stage 4: Full modal with content */}
+          {showModalContent && (
+            <div className={`level-up-modal ${flyDownPrize ? 'fade-out' : ''}`}>
+              <div className={`level-up-present-icon ${flyDownPrize ? 'fly-down-to-xp' : ''}`}>
+                <img 
+                  src={prizeType === 'present' ? '/assets/LevelUp_Present_Open.png' : '/assets/LevelUp_TreasureChest_Open.png'} 
+                  alt="Prize" 
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                />
+              </div>
+              
+              {showHatUnlockModal ? (
+                <>
+                  <h2 className="level-up-title">New Avatar Item!</h2>
+                  <div className="level-up-lifeline-display">
+                    <img 
+                      src="/assets/Hat.png" 
+                      alt="Hat" 
+                      className="hat-unlock-image"
+                    />
+                  </div>
+                  <button className="level-up-confirm-btn" onClick={closeHatUnlockModal}>
+                    Continue
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h2 className="level-up-title">New Lifeline Unlocked!</h2>
+                  <div className="level-up-lifeline-display">
+                    {newlyUnlockedLifeline === 'skip' && (
+                      <>
+                        <div className="level-up-icon">🔄</div>
+                        <div className="level-up-lifeline-name">Song Swap</div>
+                      </>
+                    )}
+                    {newlyUnlockedLifeline === 'artistLetterReveal' && (
+                      <>
+                        <div className="level-up-icon">👤 <span className="small-emoji">🔤</span></div>
+                        <div className="level-up-lifeline-name">Letter Reveal: Artist</div>
+                      </>
+                    )}
+                    {newlyUnlockedLifeline === 'songLetterReveal' && (
+                      <>
+                        <div className="level-up-icon">🎵 <span className="small-emoji">🔤</span></div>
+                        <div className="level-up-lifeline-name">Letter Reveal: Song</div>
+                      </>
+                    )}
+                    {newlyUnlockedLifeline === 'multipleChoiceArtist' && (
+                      <>
+                        <div className="level-up-icon">
+                          <div className="emoji-grid">
+                            <span>👤</span><span>👤</span>
+                            <span>👤</span><span>👤</span>
+                          </div>
+                        </div>
+                        <div className="level-up-lifeline-name">Multiple Choice: Artist</div>
+                      </>
+                    )}
+                    {newlyUnlockedLifeline === 'multipleChoiceSong' && (
+                      <>
+                        <div className="level-up-icon">
+                          <div className="emoji-grid">
+                            <span>🎵</span><span>🎵</span>
+                            <span>🎵</span><span>🎵</span>
+                          </div>
+                        </div>
+                        <div className="level-up-lifeline-name">Multiple Choice: Song</div>
+                      </>
+                    )}
+                  </div>
+                  <button className="level-up-confirm-btn" onClick={closeLevelUpModal}>
+                    Continue
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )

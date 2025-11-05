@@ -566,8 +566,17 @@ const Game = () => {
   const [showHatUnlockModal, setShowHatUnlockModal] = useState(false)
   const [hatUnlocked, setHatUnlocked] = useState(false)
   
+  // Multi-stage level-up animation state
+  const [showClosedPrize, setShowClosedPrize] = useState(false)
+  const [shakeClosedPrize, setShakeClosedPrize] = useState(false)
+  const [showOpenPrize, setShowOpenPrize] = useState(false)
+  const [showModalContent, setShowModalContent] = useState(false)
+  const [flyDownPrize, setFlyDownPrize] = useState(false)
+  const [prizeType, setPrizeType] = useState<'treasure' | 'present'>('treasure')
+  const [animateNextPrize, setAnimateNextPrize] = useState(false)
+  
   // Track XP refill (overflow) after level-up modals
-  const [pendingXPDrain, setPendingXPDrain] = useState<{ finalXP: number; totalModals: number; closedModals: number } | null>(null)
+  const [pendingXPDrain, setPendingXPDrain] = useState<{ finalXP: number; totalModals: number; closedModals: number; remainingLevels?: number } | null>(null)
   
   // Debug: Log when modal state changes
   useEffect(() => {
@@ -808,7 +817,9 @@ const Game = () => {
         console.log('✅ Triggering playlist tier update sequence!')
         hasRunMusicNoteAnimations.current = true // Set flag to prevent re-run
         
-        // Wait a brief moment after song list appears, then fly XP bar and final score left
+        // Wait for Your Answers animation to complete before flying XP bar left
+        // Song cards cascade in: (numSongs-1) * 0.15s delay + 0.5s animation
+        // For 7 songs: 6*0.15 + 0.5 = 1.4s, so wait 2s to be safe
         setTimeout(() => {
           setXpBarFlyLeft(true)
           setFinalScoreFlyLeft(true)
@@ -826,7 +837,7 @@ const Game = () => {
               startMusicNoteAnimations()
             }, 900) // 0.9s to ensure meter is fully in place
           }, 800)
-        }, 500) // 0.5s pause after song list appears
+        }, 2000) // 2s to wait for Your Answers cascade animation to complete
       }
     }
   }, [showSongList, allAttemptedSongs, playlistProgress.progress, version])
@@ -1030,9 +1041,10 @@ const Game = () => {
   // Handle XP refill after all level-up modals are closed
   useEffect(() => {
     if (pendingXPDrain && pendingXPDrain.closedModals === pendingXPDrain.totalModals) {
-      console.log('🎯 All modals closed! Refilling XP bar to overflow:', pendingXPDrain.finalXP)
+      console.log('🎯 All modals closed! Refilling XP bar to overflow:', pendingXPDrain.finalXP, ', remaining levels:', pendingXPDrain.remainingLevels || 0)
       
       // Re-enable transition and refill bar from 0% to overflow amount
+      // Wait for next prize animation to complete (800ms) before starting XP refill
       setTimeout(() => {
         setSkipXPTransition(false) // Re-enable transition for visible refill animation
         setTimeout(() => {
@@ -1044,6 +1056,88 @@ const Game = () => {
           setXpProgress(displayPercentage)
           localStorage.setItem('player_xp_progress', pendingXPDrain.finalXP.toString())
           console.log('🎯 XP bar refilling from 0 to overflow:', pendingXPDrain.finalXP, `(${displayPercentage.toFixed(1)}%)`)
+          
+          // Check if there are remaining levels to process
+          const hasRemainingLevels = (pendingXPDrain.remainingLevels || 0) > 0
+          
+          if (hasRemainingLevels) {
+            console.log('🎯 More levels to process! Will check for next level-up after XP fills')
+            // Wait for XP bar to finish filling, then check if another level-up occurs
+            setTimeout(() => {
+              const currentXP = pendingXPDrain.finalXP
+              const { level: newLevel, xpInCurrentLevel: overflowXP } = getLevelFromTotalXP(currentXP, playerLevel)
+              
+              if (newLevel > playerLevel) {
+                console.log('🎉 XP overflow caused another level-up!', playerLevel, '→', newLevel)
+                // Clear current pending drain before triggering new level-up
+                setPendingXPDrain(null)
+                // Trigger another level-up sequence
+                // The XP bar will fill to 100%, trigger level-up animation, etc.
+                setStartingXP(currentXP)
+                // This will be handled by existing level-up logic
+                // Just need to set bar to 100% and trigger animation
+                setXpProgress(100)
+                
+                // Increment level-up count
+                const currentLevelUpCount = parseInt(localStorage.getItem('level_up_count') || '0', 10)
+                localStorage.setItem('level_up_count', (currentLevelUpCount + 1).toString())
+                
+                setTimeout(() => {
+                  const newPlayerLevel = playerLevel + 1
+                  setPlayerLevel(newPlayerLevel)
+                  localStorage.setItem('player_level', newPlayerLevel.toString())
+                  console.log('🎯 Player level increased to:', newPlayerLevel)
+                  
+                  // Trigger level-up animation
+                  setShowLevelUpAnimation(true)
+                  
+                  setTimeout(() => {
+                    setShowLevelUpAnimation(false)
+                    
+                    // Show next modal
+                    const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+                    
+                    setTimeout(() => {
+                      if (newPlayerLevel === 4 && !hatUnlocked) {
+                        console.log('🎩 HAT UNLOCK! (reached player level 4)')
+                        startLevelUpAnimation(null, true, newPlayerLevel)
+                        setHatUnlocked(true)
+                        localStorage.setItem('hat_unlocked', 'true')
+                      } else {
+                        const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !unlockedLifelines.includes(lifeline))
+                        if (nextLifelineToUnlock) {
+                          console.log('🎉 Showing level up modal for:', nextLifelineToUnlock, '(reached player level', newPlayerLevel, ')')
+                          startLevelUpAnimation(nextLifelineToUnlock, false, newPlayerLevel)
+                          setUnlockedLifelines([...unlockedLifelines, nextLifelineToUnlock])
+                          localStorage.setItem('unlocked_lifelines', JSON.stringify([...unlockedLifelines, nextLifelineToUnlock]))
+                        }
+                      }
+                    }, 500)
+                    
+                    // Drain bar again and set up next pending refill
+                    setTimeout(() => {
+                      setDisplayLevel(newPlayerLevel)
+                      setTimeout(() => {
+                        setSkipXPTransition(true)
+                        setStartingXP(0)
+                        setDisplayedXP(0)
+                        setXpProgress(0)
+                      }, 100)
+                    }, 700)
+                    
+                    setPendingXPDrain({
+                      finalXP: overflowXP,
+                      totalModals: 1,
+                      closedModals: 0,
+                      remainingLevels: (pendingXPDrain.remainingLevels || 1) - 1
+                    })
+                  }, 1500)
+                }, 2100)
+                
+                return
+              }
+            }, 2000) // Wait for XP bar fill animation
+          }
           
           // Clear pending refill
           setPendingXPDrain(null)
@@ -1066,9 +1160,9 @@ const Game = () => {
             setShowSongList(true)
           }, delay)
         }, 50) // Small delay to ensure transition is re-enabled
-      }, 300) // Small delay before refill for better UX
+      }, 1000) // Wait for next prize animation (800ms) + buffer (200ms)
     }
-  }, [pendingXPDrain])
+  }, [pendingXPDrain, playerLevel, unlockedLifelines, hatUnlocked])
 
   // Version B Letter Reveal state
   const [artistLetterRevealText, setArtistLetterRevealText] = useState<string | null>(null)
@@ -3756,21 +3850,32 @@ const Game = () => {
                 // PROGRESSIVE XP SYSTEM: Each level requires more XP
                 const xpRequired = getXPRequiredForLevel(playerLevel)
                 const newTotalXP = startingXP + score
+                console.log('🎯 DEBUG: About to call getLevelFromTotalXP with totalXP =', newTotalXP, ', currentLevel =', playerLevel)
                 const { level: newLevel, xpInCurrentLevel: finalXP } = getLevelFromTotalXP(newTotalXP, playerLevel)
                 const levelsGained = newLevel - playerLevel
                 
                 console.log('🎯 XP Animation: Starting XP =', startingXP, ', Score =', score, ', Total XP earned =', newTotalXP)
                 console.log('🎯 Current level =', playerLevel, ', XP required for next level =', xpRequired)
                 console.log('🎯 New level =', newLevel, ', Levels gained =', levelsGained, ', Final XP =', finalXP)
+                console.log('🎯 DEBUG: Level progression details:', {
+                  startLevel: playerLevel,
+                  endLevel: newLevel,
+                  levelsGained,
+                  xpRequiredForCurrentLevel: getXPRequiredForLevel(playerLevel),
+                  xpRequiredForNextLevel: getXPRequiredForLevel(playerLevel + 1),
+                  startingXP,
+                  score,
+                  finalXP
+                })
                 
                 // Calculate display percentage: current XP / XP required for this level * 100
                 const displayXP = levelsGained > 0 ? 100 : Math.min((finalXP / xpRequired) * 100, 100)
                 setXpProgress(displayXP)
                 setXpAnimationComplete(true)
                 
-                // Handle level up(s)
+                // Handle level up(s) - Process ONE level at a time
                 if (levelsGained > 0) {
-                  console.log('🎉 LEVEL UP! Gained', levelsGained, 'level(s)')
+                  console.log('🎉 LEVEL UP! Will gain', levelsGained, 'level(s) total, processing first level now')
                   
                   const currentLevelUpCount = parseInt(localStorage.getItem('level_up_count') || '0', 10)
                   const newLevelUpCount = currentLevelUpCount + levelsGained
@@ -3778,11 +3883,12 @@ const Game = () => {
                   
                   // After bar fills to 100%, wait for XP counter animation to complete (2s), then update level
                   setTimeout(() => {
-                    // Update player level AFTER XP counter finishes animating (2s)
-                    const newPlayerLevel = playerLevel + levelsGained
-                    setPlayerLevel(newPlayerLevel)
-                    localStorage.setItem('player_level', newPlayerLevel.toString())
-                    console.log('🎯 Player level increased to:', newPlayerLevel)
+                    // Only increment by ONE level initially - we'll handle subsequent levels after modal closes
+                    const firstNewLevel = playerLevel + 1
+                    console.log('🎯 DEBUG: Updating player level from', playerLevel, 'to', firstNewLevel, '(processing 1 of', levelsGained, 'levels)')
+                    setPlayerLevel(firstNewLevel)
+                    localStorage.setItem('player_level', firstNewLevel.toString())
+                    console.log('🎯 Player level increased to:', firstNewLevel)
                     
                     // Trigger level-up animation
                     setShowLevelUpAnimation(true)
@@ -3793,57 +3899,50 @@ const Game = () => {
                       setShowLevelUpAnimation(false)
                       console.log('✨ Level-up animation complete!')
                     
-                    // Count how many modals will be shown
-                    let totalModalsToShow = 0
-                    
-                    // Process each level up to count modals
+                    // Process ONLY the first level-up - subsequent levels will be handled after modal closes
                     const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
-                    let currentUnlocked = [...unlockedLifelines]
-                    let modalDelay = 500 // 0.5s delay after animation before first modal
                     
-                    for (let i = 0; i < levelsGained; i++) {
-                      const levelNum = currentLevelUpCount + i + 1
-                      
-                      // Check if this is the third level up (hat unlock)
-                      if (levelNum === 3 && !hatUnlocked) {
-                        totalModalsToShow++
-                        setTimeout(() => {
-                          console.log('🎩 HAT UNLOCK!')
-                          setShowHatUnlockModal(true)
-                          setHatUnlocked(true)
-                          localStorage.setItem('hat_unlocked', 'true')
-                        }, modalDelay)
-                        modalDelay += 2000 // Delay next modal
+                    console.log('🎯 DEBUG: Processing first level-up. levelsGained =', levelsGained, ', currentLevelUpCount =', currentLevelUpCount)
+                    console.log('🎯 DEBUG: Player level:', playerLevel, '→', firstNewLevel)
+                    
+                    const levelNum = currentLevelUpCount + 1 // This is the first level-up event
+                    const actualPlayerLevel = firstNewLevel // The actual player level being reached
+                    
+                    // Store info about remaining levels to process after this modal closes
+                    const remainingLevels = levelsGained - 1
+                    
+                    // Calculate the XP after just the FIRST level-up (not the final XP after all levels)
+                    // We need to know how much XP to refill the bar with after the first modal closes
+                    const xpAfterFirstLevel = newTotalXP - getXPRequiredForLevel(playerLevel)
+                    
+                    console.log('🎯 DEBUG: First level actualPlayerLevel =', actualPlayerLevel, ', remaining levels =', remainingLevels, ', XP after first level =', xpAfterFirstLevel, ', final XP =', finalXP)
+                    
+                    setTimeout(() => {
+                      // Check if reaching player level 4 (hat unlock)
+                      if (actualPlayerLevel === 4 && !hatUnlocked) {
+                        console.log('🎩 HAT UNLOCK! (reached player level 4, level-up event #' + levelNum + ')')
+                        startLevelUpAnimation(null, true, actualPlayerLevel)
+                        setHatUnlocked(true)
+                        localStorage.setItem('hat_unlocked', 'true')
                       } else {
                         // Unlock next lifeline
-                        const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !currentUnlocked.includes(lifeline))
+                        const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !unlockedLifelines.includes(lifeline))
                         
                         if (nextLifelineToUnlock) {
-                          totalModalsToShow++
-                          const capturedLifeline = nextLifelineToUnlock
-                          const capturedUnlocked = [...currentUnlocked, nextLifelineToUnlock]
+                          console.log('🎉 Showing level up modal for:', nextLifelineToUnlock, '(reached player level ' + actualPlayerLevel + ', level-up event #' + levelNum + ')')
+                          startLevelUpAnimation(nextLifelineToUnlock, false, actualPlayerLevel)
                           
-                          setTimeout(() => {
-                            console.log('🎉 Showing level up modal for:', capturedLifeline)
-                            setNewlyUnlockedLifeline(capturedLifeline)
-                            setShowLevelUpModal(true)
-                            
-                            setUnlockedLifelines(capturedUnlocked)
-                            localStorage.setItem('unlocked_lifelines', JSON.stringify(capturedUnlocked))
-                          }, modalDelay)
-                          
-                          // Update tracking array for next iteration
-                          currentUnlocked = capturedUnlocked
-                          modalDelay += 2000 // Delay next modal
+                          setUnlockedLifelines([...unlockedLifelines, nextLifelineToUnlock])
+                          localStorage.setItem('unlocked_lifelines', JSON.stringify([...unlockedLifelines, nextLifelineToUnlock]))
                         }
                       }
-                    }
+                    }, 500) // 0.5s delay after animation before modal
                     
                     // Wait for modal to fully appear before draining bar
                     setTimeout(() => {
                       // Update displayLevel now that modal is showing (hides the XP requirement change)
-                      setDisplayLevel(newPlayerLevel)
-                      console.log('🎯 Updated displayLevel to', newPlayerLevel, '(hidden behind modal)')
+                      setDisplayLevel(firstNewLevel)
+                      console.log('🎯 Updated displayLevel to', firstNewLevel, '(hidden behind modal)')
                       
                       // Small additional delay to ensure modal is fully rendered and covering the XP bar
                       setTimeout(() => {
@@ -3856,13 +3955,14 @@ const Game = () => {
                       }, 100) // Extra 100ms to ensure modal is fully visible
                     }, 700) // Wait 0.5s pause + 0.2s for modal to render
                     
-                    // Set up pending refill (from 0% to overflow) that will execute after all modals are closed
+                    // Set up pending refill with info about remaining levels
                     setPendingXPDrain({
-                      finalXP: finalXP,
-                      totalModals: totalModalsToShow,
-                      closedModals: 0
+                      finalXP: xpAfterFirstLevel,
+                      totalModals: 1, // Only one modal for this level
+                      closedModals: 0,
+                      remainingLevels: remainingLevels // Track how many more levels to process
                     })
-                    console.log('🎯 Pending XP refill to:', finalXP, 'after', totalModalsToShow, 'modal(s) close')
+                    console.log('🎯 Pending XP refill to:', xpAfterFirstLevel, 'after 1 modal closes. Remaining levels:', remainingLevels)
                     }, 1500) // Wait for level-up animation (1.5s)
                   }, 2100) // Wait for XP counter animation to complete (2s) plus small buffer
                 } else {
@@ -3932,7 +4032,7 @@ const Game = () => {
             if (levelUpCount === 3 && !hatUnlocked) {
               console.log('🎩 HAT UNLOCK!')
               setTimeout(() => {
-                setShowHatUnlockModal(true)
+                startLevelUpAnimation(null, true)
                 setHatUnlocked(true)
                 localStorage.setItem('hat_unlocked', 'true')
                 
@@ -3953,8 +4053,7 @@ const Game = () => {
                 // Show level up modal
                 setTimeout(() => {
                   console.log('🎉 Showing level up modal for:', nextLifelineToUnlock)
-                  setNewlyUnlockedLifeline(nextLifelineToUnlock)
-                  setShowLevelUpModal(true)
+                  startLevelUpAnimation(nextLifelineToUnlock, false)
                   
                   // Update unlocked lifelines
                   const updatedUnlocked = [...unlockedLifelines, nextLifelineToUnlock]
@@ -4368,23 +4467,11 @@ const Game = () => {
       // For scoreType === 'none' or 0 points, both remain false
     }
     
-    // Calculate time bonus: max 20 points, decrements by 1 for every 1 second elapsed
-    // Only awarded if BOTH artist and song are correct (not special questions)
-    // Only available for the first 20 seconds (when 20+ seconds remain)
-    let timeBonus = 0
-    if (!specialQuestionNumbers.includes(questionNumber) && artistCorrect && songCorrect) {
-      if (versionBTimeRemaining > 20) {
-        const timeElapsed = 40 - versionBTimeRemaining
-        timeBonus = Math.max(0, 20 - timeElapsed)
-        console.log('⏱️ TIME BONUS: Time remaining:', versionBTimeRemaining, 'seconds. Time elapsed:', timeElapsed, 'Bonus points:', timeBonus)
-      } else {
-        console.log('⏱️ TIME BONUS: Not available (less than 20 seconds remaining)')
-      }
-    }
-    setTimeBonusPoints(timeBonus)
-    const finalPoints = points + timeBonus
+    // Version B: No time bonus
+    setTimeBonusPoints(0)
+    const finalPoints = points
     
-    console.log('📊 FINAL SCORING: Base points:', points, '+ Time bonus:', timeBonus, '= Total:', finalPoints)
+    console.log('📊 FINAL SCORING: Base points:', points, '= Total:', finalPoints)
     
     setArtistCorrect(artistCorrect)
     setSongCorrect(songCorrect)
@@ -4992,9 +5079,69 @@ const Game = () => {
     }
   }
 
+  // Start the multi-stage level-up animation
+  const startLevelUpAnimation = (lifeline: LifelineType | null, isHatUnlock: boolean = false, specificPlayerLevel?: number) => {
+    // Determine prize type based on actual player level reached (not level-up event count)
+    // If specificPlayerLevel is provided, use it; otherwise fall back to checking stored level
+    const playerLevelForPrize = specificPlayerLevel ?? parseInt(localStorage.getItem('player_level') || '1', 10)
+    setPrizeType(playerLevelForPrize === 4 ? 'present' : 'treasure')
+    console.log('🎁 Prize type determined: playerLevel =', playerLevelForPrize, ', prize =', playerLevelForPrize === 4 ? 'present' : 'treasure')
+    
+    // Stage 1: Show closed prize immediately
+    setShowClosedPrize(true)
+    console.log('🎁 Stage 1: Showing closed prize')
+    
+    // Stage 2: After 1 second, trigger shake
+    setTimeout(() => {
+      setShakeClosedPrize(true)
+      console.log('📦 Stage 2: Shaking prize')
+    }, 1000)
+    
+    // Stage 3: After shake (500ms), swap to open with fireworks
+    setTimeout(() => {
+      setShowClosedPrize(false)
+      setShakeClosedPrize(false)
+      setShowOpenPrize(true)
+      console.log('✨ Stage 3: Prize opening with fireworks')
+    }, 1500)
+    
+    // Stage 4: After fireworks display (800ms), show modal content
+    setTimeout(() => {
+      setShowModalContent(true)
+      if (isHatUnlock) {
+        setShowHatUnlockModal(true)
+      } else {
+        setNewlyUnlockedLifeline(lifeline)
+        setShowLevelUpModal(true)
+      }
+      console.log('📋 Stage 4: Showing modal content')
+    }, 2300)
+  }
+
   const closeLevelUpModal = () => {
-    setShowLevelUpModal(false)
-    setNewlyUnlockedLifeline(null)
+    // Start fly-down animation
+    setFlyDownPrize(true)
+    console.log('🚀 Starting fly-down animation')
+    
+    // After fly-down animation, fade out the overlay and reset
+    setTimeout(() => {
+      // Trigger overlay fade-out by clearing all animation states
+      setShowLevelUpModal(false)
+      setNewlyUnlockedLifeline(null)
+      setShowOpenPrize(false)
+      setShowModalContent(false)
+      setShowClosedPrize(false)
+      setFlyDownPrize(false)
+      
+      // Immediately animate in the next prize icon (no delay)
+      setAnimateNextPrize(true)
+      console.log('✨ Animating next prize icon into place')
+      
+      // Reset animation state after it completes
+      setTimeout(() => {
+        setAnimateNextPrize(false)
+      }, 800)
+    }, 400)
     
     // Increment closed modal count for XP refill tracking
     if (pendingXPDrain) {
@@ -5007,7 +5154,27 @@ const Game = () => {
   }
 
   const closeHatUnlockModal = () => {
-    setShowHatUnlockModal(false)
+    // Start fly-down animation
+    setFlyDownPrize(true)
+    console.log('🚀 Starting fly-down animation (hat)')
+    
+    // After fly-down animation, fade out the overlay and reset
+    setTimeout(() => {
+      setShowHatUnlockModal(false)
+      setShowOpenPrize(false)
+      setShowModalContent(false)
+      setShowClosedPrize(false)
+      setFlyDownPrize(false)
+      
+      // Immediately animate in the next prize icon (no delay)
+      setAnimateNextPrize(true)
+      console.log('✨ Animating next prize icon into place')
+      
+      // Reset animation state after it completes
+      setTimeout(() => {
+        setAnimateNextPrize(false)
+      }, 800)
+    }, 400)
     
     // Increment closed modal count for XP refill tracking
     if (pendingXPDrain) {
@@ -5587,13 +5754,15 @@ const Game = () => {
                           +{score}
                         </div>
                         <div className="xp-mystery-circle-final">
-                          <span className="treasure-icon-final">
-                            {displayLevel === 3 ? (
-                              '🎁'
-                            ) : (
-                              <img src="/assets/TreasureChest.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                            )}
-                          </span>
+                          {!(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
+                            <span className={`treasure-icon-final ${animateNextPrize ? 'next-prize-appear' : ''}`}>
+                              {displayLevel === 3 ? (
+                                <img src="/assets/LevelUp_Present_Closed.png" alt="Present" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                              ) : (
+                                <img src="/assets/LevelUp_TreasureChest_Closed.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                              )}
+                            </span>
+                          )}
                           <span className={`mystery-icon-final ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
                         </div>
                       </div>
@@ -5787,13 +5956,15 @@ const Game = () => {
                           <div className="xp-bar-text-final">{Math.round(displayedXP)}/{getXPRequiredForLevel(displayLevel)}</div>
                         </div>
                         <div className="xp-mystery-circle-final">
-                          <span className="treasure-icon-final">
-                            {displayLevel === 3 ? (
-                              '🎁'
-                            ) : (
-                              <img src="/assets/TreasureChest.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                            )}
-                          </span>
+                          {!(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
+                            <span className={`treasure-icon-final ${animateNextPrize ? 'next-prize-appear' : ''}`}>
+                              {displayLevel === 3 ? (
+                                <img src="/assets/LevelUp_Present_Closed.png" alt="Present" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                              ) : (
+                                <img src="/assets/LevelUp_TreasureChest_Closed.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                              )}
+                            </span>
+                          )}
                           <span className={`mystery-icon-final ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>{playerLevel}</span>
                         </div>
                       </div>
@@ -6025,80 +6196,118 @@ const Game = () => {
           </div>
         </div>
 
-        {/* Level Up Modal */}
-        {showLevelUpModal && newlyUnlockedLifeline && (
-          <div className="level-up-modal-overlay">
-            <div className="level-up-modal">
-              <div className="level-up-present-icon">
-                <img src="/assets/TreasureChest.png" alt="Treasure Chest" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              </div>
-              <h2 className="level-up-title">New Lifeline Unlocked!</h2>
-              <div className="level-up-lifeline-display">
-                {newlyUnlockedLifeline === 'skip' && (
-                  <>
-                    <div className="level-up-icon">🔄</div>
-                    <div className="level-up-lifeline-name">Song Swap</div>
-                  </>
-                )}
-                {newlyUnlockedLifeline === 'artistLetterReveal' && (
-                  <>
-                    <div className="level-up-icon">👤 <span className="small-emoji">🔤</span></div>
-                    <div className="level-up-lifeline-name">Letter Reveal: Artist</div>
-                  </>
-                )}
-                {newlyUnlockedLifeline === 'songLetterReveal' && (
-                  <>
-                    <div className="level-up-icon">🎵 <span className="small-emoji">🔤</span></div>
-                    <div className="level-up-lifeline-name">Letter Reveal: Song</div>
-                  </>
-                )}
-                {newlyUnlockedLifeline === 'multipleChoiceArtist' && (
-                  <>
-                    <div className="level-up-icon">
-                      <div className="emoji-grid">
-                        <span>👤</span><span>👤</span>
-                        <span>👤</span><span>👤</span>
-                      </div>
-                    </div>
-                    <div className="level-up-lifeline-name">Multiple Choice: Artist</div>
-                  </>
-                )}
-                {newlyUnlockedLifeline === 'multipleChoiceSong' && (
-                  <>
-                    <div className="level-up-icon">
-                      <div className="emoji-grid">
-                        <span>🎵</span><span>🎵</span>
-                        <span>🎵</span><span>🎵</span>
-                      </div>
-                    </div>
-                    <div className="level-up-lifeline-name">Multiple Choice: Song</div>
-                  </>
-                )}
-              </div>
-              <button className="level-up-confirm-btn" onClick={closeLevelUpModal}>
-                Continue
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Hat Unlock Modal */}
-        {showHatUnlockModal && (
-          <div className="level-up-modal-overlay">
-            <div className="level-up-modal">
-              <div className="level-up-present-icon">🎁</div>
-              <h2 className="level-up-title">New Avatar Item!</h2>
-              <div className="level-up-lifeline-display">
+        {/* Level Up Multi-Stage Animation */}
+        {(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
+          <div className={`level-up-modal-overlay ${flyDownPrize ? 'overlay-fade-out' : ''}`}>
+            {/* Stage 1 & 2: Closed prize (with optional shake) */}
+            {showClosedPrize && (
+              <div className={`prize-icon-large ${shakeClosedPrize ? 'shake' : ''} ${flyDownPrize ? 'fly-down' : ''}`}>
                 <img 
-                  src="/assets/Hat.png" 
-                  alt="Hat" 
-                  className="hat-unlock-image"
+                  src={prizeType === 'present' ? '/assets/LevelUp_Present_Closed.png' : '/assets/LevelUp_TreasureChest_Closed.png'} 
+                  alt="Prize" 
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
                 />
               </div>
-              <button className="level-up-confirm-btn" onClick={closeHatUnlockModal}>
-                Continue
-              </button>
-            </div>
+            )}
+            
+            {/* Stage 3: Open prize with fireworks */}
+            {showOpenPrize && !showModalContent && (
+              <div className="prize-icon-large prize-opening">
+                <div className="fireworks-container">
+                  <div className="firework firework-1">✨</div>
+                  <div className="firework firework-2">💫</div>
+                  <div className="firework firework-3">⭐</div>
+                  <div className="firework firework-4">✨</div>
+                  <div className="firework firework-5">💫</div>
+                  <div className="firework firework-6">⭐</div>
+                  <div className="firework firework-7">✨</div>
+                  <div className="firework firework-8">💫</div>
+                </div>
+                <img 
+                  src={prizeType === 'present' ? '/assets/LevelUp_Present_Open.png' : '/assets/LevelUp_TreasureChest_Open.png'} 
+                  alt="Prize Opening" 
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                />
+              </div>
+            )}
+            
+            {/* Stage 4: Full modal with content */}
+            {showModalContent && (
+              <div className={`level-up-modal ${flyDownPrize ? 'fade-out' : ''}`}>
+                <div className={`level-up-present-icon ${flyDownPrize ? 'fly-down-to-xp' : ''}`}>
+                  <img 
+                    src={prizeType === 'present' ? '/assets/LevelUp_Present_Open.png' : '/assets/LevelUp_TreasureChest_Open.png'} 
+                    alt="Prize" 
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                  />
+                </div>
+                
+                {showHatUnlockModal ? (
+                  <>
+                    <h2 className="level-up-title">New Avatar Item!</h2>
+                    <div className="level-up-lifeline-display">
+                      <img 
+                        src="/assets/Hat.png" 
+                        alt="Hat" 
+                        className="hat-unlock-image"
+                      />
+                    </div>
+                    <button className="level-up-confirm-btn" onClick={closeHatUnlockModal}>
+                      Continue
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="level-up-title">New Lifeline Unlocked!</h2>
+                    <div className="level-up-lifeline-display">
+                      {newlyUnlockedLifeline === 'skip' && (
+                        <>
+                          <div className="level-up-icon">🔄</div>
+                          <div className="level-up-lifeline-name">Song Swap</div>
+                        </>
+                      )}
+                      {newlyUnlockedLifeline === 'artistLetterReveal' && (
+                        <>
+                          <div className="level-up-icon">👤 <span className="small-emoji">🔤</span></div>
+                          <div className="level-up-lifeline-name">Letter Reveal: Artist</div>
+                        </>
+                      )}
+                      {newlyUnlockedLifeline === 'songLetterReveal' && (
+                        <>
+                          <div className="level-up-icon">🎵 <span className="small-emoji">🔤</span></div>
+                          <div className="level-up-lifeline-name">Letter Reveal: Song</div>
+                        </>
+                      )}
+                      {newlyUnlockedLifeline === 'multipleChoiceArtist' && (
+                        <>
+                          <div className="level-up-icon">
+                            <div className="emoji-grid">
+                              <span>👤</span><span>👤</span>
+                              <span>👤</span><span>👤</span>
+                            </div>
+                          </div>
+                          <div className="level-up-lifeline-name">Multiple Choice: Artist</div>
+                        </>
+                      )}
+                      {newlyUnlockedLifeline === 'multipleChoiceSong' && (
+                        <>
+                          <div className="level-up-icon">
+                            <div className="emoji-grid">
+                              <span>🎵</span><span>🎵</span>
+                              <span>🎵</span><span>🎵</span>
+                            </div>
+                          </div>
+                          <div className="level-up-lifeline-name">Multiple Choice: Song</div>
+                        </>
+                      )}
+                    </div>
+                    <button className="level-up-confirm-btn" onClick={closeLevelUpModal}>
+                      Continue
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -6915,7 +7124,7 @@ const Game = () => {
                             <p className="trivia-question-text">{currentQuestion.triviaQuestionText}</p>
                             <div className="result-row result-row-animate" style={{ animationDelay: '0.1s' }}>
                               <div className={`result-category ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}><strong>Correct Answer:</strong> {currentQuestion.correctAnswer}</div>
-                              <div className={`result-points ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}>{pointsEarned > 0 ? `+${specialQuestionNumbers.includes(questionNumber) ? (pointsEarned - timeBonusPoints) / 2 : pointsEarned - timeBonusPoints}` : '+0'}</div>
+                              <div className={`result-points ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}>{pointsEarned > 0 ? `+${specialQuestionNumbers.includes(questionNumber) ? pointsEarned / 2 : pointsEarned}` : '+0'}</div>
                             </div>
                             {pointsEarned > 0 && (
                               <>
@@ -6926,15 +7135,9 @@ const Game = () => {
                                     <div className="result-points bonus-indicator special-question-bonus">2x</div>
                                   </div>
                                 )}
-                                {timeBonusPoints > 0 && (
-                                  <div className="result-row result-row-animate" style={{ animationDelay: specialQuestionNumbers.includes(questionNumber) ? '0.3s' : '0.2s' }}>
-                                    <div className="result-category bonus-indicator time-bonus">⏱️ Time Bonus</div>
-                                    <div className="result-points">+{timeBonusPoints}</div>
-                                  </div>
-                                )}
                               </>
                             )}
-                            <p className="points-earned-display points-earned-animate" style={{ animationDelay: (specialQuestionNumbers.includes(questionNumber) && timeBonusPoints > 0) ? '0.4s' : (specialQuestionNumbers.includes(questionNumber) || timeBonusPoints > 0) ? '0.3s' : '0.2s' }}>Points Earned: {pointsEarned}</p>
+                            <p className="points-earned-display points-earned-animate" style={{ animationDelay: specialQuestionNumbers.includes(questionNumber) ? '0.3s' : '0.2s' }}>Points Earned: {pointsEarned}</p>
                           </>
                         ) : (
                           <>
@@ -6970,15 +7173,9 @@ const Game = () => {
                                         🎯 Special Question 2x
                                       </div>
                                     )}
-                                    {timeBonusPoints > 0 && (
-                                      <div className="result-row result-row-animate" style={{ animationDelay: specialQuestionNumbers.includes(questionNumber) ? '0.4s' : '0.3s' }}>
-                                        <div className="result-category bonus-indicator time-bonus">⏱️ Time Bonus</div>
-                                        <div className="result-points time-bonus-points">+{timeBonusPoints}</div>
-                                      </div>
-                                    )}
                                   </>
                                 )}
-                                <p className="points-earned-display points-earned-animate" style={{ animationDelay: (version === 'Version B' && (specialQuestionNumbers.includes(questionNumber) || timeBonusPoints > 0)) ? '0.5s' : '0.3s' }}>Points Earned: {pointsEarned}</p>
+                                <p className="points-earned-display points-earned-animate" style={{ animationDelay: (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) ? '0.4s' : '0.3s' }}>Points Earned: {pointsEarned}</p>
                               </>
                             )}
                           </>
@@ -7291,80 +7488,118 @@ const Game = () => {
           </div>
         )}
 
-        {/* Level Up Modal */}
-        {showLevelUpModal && newlyUnlockedLifeline && (
-          <div className="level-up-modal-overlay">
-            <div className="level-up-modal">
-              <div className="level-up-present-icon">
-                <img src="/assets/TreasureChest.png" alt="Treasure Chest" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              </div>
-              <h2 className="level-up-title">New Lifeline Unlocked!</h2>
-              <div className="level-up-lifeline-display">
-                {newlyUnlockedLifeline === 'skip' && (
-                  <>
-                    <div className="level-up-icon">🔄</div>
-                    <div className="level-up-lifeline-name">Song Swap</div>
-                  </>
-                )}
-                {newlyUnlockedLifeline === 'artistLetterReveal' && (
-                  <>
-                    <div className="level-up-icon">👤 <span className="small-emoji">🔤</span></div>
-                    <div className="level-up-lifeline-name">Letter Reveal: Artist</div>
-                  </>
-                )}
-                {newlyUnlockedLifeline === 'songLetterReveal' && (
-                  <>
-                    <div className="level-up-icon">🎵 <span className="small-emoji">🔤</span></div>
-                    <div className="level-up-lifeline-name">Letter Reveal: Song</div>
-                  </>
-                )}
-                {newlyUnlockedLifeline === 'multipleChoiceArtist' && (
-                  <>
-                    <div className="level-up-icon">
-                      <div className="emoji-grid">
-                        <span>👤</span><span>👤</span>
-                        <span>👤</span><span>👤</span>
-                      </div>
-                    </div>
-                    <div className="level-up-lifeline-name">Multiple Choice: Artist</div>
-                  </>
-                )}
-                {newlyUnlockedLifeline === 'multipleChoiceSong' && (
-                  <>
-                    <div className="level-up-icon">
-                      <div className="emoji-grid">
-                        <span>🎵</span><span>🎵</span>
-                        <span>🎵</span><span>🎵</span>
-                      </div>
-                    </div>
-                    <div className="level-up-lifeline-name">Multiple Choice: Song</div>
-                  </>
-                )}
-              </div>
-              <button className="level-up-confirm-btn" onClick={closeLevelUpModal}>
-                Continue
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Hat Unlock Modal */}
-        {showHatUnlockModal && (
-          <div className="level-up-modal-overlay">
-            <div className="level-up-modal">
-              <div className="level-up-present-icon">🎁</div>
-              <h2 className="level-up-title">New Avatar Item!</h2>
-              <div className="level-up-lifeline-display">
+        {/* Level Up Multi-Stage Animation (duplicate for results screen version 2) */}
+        {(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
+          <div className={`level-up-modal-overlay ${flyDownPrize ? 'overlay-fade-out' : ''}`}>
+            {/* Stage 1 & 2: Closed prize (with optional shake) */}
+            {showClosedPrize && (
+              <div className={`prize-icon-large ${shakeClosedPrize ? 'shake' : ''} ${flyDownPrize ? 'fly-down' : ''}`}>
                 <img 
-                  src="/assets/Hat.png" 
-                  alt="Hat" 
-                  className="hat-unlock-image"
+                  src={prizeType === 'present' ? '/assets/LevelUp_Present_Closed.png' : '/assets/LevelUp_TreasureChest_Closed.png'} 
+                  alt="Prize" 
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
                 />
               </div>
-              <button className="level-up-confirm-btn" onClick={closeHatUnlockModal}>
-                Continue
-              </button>
-            </div>
+            )}
+            
+            {/* Stage 3: Open prize with fireworks */}
+            {showOpenPrize && !showModalContent && (
+              <div className="prize-icon-large prize-opening">
+                <div className="fireworks-container">
+                  <div className="firework firework-1">✨</div>
+                  <div className="firework firework-2">💫</div>
+                  <div className="firework firework-3">⭐</div>
+                  <div className="firework firework-4">✨</div>
+                  <div className="firework firework-5">💫</div>
+                  <div className="firework firework-6">⭐</div>
+                  <div className="firework firework-7">✨</div>
+                  <div className="firework firework-8">💫</div>
+                </div>
+                <img 
+                  src={prizeType === 'present' ? '/assets/LevelUp_Present_Open.png' : '/assets/LevelUp_TreasureChest_Open.png'} 
+                  alt="Prize Opening" 
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                />
+              </div>
+            )}
+            
+            {/* Stage 4: Full modal with content */}
+            {showModalContent && (
+              <div className={`level-up-modal ${flyDownPrize ? 'fade-out' : ''}`}>
+                <div className={`level-up-present-icon ${flyDownPrize ? 'fly-down-to-xp' : ''}`}>
+                  <img 
+                    src={prizeType === 'present' ? '/assets/LevelUp_Present_Open.png' : '/assets/LevelUp_TreasureChest_Open.png'} 
+                    alt="Prize" 
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                  />
+                </div>
+                
+                {showHatUnlockModal ? (
+                  <>
+                    <h2 className="level-up-title">New Avatar Item!</h2>
+                    <div className="level-up-lifeline-display">
+                      <img 
+                        src="/assets/Hat.png" 
+                        alt="Hat" 
+                        className="hat-unlock-image"
+                      />
+                    </div>
+                    <button className="level-up-confirm-btn" onClick={closeHatUnlockModal}>
+                      Continue
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="level-up-title">New Lifeline Unlocked!</h2>
+                    <div className="level-up-lifeline-display">
+                      {newlyUnlockedLifeline === 'skip' && (
+                        <>
+                          <div className="level-up-icon">🔄</div>
+                          <div className="level-up-lifeline-name">Song Swap</div>
+                        </>
+                      )}
+                      {newlyUnlockedLifeline === 'artistLetterReveal' && (
+                        <>
+                          <div className="level-up-icon">👤 <span className="small-emoji">🔤</span></div>
+                          <div className="level-up-lifeline-name">Letter Reveal: Artist</div>
+                        </>
+                      )}
+                      {newlyUnlockedLifeline === 'songLetterReveal' && (
+                        <>
+                          <div className="level-up-icon">🎵 <span className="small-emoji">🔤</span></div>
+                          <div className="level-up-lifeline-name">Letter Reveal: Song</div>
+                        </>
+                      )}
+                      {newlyUnlockedLifeline === 'multipleChoiceArtist' && (
+                        <>
+                          <div className="level-up-icon">
+                            <div className="emoji-grid">
+                              <span>👤</span><span>👤</span>
+                              <span>👤</span><span>👤</span>
+                            </div>
+                          </div>
+                          <div className="level-up-lifeline-name">Multiple Choice: Artist</div>
+                        </>
+                      )}
+                      {newlyUnlockedLifeline === 'multipleChoiceSong' && (
+                        <>
+                          <div className="level-up-icon">
+                            <div className="emoji-grid">
+                              <span>🎵</span><span>🎵</span>
+                              <span>🎵</span><span>🎵</span>
+                            </div>
+                          </div>
+                          <div className="level-up-lifeline-name">Multiple Choice: Song</div>
+                        </>
+                      )}
+                    </div>
+                    <button className="level-up-confirm-btn" onClick={closeLevelUpModal}>
+                      Continue
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         )}
 
