@@ -514,6 +514,7 @@ const Game = () => {
   const [showPlaylistMeter, setShowPlaylistMeter] = useState(false) // Show playlist meter on results screen
   const [playlistProgress, setPlaylistProgress] = useState<{ progress: number }>({ progress: 0 }) // 0-15 segments
   const [milestonePositions, setMilestonePositions] = useState<{ pos4: number; pos9: number; pos14: number }>({ pos4: 0, pos9: 0, pos14: 0 })
+  const [iconUnlockProgress, setIconUnlockProgress] = useState(0) // Controls icon colorization separately from medal
   
   // Rank Up Modal state (shows when reaching thresholds: 5 = silver, 10 = gold, 15 = platinum)
   const [showRankUpModal, setShowRankUpModal] = useState(false)
@@ -816,6 +817,7 @@ const Game = () => {
           // After XP bar flies off (0.8s animation), show playlist meter flying in
           setTimeout(() => {
             setDisplayedProgress(playlistProgress.progress) // Initialize displayed progress to current progress
+            setIconUnlockProgress(playlistProgress.progress) // Initialize icon unlock progress
             setShowPlaylistMeter(true)
             console.log('➡️ Playlist meter flying in...')
             
@@ -936,19 +938,26 @@ const Game = () => {
       
       if (rankUpType) {
         console.log(`🎉 RANK UP TO ${rankUpType.toUpperCase()}! Preparing modal...`)
-        // Update displayed progress first to trigger icon colorization
-        setDisplayedProgress(newProgress)
+        // Update icon unlock progress first to trigger icon colorization (separate from medal)
+        setIconUnlockProgress(newProgress)
         console.log('🎨 Icon colorizing...')
         
-        // Wait for icon colorization animation (0.6s) before showing modal
+        // Wait longer (0.9s) for icon colorization before showing modal
         setTimeout(() => {
           setRankUpTo(rankUpType!)
           setShowRankUpModal(true)
           console.log('🏅 Rank up modal shown')
-        }, 600) // Wait for colorization animation
+          
+          // Update displayed progress after modal is visible (changes medal behind the modal)
+          setTimeout(() => {
+            setDisplayedProgress(newProgress)
+            console.log('🏅 Medal updated after modal shown')
+          }, 200) // Small delay to ensure modal is fully displayed
+        }, 900) // Increased time for icon colorization
       } else {
-        // No rank up, just update displayed progress immediately
+        // No rank up, just update displayed progress and icons immediately
         setDisplayedProgress(newProgress)
+        setIconUnlockProgress(newProgress)
       }
       
       setTempFilledSegments(new Set()) // Clear temp fills after permanent update
@@ -5138,6 +5147,7 @@ const Game = () => {
     hasRunMusicNoteAnimations.current = false // Reset animation flag for new game
     setShowRankUpModal(false) // Reset rank-up modal
     setDisplayedProgress(playlistProgress.progress) // Sync displayed progress
+    setIconUnlockProgress(playlistProgress.progress) // Sync icon unlock progress
     
     startNewQuestion()
   }
@@ -5635,19 +5645,19 @@ const Game = () => {
                               <div className="playlist-milestone-icons">
                                 {/* Question Mark: Below final bronze node (segment index 4) */}
                                 <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos4}px` }}>
-                                  <div className={`milestone-icon-circle bronze-border ${displayedProgress > 4 ? 'unlocked' : 'locked'}`}>
+                                  <div className={`milestone-icon-circle bronze-border ${iconUnlockProgress > 4 ? 'unlocked' : 'locked'}`}>
                                     <img src="/assets/PM_QuestionMark.png" alt="Silver Rank Reward" className="milestone-icon" />
                                   </div>
                                 </div>
                                 {/* Music Note: Below final silver node (segment index 9) */}
                                 <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos9}px` }}>
-                                  <div className={`milestone-icon-circle silver-border ${displayedProgress > 9 ? 'unlocked' : 'locked'}`}>
+                                  <div className={`milestone-icon-circle silver-border ${iconUnlockProgress > 9 ? 'unlocked' : 'locked'}`}>
                                     <img src="/assets/PM_FireNote.png" alt="Gold Rank Reward" className="milestone-icon" />
                                   </div>
                                 </div>
                                 {/* Winner Podium: Below final gold node (segment index 14) */}
                                 <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos14}px` }}>
-                                  <div className={`milestone-icon-circle gold-border ${displayedProgress > 14 ? 'unlocked' : 'locked'}`}>
+                                  <div className={`milestone-icon-circle gold-border ${iconUnlockProgress > 14 ? 'unlocked' : 'locked'}`}>
                                     <img src="/assets/PM_WinnerPodium.png" alt="Diamond Rank Reward" className="milestone-icon" />
                                   </div>
                                 </div>
