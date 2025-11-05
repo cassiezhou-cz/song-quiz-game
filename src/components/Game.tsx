@@ -513,6 +513,7 @@ const Game = () => {
   const [finalScoreFlyLeft, setFinalScoreFlyLeft] = useState(false) // Trigger final score fly-left animation
   const [showPlaylistMeter, setShowPlaylistMeter] = useState(false) // Show playlist meter on results screen
   const [playlistProgress, setPlaylistProgress] = useState<{ progress: number }>({ progress: 0 }) // 0-15 segments
+  const [milestonePositions, setMilestonePositions] = useState<{ pos4: number; pos9: number; pos14: number }>({ pos4: 0, pos9: 0, pos14: 0 })
   
   // Rank Up Modal state (shows when reaching thresholds: 5 = silver, 10 = gold, 15 = platinum)
   const [showRankUpModal, setShowRankUpModal] = useState(false)
@@ -828,6 +829,36 @@ const Game = () => {
     }
   }, [showSongList, allAttemptedSongs, playlistProgress.progress, version])
   
+  // Calculate milestone icon positions based on actual segment positions
+  useEffect(() => {
+    if (showPlaylistMeter) {
+      // Small delay to ensure segments are rendered
+      setTimeout(() => {
+        const segment4 = segmentRefsMap.current.get(4)
+        const segment9 = segmentRefsMap.current.get(9)
+        const segment14 = segmentRefsMap.current.get(14)
+        
+        if (segment4 && segment9 && segment14) {
+          const meterContainer = segment4.parentElement
+          if (meterContainer) {
+            const containerRect = meterContainer.getBoundingClientRect()
+            const seg4Rect = segment4.getBoundingClientRect()
+            const seg9Rect = segment9.getBoundingClientRect()
+            const seg14Rect = segment14.getBoundingClientRect()
+            
+            // Calculate center positions relative to container
+            const pos4 = seg4Rect.left + seg4Rect.width / 2 - containerRect.left
+            const pos9 = seg9Rect.left + seg9Rect.width / 2 - containerRect.left
+            const pos14 = seg14Rect.left + seg14Rect.width / 2 - containerRect.left
+            
+            setMilestonePositions({ pos4, pos9, pos14 })
+            console.log('📍 Milestone positions calculated:', { pos4, pos9, pos14 })
+          }
+        }
+      }, 100)
+    }
+  }, [showPlaylistMeter])
+  
   // Animate music notes from badges to playlist segments
   const startMusicNoteAnimations = () => {
     console.log('🎵 Starting music note animations...')
@@ -904,16 +935,17 @@ const Game = () => {
       }
       
       if (rankUpType) {
-        console.log(`🎉 RANK UP TO ${rankUpType.toUpperCase()}! Showing modal.`)
-        // Show rank up modal immediately after animations complete
-        setRankUpTo(rankUpType!)
-        setShowRankUpModal(true)
+        console.log(`🎉 RANK UP TO ${rankUpType.toUpperCase()}! Preparing modal...`)
+        // Update displayed progress first to trigger icon colorization
+        setDisplayedProgress(newProgress)
+        console.log('🎨 Icon colorizing...')
         
-        // Update displayed progress after modal is visible (changes medal behind the modal)
+        // Wait for icon colorization animation (0.6s) before showing modal
         setTimeout(() => {
-          setDisplayedProgress(newProgress)
-          console.log('🏅 Medal updated behind modal')
-        }, 100) // Small delay to ensure modal is rendering
+          setRankUpTo(rankUpType!)
+          setShowRankUpModal(true)
+          console.log('🏅 Rank up modal shown')
+        }, 600) // Wait for colorization animation
       } else {
         // No rank up, just update displayed progress immediately
         setDisplayedProgress(newProgress)
@@ -5574,35 +5606,59 @@ const Game = () => {
                         
                         {/* Meter and Medal on the right */}
                         <div className="results-playlist-meter-row">
-                          {/* Progress Meter (always show all 15 segments) */}
-                          <div className="results-playlist-tier-meter">
-                            {Array.from({ length: 15 }).map((_, index) => {
-                              const isPermanentlyFilled = index < playlistProgress.progress
-                              const isTempFilled = tempFilledSegments.has(index)
-                              const isCurrentlyFilling = fillingSegmentIndex === index
-                              const shouldShowAsFilled = isPermanentlyFilled || isTempFilled
+                          <div className="playlist-meter-wrapper">
+                            {/* Progress Meter (always show all 15 segments) */}
+                            <div className="results-playlist-tier-meter">
+                              {Array.from({ length: 15 }).map((_, index) => {
+                                const isPermanentlyFilled = index < playlistProgress.progress
+                                const isTempFilled = tempFilledSegments.has(index)
+                                const isCurrentlyFilling = fillingSegmentIndex === index
+                                const shouldShowAsFilled = isPermanentlyFilled || isTempFilled
+                                
+                                // Determine segment rank for background color
+                                let segmentRank: 'bronze' | 'silver' | 'gold' = 'bronze'
+                                if (index >= 10) segmentRank = 'gold'
+                                else if (index >= 5) segmentRank = 'silver'
+                                
+                                return (
+                                  <div
+                                    key={index}
+                                    ref={(el) => {
+                                      if (el) segmentRefsMap.current.set(index, el as HTMLDivElement)
+                                    }}
+                                    className={`results-playlist-segment ${segmentRank}-segment ${shouldShowAsFilled ? 'filled' : ''} ${isCurrentlyFilling ? 'filling' : ''}`}
+                                  />
+                                )
+                              })}
                               
-                              // Determine segment rank for background color
-                              let segmentRank: 'bronze' | 'silver' | 'gold' = 'bronze'
-                              if (index >= 10) segmentRank = 'gold'
-                              else if (index >= 5) segmentRank = 'silver'
-                              
-                              return (
-                                <div
-                                  key={index}
-                                  ref={(el) => {
-                                    if (el) segmentRefsMap.current.set(index, el as HTMLDivElement)
-                                  }}
-                                  className={`results-playlist-segment ${segmentRank}-segment ${shouldShowAsFilled ? 'filled' : ''} ${isCurrentlyFilling ? 'filling' : ''}`}
-                                />
-                              )
-                            })}
+                              {/* Milestone Icons below the meter */}
+                              <div className="playlist-milestone-icons">
+                                {/* Question Mark: Below final bronze node (segment index 4) */}
+                                <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos4}px` }}>
+                                  <div className={`milestone-icon-circle bronze-border ${displayedProgress > 4 ? 'unlocked' : 'locked'}`}>
+                                    <img src="/assets/PM_QuestionMark.png" alt="Silver Rank Reward" className="milestone-icon" />
+                                  </div>
+                                </div>
+                                {/* Music Note: Below final silver node (segment index 9) */}
+                                <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos9}px` }}>
+                                  <div className={`milestone-icon-circle silver-border ${displayedProgress > 9 ? 'unlocked' : 'locked'}`}>
+                                    <img src="/assets/PM_FireNote.png" alt="Gold Rank Reward" className="milestone-icon" />
+                                  </div>
+                                </div>
+                                {/* Winner Podium: Below final gold node (segment index 14) */}
+                                <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos14}px` }}>
+                                  <div className={`milestone-icon-circle gold-border ${displayedProgress > 14 ? 'unlocked' : 'locked'}`}>
+                                    <img src="/assets/PM_WinnerPodium.png" alt="Diamond Rank Reward" className="milestone-icon" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                           
                           {/* Medal Icon */}
                           <img 
-                            src={displayedProgress >= 15 ? '/assets/MedalPlatinum.png' : displayedProgress >= 10 ? '/assets/MedalGold.png' : displayedProgress >= 5 ? '/assets/MedalSilver.png' : '/assets/MedalBronze.png'}
-                            alt={`${displayedProgress >= 15 ? 'Platinum' : displayedProgress >= 10 ? 'Gold' : displayedProgress >= 5 ? 'Silver' : 'Bronze'} Medal`}
+                            src={displayedProgress >= 15 ? '/assets/MedalDiamond.png' : displayedProgress >= 10 ? '/assets/MedalGold.png' : displayedProgress >= 5 ? '/assets/MedalSilver.png' : '/assets/MedalBronze.png'}
+                            alt={`${displayedProgress >= 15 ? 'Diamond' : displayedProgress >= 10 ? 'Gold' : displayedProgress >= 5 ? 'Silver' : 'Bronze'} Medal`}
                             className="results-playlist-medal-icon"
                           />
                         </div>
@@ -6043,8 +6099,8 @@ const Game = () => {
               <h2 className="level-up-title rank-up-title">Rank Up!</h2>
               <div className="rank-up-medal-display">
                 <img 
-                  src={rankUpTo === 'silver' ? '/assets/MedalSilver.png' : rankUpTo === 'gold' ? '/assets/MedalGold.png' : '/assets/MedalPlatinum.png'}
-                  alt={`${rankUpTo === 'silver' ? 'Silver' : rankUpTo === 'gold' ? 'Gold' : 'Platinum'} Medal`}
+                  src={rankUpTo === 'silver' ? '/assets/PM_QuestionMark.png' : rankUpTo === 'gold' ? '/assets/PM_FireNote.png' : '/assets/PM_WinnerPodium.png'}
+                  alt={`${rankUpTo === 'silver' ? 'Silver' : rankUpTo === 'gold' ? 'Gold' : 'Diamond'} Rank Reward`}
                   className="rank-up-medal-image"
                 />
               </div>

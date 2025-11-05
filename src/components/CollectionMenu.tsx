@@ -108,7 +108,7 @@ const CollectionMenu = ({ playlist, rank, onClose }: CollectionMenuProps) => {
     if (rank === 'bronze') return '/assets/MedalBronze.png'
     if (rank === 'silver') return '/assets/MedalSilver.png'
     if (rank === 'gold') return '/assets/MedalGold.png'
-    return '/assets/MedalPlatinum.png'
+    return '/assets/MedalDiamond.png'
   }
 
   return (
