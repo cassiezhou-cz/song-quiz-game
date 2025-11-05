@@ -6106,7 +6106,7 @@ const Game = () => {
         {showRankUpModal && (
           <div className="level-up-modal-overlay">
             <div className="level-up-modal rank-up-modal">
-              <h2 className="level-up-title rank-up-title">Rank Up!</h2>
+              <h2 className="level-up-title rank-up-title">Playlist Rank Up!</h2>
               <div className="rank-up-medal-display">
                 <img 
                   src={rankUpTo === 'silver' ? '/assets/PM_QuestionMark.png' : rankUpTo === 'gold' ? '/assets/PM_FireNote.png' : '/assets/PM_WinnerPodium.png'}
