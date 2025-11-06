@@ -27,10 +27,22 @@ const PlaylistSelection = () => {
   const [showCollectionMenu, setShowCollectionMenu] = useState(false)
   const [collectionPlaylist, setCollectionPlaylist] = useState('')
   const [collectionRank, setCollectionRank] = useState<PlaylistRank>('bronze')
-  const [xpProgress, setXpProgress] = useState(0) // 0-100 percentage
-  const [actualXP, setActualXP] = useState(0) // Actual XP value (not percentage)
-  const [playerLevel, setPlayerLevel] = useState(1) // Player's current level
-  const [displayLevel, setDisplayLevel] = useState(1) // Level to display on XP bar icon (delays update until modal dismissed)
+  const [xpProgress, setXpProgress] = useState(() => {
+    // Initialize from localStorage to avoid visual "fill up" on page load
+    const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
+    const savedXP = parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
+    const xpRequired = getXPRequiredForLevel(savedLevel)
+    return Math.min((savedXP / xpRequired) * 100, 100)
+  })
+  const [actualXP, setActualXP] = useState(() => {
+    return parseInt(localStorage.getItem('player_xp_progress') || '0', 10)
+  })
+  const [playerLevel, setPlayerLevel] = useState(() => {
+    return parseInt(localStorage.getItem('player_level') || '1', 10)
+  })
+  const [displayLevel, setDisplayLevel] = useState(() => {
+    return parseInt(localStorage.getItem('player_level') || '1', 10)
+  })
   const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
   const [hatUnlocked, setHatUnlocked] = useState(false)
   
@@ -459,18 +471,6 @@ const PlaylistSelection = () => {
 
   return (
     <div className="playlist-container">
-      {/* Player Avatar */}
-      <div className="player-avatar-container">
-        <div className="player-avatar-image-wrapper">
-          <img 
-            src={hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png"}
-            alt="Player Avatar" 
-            className="player-avatar-image"
-          />
-        </div>
-        <div className="player-avatar-label">{playerName || 'Player'}</div>
-      </div>
-
       {/* Name Input Prompt */}
       {showNamePrompt && (
         <div className="name-prompt-overlay">
@@ -511,32 +511,80 @@ const PlaylistSelection = () => {
           />
         </header>
 
-        {/* XP Bar */}
+        {/* Circular XP Meter */}
         <div 
-          className="xp-bar-container"
+          className="xp-bar-container-circular"
           onMouseEnter={() => setIsHoveringXPBar(true)}
           onMouseLeave={() => setIsHoveringXPBar(false)}
         >
-          <div className="xp-bar">
-            <div 
-              className="xp-fill" 
-              style={{ width: `${xpProgress}%` }}
-            ></div>
-            <div className="xp-bar-text">{actualXP}/{getXPRequiredForLevel(playerLevel)}</div>
-          </div>
-          <div className="xp-mystery-circle">
-            {!(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
-              <span className={`treasure-icon ${animateNextPrize ? 'next-prize-appear' : ''}`}>
-                {displayLevel === 3 ? (
-                  <img src="/assets/LevelUp_Present_Closed.png" alt="Present" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                ) : (
-                  <img src="/assets/LevelUp_TreasureChest_Closed.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                )}
-              </span>
-            )}
-            <span className="mystery-icon">{playerLevel}</span>
+          <div className="circular-xp-container-menu">
+            <div className="circular-progress-wrapper">
+              {/* Prize Icon Above Level Number Box */}
+              {!(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
+                <div className={`prize-icon-above ${animateNextPrize ? 'next-prize-appear' : ''}`}>
+                  {displayLevel === 3 ? (
+                    <img src="/assets/LevelUp_Present_Closed.png" alt="Present" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  ) : (
+                    <img src="/assets/LevelUp_TreasureChest_Closed.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  )}
+                </div>
+              )}
+              
+              {/* Level Number Behind Avatar */}
+              <div className="level-number-display">
+                <span className="level-number">{playerLevel}</span>
+              </div>
+              
+              <svg className="circular-progress-svg" viewBox="0 0 200 200">
+                {/* Background circle */}
+                <circle
+                  className="circular-progress-bg"
+                  cx="100"
+                  cy="100"
+                  r="85"
+                  fill="none"
+                  stroke="rgba(60, 60, 60, 1)"
+                  strokeWidth="12"
+                />
+                {/* Progress circle */}
+                <circle
+                  className="circular-progress-fill"
+                  cx="100"
+                  cy="100"
+                  r="85"
+                  fill="none"
+                  stroke="url(#xpGradientMenu)"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray="534.07"
+                  strokeDashoffset={534.07 - (534.07 * xpProgress) / 100}
+                  transform="rotate(-90 100 100)"
+                />
+                <defs>
+                  <linearGradient id="xpGradientMenu" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#4ECDC4" />
+                    <stop offset="100%" stopColor="#44A08D" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              
+              {/* Avatar in center */}
+              <div className="circular-xp-avatar">
+                <img 
+                  src={hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png"}
+                  alt="Player Avatar" 
+                  className="avatar-in-circle"
+                />
+              </div>
+              
+              {/* XP Text */}
+              <div className="circular-xp-text">{actualXP}/{getXPRequiredForLevel(playerLevel)}</div>
+            </div>
           </div>
         </div>
+
+        {/* Player Name Below XP Meter */}
+        <div className="player-name-below-xp">{playerName || 'Player'}</div>
         
         <main className="main">
           <section className="playlist-selection">
