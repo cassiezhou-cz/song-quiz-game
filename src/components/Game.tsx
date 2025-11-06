@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'
 import { getAvailableSongs, addPlayedSong } from '../utils/songTracker'
 import './Game.css'
 
@@ -376,8 +376,15 @@ const getLevelFromTotalXP = (totalXP: number, currentLevel: number): { level: nu
 
 const Game = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { playlist } = useParams<{ playlist: string }>()
   const [searchParams] = useSearchParams()
+  
+  // Check if this is Daily Challenge mode from navigation state
+  const isDailyChallenge = (location.state as any)?.isDailyChallenge || false
+  
+  // Use playlist from URL params
+  const actualPlaylist = playlist
   const version = searchParams.get('version') || 'Version A'
   const initialProgress = parseInt(searchParams.get('progress') || '0') // 0-15 segments
   const audioRef = useRef<HTMLAudioElement>(null)
@@ -444,6 +451,7 @@ const Game = () => {
   const [showPreQuestionDelay, setShowPreQuestionDelay] = useState(false)
   const [showTimerEntrance, setShowTimerEntrance] = useState(false)
   const [showPlaybackEntrance, setShowPlaybackEntrance] = useState(false)
+  const [showTriviaPaneEntrance, setShowTriviaPaneEntrance] = useState(false)
   const [isTimerRefilling, setIsTimerRefilling] = useState(false)
   const [allAttemptedSongs, setAllAttemptedSongs] = useState<Array<{
     song: any,
@@ -474,6 +482,55 @@ const Game = () => {
       }
     }
   }, [])
+
+  // Initialize Daily Challenge mode with Song Trivia questions
+  useEffect(() => {
+    if (isDailyChallenge && !currentQuestion && questionNumber === 1 && !hasStartedInitialQuestion.current) {
+      console.log('🔥 DAILY CHALLENGE: Initializing first Song Trivia question')
+      hasStartedInitialQuestion.current = true
+      
+      // Generate first Song Trivia question
+      const triviaQuestion = generateSpecialQuizQuestion('song-trivia')
+      setCurrentQuestion(triviaQuestion)
+      
+      // Start the game with Version B timing - shortened initial delay
+      setShowPreQuestionDelay(true)
+      setTimeout(() => {
+        setShowPreQuestionDelay(false)
+        
+        // Show timer entrance animation (1.5s animation)
+        setShowTimerEntrance(true)
+        setTimeout(() => {
+          setShowTimerEntrance(false)
+          
+          // Show playback bar and trivia pane entrance simultaneously (1s animation)
+          setShowPlaybackEntrance(true)
+          setShowTriviaPaneEntrance(true)
+          setTimeout(() => {
+            setShowPlaybackEntrance(false)
+            setShowTriviaPaneEntrance(false)
+            
+            // Start timer and audio
+            setVersionBTimeRemaining(40)
+            setIsTimerRefilling(true)
+            setTimeout(() => setIsTimerRefilling(false), 800)
+            setVersionBTimerRunning(true)
+            setQuestionStartTime(Date.now())
+            
+            const audio = audioRef.current
+            if (audio && triviaQuestion) {
+              audio.src = triviaQuestion.song.file
+              audio.load()
+              audio.oncanplaythrough = () => {
+                audio.play()
+                setIsPlaying(true)
+              }
+            }
+          }, 1000)
+        }, 1500)
+      }, 300)
+    }
+  }, [isDailyChallenge, currentQuestion, questionNumber])
 
   
   // Version C Booster state removed - now using progressive streak multiplier system
@@ -2919,8 +2976,8 @@ const Game = () => {
   }
 
   const generateQuizQuestion = (): QuizQuestion => {
-    const playlistSongs = getPlaylistSongs(playlist || '2010s')
-    const currentPlaylist = playlist || '2010s'
+    const playlistSongs = getPlaylistSongs(actualPlaylist || '2010s')
+    const currentPlaylist = actualPlaylist || '2010s'
     
     // Get available songs using the persistent tracker
     // This automatically handles resetting when all songs have been played
@@ -2946,13 +3003,13 @@ const Game = () => {
   }
 
   const generateSpecialQuizQuestion = (questionType: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'): QuizQuestion => {
-    const currentPlaylist = playlist || '2010s'
+    const currentPlaylist = actualPlaylist || '2010s'
     
     // Debug logging to catch playlist issues
-    if (!playlist) {
+    if (!actualPlaylist) {
       console.error('⚠️ WARNING: playlist is undefined! Defaulting to 2010s')
     }
-    console.log('🎯 SPECIAL QUESTION:', questionType, '| Current Playlist:', currentPlaylist, '| Playlist from params:', playlist)
+    console.log('🎯 SPECIAL QUESTION:', questionType, '| Current Playlist:', currentPlaylist, '| Playlist from params:', actualPlaylist)
     
     // Finish The Lyric uses a special song pool from the current playlist
     if (questionType === 'finish-the-lyric') {
@@ -3557,7 +3614,7 @@ const Game = () => {
     // Reduced delay for Version C rapid-fire gameplay
     // Add extended delay for Version B first question (varies based on lifeline presence)
       let autoPlayDelay = version === 'Version C' ? 100 : 500
-      if (version === 'Version B' && questionNumber === 1 && hasShownLifelineEntrance.current) {
+      if (version === 'Version B' && questionNumber === 1 && hasShownLifelineEntrance.current && !isDailyChallenge) {
         // Use passed lifelines if provided, otherwise fall back to state
         const lifelinesToCheck = lifelinesForRun !== undefined ? lifelinesForRun : availableLifelines
         // Check if there were lifelines to show
@@ -3704,7 +3761,8 @@ const Game = () => {
     
     // Only start the first question when playlist is loaded (not on subsequent state updates)
     // Use ref to prevent duplicate calls
-    if (!hasStartedInitialQuestion.current) {
+    // Skip this for Daily Challenge mode - it has its own initialization
+    if (!hasStartedInitialQuestion.current && !isDailyChallenge) {
       console.log('🎵 USEEFFECT: Starting initial question for playlist:', playlist)
       hasStartedInitialQuestion.current = true
       // Pass lifelines directly for Version B to avoid state timing issues
@@ -5074,8 +5132,50 @@ const Game = () => {
       const newQuestionNumber = questionNumber + 1
       console.log('🎵 NEXT: Moving to question', newQuestionNumber)
       
+      // Daily Challenge Mode: All questions are Song Trivia, no intros
+      if (isDailyChallenge) {
+        console.log('🔥 DAILY CHALLENGE: Starting Song Trivia Question', newQuestionNumber, '(no intro)')
+        setQuestionNumber(newQuestionNumber)
+        
+        // Generate Song Trivia question directly
+        const triviaQuestion = generateSpecialQuizQuestion('song-trivia')
+        setCurrentQuestion(triviaQuestion)
+        setSelectedAnswer(null)
+        setShowFeedback(false)
+        
+        // For questions 2-5, skip ALL entrance animations and start immediately
+        // Use a small delay to ensure state updates before starting audio
+        setTimeout(() => {
+          setVersionBTimeRemaining(40)
+          setIsTimerRefilling(true)
+          setTimeout(() => setIsTimerRefilling(false), 800)
+          setVersionBTimerRunning(true)
+          setQuestionStartTime(Date.now())
+          
+          const audio = audioRef.current
+          if (audio && triviaQuestion) {
+            console.log('🎵 Loading audio for Daily Challenge question:', triviaQuestion.song.file)
+            audio.src = triviaQuestion.song.file
+            audio.load()
+            
+            // Try to play immediately and also set up fallback
+            audio.play().then(() => {
+              console.log('🎵 Audio playing successfully')
+              setIsPlaying(true)
+            }).catch((error) => {
+              console.log('🎵 Immediate play failed, waiting for canplaythrough:', error)
+              audio.oncanplaythrough = () => {
+                audio.play().then(() => {
+                  console.log('🎵 Audio playing after canplaythrough')
+                  setIsPlaying(true)
+                }).catch((e) => console.error('🎵 Audio play failed:', e))
+              }
+            })
+          }
+        }, 100)
+      }
       // Check if we're about to start a Special Question in Version B
-      if (version === 'Version B' && specialQuestionNumbers.includes(newQuestionNumber)) {
+      else if (version === 'Version B' && specialQuestionNumbers.includes(newQuestionNumber)) {
         console.log('🎯 SPECIAL QUESTION: Transition screen triggered for Question', newQuestionNumber)
         
         // Use pre-assigned type for this question to ensure variety
@@ -6514,7 +6614,7 @@ const Game = () => {
                 </div>
                 
                 {/* Question Progress Indicator */}
-                <div className={`question-progress-indicator ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: showPreQuestionDelay ? 'hidden' : 'visible' }}>
+                <div className={`question-progress-indicator ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: (showPreQuestionDelay || showTimerEntrance) ? 'hidden' : 'visible' }}>
                   <div className="progress-dots-container">
                     {[1, 2, 3, 4, 5].map((qNum) => (
                       <div key={qNum} style={{ display: 'flex', alignItems: 'center' }}>
@@ -6646,7 +6746,7 @@ const Game = () => {
             
             {/* Animated Sound Bars - hidden for Version C and Finish The Lyric */}
             {version !== 'Version C' && !showFeedback && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
-              <div className={`sound-bars-container ${isPlaying ? 'playing' : ''} ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: showPreQuestionDelay ? 'hidden' : 'visible' }}>
+              <div className={`sound-bars-container ${isPlaying ? 'playing' : ''} ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: (showPreQuestionDelay || showTimerEntrance) ? 'hidden' : 'visible' }}>
                 <div className="sound-bars">
                   <div className="sound-bar bar-1"></div>
                   <div className="sound-bar bar-2"></div>
@@ -6670,7 +6770,10 @@ const Game = () => {
 
             {/* Version B Song Trivia Display */}
             {version === 'Version B' && currentQuestion && currentQuestion.isSongTrivia && !showFeedback && (
-              <div className="song-trivia-display">
+              <div 
+                className={`song-trivia-display ${showTriviaPaneEntrance ? 'trivia-pane-entrance' : ''}`} 
+                style={{ visibility: (showPreQuestionDelay || showTimerEntrance) ? 'hidden' : 'visible' }}
+              >
                 <div className="song-trivia-question">
                   {currentQuestion.triviaQuestionText}
                 </div>
@@ -6859,7 +6962,7 @@ const Game = () => {
 
 
             {(version === 'Version C' || (!showFeedback && !showVersionCFeedback)) && !(currentQuestion && currentQuestion.isSongTrivia) && (
-              <div className={`progress-bar ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: showPreQuestionDelay ? 'hidden' : 'visible' }}>
+              <div className={`progress-bar ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: (showPreQuestionDelay || showTimerEntrance) ? 'hidden' : 'visible' }}>
                 <div className="progress-time">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
@@ -6874,7 +6977,7 @@ const Game = () => {
             )}
 
             {(version === 'Version C' || (!showFeedback && !showVersionCFeedback)) && !(currentQuestion && currentQuestion.isSongTrivia) && (
-              <div className={`control-buttons ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: showPreQuestionDelay ? 'hidden' : 'visible' }}>
+              <div className={`control-buttons ${showPlaybackEntrance ? 'playback-entrance' : ''}`} style={{ visibility: (showPreQuestionDelay || showTimerEntrance) ? 'hidden' : 'visible' }}>
                 <button 
                   className={`control-btn play-pause-btn ${version !== 'Version C' && selectedAnswer ? 'disabled' : ''}`}
                   onClick={togglePlayPause}
