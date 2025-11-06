@@ -4597,7 +4597,7 @@
 
 .prize-icon-above {
   position: absolute;
-  top: -100px;
+  top: -120px;
   left: 50%;
   transform: translateX(-50%);
   width: 50px;
@@ -4614,14 +4614,14 @@
 
 .level-number-display {
   position: absolute;
-  top: -45px;
+  top: -65px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 2.5rem;
   font-weight: 800;
   color: #ffffff;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-  padding: 0.1rem 0.5rem 1.5rem 0.5rem;
+  padding: 0 0.5rem 1.5rem 0.5rem;
   background: rgba(0, 0, 0, 1);
   border-radius: 12px;
   border: 3px solid rgba(255, 255, 255, 0.3);
@@ -4631,7 +4631,7 @@
   align-items: flex-start;
   justify-content: center;
   text-align: center;
-  z-index: 2;
+  z-index: 0;
 }
 
 .level-number {
@@ -4660,6 +4660,7 @@
   position: relative;
   width: 200px;
   height: 200px;
+  margin-top: 1.5rem;
 }
 
 .circular-progress-svg {
@@ -4701,7 +4702,7 @@
 
 .circular-xp-text {
   position: absolute;
-  bottom: -8px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 1rem;
@@ -4713,12 +4714,12 @@
   border: 2px solid rgba(255, 255, 255, 0.3);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   white-space: nowrap;
-  z-index: 4;
+  z-index: 2;
 }
 
 .xp-gain-indicator-circular {
   position: absolute;
-  top: calc(100% + 15px);
+  top: 38px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 1.8rem;
@@ -4753,7 +4754,7 @@
   }
   100% {
     opacity: 1;
-    top: calc(100% + 15px);
+    top: 38px;
     left: 50%;
     transform: translateX(-50%) scale(1);
   }
@@ -4787,6 +4788,7 @@
   .circular-progress-wrapper {
     width: 160px;
     height: 160px;
+    margin-top: 1.2rem;
   }
   
   .circular-xp-avatar {
@@ -4796,20 +4798,25 @@
   
   .level-number-display {
     font-size: 2rem;
-    padding: 0.08rem 0.4rem 1.2rem 0.4rem;
-    top: -38px;
+    padding: 0 0.4rem 1.2rem 0.4rem;
+    top: -55px;
     min-width: 50px;
   }
   
   .prize-icon-above {
     width: 40px;
     height: 40px;
-    top: -85px;
+    top: -100px;
+  }
+  
+  .circular-xp-text {
+    top: -10px;
   }
   
   .xp-gain-indicator-circular {
     font-size: 1.3rem;
-    top: calc(100% + 12px);
+    top: 35px;
+    left: 50%;
   }
   
   @keyframes xpGainCircularFly {
@@ -4821,7 +4828,7 @@
     }
     100% {
       opacity: 1;
-      top: calc(100% + 12px);
+      top: 35px;
       left: 50%;
       transform: translateX(-50%) scale(1);
     }

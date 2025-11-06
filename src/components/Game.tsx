@@ -5760,7 +5760,7 @@ const Game = () => {
                               cy="100"
                               r="85"
                               fill="none"
-                              stroke="rgba(255, 255, 255, 0.1)"
+                              stroke="rgba(60, 60, 60, 1)"
                               strokeWidth="12"
                             />
                             {/* Progress circle */}
