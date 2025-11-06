@@ -396,6 +396,218 @@
   z-index: 1;
 }
 
+/* Daily Challenge Button */
+.daily-challenge-button {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.4);
+}
+
+.daily-challenge-button:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.6);
+}
+
+.daily-challenge-button:active {
+  transform: scale(1.05);
+}
+
+.daily-challenge-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(255, 107, 0, 0.6));
+}
+
+/* Daily Challenge Modal */
+.daily-challenge-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.daily-challenge-modal-backdrop.closing {
+  animation: fadeOut 0.3s ease;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.daily-challenge-modal {
+  background: linear-gradient(135deg, rgba(30, 30, 50, 0.98) 0%, rgba(50, 50, 80, 0.98) 100%);
+  border: 3px solid rgba(255, 107, 0, 0.5);
+  border-radius: 25px;
+  max-width: 500px;
+  width: 100%;
+  padding: 2.5rem;
+  box-shadow: 
+    0 20px 60px rgba(255, 107, 0, 0.4),
+    0 0 40px rgba(255, 107, 0, 0.2);
+  animation: slideUp 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.daily-challenge-modal.closing {
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+}
+
+.daily-challenge-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0;
+}
+
+.daily-challenge-header-icon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(255, 107, 0, 0.8));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 4px 12px rgba(255, 107, 0, 0.8));
+  }
+  50% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 6px 16px rgba(255, 107, 0, 1));
+  }
+}
+
+.daily-challenge-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 4px 20px rgba(255, 107, 0, 0.6);
+  letter-spacing: 1px;
+}
+
+.daily-challenge-playlist-name {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-align: center;
+  margin-top: -0.8rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 12px rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.5px;
+}
+
+.daily-challenge-details-box {
+  width: auto;
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 107, 0, 0.3);
+  border-radius: 15px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin: 1rem 0;
+}
+
+.daily-challenge-emoji-icon {
+  font-size: 3.5rem;
+  line-height: 1;
+  text-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.daily-challenge-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.daily-challenge-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.daily-challenge-description {
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
+.daily-challenge-play-button {
+  width: 100%;
+  background: linear-gradient(135deg, #ff6b00, #ff8c00);
+  border: none;
+  border-radius: 12px;
+  padding: 1.25rem 3rem;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(255, 107, 0, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 1rem;
+}
+
+.daily-challenge-play-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(255, 107, 0, 0.7);
+  background: linear-gradient(135deg, #ff7a10, #ff9c10);
+}
+
+.daily-challenge-play-button:active {
+  transform: translateY(-1px);
+}
+
 .playlist-button:hover:not(:disabled) {
   border-color: rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.2);

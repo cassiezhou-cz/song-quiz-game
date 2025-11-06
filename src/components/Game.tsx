@@ -673,6 +673,39 @@ const Game = () => {
     return () => window.removeEventListener('keydown', handleFinishLyricKeyDown)
   }, [version, selectedAnswer, showFeedback, currentQuestion])
 
+  // SECRET Keyboard shortcuts for Song Trivia Special Questions (Version B)
+  useEffect(() => {
+    const handleSongTriviaKeyDown = (event: KeyboardEvent) => {
+      // Only trigger if Song Trivia question is visible
+      const isSongTriviaVisible = version === 'Version B' && 
+        currentQuestion && 
+        currentQuestion.isSongTrivia && 
+        !showFeedback
+      
+      if (!isSongTriviaVisible || !currentQuestion) return
+      
+      const key = event.key.toLowerCase()
+      
+      if (key === 'q') {
+        // Q = Select a WRONG answer
+        const wrongAnswers = currentQuestion.options.filter(option => option !== currentQuestion.correctAnswer)
+        if (wrongAnswers.length > 0) {
+          // Pick the first wrong answer
+          const wrongAnswer = wrongAnswers[0]
+          console.log('🎮 SECRET HOTKEY: Q pressed - Auto-selecting wrong answer:', wrongAnswer)
+          handleVersionBScore(0, 'none')
+        }
+      } else if (key === 'w') {
+        // W = Select the RIGHT answer
+        console.log('🎮 SECRET HOTKEY: W pressed - Auto-selecting correct answer:', currentQuestion.correctAnswer)
+        handleVersionBScore(40, 'both')
+      }
+    }
+    
+    window.addEventListener('keydown', handleSongTriviaKeyDown)
+    return () => window.removeEventListener('keydown', handleSongTriviaKeyDown)
+  }, [version, showFeedback, currentQuestion])
+
   // Keyboard shortcut for Next Question button (Spacebar)
   useEffect(() => {
     const handleSpaceBar = (event: KeyboardEvent) => {
@@ -6371,7 +6404,7 @@ const Game = () => {
               </div>
               <div className="rank-up-description">
                 {rankUpTo === 'silver' && 'Special Questions Unlocked!'}
-                {rankUpTo === 'gold' && 'More Songs Unlocked!'}
+                {rankUpTo === 'gold' && 'Daily Challenge Unlocked!'}
                 {rankUpTo === 'platinum' && 'Master Mode Unlocked!'}
               </div>
               <button 

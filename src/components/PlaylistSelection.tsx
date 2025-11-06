@@ -27,6 +27,9 @@ const PlaylistSelection = () => {
   const [showCollectionMenu, setShowCollectionMenu] = useState(false)
   const [collectionPlaylist, setCollectionPlaylist] = useState('')
   const [collectionRank, setCollectionRank] = useState<PlaylistRank>('bronze')
+  const [showDailyChallengeModal, setShowDailyChallengeModal] = useState(false)
+  const [dailyChallengePlaylist, setDailyChallengePlaylist] = useState('')
+  const [dailyChallengeClosing, setDailyChallengeClosing] = useState(false)
   const [xpProgress, setXpProgress] = useState(() => {
     // Initialize from localStorage to avoid visual "fill up" on page load
     const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
@@ -219,6 +222,14 @@ const PlaylistSelection = () => {
     setShowCollectionMenu(false)
     setCollectionPlaylist('')
     setCollectionRank('bronze')
+  }
+
+  const handleCloseDailyChallengeModal = () => {
+    setDailyChallengeClosing(true)
+    setTimeout(() => {
+      setShowDailyChallengeModal(false)
+      setDailyChallengeClosing(false)
+    }, 300) // Match the animation duration
   }
 
   const handlePlaylistSelect = (playlist: string, isMasterMode: boolean = false) => {
@@ -668,6 +679,24 @@ const PlaylistSelection = () => {
                       onClick={() => handlePlaylistSelect(playlist)}
                       disabled={selectedPlaylist !== null}
                     >
+                      {/* Daily Challenge Button - Shows for Gold Tier and above */}
+                      {progress >= 10 && (
+                        <button
+                          className="daily-challenge-button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setDailyChallengePlaylist(playlist)
+                            setShowDailyChallengeModal(true)
+                          }}
+                          title="Daily Challenge"
+                        >
+                          <img 
+                            src="/assets/PM_FireNote.png"
+                            alt="Daily Challenge"
+                            className="daily-challenge-icon"
+                          />
+                        </button>
+                      )}
                       <span className="decade">{playlist}</span>
                     </button>
                     
@@ -756,6 +785,55 @@ const PlaylistSelection = () => {
           rank={collectionRank}
           onClose={handleCloseCollectionMenu}
         />
+      )}
+
+      {/* Daily Challenge Modal */}
+      {showDailyChallengeModal && (
+        <div 
+          className={`daily-challenge-modal-backdrop ${dailyChallengeClosing ? 'closing' : ''}`}
+          onClick={handleCloseDailyChallengeModal}
+        >
+          <div 
+            className={`daily-challenge-modal ${dailyChallengeClosing ? 'closing' : ''}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header with Fire Note Icon and Title */}
+            <div className="daily-challenge-header">
+              <img 
+                src="/assets/PM_FireNote.png"
+                alt="Daily Challenge"
+                className="daily-challenge-header-icon"
+              />
+              <h2 className="daily-challenge-title">Daily Challenge</h2>
+            </div>
+
+            {/* Playlist Name */}
+            <div className="daily-challenge-playlist-name">
+              {dailyChallengePlaylist}
+            </div>
+
+            {/* Challenge Details Box */}
+            <div className="daily-challenge-details-box">
+              <div className="daily-challenge-emoji-icon">📖</div>
+              <div className="daily-challenge-info">
+                <div className="daily-challenge-name">Trivial Playlist</div>
+                <div className="daily-challenge-description">Test your Trivia Knowledge</div>
+              </div>
+            </div>
+
+            {/* Play Button */}
+            <button 
+              className="daily-challenge-play-button"
+              onClick={() => {
+                // TODO: Navigate to Daily Challenge game
+                console.log('🔥 Starting Daily Challenge for', dailyChallengePlaylist)
+                handleCloseDailyChallengeModal()
+              }}
+            >
+              PLAY
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Level Up Multi-Stage Animation */}
