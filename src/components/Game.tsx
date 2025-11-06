@@ -827,6 +827,10 @@ const Game = () => {
           
           // After XP bar flies off (0.8s animation), show playlist meter flying in
           setTimeout(() => {
+            // Hide XP bar after fly-left animation completes
+            setShowXPBar(false)
+            setShowXPAnimation(false)
+            
             setDisplayedProgress(playlistProgress.progress) // Initialize displayed progress to current progress
             setIconUnlockProgress(playlistProgress.progress) // Initialize icon unlock progress
             setShowPlaylistMeter(true)
@@ -5732,7 +5736,7 @@ const Game = () => {
                   {/* Wrapper to contain both XP bar and Playlist meter */}
                   <div className="xp-playlist-wrapper">
                     {/* Circular XP Meter - NEW */}
-                    {showXPBar && showXPAnimation && (
+                    {(showXPBar && showXPAnimation || xpBarFlyLeft) && (
                       <div className={`circular-xp-container ${xpBarFlyLeft ? 'fly-left' : ''}`}>
                         {/* Circular Progress Meter */}
                         <div className="circular-progress-wrapper">

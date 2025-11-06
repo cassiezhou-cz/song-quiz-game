@@ -4591,8 +4591,7 @@
 }
 
 .circular-xp-container.fly-left {
-  transform: translateX(-150%);
-  opacity: 0;
+  animation: xpBarFlyLeft 0.8s ease-in forwards;
 }
 
 .prize-icon-above {
