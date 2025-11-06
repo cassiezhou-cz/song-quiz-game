@@ -561,6 +561,8 @@ const Game = () => {
   const [showQuizComplete, setShowQuizComplete] = useState(false)
   const [showFinalScore, setShowFinalScore] = useState(false)
   const [displayedScore, setDisplayedScore] = useState(0)
+  const [showDailyChallenge2X, setShowDailyChallenge2X] = useState(false)
+  const [isMultiplyingScore, setIsMultiplyingScore] = useState(false)
   const [showXPBar, setShowXPBar] = useState(false)
   const [targetXPPosition, setTargetXPPosition] = useState(0) // Static target for indicator
   const [showSongList, setShowSongList] = useState(false) // Show Your Answers section
@@ -753,15 +755,16 @@ const Game = () => {
           handleVersionBScore(0, 'none')
         }
       } else if (key === 'w') {
-        // W = Select the RIGHT answer
-        console.log('🎮 SECRET HOTKEY: W pressed - Auto-selecting correct answer:', currentQuestion.correctAnswer)
-        handleVersionBScore(40, 'both')
+        // W = Select the RIGHT answer (Daily Challenge = 20 points, Normal Special Question = 40 points)
+        const pointsForCorrect = isDailyChallenge ? 20 : 40
+        console.log('🎮 SECRET HOTKEY: W pressed - Auto-selecting correct answer:', currentQuestion.correctAnswer, '- Points:', pointsForCorrect)
+        handleVersionBScore(pointsForCorrect, 'both')
       }
     }
     
     window.addEventListener('keydown', handleSongTriviaKeyDown)
     return () => window.removeEventListener('keydown', handleSongTriviaKeyDown)
-  }, [version, showFeedback, currentQuestion])
+  }, [version, showFeedback, currentQuestion, isDailyChallenge])
 
   // Keyboard shortcut for Next Question button (Spacebar)
   useEffect(() => {
@@ -1150,6 +1153,7 @@ const Game = () => {
           setXpProgress(displayPercentage)
           localStorage.setItem('player_xp_progress', pendingXPDrain.finalXP.toString())
           console.log('🎯 XP bar refilling from 0 to overflow:', pendingXPDrain.finalXP, `(${displayPercentage.toFixed(1)}%)`)
+          console.log('💾 SAVED overflow XP to localStorage:', pendingXPDrain.finalXP)
           
           // Check if there are remaining levels to process
           const hasRemainingLevels = (pendingXPDrain.remainingLevels || 0) > 0
@@ -3914,14 +3918,67 @@ const Game = () => {
               setDisplayedScore(score)
               clearInterval(countInterval)
               console.log('🎬 Score count complete at', score)
+              
+              // Daily Challenge: Show 2X multiplier after score count
+              if (isDailyChallenge) {
+                setTimeout(() => {
+                  console.log('🔥 DAILY CHALLENGE: Showing 2X multiplier')
+                  setShowDailyChallenge2X(true)
+                  
+                  // After 1s, shrink text into score and multiply
+                  setTimeout(() => {
+                    console.log('🔥 DAILY CHALLENGE: Text shrinking into score')
+                    // Text will shrink via CSS animation (shrinkIntoScore)
+                    
+                    // Start score multiplication at the same time (synchronized)
+                    setTimeout(() => {
+                      console.log('🔥 DAILY CHALLENGE: Multiplying score by 2')
+                      setIsMultiplyingScore(true)
+                      
+                      // Animate from current score to 2x score
+                      const targetScore = score * 2
+                      const multiplyDuration = 600
+                      const multiplySteps = 20
+                      const multiplyIncrement = score / multiplySteps
+                      const multiplyStepTime = multiplyDuration / multiplySteps
+                      
+                      let multiplyStep = 0
+                      const multiplyInterval = setInterval(() => {
+                        multiplyStep++
+                        if (multiplyStep >= multiplySteps) {
+                          setDisplayedScore(targetScore)
+                          clearInterval(multiplyInterval)
+                          setIsMultiplyingScore(false)
+                          console.log('🔥 DAILY CHALLENGE: Score multiplied to', targetScore)
+                          
+                          // Hide the 2X text after multiplication completes
+                          setTimeout(() => {
+                            setShowDailyChallenge2X(false)
+                            
+                            // NOW trigger XP bar after a buffer - score is fully doubled and visible
+                            setTimeout(() => {
+                              const doubledScore = score * 2
+                              console.log('🎬 Step 3: Showing XP Bar (AFTER Daily Challenge multiplication)')
+                              console.log('🔥 DAILY CHALLENGE XP: Base score =', score, ', Doubled score =', doubledScore)
+                              triggerXPBarAnimation(doubledScore)
+                            }, 1000) // 1 second buffer to let doubled score be visible
+                          }, 200)
+                        } else {
+                          setDisplayedScore(Math.floor(score + (multiplyIncrement * multiplyStep)))
+                        }
+                      }, multiplyStepTime)
+                    }, 100) // Small delay to sync with shrink animation
+                  }, 1000) // Wait 1s before shrinking
+                }, 300)
+              }
             } else {
               setDisplayedScore(Math.floor(increment * currentStep))
             }
           }, stepTime)
           
-          // Step 3: Show XP bar 0.5s after count completes (1.5s total)
-          const xpBarTimer = setTimeout(() => {
-            console.log('🎬 Step 3: Showing XP Bar')
+          // Function to trigger XP bar animation (used by both normal and Daily Challenge)
+          const triggerXPBarAnimation = (finalScore: number) => {
+            console.log('🎬💰 triggerXPBarAnimation called with finalScore:', finalScore, '(base score:', score, ', isDailyChallenge:', isDailyChallenge, ')')
             setShowXPBar(true)
             setXpAnimationComplete(false)
             
@@ -3930,7 +3987,7 @@ const Game = () => {
             const startingPercentage = (startingXP / xpRequired) * 100
             setXpProgress(startingPercentage)
             
-            const targetXP = Math.min(startingXP + score, xpRequired)
+            const targetXP = Math.min(startingXP + finalScore, xpRequired)
             const targetPercentage = (targetXP / xpRequired) * 100
             const calculatedTarget = Math.min(targetPercentage, 92) // Cap at 92% for visual positioning
             setTargetXPPosition(calculatedTarget)
@@ -3943,13 +4000,14 @@ const Game = () => {
               // Trigger fill animation - wait for indicator to arrive (0.5s delay + 0.8s flight = 1.3s)
               setTimeout(() => {
                 // PROGRESSIVE XP SYSTEM: Each level requires more XP
+                // finalScore is already passed in as parameter (either score or score * 2)
                 const xpRequired = getXPRequiredForLevel(playerLevel)
-                const newTotalXP = startingXP + score
+                const newTotalXP = startingXP + finalScore
                 console.log('🎯 DEBUG: About to call getLevelFromTotalXP with totalXP =', newTotalXP, ', currentLevel =', playerLevel)
                 const { level: newLevel, xpInCurrentLevel: finalXP } = getLevelFromTotalXP(newTotalXP, playerLevel)
                 const levelsGained = newLevel - playerLevel
                 
-                console.log('🎯 XP Animation: Starting XP =', startingXP, ', Score =', score, ', Total XP earned =', newTotalXP)
+                console.log('🎯 XP Animation: Starting XP =', startingXP, ', Score =', finalScore, ', Total XP earned =', newTotalXP)
                 console.log('🎯 Current level =', playerLevel, ', XP required for next level =', xpRequired)
                 console.log('🎯 New level =', newLevel, ', Levels gained =', levelsGained, ', Final XP =', finalXP)
                 console.log('🎯 DEBUG: Level progression details:', {
@@ -3959,7 +4017,7 @@ const Game = () => {
                   xpRequiredForCurrentLevel: getXPRequiredForLevel(playerLevel),
                   xpRequiredForNextLevel: getXPRequiredForLevel(playerLevel + 1),
                   startingXP,
-                  score,
+                  score: finalScore,
                   finalXP
                 })
                 
@@ -4011,6 +4069,8 @@ const Game = () => {
                     const xpAfterFirstLevel = newTotalXP - getXPRequiredForLevel(playerLevel)
                     
                     console.log('🎯 DEBUG: First level actualPlayerLevel =', actualPlayerLevel, ', remaining levels =', remainingLevels, ', XP after first level =', xpAfterFirstLevel, ', final XP =', finalXP)
+                    console.log('🎯 DEBUG XP CALC: newTotalXP =', newTotalXP, ', getXPRequiredForLevel(', playerLevel, ') =', getXPRequiredForLevel(playerLevel), ', difference =', xpAfterFirstLevel)
+                    console.log('🎯 DEBUG: This XP will be used to refill the bar after level-up modal closes')
                     
                     setTimeout(() => {
                       // Check if reaching player level 4 (hat unlock)
@@ -4067,6 +4127,7 @@ const Game = () => {
                     setStartingXP(finalXP)
                   }, 2000)
                   localStorage.setItem('player_xp_progress', finalXP.toString())
+                  console.log('💾 SAVED XP to localStorage: finalXP =', finalXP, '(this is XP remaining after level-up)')
                   
                   // Show song list after XP bar finishes filling
                   setTimeout(() => {
@@ -4076,7 +4137,17 @@ const Game = () => {
                 }
               }, 1300) // Wait for indicator to arrive (0.5s delay + 0.8s flight)
             }, 100)
-          }, 1500) // 1.5s after final score appears (0.5s after count completes)
+          }
+          
+          // For normal mode (non-Daily Challenge), trigger XP bar on a timer
+          // For Daily Challenge, it's triggered after multiplication completes
+          if (!isDailyChallenge) {
+            setTimeout(() => {
+              console.log('🎬 Step 3: Showing XP Bar (normal mode)')
+              console.log('📊 NORMAL MODE XP: Score =', score)
+              triggerXPBarAnimation(score)
+            }, 1500) // 1.5s after final score appears (0.5s after count completes)
+          }
         }, 600) // 0.6s after quiz complete
         
         return () => clearTimeout(finalScoreTimer)
@@ -5863,7 +5934,15 @@ const Game = () => {
                   )}
                   
                   {showFinalScore && (
-                    <p className={`final-score-text ${finalScoreFlyLeft ? 'fly-left' : ''}`}>Final Score: <span className="final-score-value">{displayedScore}</span></p>
+                    <p className={`final-score-text ${finalScoreFlyLeft ? 'fly-left' : ''} ${isMultiplyingScore ? 'score-multiplying' : ''}`}>
+                      Final Score: 
+                      <span className="final-score-value-container">
+                        {showDailyChallenge2X && (
+                          <span className="daily-challenge-2x-text">DAILY 2X</span>
+                        )}
+                        <span className="final-score-value">{displayedScore}</span>
+                      </span>
+                    </p>
                   )}
                   
                   {/* Wrapper to contain both XP bar and Playlist meter */}
@@ -5943,7 +6022,7 @@ const Game = () => {
                         <div 
                           className={`xp-gain-indicator-circular ${showLevelUpAnimation ? 'early-fade' : ''}`}
                         >
-                          +{score}
+                          +{isDailyChallenge ? score * 2 : score}
                         </div>
                       </div>
                     )}
@@ -6783,9 +6862,10 @@ const Game = () => {
                       key={index}
                       className="song-trivia-option-button"
                       onClick={() => {
-                        // For Song Trivia, award 40 points for correct, 0 for incorrect
+                        // For Song Trivia: Daily Challenge = 20 points, Normal Special Question = 40 points
                         const isCorrect = option === currentQuestion.correctAnswer
-                        handleVersionBScore(isCorrect ? 40 : 0, isCorrect ? 'both' : 'none')
+                        const pointsForCorrect = isDailyChallenge ? 20 : 40
+                        handleVersionBScore(isCorrect ? pointsForCorrect : 0, isCorrect ? 'both' : 'none')
                       }}
                     >
                       {option}

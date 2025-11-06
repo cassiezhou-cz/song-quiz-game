@@ -4375,6 +4375,12 @@
   animation: xpBarFlyLeft 0.8s ease-in forwards;
 }
 
+.final-score-value-container {
+  display: inline-block;
+  position: relative;
+  margin-left: 0.5rem;
+}
+
 .final-score-value {
   color: #ffffff;
   background: none;
@@ -4382,6 +4388,161 @@
   -webkit-text-fill-color: #ffffff;
   background-clip: initial;
   text-shadow: 0 4px 20px rgba(255, 255, 255, 0.5);
+}
+
+.daily-challenge-2x-text {
+  position: absolute;
+  bottom: calc(100% + 0.3rem);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ff6b35;
+  background: none;
+  background-clip: initial;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: #ff6b35;
+  text-shadow: 
+    0 0 8px rgba(255, 107, 53, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.5);
+  animation: dailyChallenge2XSequence 1.7s ease-out forwards;
+  letter-spacing: 0.15em;
+  white-space: nowrap;
+  filter: none;
+  pointer-events: none;
+}
+
+@keyframes dailyChallenge2XSequence {
+  /* Phase 1: Fade in (0-0.3s) */
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1);
+    bottom: calc(100% + 0.3rem);
+  }
+  17.6% { /* 0.3s / 1.7s */
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+    bottom: calc(100% + 0.3rem);
+  }
+  /* Phase 2: Hold (0.3-1.0s) */
+  58.8% { /* 1.0s / 1.7s */
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+    bottom: calc(100% + 0.3rem);
+  }
+  /* Phase 3: Shrink into score (1.0-1.7s) */
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.1);
+    bottom: -50%;
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 8px rgba(255, 107, 53, 0.5),
+      0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  50% {
+    text-shadow: 
+      0 0 12px rgba(255, 107, 53, 0.7),
+      0 2px 10px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Score multiplying animation */
+.final-score-text.score-multiplying .final-score-value {
+  animation: scoreMultiplyFlash 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.final-score-text.score-multiplying .final-score-value-container::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.4) 0%, rgba(255, 107, 53, 0.2) 30%, transparent 70%);
+  border-radius: 50%;
+  animation: energyBurst 0.6s ease-out forwards;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes energyBurst {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 0;
+  }
+}
+
+@keyframes scoreMultiplyFlash {
+  0% {
+    transform: scale(1);
+    color: #ffffff;
+    filter: brightness(1);
+  }
+  15% {
+    transform: scale(1.4) rotate(-3deg);
+    color: #ff6b35;
+    filter: brightness(1.5);
+    text-shadow: 
+      0 0 30px rgba(255, 107, 53, 1),
+      0 0 60px rgba(255, 107, 53, 0.8),
+      0 0 90px rgba(255, 107, 53, 0.5),
+      0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+  35% {
+    transform: scale(1.6) rotate(3deg);
+    color: #ff8c42;
+    filter: brightness(2);
+    text-shadow: 
+      0 0 40px rgba(255, 140, 66, 1),
+      0 0 80px rgba(255, 140, 66, 0.9),
+      0 0 120px rgba(255, 140, 66, 0.6),
+      0 4px 30px rgba(0, 0, 0, 0.6);
+  }
+  50% {
+    transform: scale(1.8) rotate(0deg);
+    color: #ffd700;
+    filter: brightness(2.5);
+    text-shadow: 
+      0 0 50px rgba(255, 215, 0, 1),
+      0 0 100px rgba(255, 215, 0, 0.9),
+      0 0 150px rgba(255, 215, 0, 0.7),
+      0 4px 40px rgba(0, 0, 0, 0.7);
+  }
+  70% {
+    transform: scale(1.3) rotate(-2deg);
+    color: #ffeb3b;
+    filter: brightness(1.8);
+  }
+  85% {
+    transform: scale(1.1) rotate(1deg);
+    color: #ffffff;
+    filter: brightness(1.3);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    color: #ffffff;
+    filter: brightness(1);
+    text-shadow: 
+      0 0 15px rgba(255, 215, 0, 0.5),
+      0 4px 20px rgba(255, 255, 255, 0.5);
+  }
 }
 
 /* Mobile adjustments for Version B elements */
@@ -4412,6 +4573,10 @@
   
   .final-score-text {
     font-size: 2.5rem;
+  }
+  
+  .daily-challenge-2x-text {
+    font-size: 1.5rem;
   }
 }
 
