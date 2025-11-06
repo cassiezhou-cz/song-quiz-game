@@ -825,9 +825,14 @@ const PlaylistSelection = () => {
             <button 
               className="daily-challenge-play-button"
               onClick={() => {
-                // TODO: Navigate to Daily Challenge game
                 console.log('🔥 Starting Daily Challenge for', dailyChallengePlaylist)
                 handleCloseDailyChallengeModal()
+                // Navigate to game with Daily Challenge mode
+                navigate(`/game/${dailyChallengePlaylist}?version=Version B`, { 
+                  state: { 
+                    isDailyChallenge: true 
+                  } 
+                })
               }}
             >
               PLAY
