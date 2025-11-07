@@ -910,30 +910,20 @@ const Game = () => {
         console.log('✅ Triggering playlist tier update sequence!')
         hasRunMusicNoteAnimations.current = true // Set flag to prevent re-run
         
-        // Wait for Your Answers animation to complete before flying XP bar left
+        // Wait for Your Answers animation to complete before showing playlist meter below
         // Song cards cascade in: (numSongs-1) * 0.15s delay + 0.5s animation
         // For 7 songs: 6*0.15 + 0.5 = 1.4s, so wait 2s to be safe
         setTimeout(() => {
-          setXpBarFlyLeft(true)
-          setFinalScoreFlyLeft(true)
-          console.log('⬅️ XP bar and Final Score flying left...')
+          // Keep XP bar and Final Score on screen - just show playlist meter below
+          setDisplayedProgress(playlistProgress.progress) // Initialize displayed progress to current progress
+          setIconUnlockProgress(playlistProgress.progress) // Initialize icon unlock progress
+          setShowPlaylistMeter(true)
+          console.log('⬇️ Playlist meter flying in below Your Answers...')
           
-          // After XP bar flies off (0.8s animation), show playlist meter flying in
+          // After playlist meter flies in (0.8s animation), start music note animations
           setTimeout(() => {
-            // Hide XP bar after fly-left animation completes
-            setShowXPBar(false)
-            setShowXPAnimation(false)
-            
-            setDisplayedProgress(playlistProgress.progress) // Initialize displayed progress to current progress
-            setIconUnlockProgress(playlistProgress.progress) // Initialize icon unlock progress
-            setShowPlaylistMeter(true)
-            console.log('➡️ Playlist meter flying in...')
-            
-            // After playlist meter flies in (0.8s animation), start music note animations
-            setTimeout(() => {
-              startMusicNoteAnimations()
-            }, 900) // 0.9s to ensure meter is fully in place
-          }, 800)
+            startMusicNoteAnimations()
+          }, 900) // 0.9s to ensure meter is fully in place
         }, 2000) // 2s to wait for Your Answers cascade animation to complete
       }
     }
@@ -6033,81 +6023,6 @@ const Game = () => {
                         </div>
                       </div>
                     )}
-                    
-                    {/* Playlist Tier Meter (flies in after XP bar flies out) */}
-                    {showPlaylistMeter && (
-                      <div className={`results-playlist-meter-container ${showPlaylistMeter ? 'fly-in' : ''}`}>
-                        {/* Playlist Mastered Title - Only shows when platinum rank achieved */}
-                        {showPlaylistMastered && (
-                          <div className="playlist-mastered-title">Playlist Mastered!</div>
-                        )}
-                        
-                        {/* Playlist Name with Mastery text directly below */}
-                        <div className="results-playlist-name-container">
-                          <div className="results-playlist-name">{playlist}</div>
-                          <div className="results-playlist-mastery">Mastery</div>
-                        </div>
-                        
-                        {/* Meter and Medal on the right */}
-                        <div className="results-playlist-meter-row">
-                          <div className="playlist-meter-wrapper">
-                            {/* Progress Meter (always show all 15 segments) */}
-                            <div className="results-playlist-tier-meter">
-                              {Array.from({ length: 15 }).map((_, index) => {
-                                const isPermanentlyFilled = index < playlistProgress.progress
-                                const isTempFilled = tempFilledSegments.has(index)
-                                const isCurrentlyFilling = fillingSegmentIndex === index
-                                const shouldShowAsFilled = isPermanentlyFilled || isTempFilled
-                                
-                                // Determine segment rank for background color
-                                let segmentRank: 'bronze' | 'silver' | 'gold' = 'bronze'
-                                if (index >= 10) segmentRank = 'gold'
-                                else if (index >= 5) segmentRank = 'silver'
-                                
-                                return (
-                                  <div
-                                    key={index}
-                                    ref={(el) => {
-                                      if (el) segmentRefsMap.current.set(index, el as HTMLDivElement)
-                                    }}
-                                    className={`results-playlist-segment ${segmentRank}-segment ${shouldShowAsFilled ? 'filled' : ''} ${isCurrentlyFilling ? 'filling' : ''}`}
-                                  />
-                                )
-                              })}
-                              
-                              {/* Milestone Icons below the meter */}
-                              <div className="playlist-milestone-icons">
-                                {/* Question Mark: Below final bronze node (segment index 4) */}
-                                <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos4}px` }}>
-                                  <div className={`milestone-icon-circle bronze-border ${iconUnlockProgress > 4 ? 'unlocked' : 'locked'}`}>
-                                    <img src="/assets/PM_QuestionMark.png" alt="Silver Rank Reward" className="milestone-icon" />
-                                  </div>
-                                </div>
-                                {/* Music Note: Below final silver node (segment index 9) */}
-                                <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos9}px` }}>
-                                  <div className={`milestone-icon-circle silver-border ${iconUnlockProgress > 9 ? 'unlocked' : 'locked'}`}>
-                                    <img src="/assets/PM_FireNote.png" alt="Gold Rank Reward" className="milestone-icon" />
-                                  </div>
-                                </div>
-                                {/* Winner Podium: Below final gold node (segment index 14) */}
-                                <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos14}px` }}>
-                                  <div className={`milestone-icon-circle gold-border ${iconUnlockProgress > 14 ? 'unlocked' : 'locked'}`}>
-                                    <img src="/assets/PM_WinnerPodium.png" alt="Diamond Rank Reward" className="milestone-icon" />
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Medal Icon */}
-                          <img 
-                            src={displayedProgress >= 15 ? '/assets/MedalDiamond.png' : displayedProgress >= 10 ? '/assets/MedalGold.png' : displayedProgress >= 5 ? '/assets/MedalSilver.png' : '/assets/MedalBronze.png'}
-                            alt={`${displayedProgress >= 15 ? 'Diamond' : displayedProgress >= 10 ? 'Gold' : displayedProgress >= 5 ? 'Silver' : 'Bronze'} Medal`}
-                            className="results-playlist-medal-icon"
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>{/* End xp-playlist-wrapper */}
                   </div>{/* End results-top-section */}
                   
@@ -6188,6 +6103,81 @@ const Game = () => {
                       ))}
                     </div>
                   </div>
+                  )}
+                  
+                  {/* Playlist Tier Meter (flies in below Your Answers section) */}
+                  {showPlaylistMeter && (
+                    <div className={`results-playlist-meter-container ${showPlaylistMeter ? 'fly-in' : ''}`}>
+                      {/* Playlist Mastered Title - Only shows when platinum rank achieved */}
+                      {showPlaylistMastered && (
+                        <div className="playlist-mastered-title">Playlist Mastered!</div>
+                      )}
+                      
+                      {/* Playlist Name with Mastery text directly below */}
+                      <div className="results-playlist-name-container">
+                        <div className="results-playlist-name">{playlist}</div>
+                        <div className="results-playlist-mastery">Mastery</div>
+                      </div>
+                      
+                      {/* Meter and Medal on the right */}
+                      <div className="results-playlist-meter-row">
+                        <div className="playlist-meter-wrapper">
+                          {/* Progress Meter (always show all 15 segments) */}
+                          <div className="results-playlist-tier-meter">
+                            {Array.from({ length: 15 }).map((_, index) => {
+                              const isPermanentlyFilled = index < playlistProgress.progress
+                              const isTempFilled = tempFilledSegments.has(index)
+                              const isCurrentlyFilling = fillingSegmentIndex === index
+                              const shouldShowAsFilled = isPermanentlyFilled || isTempFilled
+                              
+                              // Determine segment rank for background color
+                              let segmentRank: 'bronze' | 'silver' | 'gold' = 'bronze'
+                              if (index >= 10) segmentRank = 'gold'
+                              else if (index >= 5) segmentRank = 'silver'
+                              
+                              return (
+                                <div
+                                  key={index}
+                                  ref={(el) => {
+                                    if (el) segmentRefsMap.current.set(index, el as HTMLDivElement)
+                                  }}
+                                  className={`results-playlist-segment ${segmentRank}-segment ${shouldShowAsFilled ? 'filled' : ''} ${isCurrentlyFilling ? 'filling' : ''}`}
+                                />
+                              )
+                            })}
+                            
+                            {/* Milestone Icons below the meter */}
+                            <div className="playlist-milestone-icons">
+                              {/* Question Mark: Below final bronze node (segment index 4) */}
+                              <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos4}px` }}>
+                                <div className={`milestone-icon-circle bronze-border ${iconUnlockProgress > 4 ? 'unlocked' : 'locked'}`}>
+                                  <img src="/assets/PM_QuestionMark.png" alt="Silver Rank Reward" className="milestone-icon" />
+                                </div>
+                              </div>
+                              {/* Music Note: Below final silver node (segment index 9) */}
+                              <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos9}px` }}>
+                                <div className={`milestone-icon-circle silver-border ${iconUnlockProgress > 9 ? 'unlocked' : 'locked'}`}>
+                                  <img src="/assets/PM_FireNote.png" alt="Gold Rank Reward" className="milestone-icon" />
+                                </div>
+                              </div>
+                              {/* Winner Podium: Below final gold node (segment index 14) */}
+                              <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos14}px` }}>
+                                <div className={`milestone-icon-circle gold-border ${iconUnlockProgress > 14 ? 'unlocked' : 'locked'}`}>
+                                  <img src="/assets/PM_WinnerPodium.png" alt="Diamond Rank Reward" className="milestone-icon" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Medal Icon */}
+                        <img 
+                          src={displayedProgress >= 15 ? '/assets/MedalDiamond.png' : displayedProgress >= 10 ? '/assets/MedalGold.png' : displayedProgress >= 5 ? '/assets/MedalSilver.png' : '/assets/MedalBronze.png'}
+                          alt={`${displayedProgress >= 15 ? 'Diamond' : displayedProgress >= 10 ? 'Gold' : displayedProgress >= 5 ? 'Silver' : 'Bronze'} Medal`}
+                          className="results-playlist-medal-icon"
+                        />
+                      </div>
+                    </div>
                   )}
                   
                   {/* OLD CONTENT - TEMPORARILY DISABLED */}

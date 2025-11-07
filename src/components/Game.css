@@ -5311,7 +5311,7 @@
 
 .song-results-grid {
   display: grid;
-  grid-template-columns: repeat(3, auto);
+  grid-template-columns: repeat(5, auto);
   gap: 0.8rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -7915,6 +7915,17 @@
   }
 }
 
+@keyframes playlistMeterFlyInFromBelow {
+  0% {
+    transform: translateY(50px); /* Start from below */
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0); /* End at normal position */
+    opacity: 1;
+  }
+}
+
 @keyframes playlistMeterFlyIn {
   0% {
     transform: translateX(calc(120vw)); /* Start from far right */
@@ -7977,7 +7988,7 @@
 /* Playlist Mastered Title - Big exciting text for platinum rank */
 .playlist-mastered-title {
   position: absolute;
-  top: -80px; /* Position above the meter container */
+  top: -70px; /* Position above the meter container, centered between answer boxes and meter box */
   left: 50%;
   transform: translateX(-50%);
   font-size: 3rem;
@@ -8022,10 +8033,8 @@
 
 /* Playlist Tier Meter on Results Screen */
 .results-playlist-meter-container {
-  position: absolute; /* Overlay the spacer position */
-  top: 0; /* Position at top of spacer */
-  left: 50%;
-  transform: translateX(-50%); /* Center horizontally */
+  position: relative; /* Flow below song list */
+  margin: 2rem auto 2rem auto; /* Center horizontally with margin */
   display: flex;
   flex-direction: row; /* Changed to horizontal layout */
   align-items: center;
@@ -8039,11 +8048,11 @@
   border-radius: 20px;
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  z-index: 10; /* Ensure it appears above the XP bar */
+  z-index: 10;
 }
 
 .results-playlist-meter-container.fly-in {
-  animation: playlistMeterFlyIn 0.8s ease-out forwards;
+  animation: playlistMeterFlyInFromBelow 0.8s ease-out forwards;
 }
 
 .results-playlist-name-section {
