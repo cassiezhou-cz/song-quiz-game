@@ -4398,9 +4398,6 @@
   font-size: 2rem;
   font-weight: 700;
   color: #ff6b35;
-  background: none;
-  background-clip: initial;
-  -webkit-background-clip: initial;
   -webkit-text-fill-color: #ff6b35;
   text-shadow: 
     0 0 8px rgba(255, 107, 53, 0.5),
@@ -4408,7 +4405,6 @@
   animation: dailyChallenge2XSequence 1.7s ease-out forwards;
   letter-spacing: 0.15em;
   white-space: nowrap;
-  filter: none;
   pointer-events: none;
 }
 
@@ -4418,23 +4414,81 @@
     opacity: 0;
     transform: translateX(-50%) scale(1);
     bottom: calc(100% + 0.3rem);
+    color: #ff6b35;
+    -webkit-text-fill-color: #ff6b35;
+    text-shadow: 
+      0 0 8px rgba(255, 107, 53, 0.5),
+      0 2px 8px rgba(0, 0, 0, 0.5);
   }
-  17.6% { /* 0.3s / 1.7s */
+  17.6% { /* 0.3s / 1.7s - End fade in */
     opacity: 1;
     transform: translateX(-50%) scale(1);
     bottom: calc(100% + 0.3rem);
+    color: #ff6b35;
+    -webkit-text-fill-color: #ff6b35;
+    text-shadow: 
+      0 0 20px rgba(255, 107, 53, 0.8),
+      0 2px 8px rgba(0, 0, 0, 0.5);
   }
-  /* Phase 2: Hold (0.3-1.0s) */
-  58.8% { /* 1.0s / 1.7s */
+  /* Phase 2: Hold with color cycling (0.3-1.0s) */
+  25% {
+    color: #ff3535 !important;
+    -webkit-text-fill-color: #ff3535 !important;
+    text-shadow: 
+      0 0 30px rgba(255, 53, 53, 1),
+      0 0 50px rgba(255, 53, 53, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  32% {
+    color: #ff8c00 !important;
+    -webkit-text-fill-color: #ff8c00 !important;
+    text-shadow: 
+      0 0 30px rgba(255, 140, 0, 1),
+      0 0 50px rgba(255, 140, 0, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  39% {
+    color: #ffd700 !important;
+    -webkit-text-fill-color: #ffd700 !important;
+    text-shadow: 
+      0 0 30px rgba(255, 215, 0, 1),
+      0 0 50px rgba(255, 215, 0, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  46% {
+    color: #00ff88 !important;
+    -webkit-text-fill-color: #00ff88 !important;
+    text-shadow: 
+      0 0 30px rgba(0, 255, 136, 1),
+      0 0 50px rgba(0, 255, 136, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  53% {
+    color: #00d4ff !important;
+    -webkit-text-fill-color: #00d4ff !important;
+    text-shadow: 
+      0 0 30px rgba(0, 212, 255, 1),
+      0 0 50px rgba(0, 212, 255, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+  58.8% { /* 1.0s / 1.7s - End of hold */
     opacity: 1;
     transform: translateX(-50%) scale(1);
     bottom: calc(100% + 0.3rem);
+    color: #ff69ff !important;
+    -webkit-text-fill-color: #ff69ff !important;
+    text-shadow: 
+      0 0 30px rgba(255, 105, 255, 1),
+      0 0 50px rgba(255, 105, 255, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.5);
   }
   /* Phase 3: Shrink into score (1.0-1.7s) */
   100% {
     opacity: 0;
     transform: translateX(-50%) scale(0.1);
     bottom: -50%;
+    color: #ffd700 !important;
+    -webkit-text-fill-color: #ffd700 !important;
   }
 }
 

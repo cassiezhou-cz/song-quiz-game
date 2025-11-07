@@ -3891,6 +3891,13 @@ const Game = () => {
     if (gameComplete && version === 'Version B' && !showQuizComplete) {
       console.log('🎬 Starting NEW Results Screen sequence')
       
+      // Mark Daily Challenge as completed immediately when game finishes
+      if (isDailyChallenge) {
+        const completedKey = `daily_challenge_completed_${actualPlaylist}`
+        localStorage.setItem(completedKey, Date.now().toString())
+        console.log('🔥 Daily Challenge marked as completed for:', actualPlaylist)
+      }
+      
       // Ensure we're scrolled to top to prevent layout shifts
       window.scrollTo({ top: 0, behavior: 'auto' })
       
@@ -3961,7 +3968,7 @@ const Game = () => {
                               console.log('🎬 Step 3: Showing XP Bar (AFTER Daily Challenge multiplication)')
                               console.log('🔥 DAILY CHALLENGE XP: Base score =', score, ', Doubled score =', doubledScore)
                               triggerXPBarAnimation(doubledScore)
-                            }, 1000) // 1 second buffer to let doubled score be visible
+                            }, 500) // 0.5s buffer to let doubled score be visible
                           }, 200)
                         } else {
                           setDisplayedScore(Math.floor(score + (multiplyIncrement * multiplyStep)))

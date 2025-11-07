@@ -30,6 +30,8 @@ const PlaylistSelection = () => {
   const [showDailyChallengeModal, setShowDailyChallengeModal] = useState(false)
   const [dailyChallengePlaylist, setDailyChallengePlaylist] = useState('')
   const [dailyChallengeClosing, setDailyChallengeClosing] = useState(false)
+  const [dailyChallengeTimers, setDailyChallengeTimers] = useState<Record<string, string>>({})
+  const [dailyChallengeNewBadges, setDailyChallengeNewBadges] = useState<Set<string>>(new Set())
   const [xpProgress, setXpProgress] = useState(() => {
     // Initialize from localStorage to avoid visual "fill up" on page load
     const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
@@ -57,6 +59,42 @@ const PlaylistSelection = () => {
   // Debug hotkey state
   const [isHoveringXPBar, setIsHoveringXPBar] = useState(false)
   const [showLevelUpModal, setShowLevelUpModal] = useState(false)
+
+  // Helper function: Check if Daily Challenge is available for a playlist
+  const isDailyChallengeAvailable = (playlist: string): boolean => {
+    const completedKey = `daily_challenge_completed_${playlist}`
+    const completedTimestamp = localStorage.getItem(completedKey)
+    
+    if (!completedTimestamp) return true // Never completed, available
+    
+    const completed = parseInt(completedTimestamp, 10)
+    const now = Date.now()
+    const twentyFourHours = 24 * 60 * 60 * 1000
+    
+    return (now - completed) >= twentyFourHours
+  }
+
+  // Helper function: Get time remaining until Daily Challenge is available
+  const getTimeRemaining = (playlist: string): string => {
+    const completedKey = `daily_challenge_completed_${playlist}`
+    const completedTimestamp = localStorage.getItem(completedKey)
+    
+    if (!completedTimestamp) return '00:00:00'
+    
+    const completed = parseInt(completedTimestamp, 10)
+    const now = Date.now()
+    const twentyFourHours = 24 * 60 * 60 * 1000
+    const timeRemaining = twentyFourHours - (now - completed)
+    
+    if (timeRemaining <= 0) return '00:00:00'
+    
+    const hours = Math.floor(timeRemaining / (60 * 60 * 1000))
+    const minutes = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000))
+    const seconds = Math.floor((timeRemaining % (60 * 1000)) / 1000)
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
+
   const [newlyUnlockedLifeline, setNewlyUnlockedLifeline] = useState<LifelineType | null>(null)
   const [showHatUnlockModal, setShowHatUnlockModal] = useState(false)
   
@@ -147,6 +185,22 @@ const PlaylistSelection = () => {
       }
     }
 
+    // Load viewed Daily Challenge buttons
+    const savedViewedDC = localStorage.getItem('viewed_daily_challenge_buttons')
+    const viewedDC = savedViewedDC ? JSON.parse(savedViewedDC) : []
+    
+    // Determine which playlists should show NEW badge (Gold tier and not yet viewed)
+    const newBadges = new Set<string>()
+    const progressData = savedPlaylistProgress ? JSON.parse(savedPlaylistProgress) : {}
+    playlists.forEach(playlist => {
+      const progress = progressData[playlist]?.progress || 0
+      if (progress >= 10 && !viewedDC.includes(playlist)) {
+        newBadges.add(playlist)
+      }
+    })
+    setDailyChallengeNewBadges(newBadges)
+    console.log('🔥 Daily Challenge NEW badges for:', Array.from(newBadges))
+
     // Load stats for all playlists
     const stats: Record<string, any> = {}
     playlists.forEach(playlist => {
@@ -179,6 +233,26 @@ const PlaylistSelection = () => {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isHoveringXPBar, playerLevel, unlockedLifelines, hatUnlocked])
+
+  // Update countdown timers every second
+  useEffect(() => {
+    const updateTimers = () => {
+      const timers: Record<string, string> = {}
+      playlists.forEach(playlist => {
+        if (!isDailyChallengeAvailable(playlist)) {
+          timers[playlist] = getTimeRemaining(playlist)
+        }
+      })
+      setDailyChallengeTimers(timers)
+    }
+
+    // Update immediately
+    updateTimers()
+
+    // Update every second
+    const interval = setInterval(updateTimers, 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Helper function to get rank from progress
   const getRankFromProgress = (progress: number): PlaylistRank => {
@@ -231,6 +305,50 @@ const PlaylistSelection = () => {
       setDailyChallengeClosing(false)
     }, 300) // Match the animation duration
   }
+
+  const handleDailyChallengePlay = () => {
+    console.log('🔥 Starting Daily Challenge for', dailyChallengePlaylist)
+    handleCloseDailyChallengeModal()
+    // Navigate to game with Daily Challenge mode
+    navigate(`/game/${dailyChallengePlaylist}?version=Version B`, { 
+      state: { 
+        isDailyChallenge: true 
+      } 
+    })
+  }
+
+  const handleDailyChallengeButtonHover = (playlist: string) => {
+    if (dailyChallengeNewBadges.has(playlist)) {
+      // Mark as viewed
+      const savedViewedDC = localStorage.getItem('viewed_daily_challenge_buttons')
+      const viewedDC = savedViewedDC ? JSON.parse(savedViewedDC) : []
+      if (!viewedDC.includes(playlist)) {
+        viewedDC.push(playlist)
+        localStorage.setItem('viewed_daily_challenge_buttons', JSON.stringify(viewedDC))
+      }
+      
+      // Remove from NEW badges
+      const updated = new Set(dailyChallengeNewBadges)
+      updated.delete(playlist)
+      setDailyChallengeNewBadges(updated)
+      console.log('🔥 Daily Challenge button viewed for:', playlist)
+    }
+  }
+
+  // Keyboard shortcut: Spacebar to activate PLAY button in Daily Challenge modal
+  useEffect(() => {
+    if (!showDailyChallengeModal) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code === 'Space' || event.key === ' ') {
+        event.preventDefault() // Prevent page scroll
+        handleDailyChallengePlay()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showDailyChallengeModal, dailyChallengePlaylist])
 
   const handlePlaylistSelect = (playlist: string, isMasterMode: boolean = false) => {
     setSelectedPlaylist(playlist)
@@ -425,6 +543,12 @@ const PlaylistSelection = () => {
     localStorage.removeItem('hat_unlocked')
     localStorage.removeItem('player_name')
     localStorage.removeItem('playlist_progress')
+    
+    // Clear Daily Challenge cooldowns for all playlists
+    playlists.forEach(playlist => {
+      const completedKey = `daily_challenge_completed_${playlist}`
+      localStorage.removeItem(completedKey)
+    })
     localStorage.removeItem('completed_songs')
     localStorage.removeItem('playlists_with_new_songs')
     
@@ -458,7 +582,15 @@ const PlaylistSelection = () => {
       emptyStats[playlist] = { timesPlayed: 0, averageScore: 0, highestScore: 0, completedSongs: [] }
     })
     setPlaylistStats(emptyStats)
-    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist progress reset to 0, NEW badges cleared, and all stats (including Master Mode ranks) cleared')
+    
+    // Clear Daily Challenge timers state
+    setDailyChallengeTimers({})
+    
+    // Clear viewed Daily Challenge buttons
+    localStorage.removeItem('viewed_daily_challenge_buttons')
+    setDailyChallengeNewBadges(new Set())
+    
+    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist progress reset to 0, NEW badges cleared, all stats (including Master Mode ranks) cleared, Daily Challenge cooldowns and viewed buttons cleared')
   }
 
   // Debug hotkey: Press Up arrow while hovering over a playlist to rank it up
@@ -682,19 +814,31 @@ const PlaylistSelection = () => {
                       {/* Daily Challenge Button - Shows for Gold Tier and above */}
                       {progress >= 10 && (
                         <button
-                          className="daily-challenge-button"
+                          className={`daily-challenge-button ${!isDailyChallengeAvailable(playlist) ? 'disabled' : ''}`}
                           onClick={(e) => {
                             e.stopPropagation()
-                            setDailyChallengePlaylist(playlist)
-                            setShowDailyChallengeModal(true)
+                            if (isDailyChallengeAvailable(playlist)) {
+                              setDailyChallengePlaylist(playlist)
+                              setShowDailyChallengeModal(true)
+                            }
                           }}
-                          title="Daily Challenge"
+                          onMouseEnter={() => handleDailyChallengeButtonHover(playlist)}
+                          title={isDailyChallengeAvailable(playlist) ? "Daily Challenge" : "Come back later"}
+                          disabled={!isDailyChallengeAvailable(playlist)}
                         >
+                          {dailyChallengeNewBadges.has(playlist) && (
+                            <div className="daily-challenge-new-badge">NEW</div>
+                          )}
                           <img 
                             src="/assets/PM_FireNote.png"
                             alt="Daily Challenge"
                             className="daily-challenge-icon"
                           />
+                          {!isDailyChallengeAvailable(playlist) && dailyChallengeTimers[playlist] && (
+                            <div className="daily-challenge-timer">
+                              {dailyChallengeTimers[playlist]}
+                            </div>
+                          )}
                         </button>
                       )}
                       <span className="decade">{playlist}</span>
@@ -824,16 +968,7 @@ const PlaylistSelection = () => {
             {/* Play Button */}
             <button 
               className="daily-challenge-play-button"
-              onClick={() => {
-                console.log('🔥 Starting Daily Challenge for', dailyChallengePlaylist)
-                handleCloseDailyChallengeModal()
-                // Navigate to game with Daily Challenge mode
-                navigate(`/game/${dailyChallengePlaylist}?version=Version B`, { 
-                  state: { 
-                    isDailyChallenge: true 
-                  } 
-                })
-              }}
+              onClick={handleDailyChallengePlay}
             >
               PLAY
             </button>
