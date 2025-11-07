@@ -227,7 +227,7 @@
   top: -65px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #ffffff;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
@@ -236,7 +236,7 @@
   border-radius: 12px;
   border: 3px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  min-width: 60px;
+  min-width: 90px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -1634,9 +1634,9 @@
 
   .circular-xp-container-menu .level-number-display {
     top: -55px;
-    font-size: 2rem;
+    font-size: 1.6rem;
     padding: 0 0.4rem 1.2rem 0.4rem;
-    min-width: 50px;
+    min-width: 75px;
   }
 
   .circular-xp-container-menu .circular-xp-avatar {

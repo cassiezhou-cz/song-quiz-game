@@ -713,7 +713,7 @@ const PlaylistSelection = () => {
               
               {/* Level Number Behind Avatar */}
               <div className="level-number-display">
-                <span className="level-number">{playerLevel}</span>
+                <span className="level-number">LVL {playerLevel}</span>
               </div>
               
               <svg className="circular-progress-svg" viewBox="0 0 200 200">
@@ -1068,6 +1068,8 @@ const PlaylistSelection = () => {
           {/* Stage 4: Full modal with content */}
           {showModalContent && (
             <div className={`level-up-modal ${flyDownPrize ? 'fade-out' : ''}`}>
+              <h1 className="level-up-big-text">LEVEL UP!</h1>
+              
               <div className={`level-up-present-icon ${flyDownPrize ? 'fly-down-to-xp' : ''}`}>
                 <img 
                   src={prizeType === 'present' ? '/assets/LevelUp_Present_Open.png' : '/assets/LevelUp_TreasureChest_Open.png'} 

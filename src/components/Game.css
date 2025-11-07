@@ -4854,7 +4854,7 @@
   top: -65px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   color: #ffffff;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
@@ -4863,7 +4863,7 @@
   border-radius: 12px;
   border: 3px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-  min-width: 60px;
+  min-width: 90px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -5034,10 +5034,10 @@
   }
   
   .level-number-display {
-    font-size: 2rem;
+    font-size: 1.6rem;
     padding: 0 0.4rem 1.2rem 0.4rem;
     top: -55px;
-    min-width: 50px;
+    min-width: 75px;
   }
   
   .prize-icon-above {
@@ -7542,6 +7542,20 @@
   justify-content: center;
 }
 
+.level-up-big-text {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #ffd700;
+  margin: 0 0 1.5rem 0;
+  text-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.8),
+    0 0 40px rgba(255, 215, 0, 0.6),
+    0 4px 12px rgba(0, 0, 0, 0.6),
+    0 8px 20px rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .level-up-title {
   font-size: 2.5rem;
   font-weight: 800;
@@ -8361,5 +8375,14 @@
 /* XP Bar container fly-left animation */
 .xp-gain-container.fly-left {
   animation: xpBarFlyLeft 0.8s ease-in forwards;
+}
+
+/* Mobile Responsive Styles for Level Up Big Text */
+@media (max-width: 768px) {
+  .level-up-big-text {
+    font-size: 2.5rem;
+    margin: 0 0 1rem 0;
+    letter-spacing: 0.08em;
+  }
 }
 
