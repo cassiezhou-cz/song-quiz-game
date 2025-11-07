@@ -499,6 +499,67 @@
   pointer-events: none;
 }
 
+/* Master Mode Button */
+.master-mode-button-small {
+  position: absolute;
+  top: 62px; /* Below Daily Challenge button */
+  left: 8px;
+  width: 45px;
+  height: 45px;
+  padding: 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+
+.master-mode-button-small:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+}
+
+.master-mode-button-small:active {
+  transform: scale(1.05);
+}
+
+.master-mode-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.6));
+}
+
+/* Master Mode NEW Badge */
+.master-mode-new-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.3));
+  color: #ffd700;
+  font-size: 0.5rem;
+  font-weight: 900;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.6);
+  box-shadow: 
+    0 4px 12px rgba(255, 215, 0, 0.6),
+    0 0 20px rgba(255, 215, 0, 0.4);
+  z-index: 15;
+  animation: newBadgePulse 2s ease-in-out infinite;
+  border: 1.5px solid rgba(255, 215, 0, 0.6);
+  backdrop-filter: blur(5px);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 /* Daily Challenge Modal */
 .daily-challenge-modal-backdrop {
   position: fixed;
@@ -928,6 +989,25 @@
   background: linear-gradient(135deg, #ffd700, #daa520);
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
   border-color: rgba(255, 215, 0, 0.5);
+}
+
+/* Playlist Mastered Text */
+.playlist-mastered-text {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 0.75rem;
+  border-radius: 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  background-image: linear-gradient(135deg, #b9f2ff 0%, #ffffff 25%, #86d3ff 50%, #ffffff 75%, #b9f2ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 15px rgba(185, 242, 255, 0.4));
 }
 
 .master-mode-button {

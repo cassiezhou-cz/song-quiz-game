@@ -450,7 +450,7 @@ const CollectionMenu = ({ playlist, rank, onClose }: CollectionMenuProps) => {
             }}
           >
             <div className="hover-fun-fact">
-              💡 {generateSongInfo(hoveredSong.id, hoveredSong.song, hoveredSong.artist).funFact}
+              {generateSongInfo(hoveredSong.id, hoveredSong.song, hoveredSong.artist).funFact}
             </div>
             <div className="hover-accuracy">
               <span className="globe-icon">🌍</span>

@@ -32,6 +32,7 @@ const PlaylistSelection = () => {
   const [dailyChallengeClosing, setDailyChallengeClosing] = useState(false)
   const [dailyChallengeTimers, setDailyChallengeTimers] = useState<Record<string, string>>({})
   const [dailyChallengeNewBadges, setDailyChallengeNewBadges] = useState<Set<string>>(new Set())
+  const [masterModeNewBadges, setMasterModeNewBadges] = useState<Set<string>>(new Set())
   const [xpProgress, setXpProgress] = useState(() => {
     // Initialize from localStorage to avoid visual "fill up" on page load
     const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
@@ -201,6 +202,21 @@ const PlaylistSelection = () => {
     setDailyChallengeNewBadges(newBadges)
     console.log('🔥 Daily Challenge NEW badges for:', Array.from(newBadges))
 
+    // Load viewed Master Mode buttons
+    const savedViewedMM = localStorage.getItem('viewed_master_mode_buttons')
+    const viewedMM = savedViewedMM ? JSON.parse(savedViewedMM) : []
+    
+    // Determine which playlists should show Master Mode NEW badge (Platinum tier and not yet viewed)
+    const mmNewBadges = new Set<string>()
+    playlists.forEach(playlist => {
+      const progress = progressData[playlist]?.progress || 0
+      if (progress >= 15 && !viewedMM.includes(playlist)) {
+        mmNewBadges.add(playlist)
+      }
+    })
+    setMasterModeNewBadges(mmNewBadges)
+    console.log('⚡ Master Mode NEW badges for:', Array.from(mmNewBadges))
+
     // Load stats for all playlists
     const stats: Record<string, any> = {}
     playlists.forEach(playlist => {
@@ -332,6 +348,24 @@ const PlaylistSelection = () => {
       updated.delete(playlist)
       setDailyChallengeNewBadges(updated)
       console.log('🔥 Daily Challenge button viewed for:', playlist)
+    }
+  }
+
+  const handleMasterModeButtonHover = (playlist: string) => {
+    if (masterModeNewBadges.has(playlist)) {
+      // Mark as viewed
+      const savedViewedMM = localStorage.getItem('viewed_master_mode_buttons')
+      const viewedMM = savedViewedMM ? JSON.parse(savedViewedMM) : []
+      if (!viewedMM.includes(playlist)) {
+        viewedMM.push(playlist)
+        localStorage.setItem('viewed_master_mode_buttons', JSON.stringify(viewedMM))
+      }
+      
+      // Remove from NEW badges
+      const updated = new Set(masterModeNewBadges)
+      updated.delete(playlist)
+      setMasterModeNewBadges(updated)
+      console.log('⚡ Master Mode button viewed for:', playlist)
     }
   }
 
@@ -590,7 +624,11 @@ const PlaylistSelection = () => {
     localStorage.removeItem('viewed_daily_challenge_buttons')
     setDailyChallengeNewBadges(new Set())
     
-    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist progress reset to 0, NEW badges cleared, all stats (including Master Mode ranks) cleared, Daily Challenge cooldowns and viewed buttons cleared')
+    // Clear viewed Master Mode buttons
+    localStorage.removeItem('viewed_master_mode_buttons')
+    setMasterModeNewBadges(new Set())
+    
+    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist progress reset to 0, NEW badges cleared, all stats (including Master Mode ranks) cleared, Daily Challenge cooldowns and viewed buttons cleared, Master Mode viewed buttons cleared')
   }
 
   // Debug hotkey: Press Up arrow while hovering over a playlist to rank it up
@@ -841,6 +879,29 @@ const PlaylistSelection = () => {
                           )}
                         </button>
                       )}
+
+                      {/* Master Mode Button - Shows for Platinum Tier (15 segments) */}
+                      {masterModeUnlocked && (
+                        <button
+                          className="master-mode-button-small"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handlePlaylistSelect(playlist, true)
+                          }}
+                          onMouseEnter={() => handleMasterModeButtonHover(playlist)}
+                          title="Master Mode"
+                          disabled={selectedPlaylist !== null}
+                        >
+                          {masterModeNewBadges.has(playlist) && (
+                            <div className="master-mode-new-badge">NEW</div>
+                          )}
+                          <img 
+                            src="/assets/PM_WinnerPodium.png"
+                            alt="Master Mode"
+                            className="master-mode-icon"
+                          />
+                        </button>
+                      )}
                       <span className="decade">{playlist}</span>
                     </button>
                     
@@ -863,16 +924,9 @@ const PlaylistSelection = () => {
                           })}
                         </div>
                       ) : (
-                        <button 
-                          className="master-mode-button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handlePlaylistSelect(playlist, true)
-                          }}
-                          disabled={selectedPlaylist !== null}
-                        >
-                          Master Mode
-                        </button>
+                        <div className="playlist-mastered-text">
+                          MASTERED
+                        </div>
                       )}
 
                       {/* Medal Button */}
