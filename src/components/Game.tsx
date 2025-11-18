@@ -386,8 +386,14 @@ const Game = () => {
   // Use playlist from URL params
   const actualPlaylist = playlist
   const version = searchParams.get('version') || 'Version A'
-  const initialProgress = parseInt(searchParams.get('progress') || '0') // 0-15 segments
+  const playlistLevel = parseInt(searchParams.get('level') || '1') // Playlist level from URL
   const audioRef = useRef<HTMLAudioElement>(null)
+  
+  // Playlist XP System Constants
+  const PLAYLIST_XP_PER_NEW_SONG = 20
+  const getPlaylistXPRequired = (level: number): number => {
+    return 100 + ((level - 1) * 20) // Level 1: 100, Level 2: 120, Level 3: 140, etc.
+  }
   
   
   // Sound effect refs
@@ -563,16 +569,27 @@ const Game = () => {
   const [displayedScore, setDisplayedScore] = useState(0)
   const [showDailyChallenge2X, setShowDailyChallenge2X] = useState(false)
   const [isMultiplyingScore, setIsMultiplyingScore] = useState(false)
-  const [showXPBar, setShowXPBar] = useState(false)
-  const [targetXPPosition, setTargetXPPosition] = useState(0) // Static target for indicator
+  const [targetXPPosition, setTargetXPPosition] = useState(0) // Static target for indicator (Global XP)
   const [showSongList, setShowSongList] = useState(false) // Show Your Answers section
   
-  // Playlist Progress Update Sequence state
-  const [xpBarFlyLeft, setXpBarFlyLeft] = useState(false) // Trigger XP bar fly-left animation
-  const [finalScoreFlyLeft, setFinalScoreFlyLeft] = useState(false) // Trigger final score fly-left animation
-  const [showPlaylistMeter, setShowPlaylistMeter] = useState(false) // Show playlist meter on results screen
-  const [playlistProgress, setPlaylistProgress] = useState<{ progress: number }>({ progress: 0 }) // 0-15 segments
-  const [milestonePositions, setMilestonePositions] = useState<{ pos4: number; pos9: number; pos14: number }>({ pos4: 0, pos9: 0, pos14: 0 })
+  // Playlist XP System State
+  const [playlistXP, setPlaylistXP] = useState(0) // Current XP toward next level
+  const [currentPlaylistLevel, setCurrentPlaylistLevel] = useState(playlistLevel) // Current playlist level
+  const [startingPlaylistXP, setStartingPlaylistXP] = useState(0) // XP at start (for animation)
+  const [displayedPlaylistXP, setDisplayedPlaylistXP] = useState(0) // Animated XP display
+  const [animatedPlaylistXP, setAnimatedPlaylistXP] = useState(0) // For smooth counting animation
+  const [showPlaylistXPBar, setShowPlaylistXPBar] = useState(false) // Show playlist XP bar on results
+  const [playlistXPGain, setPlaylistXPGain] = useState(0) // Total XP gained this session
+  const [showFlyingPlaylistXP, setShowFlyingPlaylistXP] = useState(false) // Flying +XP indicator
+  const [isFadingOutFlyingXP, setIsFadingOutFlyingXP] = useState(false) // Fade out flying XP
+  const [targetPlaylistXPPosition, setTargetPlaylistXPPosition] = useState('50%') // Target position for flying XP
+  const [pendingLevelUp, setPendingLevelUp] = useState(false) // Level up pending
+  const [showLevelUpPulse, setShowLevelUpPulse] = useState(false) // Pulse animation on level up
+  const [showPlaylistLevelUpModal, setShowPlaylistLevelUpModal] = useState(false) // Level up modal
+  const [newPlaylistLevelReached, setNewPlaylistLevelReached] = useState(0) // New level number
+  const [playlistXPAnimationComplete, setPlaylistXPAnimationComplete] = useState(false) // XP animation done
+  const playlistXPAnimationStartedRef = useRef(false) // Prevent duplicate XP awards
+  const [hasAwardedPlaylistXP, setHasAwardedPlaylistXP] = useState(false) // Track if XP was awarded
   const [iconUnlockProgress, setIconUnlockProgress] = useState(0) // Controls icon colorization separately from medal
   
   // Rank Up Modal state (shows when reaching thresholds: 5 = silver, 10 = gold, 15 = platinum)
@@ -617,13 +634,14 @@ const Game = () => {
   // Version B Available Lifelines (randomly selected 3 out of 5)
   type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
   const [availableLifelines, setAvailableLifelines] = useState<LifelineType[]>([])
-  const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>([])
+  const allLifelines: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
+  const [unlockedLifelines, setUnlockedLifelines] = useState<LifelineType[]>(allLifelines)
   
   // Level up modal state
   const [showLevelUpModal, setShowLevelUpModal] = useState(false)
   const [newlyUnlockedLifeline, setNewlyUnlockedLifeline] = useState<LifelineType | null>(null)
   const [showHatUnlockModal, setShowHatUnlockModal] = useState(false)
-  const [hatUnlocked, setHatUnlocked] = useState(false)
+  const [hatUnlocked, setHatUnlocked] = useState(false) // No hat ever
   
   // Multi-stage level-up animation state
   const [showClosedPrize, setShowClosedPrize] = useState(false)
@@ -647,22 +665,122 @@ const Game = () => {
     console.log('🎵 Song List State Changed:', { showSongList, songsCount: allAttemptedSongs.length })
   }, [showSongList, allAttemptedSongs.length])
 
-  // Load current playlist's progress on mount
+  // Load Playlist XP and Level from localStorage on mount
   useEffect(() => {
-    const savedPlaylistProgress = localStorage.getItem('playlist_progress')
-    if (savedPlaylistProgress && playlist) {
+    if (!actualPlaylist) return
+    
+    const savedProgress = localStorage.getItem('playlist_progress')
+    if (savedProgress) {
       try {
-        const allProgress = JSON.parse(savedPlaylistProgress) as Record<string, { progress: number }>
-        if (allProgress[playlist]) {
-          setPlaylistProgress(allProgress[playlist])
-          setDisplayedProgress(allProgress[playlist].progress) // Initialize displayed progress
-          console.log(`📊 Loaded ${playlist} progress:`, allProgress[playlist])
+        const allProgress = JSON.parse(savedProgress) as Record<string, {level: number, xp: number} | {progress: number}>
+        const playlistData = allProgress[actualPlaylist]
+        
+        // Check if it's the new format (level/xp) or old format (progress)
+        if (playlistData && 'level' in playlistData && 'xp' in playlistData) {
+          setCurrentPlaylistLevel(playlistData.level)
+          setPlaylistXP(playlistData.xp)
+          setStartingPlaylistXP(playlistData.xp)
+          setDisplayedPlaylistXP(playlistData.xp)
+          setAnimatedPlaylistXP(playlistData.xp)
+          console.log(`📊 Loaded ${actualPlaylist} playlist: Level ${playlistData.level}, XP ${playlistData.xp}/${getPlaylistXPRequired(playlistData.level)}`)
+        } else if (playlistData && 'progress' in playlistData) {
+          // Migration from old segment-based system
+          const oldProgress = playlistData.progress
+          const migratedLevel = Math.min(Math.floor(oldProgress / 1.5) + 1, 10)
+          const migratedXP = 0
+          setCurrentPlaylistLevel(migratedLevel)
+          setPlaylistXP(migratedXP)
+          setStartingPlaylistXP(migratedXP)
+          setDisplayedPlaylistXP(migratedXP)
+          setAnimatedPlaylistXP(migratedXP)
+          console.log(`📊 Migrated ${actualPlaylist} from old format: ${oldProgress} segments → Level ${migratedLevel}`)
         }
       } catch (e) {
         console.error('Failed to parse playlist progress:', e)
       }
     }
-  }, [playlist])
+  }, [actualPlaylist])
+
+  // Award Playlist XP after song list is shown
+  useEffect(() => {
+    if (!showSongList || playlistXPAnimationStartedRef.current || !actualPlaylist) return
+    if (hasAwardedPlaylistXP || currentPlaylistLevel >= 10) return // Don't award if already at max level
+    
+    const newlyCompletedCount = allAttemptedSongs.filter(song => song.isNewlyCompleted).length
+    if (newlyCompletedCount === 0) {
+      console.log('📊 No new songs completed, skipping Playlist XP award')
+      return
+    }
+    
+    playlistXPAnimationStartedRef.current = true
+    setHasAwardedPlaylistXP(true)
+    
+    const xpGained = newlyCompletedCount * PLAYLIST_XP_PER_NEW_SONG
+    setPlaylistXPGain(xpGained)
+    console.log(`📊 Awarding ${xpGained} Playlist XP for ${newlyCompletedCount} new songs`)
+    
+    // Show the Playlist XP bar after a delay
+    setTimeout(() => {
+      setShowPlaylistXPBar(true)
+      
+      // Calculate new XP and check for level up
+      const currentXP = playlistXP
+      const xpRequired = getPlaylistXPRequired(currentPlaylistLevel)
+      const newTotalXP = currentXP + xpGained
+      
+      if (newTotalXP >= xpRequired && currentPlaylistLevel < 10) {
+        // Level up!
+        const newLevel = currentPlaylistLevel + 1
+        const remainingXP = 0 // Reset XP on level up
+        
+        console.log(`🎉 LEVEL UP! ${actualPlaylist} reached Level ${newLevel}`)
+        
+        setCurrentPlaylistLevel(newLevel)
+        setPlaylistXP(remainingXP)
+        setNewPlaylistLevelReached(newLevel)
+        setPendingLevelUp(true)
+        
+        // Save to localStorage
+        const savedProgress = localStorage.getItem('playlist_progress')
+        let allProgress: Record<string, {level: number, xp: number}> = {}
+        if (savedProgress) {
+          try {
+            allProgress = JSON.parse(savedProgress)
+          } catch (e) {
+            console.error('Failed to parse playlist progress:', e)
+          }
+        }
+        allProgress[actualPlaylist] = { level: newLevel, xp: remainingXP }
+        localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+        
+        // Animate XP bar fill to 100% then show level up modal
+        setDisplayedPlaylistXP(xpRequired)
+        setTimeout(() => {
+          setShowPlaylistLevelUpModal(true)
+        }, 800)
+      } else {
+        // No level up, just add XP
+        setPlaylistXP(newTotalXP)
+        
+        // Save to localStorage
+        const savedProgress = localStorage.getItem('playlist_progress')
+        let allProgress: Record<string, {level: number, xp: number}> = {}
+        if (savedProgress) {
+          try {
+            allProgress = JSON.parse(savedProgress)
+          } catch (e) {
+            console.error('Failed to parse playlist progress:', e)
+          }
+        }
+        allProgress[actualPlaylist] = { level: currentPlaylistLevel, xp: newTotalXP }
+        localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+        
+        // Animate XP bar fill
+        setDisplayedPlaylistXP(newTotalXP)
+      }
+    }, 2000)
+    
+  }, [showSongList, allAttemptedSongs, playlistXP, currentPlaylistLevel, actualPlaylist, hasAwardedPlaylistXP])
 
   // Keyboard shortcuts for debug scoring (Version B)
   useEffect(() => {
@@ -901,228 +1019,28 @@ const Game = () => {
       // Check if any songs are newly completed
       const hasNewSongs = allAttemptedSongs.some(song => song.isNewlyCompleted)
       
-      // Check if playlist is NOT at Tier 3
-      const isNotMaxProgress = playlistProgress.progress < 15
-      
-      console.log('🎯 Checking progress update conditions:', { hasNewSongs, isNotMaxProgress, progress: playlistProgress.progress, hasRunAnimations: hasRunMusicNoteAnimations.current })
-      
-      if (hasNewSongs && isNotMaxProgress) {
-        console.log('✅ Triggering playlist tier update sequence!')
-        hasRunMusicNoteAnimations.current = true // Set flag to prevent re-run
-        
-        // Wait for Your Answers animation to complete before showing playlist meter below
-        // Song cards cascade in: (numSongs-1) * 0.15s delay + 0.5s animation
-        // For 7 songs: 6*0.15 + 0.5 = 1.4s, so wait 2s to be safe
-        setTimeout(() => {
-          // Keep XP bar and Final Score on screen - just show playlist meter below
-          setDisplayedProgress(playlistProgress.progress) // Initialize displayed progress to current progress
-          setIconUnlockProgress(playlistProgress.progress) // Initialize icon unlock progress
-          setShowPlaylistMeter(true)
-          console.log('⬇️ Playlist meter flying in below Your Answers...')
-          
-          // After playlist meter flies in (0.8s animation), start music note animations
-          setTimeout(() => {
-            startMusicNoteAnimations()
-          }, 900) // 0.9s to ensure meter is fully in place
-        }, 2000) // 2s to wait for Your Answers cascade animation to complete
-      }
+      // OLD segment-based tier update system - replaced with Playlist XP system
+      // No longer needed, Playlist XP is awarded in separate useEffect
+      console.log('📊 Playlist XP system active - old segment animations disabled')
     }
-  }, [showSongList, allAttemptedSongs, playlistProgress.progress, version])
+  }, [showSongList, allAttemptedSongs, version])
   
-  // Calculate milestone icon positions based on actual segment positions
-  useEffect(() => {
-    if (showPlaylistMeter) {
-      // Small delay to ensure segments are rendered
-      setTimeout(() => {
-        const segment4 = segmentRefsMap.current.get(4)
-        const segment9 = segmentRefsMap.current.get(9)
-        const segment14 = segmentRefsMap.current.get(14)
-        
-        if (segment4 && segment9 && segment14) {
-          const meterContainer = segment4.parentElement
-          if (meterContainer) {
-            const containerRect = meterContainer.getBoundingClientRect()
-            const seg4Rect = segment4.getBoundingClientRect()
-            const seg9Rect = segment9.getBoundingClientRect()
-            const seg14Rect = segment14.getBoundingClientRect()
-            
-            // Calculate center positions relative to container
-            const pos4 = seg4Rect.left + seg4Rect.width / 2 - containerRect.left
-            const pos9 = seg9Rect.left + seg9Rect.width / 2 - containerRect.left
-            const pos14 = seg14Rect.left + seg14Rect.width / 2 - containerRect.left
-            
-            setMilestonePositions({ pos4, pos9, pos14 })
-            console.log('📍 Milestone positions calculated:', { pos4, pos9, pos14 })
-          }
-        }
-      }, 100)
-    }
-  }, [showPlaylistMeter])
+  // OLD: Calculate milestone icon positions - DISABLED (replaced with Playlist XP system)
+  // useEffect for milestone positions commented out
   
-  // Animate music notes from badges to playlist segments
+  // OLD: Animate music notes - DISABLED (replaced with Playlist XP system)
   const startMusicNoteAnimations = () => {
-    console.log('🎵 Starting music note animations...')
-    
-    // Capture the INITIAL progress before any notes start flying
-    const initialProgress = playlistProgress.progress
-    console.log('🎯 Initial progress:', initialProgress)
-    
-    // Get all newly completed songs
-    const newlyCompletedIndices = allAttemptedSongs
-      .map((song, index) => song.isNewlyCompleted ? index : -1)
-      .filter(index => index !== -1)
-    
-    console.log('🎵 Found newly completed songs at indices:', newlyCompletedIndices)
-    console.log('🎵 Number of new songs:', newlyCompletedIndices.length)
-    console.log('📊 Current progress:', playlistProgress.progress)
-    console.log('📊 Segments that are currently filled:', `0 to ${initialProgress - 1} (${initialProgress} segments filled)`)
-    
-    if (newlyCompletedIndices.length === 0) {
-      console.log('⚠️ No newly completed songs found')
-      return
-    }
-    
-    // Calculate total animation time for all notes
-    // Each note starts 350ms after the previous one (25% through), last note takes 800ms to fly + 600ms to fill
-    const totalAnimationTime = newlyCompletedIndices.length * 350 + 800 + 600 - 350 // delays + last note animation + fill animation
-    
-    // Animate each note with overlap - next note starts 25% through previous animation
-    let delay = 0
-    newlyCompletedIndices.forEach((songIndex, arrayIndex) => {
-      setTimeout(() => {
-        animateSingleNote(songIndex, arrayIndex, initialProgress, false)
-      }, delay)
-      delay += 350 // 0.35s between each note (25% through the 1.4s total animation)
-    })
-    
-    // After ALL animations complete, update the progress state once and check for rank ups
-    setTimeout(() => {
-      console.log(`✅ All animations complete! Updating progress from ${initialProgress} to ${initialProgress + newlyCompletedIndices.length}`)
-      
-      const newProgress = Math.min(initialProgress + newlyCompletedIndices.length, 15) // Cap at 15
-      const oldProgress = initialProgress
-      
-      // Update progress immediately
-      setPlaylistProgress({
-        progress: newProgress
-      })
-      
-      // Save to localStorage
-      const savedProgress = localStorage.getItem('playlist_progress')
-      let allProgress: Record<string, { progress: number }> = {}
-      if (savedProgress) {
-        try {
-          allProgress = JSON.parse(savedProgress)
-        } catch (e) {
-          console.error('Failed to parse playlist progress:', e)
-        }
-      }
-      if (playlist) {
-        allProgress[playlist] = { progress: newProgress }
-        localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
-        console.log('💾 Saved progress to localStorage:', allProgress)
-      }
-      
-      // Check if we crossed a rank threshold (5 = silver, 10 = gold, 15 = platinum)
-      // Show rank up modal AFTER the animations complete
-      let rankUpType: 'silver' | 'gold' | 'platinum' | null = null
-      if (oldProgress < 5 && newProgress >= 5) {
-        rankUpType = 'silver'
-      } else if (oldProgress < 10 && newProgress >= 10) {
-        rankUpType = 'gold'
-      } else if (oldProgress < 15 && newProgress >= 15) {
-        rankUpType = 'platinum'
-      }
-      
-      if (rankUpType) {
-        console.log(`🎉 RANK UP TO ${rankUpType.toUpperCase()}! Preparing modal...`)
-        // Update icon unlock progress first to trigger icon colorization (separate from medal)
-        setIconUnlockProgress(newProgress)
-        console.log('🎨 Icon colorizing...')
-        
-        // Wait longer (0.9s) for icon colorization before showing modal
-        setTimeout(() => {
-          setRankUpTo(rankUpType!)
-          setShowRankUpModal(true)
-          console.log('🏅 Rank up modal shown')
-          
-          // Update displayed progress after modal is visible (changes medal behind the modal)
-          setTimeout(() => {
-            setDisplayedProgress(newProgress)
-            console.log('🏅 Medal updated after modal shown')
-          }, 200) // Small delay to ensure modal is fully displayed
-        }, 900) // Increased time for icon colorization
-      } else {
-        // No rank up, just update displayed progress and icons immediately
-        setDisplayedProgress(newProgress)
-        setIconUnlockProgress(newProgress)
-      }
-      
-      setTempFilledSegments(new Set()) // Clear temp fills after permanent update
-    }, totalAnimationTime)
+    console.log('🎵 Music note animations disabled - using Playlist XP system instead')
+    // Function stubbed out - no longer needed with Playlist XP system
   }
   
+  // OLD: Animate single note - DISABLED (replaced with Playlist XP system)
   const animateSingleNote = (songIndex: number, newSongSequence: number, initialProgress: number, updateProgress: boolean) => {
-    console.log(`\n🎵 ===== ANIMATING NOTE =====`)
-    console.log(`🎵 Song Index: ${songIndex}, New Song Sequence: ${newSongSequence}`)
-    console.log(`🎯 Initial Progress: ${initialProgress}`)
-    console.log(`🎯 Current playlistProgress.progress: ${playlistProgress.progress}`)
-    
-    // Get badge position (the music note icon)
-    const badgeElement = badgeRefsMap.current.get(songIndex)
-    if (!badgeElement) {
-      console.warn(`⚠️ Badge element not found for song ${songIndex}`)
-      return
+    console.log('🎵 Single note animation disabled - using Playlist XP system instead')
+    // Function stubbed out - no longer needed with Playlist XP system
+    if (false) { // Prevent unused parameter warnings
+      const _ = {songIndex, newSongSequence, initialProgress, updateProgress}
     }
-    
-    // Calculate target segment using INITIAL progress (not current progress which changes as notes land)
-    const targetSegmentIndex = initialProgress + newSongSequence
-    console.log(`🎯 CALCULATED TARGET: segment ${targetSegmentIndex} = initialProgress(${initialProgress}) + newSongSequence(${newSongSequence})`)
-    console.log(`📊 All segment refs:`, Array.from(segmentRefsMap.current.keys()).sort((a, b) => a - b))
-    
-    const segmentElement = segmentRefsMap.current.get(targetSegmentIndex)
-    if (!segmentElement) {
-      console.warn(`⚠️ Segment element not found at index ${targetSegmentIndex}`)
-      console.log('Available segment refs:', Array.from(segmentRefsMap.current.keys()))
-      return
-    }
-    
-    const badgeRect = badgeElement.getBoundingClientRect()
-    const segmentRect = segmentElement.getBoundingClientRect()
-    
-    // Calculate exact center coordinates using adjustable offsets
-    const note: FlyingNote = {
-      id: Date.now() + songIndex * 1000,
-      startX: badgeRect.left + badgeRect.width / 2 - NOTE_OFFSET_X,
-      startY: badgeRect.top + badgeRect.height / 2 - NOTE_OFFSET_Y,
-      endX: segmentRect.left + segmentRect.width / 2 - NOTE_OFFSET_X,
-      endY: segmentRect.top + segmentRect.height / 2 - NOTE_OFFSET_Y
-    }
-    
-    console.log(`Note offset: X=${NOTE_OFFSET_X}, Y=${NOTE_OFFSET_Y}`)
-    console.log(`Segment center: (${segmentRect.left + segmentRect.width / 2}, ${segmentRect.top + segmentRect.height / 2})`)
-    console.log(`Note position: (${note.endX}, ${note.endY})`)
-    
-    setFlyingNotes(prev => [...prev, note])
-    
-    // After animation completes (0.8s), trigger segment fill animation and remove the note
-    setTimeout(() => {
-      console.log(`✨ Filling segment ${targetSegmentIndex}`)
-      setFillingSegmentIndex(targetSegmentIndex)
-      
-      // Mark this segment as temporarily filled (for visual display)
-      setTempFilledSegments(prev => {
-        const newSet = new Set(prev)
-        newSet.add(targetSegmentIndex)
-        return newSet
-      })
-      
-      // Remove the note from DOM after fill animation
-      setTimeout(() => {
-        setFlyingNotes(prev => prev.filter(n => n.id !== note.id))
-        setFillingSegmentIndex(null)
-      }, 600) // Match segment fill animation duration
-    }, 800) // Match flyNoteToSegment animation duration (0.8s)
   }
 
   // Handle XP refill after all level-up modals are closed
@@ -1185,22 +1103,8 @@ const Game = () => {
                     // Show next modal
                     const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
                     
-                    setTimeout(() => {
-                      if (newPlayerLevel === 4 && !hatUnlocked) {
-                        console.log('🎩 HAT UNLOCK! (reached player level 4)')
-                        startLevelUpAnimation(null, true, newPlayerLevel)
-                        setHatUnlocked(true)
-                        localStorage.setItem('hat_unlocked', 'true')
-                      } else {
-                        const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !unlockedLifelines.includes(lifeline))
-                        if (nextLifelineToUnlock) {
-                          console.log('🎉 Showing level up modal for:', nextLifelineToUnlock, '(reached player level', newPlayerLevel, ')')
-                          startLevelUpAnimation(nextLifelineToUnlock, false, newPlayerLevel)
-                          setUnlockedLifelines([...unlockedLifelines, nextLifelineToUnlock])
-                          localStorage.setItem('unlocked_lifelines', JSON.stringify([...unlockedLifelines, nextLifelineToUnlock]))
-                        }
-                      }
-                    }, 500)
+                    // No unlock prompts - all lifelines unlocked by default, no hat
+                    console.log('✅ Level', newPlayerLevel, 'reached - no unlock prompts needed')
                     
                     // Drain bar again and set up next pending refill
                     setTimeout(() => {
@@ -3670,36 +3574,21 @@ const Game = () => {
     
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
-      // Determine rank based on progress
-      const rank = initialProgress >= 10 ? 'gold' : initialProgress >= 5 ? 'silver' : 'bronze'
-      console.log(`🎮 Starting game with Playlist: ${playlist}, Progress: ${initialProgress}/15, Rank: ${rank}, Total Questions: ${totalQuestions}`)
+      // Determine rank based on playlist level
+      const rank = currentPlaylistLevel >= 7 ? 'gold' : currentPlaylistLevel >= 4 ? 'silver' : 'bronze'
+      console.log(`🎮 Starting game with Playlist: ${playlist}, Level: ${currentPlaylistLevel}/10, Rank: ${rank}, Total Questions: ${totalQuestions}`)
       
-      // Load latest unlocked lifelines from localStorage
-      const savedLifelines = localStorage.getItem('unlocked_lifelines')
-      let currentUnlockedLifelines: LifelineType[] = []
+      // All lifelines are always unlocked
+      const currentUnlockedLifelines: LifelineType[] = allLifelines
+      setUnlockedLifelines(currentUnlockedLifelines)
       
-      if (savedLifelines) {
-        try {
-          currentUnlockedLifelines = JSON.parse(savedLifelines) as LifelineType[]
-          setUnlockedLifelines(currentUnlockedLifelines)
-        } catch (e) {
-          console.error('Failed to parse unlocked lifelines:', e)
-        }
-      }
+      console.log('🎯 VERSION B START: All lifelines unlocked by default')
       
-      console.log('🎯 VERSION B START: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
-      
-      // Select up to 3 random lifelines from unlocked lifelines
-      if (currentUnlockedLifelines.length > 0) {
-        const shuffled = [...currentUnlockedLifelines].sort(() => Math.random() - 0.5)
-        lifelinesForInitialQuestion = shuffled.slice(0, Math.min(3, currentUnlockedLifelines.length))
-        setAvailableLifelines(lifelinesForInitialQuestion)
-        console.log('🎯 VERSION B START: Selected lifelines for this run:', lifelinesForInitialQuestion)
-      } else {
-        // No lifelines unlocked yet
-        setAvailableLifelines([])
-        console.log('🎯 VERSION B START: No lifelines unlocked yet')
-      }
+      // Select 3 random lifelines from all available lifelines
+      const shuffled = [...currentUnlockedLifelines].sort(() => Math.random() - 0.5)
+      lifelinesForInitialQuestion = shuffled.slice(0, 3)
+      setAvailableLifelines(lifelinesForInitialQuestion)
+      console.log('🎯 VERSION B START: Selected lifelines for this run:', lifelinesForInitialQuestion)
       
       setLifelinesUsed({
         skip: false,
@@ -3857,23 +3746,11 @@ const Game = () => {
       setPlayerName(savedName)
     }
     
-    // Load unlocked lifelines
-    const savedLifelines = localStorage.getItem('unlocked_lifelines')
-    if (savedLifelines) {
-      try {
-        const parsed = JSON.parse(savedLifelines) as LifelineType[]
-        setUnlockedLifelines(parsed)
-      } catch (e) {
-        console.error('Failed to parse unlocked lifelines:', e)
-        setUnlockedLifelines([])
-      }
-    } else {
-      setUnlockedLifelines([])
-    }
+    // All lifelines are always unlocked by default
+    setUnlockedLifelines(allLifelines)
     
-    // Load hat unlock status
-    const savedHatUnlocked = localStorage.getItem('hat_unlocked')
-    setHatUnlocked(savedHatUnlocked === 'true')
+    // No hat - always stays false
+    setHatUnlocked(false)
   }, [])
 
   // NEW Results Screen sequence
@@ -3976,7 +3853,7 @@ const Game = () => {
           // Function to trigger XP bar animation (used by both normal and Daily Challenge)
           const triggerXPBarAnimation = (finalScore: number) => {
             console.log('🎬💰 triggerXPBarAnimation called with finalScore:', finalScore, '(base score:', score, ', isDailyChallenge:', isDailyChallenge, ')')
-            setShowXPBar(true)
+            // OLD: setShowXPBar(true) - removed, Global XP system disabled
             setXpAnimationComplete(false)
             
             // Calculate and set the static target position for the indicator
@@ -4069,26 +3946,8 @@ const Game = () => {
                     console.log('🎯 DEBUG XP CALC: newTotalXP =', newTotalXP, ', getXPRequiredForLevel(', playerLevel, ') =', getXPRequiredForLevel(playerLevel), ', difference =', xpAfterFirstLevel)
                     console.log('🎯 DEBUG: This XP will be used to refill the bar after level-up modal closes')
                     
-                    setTimeout(() => {
-                      // Check if reaching player level 4 (hat unlock)
-                      if (actualPlayerLevel === 4 && !hatUnlocked) {
-                        console.log('🎩 HAT UNLOCK! (reached player level 4, level-up event #' + levelNum + ')')
-                        startLevelUpAnimation(null, true, actualPlayerLevel)
-                        setHatUnlocked(true)
-                        localStorage.setItem('hat_unlocked', 'true')
-                      } else {
-                        // Unlock next lifeline
-                        const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !unlockedLifelines.includes(lifeline))
-                        
-                        if (nextLifelineToUnlock) {
-                          console.log('🎉 Showing level up modal for:', nextLifelineToUnlock, '(reached player level ' + actualPlayerLevel + ', level-up event #' + levelNum + ')')
-                          startLevelUpAnimation(nextLifelineToUnlock, false, actualPlayerLevel)
-                          
-                          setUnlockedLifelines([...unlockedLifelines, nextLifelineToUnlock])
-                          localStorage.setItem('unlocked_lifelines', JSON.stringify([...unlockedLifelines, nextLifelineToUnlock]))
-                        }
-                      }
-                    }, 500) // 0.5s delay after animation before modal
+                    // No unlock prompts - all lifelines unlocked by default, no hat
+                    console.log('✅ Level', actualPlayerLevel, 'reached - no unlock prompts needed')
                     
                     // Wait for modal to fully appear before draining bar
                     setTimeout(() => {
@@ -4191,47 +4050,15 @@ const Game = () => {
             localStorage.setItem('level_up_count', levelUpCount.toString())
             console.log('🎯 Level up count:', levelUpCount)
             
-            // Check if this is the third level up (hat unlock)
-            if (levelUpCount === 3 && !hatUnlocked) {
-              console.log('🎩 HAT UNLOCK!')
-              setTimeout(() => {
-                startLevelUpAnimation(null, true)
-                setHatUnlocked(true)
-                localStorage.setItem('hat_unlocked', 'true')
-                
-                // Reset XP to 0
-                setXpProgress(0)
-                setStartingXP(0)
-                localStorage.setItem('player_xp_progress', '0')
-              }, 1500)
-            } else {
-              // Unlock next lifeline
-              const lifelineUnlockOrder: LifelineType[] = ['skip', 'artistLetterReveal', 'songLetterReveal', 'multipleChoiceArtist', 'multipleChoiceSong']
-              const nextLifelineToUnlock = lifelineUnlockOrder.find(lifeline => !unlockedLifelines.includes(lifeline))
-              
-              console.log('🎯 Current unlocked lifelines:', unlockedLifelines)
-              console.log('🎯 Next lifeline to unlock:', nextLifelineToUnlock)
-              
-              if (nextLifelineToUnlock) {
-                // Show level up modal
-                setTimeout(() => {
-                  console.log('🎉 Showing level up modal for:', nextLifelineToUnlock)
-                  startLevelUpAnimation(nextLifelineToUnlock, false)
-                  
-                  // Update unlocked lifelines
-                  const updatedUnlocked = [...unlockedLifelines, nextLifelineToUnlock]
-                  setUnlockedLifelines(updatedUnlocked)
-                  localStorage.setItem('unlocked_lifelines', JSON.stringify(updatedUnlocked))
-                  
-                  // Reset XP to 0
-                  setXpProgress(0)
-                  setStartingXP(0)
-                  localStorage.setItem('player_xp_progress', '0')
-                }, 1500) // Wait for XP animation to finish
-              } else {
-                console.log('⚠️ No more lifelines to unlock - player has all 5!')
-              }
-            }
+            // No unlock prompts - all lifelines already unlocked, no hat
+            console.log('✅ Level up #' + levelUpCount + ' - no unlock prompts needed')
+            
+            // Reset XP to 0
+            setTimeout(() => {
+              setXpProgress(0)
+              setStartingXP(0)
+              localStorage.setItem('player_xp_progress', '0')
+            }, 1500)
           }
         }, 300)
       }, 10)
@@ -5444,32 +5271,17 @@ const Game = () => {
     
     // Re-randomize available lifelines for Version B
     if (version === 'Version B') {
-      // Load latest unlocked lifelines from localStorage
-      const savedLifelines = localStorage.getItem('unlocked_lifelines')
-      let currentUnlockedLifelines: LifelineType[] = []
+      // All lifelines are always unlocked
+      const currentUnlockedLifelines: LifelineType[] = allLifelines
+      setUnlockedLifelines(currentUnlockedLifelines)
       
-      if (savedLifelines) {
-        try {
-          currentUnlockedLifelines = JSON.parse(savedLifelines) as LifelineType[]
-          setUnlockedLifelines(currentUnlockedLifelines)
-        } catch (e) {
-          console.error('Failed to parse unlocked lifelines:', e)
-        }
-      }
+      console.log('🎯 VERSION B RESTART: All lifelines unlocked by default')
       
-      console.log('🎯 VERSION B RESTART: Unlocked lifelines from localStorage:', currentUnlockedLifelines)
-      
-      // Select up to 3 random lifelines from unlocked lifelines
-      if (currentUnlockedLifelines.length > 0) {
-        const shuffled = [...currentUnlockedLifelines].sort(() => Math.random() - 0.5)
-        const selectedLifelines = shuffled.slice(0, Math.min(3, currentUnlockedLifelines.length))
-        setAvailableLifelines(selectedLifelines)
-        console.log('🎯 VERSION B RESTART: New random lifelines selected:', selectedLifelines)
-      } else {
-        // No lifelines unlocked yet
-        setAvailableLifelines([])
-        console.log('🎯 VERSION B RESTART: No lifelines unlocked yet')
-      }
+      // Select 3 random lifelines from all available
+      const shuffled = [...currentUnlockedLifelines].sort(() => Math.random() - 0.5)
+      const selectedLifelines = shuffled.slice(0, 3)
+      setAvailableLifelines(selectedLifelines)
+      console.log('🎯 VERSION B RESTART: New random lifelines selected:', selectedLifelines)
     }
     
     setArtistLetterRevealText(null) // Reset letter reveal info
@@ -5504,22 +5316,26 @@ const Game = () => {
     setShowQuizComplete(false)
     setShowFinalScore(false)
     setDisplayedScore(0)
-    setShowXPBar(false)
+    // OLD: setShowXPBar(false) - Global XP system removed
     setTargetXPPosition(0)
     setShowSongList(false)
     
-    // Reset Playlist Meter animation states
-    setXpBarFlyLeft(false)
-    setFinalScoreFlyLeft(false)
-    setShowPlaylistMeter(false)
-    setShowPlaylistMastered(false) // Reset playlist mastered text
+    // Reset Playlist XP states
+    setShowPlaylistXPBar(false)
+    playlistXPAnimationStartedRef.current = false
+    setHasAwardedPlaylistXP(false)
+    setShowPlaylistLevelUpModal(false)
+    setPendingLevelUp(false)
+    setShowPlaylistMastered(false)
+    
+    // OLD segment animation states - no longer needed
     setFlyingNotes([])
     setFillingSegmentIndex(null)
     setTempFilledSegments(new Set())
-    hasRunMusicNoteAnimations.current = false // Reset animation flag for new game
-    setShowRankUpModal(false) // Reset rank-up modal
-    setDisplayedProgress(playlistProgress.progress) // Sync displayed progress
-    setIconUnlockProgress(playlistProgress.progress) // Sync icon unlock progress
+    hasRunMusicNoteAnimations.current = false
+    setShowRankUpModal(false)
+    setDisplayedProgress(currentPlaylistLevel) // Use current level instead of old progress
+    setIconUnlockProgress(currentPlaylistLevel)
     
     startNewQuestion()
   }
@@ -5931,7 +5747,7 @@ const Game = () => {
                   )}
                   
                   {showFinalScore && (
-                    <p className={`final-score-text ${finalScoreFlyLeft ? 'fly-left' : ''} ${isMultiplyingScore ? 'score-multiplying' : ''}`}>
+                    <p className={`final-score-text ${isMultiplyingScore ? 'score-multiplying' : ''}`}>
                       Final Score: 
                       <span className="final-score-value-container">
                         {showDailyChallenge2X && (
@@ -5942,88 +5758,39 @@ const Game = () => {
                     </p>
                   )}
                   
-                  {/* Wrapper to contain both XP bar and Playlist meter */}
-                  <div className="xp-playlist-wrapper">
-                    {/* Circular XP Meter - NEW */}
-                    {(showXPBar && showXPAnimation || xpBarFlyLeft) && (
-                      <div className={`circular-xp-container ${xpBarFlyLeft ? 'fly-left' : ''}`}>
-                        {/* Circular Progress Meter */}
-                        <div className="circular-progress-wrapper">
-                          {/* Prize Icon Above Level Number Box */}
-                          {!(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
-                            <div className={`prize-icon-above ${animateNextPrize ? 'next-prize-appear' : ''}`}>
-                              {displayLevel === 3 ? (
-                                <img src="/assets/LevelUp_Present_Closed.png" alt="Present" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                              ) : (
-                                <img src="/assets/LevelUp_TreasureChest_Closed.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* Level Number Behind Avatar */}
-                          <div className="level-number-display">
-                            <span className={`level-number ${showLevelUpAnimation ? 'level-up-animation' : ''}`}>LVL {playerLevel}</span>
-                          </div>
-                          
-                          <svg className="circular-progress-svg" viewBox="0 0 200 200">
-                            {/* Background circle */}
-                            <circle
-                              className="circular-progress-bg"
-                              cx="100"
-                              cy="100"
-                              r="85"
-                              fill="none"
-                              stroke="rgba(60, 60, 60, 1)"
-                              strokeWidth="12"
-                            />
-                            {/* Progress circle */}
-                            <circle
-                              className={`circular-progress-fill ${xpAnimationComplete ? 'animate' : ''} ${skipXPTransition ? 'no-transition' : ''}`}
-                              cx="100"
-                              cy="100"
-                              r="85"
-                              fill="none"
-                              stroke="url(#xpGradient)"
-                              strokeWidth="12"
-                              strokeLinecap="round"
-                              strokeDasharray="534.07"
-                              strokeDashoffset={534.07 - (534.07 * xpProgress) / 100}
-                              transform="rotate(-90 100 100)"
-                            />
-                            <defs>
-                              <linearGradient id="xpGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stopColor="#4ECDC4" />
-                                <stop offset="100%" stopColor="#44A08D" />
-                              </linearGradient>
-                            </defs>
-                          </svg>
-                          
-                          {/* Avatar in center */}
-                          <div className="circular-xp-avatar">
-                            <img 
-                              src={
-                                version === 'Version B'
-                                  ? (hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png")
-                                  : "/assets/YourAvatar.png"
-                              }
-                              alt="Player Avatar" 
-                              className="avatar-in-circle"
-                            />
-                          </div>
-                          
-                          {/* XP Text */}
-                          <div className="circular-xp-text">{Math.round(displayedXP)}/{getXPRequiredForLevel(displayLevel)}</div>
-                        </div>
-                        
-                        {/* XP Gain Indicator */}
-                        <div 
-                          className={`xp-gain-indicator-circular ${showLevelUpAnimation ? 'early-fade' : ''}`}
-                        >
-                          +{isDailyChallenge ? score * 2 : score}
-                        </div>
+                  {/* Playlist XP Bar - New System */}
+                  {showPlaylistXPBar && (
+                    <div className="results-playlist-xp-container">
+                      {/* Playlist Name */}
+                      <div className="results-playlist-name-container">
+                        <div className="results-playlist-name">{actualPlaylist}</div>
+                        <div className="results-playlist-mastery">Level Progress</div>
                       </div>
-                    )}
-                  </div>{/* End xp-playlist-wrapper */}
+                      
+                      {/* XP Bar and Level Badge */}
+                      <div className="results-playlist-xp-row">
+                        {currentPlaylistLevel < 10 ? (
+                          <div className="playlist-xp-container-result">
+                            <div className="playlist-xp-bar-bg">
+                              <div 
+                                className="playlist-xp-bar-fill"
+                                style={{ width: `${(displayedPlaylistXP / getPlaylistXPRequired(currentPlaylistLevel)) * 100}%` }}
+                              />
+                              <div className="playlist-xp-text">
+                                {Math.floor(displayedPlaylistXP)}/{getPlaylistXPRequired(currentPlaylistLevel)}
+                              </div>
+                            </div>
+                            <div className="playlist-level-badge-result">{currentPlaylistLevel}</div>
+                          </div>
+                        ) : (
+                          <div className="playlist-mastered-result-container">
+                            <div className="playlist-mastered-result">MASTERED</div>
+                            <div className="playlist-mastered-diamond-result">💎</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   </div>{/* End results-top-section */}
                   
                   {/* Detailed Song List - NEW ACTIVE */}
@@ -6105,80 +5872,7 @@ const Game = () => {
                   </div>
                   )}
                   
-                  {/* Playlist Tier Meter (flies in below Your Answers section) */}
-                  {showPlaylistMeter && (
-                    <div className={`results-playlist-meter-container ${showPlaylistMeter ? 'fly-in' : ''}`}>
-                      {/* Playlist Mastered Title - Only shows when platinum rank achieved */}
-                      {showPlaylistMastered && (
-                        <div className="playlist-mastered-title">Playlist Mastered!</div>
-                      )}
-                      
-                      {/* Playlist Name with Mastery text directly below */}
-                      <div className="results-playlist-name-container">
-                        <div className="results-playlist-name">{playlist}</div>
-                        <div className="results-playlist-mastery">Mastery</div>
-                      </div>
-                      
-                      {/* Meter and Medal on the right */}
-                      <div className="results-playlist-meter-row">
-                        <div className="playlist-meter-wrapper">
-                          {/* Progress Meter (always show all 15 segments) */}
-                          <div className="results-playlist-tier-meter">
-                            {Array.from({ length: 15 }).map((_, index) => {
-                              const isPermanentlyFilled = index < playlistProgress.progress
-                              const isTempFilled = tempFilledSegments.has(index)
-                              const isCurrentlyFilling = fillingSegmentIndex === index
-                              const shouldShowAsFilled = isPermanentlyFilled || isTempFilled
-                              
-                              // Determine segment rank for background color
-                              let segmentRank: 'bronze' | 'silver' | 'gold' = 'bronze'
-                              if (index >= 10) segmentRank = 'gold'
-                              else if (index >= 5) segmentRank = 'silver'
-                              
-                              return (
-                                <div
-                                  key={index}
-                                  ref={(el) => {
-                                    if (el) segmentRefsMap.current.set(index, el as HTMLDivElement)
-                                  }}
-                                  className={`results-playlist-segment ${segmentRank}-segment ${shouldShowAsFilled ? 'filled' : ''} ${isCurrentlyFilling ? 'filling' : ''}`}
-                                />
-                              )
-                            })}
-                            
-                            {/* Milestone Icons below the meter */}
-                            <div className="playlist-milestone-icons">
-                              {/* Question Mark: Below final bronze node (segment index 4) */}
-                              <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos4}px` }}>
-                                <div className={`milestone-icon-circle bronze-border ${iconUnlockProgress > 4 ? 'unlocked' : 'locked'}`}>
-                                  <img src="/assets/PM_QuestionMark.png" alt="Silver Rank Reward" className="milestone-icon" />
-                                </div>
-                              </div>
-                              {/* Music Note: Below final silver node (segment index 9) */}
-                              <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos9}px` }}>
-                                <div className={`milestone-icon-circle silver-border ${iconUnlockProgress > 9 ? 'unlocked' : 'locked'}`}>
-                                  <img src="/assets/PM_FireNote.png" alt="Gold Rank Reward" className="milestone-icon" />
-                                </div>
-                              </div>
-                              {/* Winner Podium: Below final gold node (segment index 14) */}
-                              <div className="milestone-icon-wrapper" style={{ left: `${milestonePositions.pos14}px` }}>
-                                <div className={`milestone-icon-circle gold-border ${iconUnlockProgress > 14 ? 'unlocked' : 'locked'}`}>
-                                  <img src="/assets/PM_WinnerPodium.png" alt="Diamond Rank Reward" className="milestone-icon" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Medal Icon */}
-                        <img 
-                          src={displayedProgress >= 15 ? '/assets/MedalDiamond.png' : displayedProgress >= 10 ? '/assets/MedalGold.png' : displayedProgress >= 5 ? '/assets/MedalSilver.png' : '/assets/MedalBronze.png'}
-                          alt={`${displayedProgress >= 15 ? 'Diamond' : displayedProgress >= 10 ? 'Gold' : displayedProgress >= 5 ? 'Silver' : 'Bronze'} Medal`}
-                          className="results-playlist-medal-icon"
-                        />
-                      </div>
-                    </div>
-                  )}
+                  {/* OLD: Playlist Segment Tier Meter - REMOVED (replaced with Playlist XP bar above) */}
                   
                   {/* OLD CONTENT - TEMPORARILY DISABLED */}
                   {false && (
@@ -7863,6 +7557,50 @@ const Game = () => {
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Playlist Level-Up Modal */}
+        {showPlaylistLevelUpModal && (
+          <div className="level-up-modal-overlay">
+            <div className="level-up-modal">
+              <h1 className="level-up-big-text">LEVEL UP!</h1>
+              <div className="level-up-content">
+                <div className="level-up-playlist-info">
+                  <div className="level-up-playlist-name">{actualPlaylist}</div>
+                  <div className="level-up-new-level">
+                    Level {newPlaylistLevelReached}
+                  </div>
+                </div>
+                
+                {/* Show unlock messages */}
+                {newPlaylistLevelReached === 3 && (
+                  <div className="level-up-unlock-message">
+                    🎵 Special Questions Unlocked!
+                  </div>
+                )}
+                {newPlaylistLevelReached === 5 && (
+                  <div className="level-up-unlock-message">
+                    🔥 Daily Challenge Unlocked!
+                  </div>
+                )}
+                {newPlaylistLevelReached === 10 && (
+                  <div className="level-up-unlock-message">
+                    ⚡ Master Mode Unlocked!
+                    <br />
+                    <span style={{ fontSize: '1.5rem', display: 'block', marginTop: '0.5rem' }}>
+                      Playlist Mastered!
+                    </span>
+                  </div>
+                )}
+              </div>
+              <button 
+                className="level-up-confirm-btn" 
+                onClick={() => setShowPlaylistLevelUpModal(false)}
+              >
+                Continue
+              </button>
+            </div>
           </div>
         )}
 

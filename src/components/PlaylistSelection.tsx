@@ -1,17 +1,24 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import CollectionMenu from './CollectionMenu'
+import PlaylistPrompt from './PlaylistPrompt'
 import './PlaylistSelection.css'
 
 type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
 
 type PlaylistRank = 'bronze' | 'silver' | 'gold' | 'platinum'
 
+// PLAYLIST XP SYSTEM - Each level requires 20 more XP than the previous
 interface PlaylistProgress {
-  progress: number // Number of segments filled (0-15)
+  level: number // Current level (1-10)
+  xp: number    // Current XP progress toward next level
 }
 
-// PROGRESSIVE XP SYSTEM - Each level requires 30 more XP than the previous
+const getPlaylistXPRequired = (level: number): number => {
+  return 100 + ((level - 1) * 20) // Level 1: 100, Level 2: 120, Level 3: 140, etc.
+}
+
+// GLOBAL PLAYER XP SYSTEM - Each level requires 30 more XP than the previous
 // Level 1: 100 XP, Level 2: 130 XP, Level 3: 160 XP, etc.
 const getXPRequiredForLevel = (level: number): number => {
   return 100 + ((level - 1) * 30) // Level 1: 100, Level 2: 130, Level 3: 160, etc.
@@ -25,6 +32,8 @@ const PlaylistSelection = () => {
   const [hoveredPlaylist, setHoveredPlaylist] = useState<string | null>(null)
   const [playlistStats, setPlaylistStats] = useState<Record<string, any>>({})
   const [showCollectionMenu, setShowCollectionMenu] = useState(false)
+  const [showPlaylistPrompt, setShowPlaylistPrompt] = useState(false)
+  const [promptPlaylist, setPromptPlaylist] = useState('')
   const [collectionPlaylist, setCollectionPlaylist] = useState('')
   const [collectionRank, setCollectionRank] = useState<PlaylistRank>('bronze')
   const [showDailyChallengeModal, setShowDailyChallengeModal] = useState(false)
@@ -111,12 +120,12 @@ const PlaylistSelection = () => {
   // Playlist progression system state
   const playlists = ['2020s', '2010s', '2000s', '90s', 'Iconic Songs', 'Most Streamed Songs']
   const [playlistProgress, setPlaylistProgress] = useState<Record<string, PlaylistProgress>>({
-    '2020s': { progress: 0 },
-    '2010s': { progress: 0 },
-    '2000s': { progress: 0 },
-    '90s': { progress: 0 },
-    'Iconic Songs': { progress: 0 },
-    'Most Streamed Songs': { progress: 0 }
+    '2020s': { level: 1, xp: 0 },
+    '2010s': { level: 1, xp: 0 },
+    '2000s': { level: 1, xp: 0 },
+    '90s': { level: 1, xp: 0 },
+    'Iconic Songs': { level: 1, xp: 0 },
+    'Most Streamed Songs': { level: 1, xp: 0 }
   })
 
   // Track which playlists have new songs
@@ -162,13 +171,34 @@ const PlaylistSelection = () => {
       }
     }
 
-    // Load playlist progress
+    // Load playlist progress (with migration from old segment system)
     const savedPlaylistProgress = localStorage.getItem('playlist_progress')
     if (savedPlaylistProgress) {
       try {
-        const parsed = JSON.parse(savedPlaylistProgress) as Record<string, PlaylistProgress>
-        setPlaylistProgress(parsed)
-        console.log('📊 Loaded playlist progress:', parsed)
+        const parsed = JSON.parse(savedPlaylistProgress) as Record<string, any>
+        const migratedProgress: Record<string, PlaylistProgress> = {}
+        
+        // Migrate from old progress format to new level/xp format
+        for (const [playlist, data] of Object.entries(parsed)) {
+          if ('progress' in data && typeof data.progress === 'number') {
+            // Old format: convert segments to approximate level
+            const segments = data.progress
+            const approximateLevel = Math.min(Math.floor(segments / 1.5) + 1, 10)
+            migratedProgress[playlist] = { level: approximateLevel, xp: 0 }
+            console.log(`📊 Migrated ${playlist}: ${segments} segments → Level ${approximateLevel}`)
+          } else if ('level' in data && 'xp' in data) {
+            // New format: use as-is
+            migratedProgress[playlist] = data
+          } else {
+            // Unknown format: default to level 1
+            migratedProgress[playlist] = { level: 1, xp: 0 }
+          }
+        }
+        
+        setPlaylistProgress(migratedProgress)
+        // Save migrated data
+        localStorage.setItem('playlist_progress', JSON.stringify(migratedProgress))
+        console.log('📊 Loaded playlist progress:', migratedProgress)
       } catch (e) {
         console.error('Failed to parse playlist progress:', e)
       }
@@ -270,17 +300,17 @@ const PlaylistSelection = () => {
     return () => clearInterval(interval)
   }, [])
 
-  // Helper function to get rank from progress
-  const getRankFromProgress = (progress: number): PlaylistRank => {
-    if (progress >= 15) return 'platinum'
-    if (progress >= 10) return 'gold'
-    if (progress >= 5) return 'silver'
+  // Helper function to get rank from level (for visual display only)
+  const getRankFromLevel = (level: number): PlaylistRank => {
+    if (level >= 10) return 'platinum'
+    if (level >= 5) return 'gold'
+    if (level >= 3) return 'silver'
     return 'bronze'
   }
 
   // Helper function to check if Master Mode is unlocked
-  const isMasterModeUnlocked = (progress: number): boolean => {
-    return progress >= 15 // Master Mode available at 15 segments (Platinum rank)
+  const isMasterModeUnlocked = (level: number): boolean => {
+    return level >= 10 // Master Mode available at Level 10
   }
 
   // Helper function to get medal image path
@@ -384,20 +414,15 @@ const PlaylistSelection = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [showDailyChallengeModal, dailyChallengePlaylist])
 
-  const handlePlaylistSelect = (playlist: string, isMasterMode: boolean = false) => {
-    setSelectedPlaylist(playlist)
-    setSelectedMasterMode(isMasterMode)
-    console.log(`Selected playlist: ${playlist}, Master Mode: ${isMasterMode}`)
-    
-    const progress = playlistProgress[playlist]?.progress || 0
-    const rank = getRankFromProgress(progress)
-    
-    // Navigate directly to game after brief selection feedback
-    setTimeout(() => {
-      const gameVersion = isMasterMode ? 'Version C' : 'Version B'
-      const url = `/game/${playlist}?version=${encodeURIComponent(gameVersion)}&progress=${progress}`
-      navigate(url)
-    }, 1000)
+  const handlePlaylistSelect = (playlist: string) => {
+    setPromptPlaylist(playlist)
+    setShowPlaylistPrompt(true)
+    console.log(`Selected playlist: ${playlist}`)
+  }
+  
+  const handleClosePrompt = () => {
+    setShowPlaylistPrompt(false)
+    setPromptPlaylist('')
   }
 
   const handleNameSubmit = () => {
@@ -412,18 +437,30 @@ const PlaylistSelection = () => {
   }
 
   const handleDebugRankUp = (playlist: string) => {
-    const currentProgress = playlistProgress[playlist]?.progress || 0
-    const newProgress = Math.min(currentProgress + 5, 15) // Add 5, cap at 15
+    const current = playlistProgress[playlist] || { level: 1, xp: 0 }
+    const xpRequired = getPlaylistXPRequired(current.level)
+    const newXP = current.xp + 20 // Add 20 XP
+    
+    let newLevel = current.level
+    let remainingXP = newXP
+    
+    // Check for level up
+    if (remainingXP >= xpRequired && current.level < 10) {
+      newLevel = current.level + 1
+      remainingXP = 0 // Reset XP on level up
+    }
+    
+    const newProgress = { level: newLevel, xp: remainingXP }
     
     // Update local state
     setPlaylistProgress(prev => ({
       ...prev,
-      [playlist]: { progress: newProgress }
+      [playlist]: newProgress
     }))
     
     // Save to localStorage
     const savedProgress = localStorage.getItem('playlist_progress')
-    let allProgress: Record<string, { progress: number }> = {}
+    let allProgress: Record<string, PlaylistProgress> = {}
     if (savedProgress) {
       try {
         allProgress = JSON.parse(savedProgress)
@@ -431,10 +468,10 @@ const PlaylistSelection = () => {
         console.error('Failed to parse playlist progress:', e)
       }
     }
-    allProgress[playlist] = { progress: newProgress }
+    allProgress[playlist] = newProgress
     localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
     
-    console.log(`🐛 DEBUG: ${playlist} progress ${currentProgress} → ${newProgress}`)
+    console.log(`🐛 DEBUG: ${playlist} Level ${current.level} (${current.xp}/${xpRequired} XP) → Level ${newLevel} (${remainingXP}/${getPlaylistXPRequired(newLevel)} XP)`)
   }
 
   // Start the multi-stage level-up animation
@@ -601,14 +638,14 @@ const PlaylistSelection = () => {
     setPlayerName('')
     setShowNamePrompt(true)
     setPlaylistsWithNewSongs(new Set())
-    // Reset all playlist progress to 0 segments
+    // Reset all playlist progress to Level 1
     setPlaylistProgress({
-      '2020s': { progress: 0 },
-      '2010s': { progress: 0 },
-      '2000s': { progress: 0 },
-      '90s': { progress: 0 },
-      'Iconic Songs': { progress: 0 },
-      'Most Streamed Songs': { progress: 0 }
+      '2020s': { level: 1, xp: 0 },
+      '2010s': { level: 1, xp: 0 },
+      '2000s': { level: 1, xp: 0 },
+      '90s': { level: 1, xp: 0 },
+      'Iconic Songs': { level: 1, xp: 0 },
+      'Most Streamed Songs': { level: 1, xp: 0 }
     })
     // Reset all playlist stats
     const emptyStats: Record<string, any> = {}
@@ -772,10 +809,11 @@ const PlaylistSelection = () => {
             
             <div className="playlist-buttons">
               {playlists.map((playlist) => {
-                const progressData = playlistProgress[playlist] || { progress: 0 }
-                const progress = progressData.progress
-                const rank = getRankFromProgress(progress)
-                const masterModeUnlocked = isMasterModeUnlocked(progress)
+                const progressData = playlistProgress[playlist] || { level: 1, xp: 0 }
+                const level = progressData.level
+                const xp = progressData.xp
+                const rank = getRankFromLevel(level)
+                const masterModeUnlocked = isMasterModeUnlocked(level)
                 const classNameMap: Record<string, string> = {
                   '2020s': 'playlist-2020s',
                   '2010s': 'playlist-2010s',
@@ -849,8 +887,8 @@ const PlaylistSelection = () => {
                       onClick={() => handlePlaylistSelect(playlist)}
                       disabled={selectedPlaylist !== null}
                     >
-                      {/* Daily Challenge Button - Shows for Gold Tier and above */}
-                      {progress >= 10 && (
+                      {/* Daily Challenge Button - Shows for Level 5 and above */}
+                      {level >= 5 && (
                         <button
                           className={`daily-challenge-button ${!isDailyChallengeAvailable(playlist) ? 'disabled' : ''}`}
                           onClick={(e) => {
@@ -880,13 +918,15 @@ const PlaylistSelection = () => {
                         </button>
                       )}
 
-                      {/* Master Mode Button - Shows for Platinum Tier (15 segments) */}
+                      {/* Master Mode Button - Shows for Level 10 (Mastered) */}
                       {masterModeUnlocked && (
                         <button
                           className="master-mode-button-small"
                           onClick={(e) => {
                             e.stopPropagation()
-                            handlePlaylistSelect(playlist, true)
+                            // Master Mode will be handled through the prompt
+                            setPromptPlaylist(playlist)
+                            setShowPlaylistPrompt(true)
                           }}
                           onMouseEnter={() => handleMasterModeButtonHover(playlist)}
                           title="Master Mode"
@@ -906,49 +946,31 @@ const PlaylistSelection = () => {
                     </button>
                     
                     <div className="playlist-meter-row">
-                      {/* Playlist Progress Meter - 15 segments with bronze/silver/gold backgrounds */}
-                      {!masterModeUnlocked ? (
-                        <div className="playlist-tier-meter">
-                          {Array.from({ length: 15 }).map((_, index) => {
-                            // Determine segment background tier
-                            let segmentRank: PlaylistRank = 'bronze'
-                            if (index >= 10) segmentRank = 'gold'
-                            else if (index >= 5) segmentRank = 'silver'
-                            
-                            return (
-                              <div
-                                key={index}
-                                className={`playlist-segment ${segmentRank}-segment ${index < progress ? 'filled' : ''}`}
-                              />
-                            )
-                          })}
+                      {/* Playlist XP Bar */}
+                      {level < 10 ? (
+                        <div className="playlist-xp-container">
+                          <div className="playlist-xp-bar-bg">
+                            <div 
+                              className="playlist-xp-bar-fill"
+                              style={{ width: `${(xp / getPlaylistXPRequired(level)) * 100}%` }}
+                            />
+                            <div className="playlist-xp-text">
+                              {xp}/{getPlaylistXPRequired(level)}
+                            </div>
+                          </div>
+                          <div className="playlist-level-badge">{level}</div>
                         </div>
                       ) : (
-                        <div className="playlist-mastered-text">
-                          MASTERED
+                        <div className="playlist-mastered-container">
+                          <div className="playlist-mastered-text">MASTERED</div>
+                          <div className="playlist-mastered-diamond">💎</div>
                         </div>
                       )}
 
-                      {/* Medal Button */}
-                      <div className="playlist-medal-wrapper">
-                        {playlistsWithNewSongs.has(playlist) && (
-                          <div className="new-songs-badge">NEW</div>
-                        )}
-                        <button
-                          className="playlist-medal-button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleMedalClick(playlist, rank)
-                          }}
-                          aria-label={`View ${playlist} ${rank} rank details`}
-                        >
-                          <img 
-                            src={getMedalImage(rank)}
-                            alt={`${rank} Medal`}
-                            className="playlist-medal-icon"
-                          />
-                        </button>
-                      </div>
+                      {/* NEW songs badge */}
+                      {playlistsWithNewSongs.has(playlist) && (
+                        <div className="new-songs-badge-playlist">NEW</div>
+                      )}
                     </div>
                   </div>
                 )
@@ -1145,6 +1167,25 @@ const PlaylistSelection = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* Playlist Prompt Modal */}
+      {showPlaylistPrompt && promptPlaylist && (
+        <PlaylistPrompt
+          playlist={promptPlaylist}
+          level={playlistProgress[promptPlaylist]?.level || 1}
+          xp={playlistProgress[promptPlaylist]?.xp || 0}
+          rank={getRankFromLevel(playlistProgress[promptPlaylist]?.level || 1)}
+          stats={playlistStats[promptPlaylist] || { timesPlayed: 0, averageScore: 0, highestScore: 0 }}
+          isDailyChallengeAvailable={isDailyChallengeAvailable(promptPlaylist)}
+          masterModeUnlocked={isMasterModeUnlocked(playlistProgress[promptPlaylist]?.level || 1)}
+          onClose={handleClosePrompt}
+          onStartDailyChallenge={() => {
+            setShowPlaylistPrompt(false)
+            setDailyChallengePlaylist(promptPlaylist)
+            setShowDailyChallengeModal(true)
+          }}
+        />
       )}
     </div>
   )

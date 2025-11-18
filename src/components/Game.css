@@ -8386,3 +8386,327 @@
   }
 }
 
+/* ========================================
+   PLAYLIST XP SYSTEM - Results Screen
+   ======================================== */
+
+.results-playlist-xp-container {
+  width: 90%;
+  max-width: 800px;
+  margin: 2rem auto 0;
+  padding: 1.5rem 2rem;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 15px;
+  border: 2px solid rgba(78, 205, 196, 0.5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.results-playlist-name-container {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.results-playlist-name {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #4ECDC4;
+  text-shadow: 0 2px 10px rgba(78, 205, 196, 0.6);
+  margin-bottom: 0.3rem;
+}
+
+.results-playlist-mastery {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.results-playlist-xp-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.playlist-xp-container-result {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+  max-width: 700px;
+  animation: xpContainerSlideIn 0.8s ease-out forwards;
+}
+
+@keyframes xpContainerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.playlist-level-badge-result {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+  border: 3px solid rgba(78, 205, 196, 0.5);
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.8), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+  margin-right: -45px;
+  z-index: 3;
+  animation: levelBadgePop 0.5s ease-out 0.3s both;
+}
+
+@keyframes levelBadgePop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.playlist-xp-bar-bg {
+  flex: 1;
+  height: 45px;
+  background: rgba(40, 40, 40, 0.9);
+  border-radius: 22px;
+  overflow: visible;
+  border: 3px solid rgba(78, 205, 196, 0.4);
+  position: relative;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.playlist-xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4ECDC4 0%, #44A08D 50%, #4ECDC4 100%);
+  border-radius: 20px;
+  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 15px rgba(78, 205, 196, 0.8), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+  position: relative;
+  animation: xpBarGlow 2s ease-in-out infinite;
+}
+
+@keyframes xpBarGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(78, 205, 196, 0.6), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(78, 205, 196, 1), inset 0 2px 5px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.playlist-xp-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: -1px -1px 0 #000,  
+               1px -1px 0 #000,
+               -1px 1px 0 #000,
+               1px 1px 0 #000,
+               0 0 8px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.playlist-mastered-result-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  width: 100%;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(185, 147, 214, 0.3) 0%, rgba(140, 122, 230, 0.3) 100%);
+  border-radius: 15px;
+  animation: masteredFadeIn 1s ease-out forwards;
+}
+
+@keyframes masteredFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.playlist-mastered-result {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 
+    0 0 20px rgba(185, 147, 214, 1),
+    0 0 40px rgba(185, 147, 214, 0.8),
+    0 4px 12px rgba(0, 0, 0, 0.6);
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #b893d6 0%, #8e7cc3 50%, #b893d6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: masteredShimmerResult 3s ease-in-out infinite;
+}
+
+.playlist-mastered-diamond-result {
+  font-size: 3rem;
+  filter: drop-shadow(0 0 15px rgba(185, 147, 214, 1));
+  animation: diamondPulseResult 2s ease-in-out infinite;
+}
+
+@keyframes masteredShimmerResult {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.4);
+  }
+}
+
+@keyframes diamondPulseResult {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.15) rotate(-5deg);
+  }
+  75% {
+    transform: scale(1.15) rotate(5deg);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .results-playlist-xp-container {
+    width: 95%;
+    padding: 1rem;
+  }
+  
+  .results-playlist-name {
+    font-size: 1.5rem;
+  }
+  
+  .playlist-level-badge-result {
+    width: 45px;
+    height: 45px;
+    font-size: 1.2rem;
+  }
+  
+  .playlist-xp-bar-bg {
+    height: 30px;
+  }
+  
+  .playlist-xp-text {
+    font-size: 0.85rem;
+  }
+  
+  .playlist-mastered-result {
+    font-size: 1.8rem;
+    padding: 1.5rem;
+  }
+}
+
+/* ========================================
+   PLAYLIST LEVEL-UP MODAL
+   ======================================== */
+
+.level-up-playlist-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.level-up-playlist-name {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #4ECDC4;
+  text-shadow: 0 0 20px rgba(78, 205, 196, 0.8),
+               0 0 40px rgba(78, 205, 196, 0.6),
+               0 4px 12px rgba(0, 0, 0, 0.6);
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.level-up-new-level {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 30px rgba(255, 215, 0, 0.9),
+               0 0 50px rgba(255, 215, 0, 0.7),
+               0 4px 15px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.1em;
+  animation: levelPulse 2s ease-in-out infinite;
+}
+
+.level-up-unlock-message {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  padding: 1.5rem 2rem;
+  background: rgba(78, 205, 196, 0.2);
+  border: 2px solid rgba(78, 205, 196, 0.5);
+  border-radius: 15px;
+  margin-top: 1.5rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  animation: unlockGlow 2s ease-in-out infinite;
+}
+
+@keyframes levelPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes unlockGlow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(78, 205, 196, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(78, 205, 196, 0.8);
+  }
+}
+
+/* Mobile responsive for playlist level-up */
+@media (max-width: 768px) {
+  .level-up-playlist-name {
+    font-size: 1.8rem;
+  }
+  
+  .level-up-new-level {
+    font-size: 2.5rem;
+  }
+  
+  .level-up-unlock-message {
+    font-size: 1.3rem;
+    padding: 1rem;
+  }
+}
+
