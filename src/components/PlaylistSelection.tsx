@@ -720,6 +720,18 @@ const PlaylistSelection = () => {
         </div>
       )}
 
+      {/* Top Left Avatar and Name */}
+      <div className="top-left-avatar-container">
+        <div className="top-left-avatar-wrapper">
+          <img 
+            src={hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png"}
+            alt="Player Avatar" 
+            className="top-left-avatar"
+          />
+        </div>
+        <div className="top-left-player-name">{playerName || 'Player'}</div>
+      </div>
+
       <div className="playlist-content">
         <header className="header">
           <img 
@@ -728,81 +740,6 @@ const PlaylistSelection = () => {
             className="logo"
           />
         </header>
-
-        {/* Circular XP Meter */}
-        <div 
-          className="xp-bar-container-circular"
-          onMouseEnter={() => setIsHoveringXPBar(true)}
-          onMouseLeave={() => setIsHoveringXPBar(false)}
-        >
-          <div className="circular-xp-container-menu">
-            <div className="circular-progress-wrapper">
-              {/* Prize Icon Above Level Number Box */}
-              {!(showClosedPrize || showOpenPrize || showLevelUpModal || showHatUnlockModal) && (
-                <div className={`prize-icon-above ${animateNextPrize ? 'next-prize-appear' : ''}`}>
-                  {displayLevel === 3 ? (
-                    <img src="/assets/LevelUp_Present_Closed.png" alt="Present" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  ) : (
-                    <img src="/assets/LevelUp_TreasureChest_Closed.png" alt="Treasure" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  )}
-                </div>
-              )}
-              
-              {/* Level Number Behind Avatar */}
-              <div className="level-number-display">
-                <span className="level-number">LVL {playerLevel}</span>
-              </div>
-              
-              <svg className="circular-progress-svg" viewBox="0 0 200 200">
-                {/* Background circle */}
-                <circle
-                  className="circular-progress-bg"
-                  cx="100"
-                  cy="100"
-                  r="85"
-                  fill="none"
-                  stroke="rgba(60, 60, 60, 1)"
-                  strokeWidth="12"
-                />
-                {/* Progress circle */}
-                <circle
-                  className="circular-progress-fill"
-                  cx="100"
-                  cy="100"
-                  r="85"
-                  fill="none"
-                  stroke="url(#xpGradientMenu)"
-                  strokeWidth="12"
-                  strokeLinecap="round"
-                  strokeDasharray="534.07"
-                  strokeDashoffset={534.07 - (534.07 * xpProgress) / 100}
-                  transform="rotate(-90 100 100)"
-                />
-                <defs>
-                  <linearGradient id="xpGradientMenu" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#4ECDC4" />
-                    <stop offset="100%" stopColor="#44A08D" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              
-              {/* Avatar in center */}
-              <div className="circular-xp-avatar">
-                <img 
-                  src={hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png"}
-                  alt="Player Avatar" 
-                  className="avatar-in-circle"
-                />
-              </div>
-              
-              {/* XP Text */}
-              <div className="circular-xp-text">{actualXP}/{getXPRequiredForLevel(playerLevel)}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Player Name Below XP Meter */}
-        <div className="player-name-below-xp">{playerName || 'Player'}</div>
         
         <main className="main">
           <section className="playlist-selection">
@@ -963,13 +900,7 @@ const PlaylistSelection = () => {
                       ) : (
                         <div className="playlist-mastered-container">
                           <div className="playlist-mastered-text">MASTERED</div>
-                          <div className="playlist-mastered-diamond">💎</div>
                         </div>
-                      )}
-
-                      {/* NEW songs badge */}
-                      {playlistsWithNewSongs.has(playlist) && (
-                        <div className="new-songs-badge-playlist">NEW</div>
                       )}
                     </div>
                   </div>
