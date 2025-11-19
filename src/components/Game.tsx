@@ -4204,20 +4204,22 @@ const Game = () => {
                             right: 0;
                             bottom: 0;
                             z-index: 999999;
-                            background: rgba(0, 0, 0, 0.95);
+                            background: rgba(0, 0, 0, 0);
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            backdrop-filter: blur(10px);
+                            backdrop-filter: blur(0px);
+                            animation: unlockOverlayFadeIn 0.4s ease-out forwards;
                           `
                           notificationDiv.innerHTML = `
-                            <div style="
+                            <div id="unlock-notification-box" style="
                               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                               padding: 3rem 4rem;
                               border-radius: 20px;
                               text-align: center;
                               box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 100px rgba(102, 126, 234, 0.5);
                               max-width: 500px;
+                              animation: unlockBoxPopIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.2s backwards;
                             ">
                               <h3 style="
                                 font-size: 1.5rem;
@@ -4266,11 +4268,19 @@ const Game = () => {
                           
                           // Add click handler to Continue button
                           const continueBtn = document.getElementById('unlock-continue-btn')
-                          if (continueBtn) {
+                          const notificationBox = document.getElementById('unlock-notification-box')
+                          if (continueBtn && notificationBox) {
                             continueBtn.addEventListener('click', () => {
-                              document.body.removeChild(notificationDiv)
-                              console.log('🎊 UNLOCK NOTIFICATION CLOSED - starting drain/refill')
-                              completeLevelUpSequence()
+                              // Trigger exit animations
+                              notificationDiv.style.animation = 'unlockOverlayFadeOut 0.3s ease-out forwards'
+                              notificationBox.style.animation = 'unlockBoxPopOut 0.3s ease-out forwards'
+                              
+                              // Wait for animations to complete before removing
+                              setTimeout(() => {
+                                document.body.removeChild(notificationDiv)
+                                console.log('🎊 UNLOCK NOTIFICATION CLOSED - starting drain/refill')
+                                completeLevelUpSequence()
+                              }, 300) // Match animation duration
                             })
                           }
                         } else {
@@ -6115,6 +6125,11 @@ const Game = () => {
                               </div>
                             </div>
                             <div className="playlist-level-badge-result">
+                              {showLevelFlash && (
+                                <div className="level-up-text-container">
+                                  <span className="level-up-text">LEVEL UP</span>
+                                </div>
+                              )}
                               <span className={showLevelFlash ? 'level-number-flash' : ''}>
                                 {Math.floor(displayedPlaylistLevel)}
                               </span>

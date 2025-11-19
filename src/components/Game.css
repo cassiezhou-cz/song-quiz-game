@@ -1324,6 +1324,17 @@
   }
 }
 
+@keyframes yourAnswersFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   .game-container {
@@ -5262,6 +5273,7 @@
   width: 100%;
   overflow-anchor: none; /* Prevent scroll anchoring */
   flex-shrink: 0; /* Prevent compression */
+  animation: yourAnswersFadeIn 0.6s ease-out forwards;
 }
 
 .song-list-title {
@@ -7466,6 +7478,71 @@
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes popOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+/* Unlock Notification Animations */
+@keyframes unlockOverlayFadeIn {
+  from {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+  }
+  to {
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+  }
+}
+
+@keyframes unlockOverlayFadeOut {
+  from {
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+  }
+  to {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+  }
+}
+
+@keyframes unlockBoxPopIn {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes unlockBoxPopOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+
 @keyframes modalSlideUp {
   from {
     transform: translateY(50px) scale(0.9);
@@ -8413,6 +8490,36 @@
   margin-right: -45px;
   z-index: 3;
   animation: levelBadgePop 0.5s ease-out 0.3s both;
+  position: relative; /* For positioning LEVEL UP text */
+}
+
+.level-up-text-container {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.level-up-text {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ffffff;
+  text-shadow: 
+    0 0 10px rgba(255, 215, 0, 0.8),
+    0 0 20px rgba(255, 215, 0, 0.6),
+    0 0 30px rgba(255, 215, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.8);
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
+  animation: levelUpTextFlash 1.4s ease-in-out forwards;
 }
 
 @keyframes levelBadgePop {
@@ -8426,6 +8533,38 @@
   100% {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes levelUpTextFlash {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.5);
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.3)) blur(2px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.2);
+    filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.9)) blur(0px);
+  }
+  30% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)) blur(0px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8)) blur(0px);
+  }
+  85% {
+    opacity: 0.5;
+    transform: translateY(-10px) scale(0.9);
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.4)) blur(1px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.7);
+    filter: drop-shadow(0 0 0px rgba(255, 215, 0, 0)) blur(3px);
   }
 }
 
@@ -8516,6 +8655,15 @@
     width: 45px;
     height: 45px;
     font-size: 1.2rem;
+  }
+  
+  .level-up-text-container {
+    top: -45px;
+  }
+  
+  .level-up-text {
+    font-size: 1rem;
+    letter-spacing: 0.15em;
   }
   
   .playlist-xp-bar-bg {
@@ -9045,6 +9193,14 @@
     height: 55px;
     font-size: 1.4rem;
     margin-left: -35px;
+  }
+  
+  .level-up-text-container {
+    top: -50px;
+  }
+  
+  .level-up-text {
+    font-size: 1.1rem;
   }
   
   .playlist-xp-bar-bg {
