@@ -575,6 +575,7 @@ const Game = () => {
   // Playlist XP System State
   const [playlistXP, setPlaylistXP] = useState(0) // Current XP toward next level
   const [currentPlaylistLevel, setCurrentPlaylistLevel] = useState(playlistLevel) // Current playlist level
+  const [displayedPlaylistLevel, setDisplayedPlaylistLevel] = useState(playlistLevel) // Animated level display
   const [startingPlaylistXP, setStartingPlaylistXP] = useState(0) // XP at start (for animation)
   const [displayedPlaylistXP, setDisplayedPlaylistXP] = useState(0) // Animated XP display
   const [animatedPlaylistXP, setAnimatedPlaylistXP] = useState(0) // For smooth counting animation
@@ -678,6 +679,7 @@ const Game = () => {
         // Check if it's the new format (level/xp) or old format (progress)
         if (playlistData && 'level' in playlistData && 'xp' in playlistData) {
           setCurrentPlaylistLevel(playlistData.level)
+          setDisplayedPlaylistLevel(playlistData.level)
           setPlaylistXP(playlistData.xp)
           setStartingPlaylistXP(playlistData.xp)
           setDisplayedPlaylistXP(playlistData.xp)
@@ -689,6 +691,7 @@ const Game = () => {
           const migratedLevel = Math.min(Math.floor(oldProgress / 1.5) + 1, 10)
           const migratedXP = 0
           setCurrentPlaylistLevel(migratedLevel)
+          setDisplayedPlaylistLevel(migratedLevel)
           setPlaylistXP(migratedXP)
           setStartingPlaylistXP(migratedXP)
           setDisplayedPlaylistXP(migratedXP)
@@ -701,86 +704,33 @@ const Game = () => {
     }
   }, [actualPlaylist])
 
-  // Award Playlist XP after song list is shown
+  // Playlist XP will now be awarded based on score, not new songs
+  // This logic has been moved to the results sequence to match Global XP animation pattern
+
+  // Animate level number counting
   useEffect(() => {
-    if (!showSongList || playlistXPAnimationStartedRef.current || !actualPlaylist) return
-    if (hasAwardedPlaylistXP || currentPlaylistLevel >= 10) return // Don't award if already at max level
+    if (displayedPlaylistLevel === currentPlaylistLevel) return
     
-    const newlyCompletedCount = allAttemptedSongs.filter(song => song.isNewlyCompleted).length
-    if (newlyCompletedCount === 0) {
-      console.log('📊 No new songs completed, skipping Playlist XP award')
-      return
-    }
+    const start = displayedPlaylistLevel
+    const end = currentPlaylistLevel
+    const duration = 800 // 0.8 seconds
+    const steps = 30
+    const stepTime = duration / steps
+    const increment = (end - start) / steps
     
-    playlistXPAnimationStartedRef.current = true
-    setHasAwardedPlaylistXP(true)
-    
-    const xpGained = newlyCompletedCount * PLAYLIST_XP_PER_NEW_SONG
-    setPlaylistXPGain(xpGained)
-    console.log(`📊 Awarding ${xpGained} Playlist XP for ${newlyCompletedCount} new songs`)
-    
-    // Show the Playlist XP bar after a delay
-    setTimeout(() => {
-      setShowPlaylistXPBar(true)
-      
-      // Calculate new XP and check for level up
-      const currentXP = playlistXP
-      const xpRequired = getPlaylistXPRequired(currentPlaylistLevel)
-      const newTotalXP = currentXP + xpGained
-      
-      if (newTotalXP >= xpRequired && currentPlaylistLevel < 10) {
-        // Level up!
-        const newLevel = currentPlaylistLevel + 1
-        const remainingXP = 0 // Reset XP on level up
-        
-        console.log(`🎉 LEVEL UP! ${actualPlaylist} reached Level ${newLevel}`)
-        
-        setCurrentPlaylistLevel(newLevel)
-        setPlaylistXP(remainingXP)
-        setNewPlaylistLevelReached(newLevel)
-        setPendingLevelUp(true)
-        
-        // Save to localStorage
-        const savedProgress = localStorage.getItem('playlist_progress')
-        let allProgress: Record<string, {level: number, xp: number}> = {}
-        if (savedProgress) {
-          try {
-            allProgress = JSON.parse(savedProgress)
-          } catch (e) {
-            console.error('Failed to parse playlist progress:', e)
-          }
-        }
-        allProgress[actualPlaylist] = { level: newLevel, xp: remainingXP }
-        localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
-        
-        // Animate XP bar fill to 100% then show level up modal
-        setDisplayedPlaylistXP(xpRequired)
-        setTimeout(() => {
-          setShowPlaylistLevelUpModal(true)
-        }, 800)
+    let currentStep = 0
+    const timer = setInterval(() => {
+      currentStep++
+      if (currentStep >= steps) {
+        setDisplayedPlaylistLevel(end)
+        clearInterval(timer)
       } else {
-        // No level up, just add XP
-        setPlaylistXP(newTotalXP)
-        
-        // Save to localStorage
-        const savedProgress = localStorage.getItem('playlist_progress')
-        let allProgress: Record<string, {level: number, xp: number}> = {}
-        if (savedProgress) {
-          try {
-            allProgress = JSON.parse(savedProgress)
-          } catch (e) {
-            console.error('Failed to parse playlist progress:', e)
-          }
-        }
-        allProgress[actualPlaylist] = { level: currentPlaylistLevel, xp: newTotalXP }
-        localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
-        
-        // Animate XP bar fill
-        setDisplayedPlaylistXP(newTotalXP)
+        setDisplayedPlaylistLevel(start + (increment * currentStep))
       }
-    }, 2000)
+    }, stepTime)
     
-  }, [showSongList, allAttemptedSongs, playlistXP, currentPlaylistLevel, actualPlaylist, hasAwardedPlaylistXP])
+    return () => clearInterval(timer)
+  }, [currentPlaylistLevel, displayedPlaylistLevel])
 
   // Keyboard shortcuts for debug scoring (Version B)
   useEffect(() => {
@@ -3829,12 +3779,12 @@ const Game = () => {
                           setTimeout(() => {
                             setShowDailyChallenge2X(false)
                             
-                            // NOW trigger XP bar after a buffer - score is fully doubled and visible
+                            // NOW trigger Playlist XP bar after a buffer - score is fully doubled and visible
                             setTimeout(() => {
                               const doubledScore = score * 2
-                              console.log('🎬 Step 3: Showing XP Bar (AFTER Daily Challenge multiplication)')
-                              console.log('🔥 DAILY CHALLENGE XP: Base score =', score, ', Doubled score =', doubledScore)
-                              triggerXPBarAnimation(doubledScore)
+                              console.log('🎬 Step 3: Showing Playlist XP Bar (AFTER Daily Challenge multiplication)')
+                              console.log('🔥 DAILY CHALLENGE Playlist XP: Base score =', score, ', Doubled score =', doubledScore)
+                              triggerPlaylistXPAnimation(doubledScore)
                             }, 500) // 0.5s buffer to let doubled score be visible
                           }, 200)
                         } else {
@@ -3995,13 +3945,133 @@ const Game = () => {
             }, 100)
           }
           
-          // For normal mode (non-Daily Challenge), trigger XP bar on a timer
+          // Function to trigger Playlist XP bar animation (replaces Global XP)
+          const triggerPlaylistXPAnimation = (finalScore: number) => {
+            console.log('🎬💰 triggerPlaylistXPAnimation called with finalScore:', finalScore)
+            
+            if (!actualPlaylist || currentPlaylistLevel >= 10) {
+              console.log('⚠️ Skipping Playlist XP - no playlist or already mastered')
+              // Show song list immediately if playlist is mastered
+              setTimeout(() => {
+                setShowSongList(true)
+              }, 1000)
+              return
+            }
+            
+            setPlaylistXPAnimationComplete(false)
+            
+            // Calculate and set the starting position
+            const xpRequired = getPlaylistXPRequired(currentPlaylistLevel)
+            const startingPercentage = (playlistXP / xpRequired) * 100
+            
+            // Show flying XP indicator
+            setPlaylistXPGain(finalScore)
+            setShowFlyingPlaylistXP(true)
+            
+            // Calculate target position for flying indicator
+            const targetXP = Math.min(playlistXP + finalScore, xpRequired)
+            const targetPercentage = (targetXP / xpRequired) * 100
+            const calculatedTarget = Math.min(targetPercentage, 92) // Cap at 92% for visual
+            setTargetPlaylistXPPosition(`${calculatedTarget}%`)
+            console.log('🎯 Playlist Target XP Position:', calculatedTarget, `(${targetXP}/${xpRequired})`)
+            
+            // Show Playlist XP bar
+            setTimeout(() => {
+              setShowPlaylistXPBar(true)
+              setDisplayedPlaylistXP(playlistXP) // Start from current XP
+              
+              // Fly the indicator to target (0.8s flight time)
+              setTimeout(() => {
+                setIsFadingOutFlyingXP(true)
+                
+                // Trigger bar fill animation after indicator arrives
+                setTimeout(() => {
+                  setShowFlyingPlaylistXP(false)
+                  setIsFadingOutFlyingXP(false)
+                  
+                  // Calculate new total XP
+                  const newTotalXP = playlistXP + finalScore
+                  
+                  // Check for level up
+                  if (newTotalXP >= xpRequired && currentPlaylistLevel < 10) {
+                    // Level up!
+                    const newLevel = currentPlaylistLevel + 1
+                    const remainingXP = newTotalXP - xpRequired
+                    
+                    console.log(`🎉 PLAYLIST LEVEL UP! ${actualPlaylist} reached Level ${newLevel}`)
+                    
+                    // Animate bar to 100% first
+                    setDisplayedPlaylistXP(xpRequired)
+                    
+                    // Wait for bar to fill, then show level up animation
+                    setTimeout(() => {
+                      setCurrentPlaylistLevel(newLevel)
+                      setPlaylistXP(remainingXP)
+                      setNewPlaylistLevelReached(newLevel)
+                      
+                      // Save to localStorage
+                      const savedProgress = localStorage.getItem('playlist_progress')
+                      let allProgress: Record<string, {level: number, xp: number}> = {}
+                      if (savedProgress) {
+                        try {
+                          allProgress = JSON.parse(savedProgress)
+                        } catch (e) {
+                          console.error('Failed to parse playlist progress:', e)
+                        }
+                      }
+                      allProgress[actualPlaylist] = { level: newLevel, xp: remainingXP }
+                      localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+                      
+                      // Show level up modal
+                      setTimeout(() => {
+                        setShowPlaylistLevelUpModal(true)
+                        
+                        // Reset bar and set remaining XP after modal appears
+                        setTimeout(() => {
+                          setDisplayedPlaylistXP(remainingXP)
+                        }, 500)
+                      }, 800)
+                      
+                      // Show song list after modal closes (user will click continue)
+                    }, 1500) // Wait for bar fill
+                  } else {
+                    // No level up, just add XP
+                    setPlaylistXP(newTotalXP)
+                    setDisplayedPlaylistXP(newTotalXP)
+                    
+                    // Save to localStorage
+                    const savedProgress = localStorage.getItem('playlist_progress')
+                    let allProgress: Record<string, {level: number, xp: number}> = {}
+                    if (savedProgress) {
+                      try {
+                        allProgress = JSON.parse(savedProgress)
+                      } catch (e) {
+                        console.error('Failed to parse playlist progress:', e)
+                      }
+                    }
+                    allProgress[actualPlaylist] = { level: currentPlaylistLevel, xp: newTotalXP }
+                    localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+                    
+                    // Show song list after XP bar finishes filling
+                    setTimeout(() => {
+                      console.log('🎵 Showing Your Answers section (no level-up)')
+                      setShowSongList(true)
+                    }, 2500)
+                  }
+                  
+                  setPlaylistXPAnimationComplete(true)
+                }, 300) // Small delay after indicator fades
+              }, 800) // Flight time
+            }, 100)
+          }
+          
+          // For normal mode (non-Daily Challenge), trigger Playlist XP bar on a timer
           // For Daily Challenge, it's triggered after multiplication completes
           if (!isDailyChallenge) {
             setTimeout(() => {
-              console.log('🎬 Step 3: Showing XP Bar (normal mode)')
-              console.log('📊 NORMAL MODE XP: Score =', score)
-              triggerXPBarAnimation(score)
+              console.log('🎬 Step 3: Showing Playlist XP Bar (normal mode)')
+              console.log('📊 NORMAL MODE Playlist XP: Score =', score)
+              triggerPlaylistXPAnimation(score)
             }, 1500) // 1.5s after final score appears (0.5s after count completes)
           }
         }, 600) // 0.6s after quiz complete
@@ -5758,13 +5828,24 @@ const Game = () => {
                     </p>
                   )}
                   
+                  {/* Flying Playlist XP Indicator */}
+                  {showFlyingPlaylistXP && (
+                    <div 
+                      className={`playlist-xp-indicator-flying ${isFadingOutFlyingXP ? 'fade-out' : ''}`}
+                      style={{ 
+                        left: targetPlaylistXPPosition,
+                      }}
+                    >
+                      +{playlistXPGain} XP
+                    </div>
+                  )}
+                  
                   {/* Playlist XP Bar - New System */}
                   {showPlaylistXPBar && (
                     <div className="results-playlist-xp-container">
                       {/* Playlist Name */}
                       <div className="results-playlist-name-container">
                         <div className="results-playlist-name">{actualPlaylist}</div>
-                        <div className="results-playlist-mastery">Level Progress</div>
                       </div>
                       
                       {/* XP Bar and Level Badge */}
@@ -5780,7 +5861,7 @@ const Game = () => {
                                 {Math.floor(displayedPlaylistXP)}/{getPlaylistXPRequired(currentPlaylistLevel)}
                               </div>
                             </div>
-                            <div className="playlist-level-badge-result">{currentPlaylistLevel}</div>
+                            <div className="playlist-level-badge-result">{Math.floor(displayedPlaylistLevel)}</div>
                           </div>
                         ) : (
                           <div className="playlist-mastered-result-container">
@@ -7596,7 +7677,13 @@ const Game = () => {
               </div>
               <button 
                 className="level-up-confirm-btn" 
-                onClick={() => setShowPlaylistLevelUpModal(false)}
+                onClick={() => {
+                  setShowPlaylistLevelUpModal(false)
+                  // Show song list after modal closes
+                  setTimeout(() => {
+                    setShowSongList(true)
+                  }, 300)
+                }}
               >
                 Continue
               </button>
