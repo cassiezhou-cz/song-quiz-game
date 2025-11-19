@@ -8710,3 +8710,288 @@
   }
 }
 
+/* ========================================
+   RESULTS SCREEN: PLAYLIST XP BAR ANIMATIONS
+   ======================================== */
+
+/* Flying XP Indicator */
+.playlist-xp-indicator-flying {
+  position: absolute;
+  top: -60px; /* Position above the XP bar */
+  transform: translateX(-50%);
+  font-size: 2rem;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.9),
+    0 0 40px rgba(255, 215, 0, 0.7),
+    0 4px 15px rgba(0, 0, 0, 0.9);
+  animation: flyToTarget 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 1000;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.playlist-xp-indicator-flying.fade-out {
+  animation: fadeOutIndicator 0.3s ease-out forwards;
+}
+
+@keyframes flyToTarget {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100px) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeOutIndicator {
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.8);
+  }
+}
+
+/* Results Playlist XP Container */
+.results-playlist-xp-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 700px;
+  margin: 2rem auto 0;
+  padding: 0 3rem;
+  position: relative;
+  animation: xpContainerSlideIn 0.5s ease-out;
+}
+
+@keyframes xpContainerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Playlist Name Container */
+.results-playlist-name-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: -1.5rem;
+  margin-top: 1rem;
+  transform: translateX(-22px);
+}
+
+.results-playlist-name {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.8);
+  text-align: center;
+}
+
+.results-playlist-mastery {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* XP Bar Row */
+.results-playlist-xp-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 1rem 0;
+  min-height: 80px;
+  transform: translateX(-22px);
+}
+
+/* XP Container for Results */
+.playlist-xp-container-result {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: calc(100% - 30px);
+  max-width: 650px;
+  position: relative;
+  margin: 0 auto;
+}
+
+/* Level Badge for Results */
+.playlist-level-badge-result {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+  border: 3px solid rgba(78, 205, 196, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 15px rgba(78, 205, 196, 0.6), inset 0 2px 5px rgba(255, 255, 255, 0.2);
+  z-index: 10;
+  margin-left: -45px;
+  flex-shrink: 0;
+  animation: levelBadgePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
+}
+
+@keyframes levelBadgePop {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* XP Bar Background */
+.playlist-xp-bar-bg {
+  position: relative;
+  flex: 1;
+  min-width: 150px;
+  height: 45px;
+  background: rgba(60, 60, 60, 0.8);
+  border: 2px solid rgba(78, 205, 196, 0.3);
+  border-radius: 22px;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+/* XP Bar Fill with Animation */
+.playlist-xp-bar-fill {
+  position: relative;
+  height: 100%;
+  background: linear-gradient(90deg, #4ECDC4 0%, #44A08D 100%);
+  border-radius: 22px;
+  transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+  box-sizing: border-box;
+}
+
+/* XP Text */
+.playlist-xp-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  z-index: 2;
+  white-space: nowrap;
+}
+
+/* MASTERED State for Results */
+.playlist-mastered-result-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1.5rem 3rem;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(79, 70, 229, 0.2) 100%);
+  border: 3px solid rgba(147, 51, 234, 0.6);
+  border-radius: 25px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(147, 51, 234, 0.4);
+  animation: masteredPulse 2s ease-in-out infinite;
+}
+
+.playlist-mastered-result {
+  font-size: 2.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 20px rgba(147, 51, 234, 0.6);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.playlist-mastered-diamond-result {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 4px 15px rgba(147, 51, 234, 0.8));
+  animation: diamondSpin 3s linear infinite;
+}
+
+@keyframes masteredPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      0 0 40px rgba(147, 51, 234, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      0 0 50px rgba(147, 51, 234, 0.6);
+  }
+}
+
+@keyframes diamondSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .results-playlist-xp-container {
+    padding: 0 1rem;
+    max-width: 90%;
+  }
+  
+  .results-playlist-name {
+    font-size: 1.4rem;
+  }
+  
+  .playlist-level-badge-result {
+    width: 55px;
+    height: 55px;
+    font-size: 1.4rem;
+    margin-left: -35px;
+  }
+  
+  .playlist-xp-bar-bg {
+    height: 35px;
+  }
+  
+  .playlist-xp-text {
+    font-size: 1rem;
+  }
+  
+  .playlist-mastered-result {
+    font-size: 1.8rem;
+  }
+  
+  .playlist-mastered-diamond-result {
+    font-size: 1.8rem;
+  }
+}
+
