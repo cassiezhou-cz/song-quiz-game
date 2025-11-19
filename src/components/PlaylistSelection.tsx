@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import CollectionMenu from './CollectionMenu'
+import { getAvatarPath } from '../utils/avatarUtils'
 import './PlaylistSelection.css'
 
 type LifelineType = 'skip' | 'artistLetterReveal' | 'songLetterReveal' | 'multipleChoiceArtist' | 'multipleChoiceSong'
@@ -128,9 +129,18 @@ const PlaylistSelection = () => {
     
     // Check for player name first
     const savedName = localStorage.getItem('player_name')
+    const savedAvatar = localStorage.getItem('player_avatar')
+    
     if (savedName) {
       setPlayerName(savedName)
       console.log('👤 Loaded player name:', savedName)
+      
+      // If they have a name but no avatar, redirect to avatar selection
+      if (!savedAvatar) {
+        console.log('🎭 No avatar found, redirecting to avatar selection')
+        navigate('/avatar-selection', { state: { playerName: savedName } })
+        return
+      }
     } else {
       // Show name prompt if no name is saved
       setShowNamePrompt(true)
@@ -408,6 +418,9 @@ const PlaylistSelection = () => {
       setShowNamePrompt(false)
       setNameInput('')
       console.log('👤 Player name set to:', trimmedName)
+      
+      // Navigate to avatar selection screen
+      navigate('/avatar-selection', { state: { playerName: trimmedName } })
     }
   }
 
@@ -576,6 +589,7 @@ const PlaylistSelection = () => {
     localStorage.removeItem('level_up_count')
     localStorage.removeItem('hat_unlocked')
     localStorage.removeItem('player_name')
+    localStorage.removeItem('player_avatar')
     localStorage.removeItem('playlist_progress')
     
     // Clear Daily Challenge cooldowns for all playlists
@@ -752,7 +766,7 @@ const PlaylistSelection = () => {
               {/* Avatar in center */}
               <div className="circular-xp-avatar">
                 <img 
-                  src={hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png"}
+                  src={getAvatarPath('Neutral', hatUnlocked)}
                   alt="Player Avatar" 
                   className="avatar-in-circle"
                 />

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'
 import { getAvailableSongs, addPlayedSong } from '../utils/songTracker'
+import { getAvatarPath } from '../utils/avatarUtils'
 import './Game.css'
 
 interface Song {
@@ -6003,7 +6004,7 @@ const Game = () => {
                             <img 
                               src={
                                 version === 'Version B'
-                                  ? (hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png")
+                                  ? getAvatarPath('Neutral', hatUnlocked)
                                   : "/assets/YourAvatar.png"
                               }
                               alt="Player Avatar" 
@@ -6388,7 +6389,7 @@ const Game = () => {
                 <img 
                   src={
                     version === 'Version C'
-                      ? (hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png")
+                      ? getAvatarPath('Neutral', hatUnlocked)
                       : "/assets/YourAvatar.png"
                   }
                   alt="Your Avatar" 
@@ -7496,13 +7497,9 @@ const Game = () => {
             <div className="avatar-container player-container version-b-cat-container">
               <img 
                 src={
-                  hatUnlocked
-                    ? (showFeedback 
-                        ? (pointsEarned > 0 ? "/assets/CatHatHappy.png" : "/assets/CatHatSad.png")
-                        : "/assets/CatHatNeutral.png")
-                    : (showFeedback 
-                        ? (pointsEarned > 0 ? "/assets/CatHappy.png" : "/assets/CatSad.png")
-                        : "/assets/CatNeutral.png")
+                  showFeedback 
+                    ? getAvatarPath(pointsEarned > 0 ? 'Happy' : 'Sad', hatUnlocked)
+                    : getAvatarPath('Neutral', hatUnlocked)
                 }
                 alt="Player Avatar" 
                 className="version-b-cat-avatar"
@@ -7540,13 +7537,9 @@ const Game = () => {
               <img 
                 src={
                   version === 'Version C'
-                    ? (hatUnlocked
-                        ? (showVersionCFeedback 
-                            ? (pointsEarned > 0 ? "/assets/CatHatHappy.png" : "/assets/CatHatSad.png")
-                            : "/assets/CatHatNeutral.png")
-                        : (showVersionCFeedback 
-                            ? (pointsEarned > 0 ? "/assets/CatHappy.png" : "/assets/CatSad.png")
-                            : "/assets/CatNeutral.png"))
+                    ? (showVersionCFeedback 
+                        ? getAvatarPath(pointsEarned > 0 ? 'Happy' : 'Sad', hatUnlocked)
+                        : getAvatarPath('Neutral', hatUnlocked))
                     : "/assets/YourAvatar.png"
                 }
                 alt="Your Avatar" 
