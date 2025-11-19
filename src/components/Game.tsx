@@ -572,11 +572,6 @@ const Game = () => {
   const [targetXPPosition, setTargetXPPosition] = useState(0) // Static target for indicator (Global XP)
   const [showSongList, setShowSongList] = useState(false) // Show Your Answers section
   
-  // Debug: Track showSongList changes
-  useEffect(() => {
-    console.log('🎯 showSongList changed to:', showSongList)
-  }, [showSongList])
-  
   // Playlist XP System State
   const [playlistXP, setPlaylistXP] = useState(0) // Current XP toward next level
   const [currentPlaylistLevel, setCurrentPlaylistLevel] = useState(playlistLevel) // Current playlist level
@@ -716,7 +711,6 @@ const Game = () => {
   // Instant level number update (no counting animation)
   useEffect(() => {
     if (displayedPlaylistLevel !== currentPlaylistLevel) {
-      console.log('🎯 Instantly updating level:', displayedPlaylistLevel, '→', currentPlaylistLevel)
       setDisplayedPlaylistLevel(currentPlaylistLevel)
     }
   }, [currentPlaylistLevel])
@@ -4060,12 +4054,10 @@ const Game = () => {
                         
                         // Show level up modal after bar drains
                         setTimeout(() => {
-                          console.log('🎯 Showing Playlist Level-Up Modal')
                           setShowPlaylistLevelUpModal(true)
                           
                           // Auto-show song list after modal has been visible for 2 seconds
                           setTimeout(() => {
-                            console.log('🎵 Auto-showing Your Answers section (after modal display)')
                             setShowSongList(true)
                           }, 2000)
                         }, 500)
@@ -7722,11 +7714,9 @@ const Game = () => {
               <button 
                 className="level-up-confirm-btn" 
                 onClick={() => {
-                  console.log('🎯 MODAL: Continue button clicked')
                   setShowPlaylistLevelUpModal(false)
                   // Show song list after modal closes
                   setTimeout(() => {
-                    console.log('🎯 MODAL: Setting showSongList to TRUE')
                     setShowSongList(true)
                   }, 300)
                 }}
