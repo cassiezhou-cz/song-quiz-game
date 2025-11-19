@@ -455,40 +455,35 @@ const PlaylistSelection = () => {
 
   const handleDebugRankUp = (playlist: string) => {
     const current = playlistProgress[playlist] || { level: 1, xp: 0 }
-    const xpRequired = getPlaylistXPRequired(current.level)
-    const newXP = current.xp + 20 // Add 20 XP
     
-    let newLevel = current.level
-    let remainingXP = newXP
-    
-    // Check for level up
-    if (remainingXP >= xpRequired && current.level < 10) {
-      newLevel = current.level + 1
-      remainingXP = 0 // Reset XP on level up
-    }
-    
-    const newProgress = { level: newLevel, xp: remainingXP }
-    
-    // Update local state
-    setPlaylistProgress(prev => ({
-      ...prev,
-      [playlist]: newProgress
-    }))
-    
-    // Save to localStorage
-    const savedProgress = localStorage.getItem('playlist_progress')
-    let allProgress: Record<string, PlaylistProgress> = {}
-    if (savedProgress) {
-      try {
-        allProgress = JSON.parse(savedProgress)
-      } catch (e) {
-        console.error('Failed to parse playlist progress:', e)
+    // Increase by a full level (cap at 10)
+    if (current.level < 10) {
+      const newLevel = current.level + 1
+      const newProgress = { level: newLevel, xp: 0 }
+      
+      // Update local state
+      setPlaylistProgress(prev => ({
+        ...prev,
+        [playlist]: newProgress
+      }))
+      
+      // Save to localStorage
+      const savedProgress = localStorage.getItem('playlist_progress')
+      let allProgress: Record<string, PlaylistProgress> = {}
+      if (savedProgress) {
+        try {
+          allProgress = JSON.parse(savedProgress)
+        } catch (e) {
+          console.error('Failed to parse playlist progress:', e)
+        }
       }
+      allProgress[playlist] = newProgress
+      localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+      
+      console.log(`🎮 DEBUG: ${playlist} leveled up from Level ${current.level} to Level ${newLevel}`)
+    } else {
+      console.log(`🎮 DEBUG: ${playlist} is already at max level (10)`)
     }
-    allProgress[playlist] = newProgress
-    localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
-    
-    console.log(`🐛 DEBUG: ${playlist} Level ${current.level} (${current.xp}/${xpRequired} XP) → Level ${newLevel} (${remainingXP}/${getPlaylistXPRequired(newLevel)} XP)`)
   }
 
   // Start the multi-stage level-up animation
@@ -685,7 +680,7 @@ const PlaylistSelection = () => {
     console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist progress reset to 0, NEW badges cleared, all stats (including Master Mode ranks) cleared, Daily Challenge cooldowns and viewed buttons cleared, Master Mode viewed buttons cleared')
   }
 
-  // Debug hotkey: Press Up arrow while hovering over a playlist to rank it up
+  // Debug hotkey: Press Up arrow while hovering over a playlist to level it up by 1
   useEffect(() => {
     const handleDebugHotkey = (event: KeyboardEvent) => {
       // Only trigger if a playlist is hovered
