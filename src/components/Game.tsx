@@ -388,6 +388,7 @@ const Game = () => {
   const version = searchParams.get('version') || 'Version A'
   const playlistLevel = parseInt(searchParams.get('level') || '1') // Playlist level from URL
   const audioRef = useRef<HTMLAudioElement>(null)
+  const animatedXPRef = useRef(0) // Track current animated XP value
   
   // Playlist XP System Constants
   const PLAYLIST_XP_PER_NEW_SONG = 20
@@ -612,7 +613,6 @@ const Game = () => {
   const [flyingNotes, setFlyingNotes] = useState<FlyingNote[]>([])
   const [fillingSegmentIndex, setFillingSegmentIndex] = useState<number | null>(null)
   const [tempFilledSegments, setTempFilledSegments] = useState<Set<number>>(new Set())
-  const badgeRefsMap = useRef<Map<number, HTMLDivElement>>(new Map())
   const segmentRefsMap = useRef<Map<number, HTMLDivElement>>(new Map())
   const hasRunMusicNoteAnimations = useRef(false) // Prevent re-animation after tier change
   
@@ -687,6 +687,7 @@ const Game = () => {
           setStartingPlaylistXP(playlistData.xp)
           setDisplayedPlaylistXP(playlistData.xp)
           setAnimatedPlaylistXP(playlistData.xp)
+          animatedXPRef.current = playlistData.xp
           console.log(`📊 Loaded ${actualPlaylist} playlist: Level ${playlistData.level}, XP ${playlistData.xp}/${getPlaylistXPRequired(playlistData.level)}`)
         } else if (playlistData && 'progress' in playlistData) {
           // Migration from old segment-based system
@@ -700,6 +701,7 @@ const Game = () => {
           setStartingPlaylistXP(migratedXP)
           setDisplayedPlaylistXP(migratedXP)
           setAnimatedPlaylistXP(migratedXP)
+          animatedXPRef.current = migratedXP
           console.log(`📊 Migrated ${actualPlaylist} from old format: ${oldProgress} segments → Level ${migratedLevel}`)
         }
       } catch (e) {
@@ -734,6 +736,45 @@ const Game = () => {
       }
     }
   }, [currentPlaylistLevel, displayedPlaylistLevel])
+
+  // Animate XP counter to count up/down smoothly with bar fill/drain
+  useEffect(() => {
+    let animationFrameId: number
+    const startXP = animatedXPRef.current
+    const endXP = displayedPlaylistXP
+    
+    if (startXP === endXP) return
+    
+    const difference = endXP - startXP
+    const duration = 1500 // Match CSS transition
+    const startTime = Date.now()
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      
+      // Easing function to match CSS cubic-bezier(0.4, 0, 0.2, 1)
+      const easeProgress = progress < 0.5 
+        ? 2 * progress * progress 
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2
+      
+      const currentXP = startXP + (difference * easeProgress)
+      animatedXPRef.current = currentXP
+      setAnimatedPlaylistXP(currentXP)
+      
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animate)
+      }
+    }
+    
+    animationFrameId = requestAnimationFrame(animate)
+    
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      }
+    }
+  }, [displayedPlaylistXP])
 
   // Keyboard shortcuts for debug scoring (Version B)
   useEffect(() => {
@@ -3972,6 +4013,8 @@ const Game = () => {
               setShowPlaylistXPBar(true)
               setLevelForXPCalc(currentPlaylistLevel) // Lock in current level for XP calc
               setDisplayedPlaylistXP(playlistXP) // Start from current XP
+              setAnimatedPlaylistXP(playlistXP) // Initialize animated counter
+              animatedXPRef.current = playlistXP // Initialize ref
               setPlaylistXPGain(finalScore)
               
               // Calculate positions for the flying indicator animation
@@ -5925,7 +5968,7 @@ const Game = () => {
                                 style={{ width: `${(displayedPlaylistXP / getPlaylistXPRequired(levelForXPCalc)) * 100}%` }}
                               />
                               <div className="playlist-xp-text">
-                                {Math.floor(displayedPlaylistXP)}/{getPlaylistXPRequired(levelForXPCalc)}
+                                {Math.floor(animatedPlaylistXP)}/{getPlaylistXPRequired(levelForXPCalc)}
                               </div>
                             </div>
                             <div className="playlist-level-badge-result">
@@ -5958,26 +6001,6 @@ const Game = () => {
                             animationDelay: `${index * 0.15}s`
                           }}
                         >
-                          {/* NEW indicator for first-time completions */}
-                          {attempt.isNewlyCompleted && (
-                            <div 
-                              className="new-completion-badge"
-                              style={{
-                                animationDelay: `${index * 0.15 + 0.3}s`
-                              }}
-                            >
-                              <div className="new-completion-text">NEW</div>
-                              <div 
-                                ref={(el) => {
-                                  if (el) badgeRefsMap.current.set(index, el as HTMLDivElement)
-                                }}
-                                className="new-completion-icon"
-                                style={{
-                                  animationDelay: `${index * 0.15 + 0.9}s`
-                                }}
-                              >🎵</div>
-                            </div>
-                          )}
                           <div className="song-result-album">
                             <img 
                               src={attempt.song.albumArt} 
@@ -7150,12 +7173,6 @@ const Game = () => {
             {showFeedback && currentQuestion && (
               <div className="feedback-container">
                 <div className="album-art-display">
-                  {/* NEW indicator for first-time completions */}
-                  {isNewCompletion && (
-                    <div className="feedback-new-badge">
-                      NEW
-                    </div>
-                  )}
                   <img 
                     src={currentQuestion.song.albumArt} 
                     alt={`${currentQuestion.song.title} album art`}
