@@ -125,7 +125,7 @@ const PlaylistPrompt = ({
             ) : (
               <div className="prompt-mastered-container">
                 <div className="prompt-mastered-text">
-                  ⚡ MASTERED ⚡
+                  MASTERED
                 </div>
               </div>
             )}
