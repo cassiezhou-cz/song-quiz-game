@@ -760,9 +760,6 @@ const PlaylistSelection = () => {
                   'Most Streamed Songs': 'playlist-most-streamed'
                 }
 
-                const stats = playlistStats[playlist] || { timesPlayed: 0, averageScore: 0, highestScore: 0 }
-                const isHovered = hoveredPlaylist === playlist
-
                 return (
                   <div 
                     key={playlist} 
@@ -770,55 +767,6 @@ const PlaylistSelection = () => {
                     onMouseEnter={() => setHoveredPlaylist(playlist)}
                     onMouseLeave={() => setHoveredPlaylist(null)}
                   >
-                    {/* Inline Stats Display */}
-                    <div className={`inline-stats ${isHovered ? 'visible' : ''}`}>
-                      <div className="inline-stats-content">
-                        {/* Master Mode Rank - Only show if player has attempted Master Mode */}
-                        {(() => {
-                          const masterModeRankKey = `master_mode_rank_${playlist}`
-                          const bestRank = parseInt(localStorage.getItem(masterModeRankKey) || '0')
-                          
-                          if (bestRank > 0 && bestRank <= 10) {
-                            return (
-                              <div className="master-rank-section">
-                                <div className="master-rank-label">Master Mode Rank</div>
-                                <div className="master-rank-display">
-                                  {bestRank === 1 ? (
-                                    <div className="rank-emoji">🥇</div>
-                                  ) : bestRank === 2 ? (
-                                    <div className="rank-emoji">🥈</div>
-                                  ) : bestRank === 3 ? (
-                                    <div className="rank-emoji">🥉</div>
-                                  ) : (
-                                    <div className="rank-number">#{bestRank}</div>
-                                  )}
-                                </div>
-                              </div>
-                            )
-                          }
-                          return null
-                        })()}
-                        
-                        <div className="inline-stats-row">
-                          <div className="inline-stat">
-                            <div className="inline-stat-icon">🎮</div>
-                            <div className="inline-stat-value">{stats.timesPlayed}</div>
-                            <div className="inline-stat-label">Played</div>
-                          </div>
-                          <div className="inline-stat">
-                            <div className="inline-stat-icon">📊</div>
-                            <div className="inline-stat-value">{stats.averageScore.toFixed(0)}</div>
-                            <div className="inline-stat-label">Avg Score</div>
-                          </div>
-                          <div className="inline-stat">
-                            <div className="inline-stat-icon">🏆</div>
-                            <div className="inline-stat-value">{stats.highestScore}</div>
-                            <div className="inline-stat-label">High Score</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
                     <button 
                       className={`playlist-button ${classNameMap[playlist]}`}
                       onClick={() => handlePlaylistSelect(playlist)}

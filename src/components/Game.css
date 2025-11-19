@@ -4709,14 +4709,14 @@
     0 0 45px rgba(0, 255, 170, 0.4);
   z-index: 1000; /* High z-index to ensure visibility during flight */
   pointer-events: none;
-  animation: xpGainFlyFromScore 0.8s ease-out 0.5s forwards, xpGainPulseStatic 2s ease-in-out infinite 1.3s, xpGainFadeOut 0.6s ease-in-out 2.9s forwards;
+  animation: xpGainFlyFromScore 0.8s ease-out 1.0s forwards, xpGainPulseStatic 2s ease-in-out infinite 1.8s, xpGainFadeOut 0.6s ease-in-out 3.4s forwards;
   white-space: nowrap; /* Prevent text wrapping */
   opacity: 0; /* Start invisible until animation begins */
 }
 
 /* Early fade for level-up - fades out before level animation starts */
 .xp-gain-indicator.early-fade {
-  animation: xpGainFlyFromScore 0.8s ease-out 0.5s forwards, xpGainPulseStatic 2s ease-in-out infinite 1.3s, xpGainFadeOut 0.4s ease-in-out 1.8s forwards !important;
+  animation: xpGainFlyFromScore 0.8s ease-out 1.0s forwards, xpGainPulseStatic 2s ease-in-out infinite 1.8s, xpGainFadeOut 0.4s ease-in-out 2.3s forwards !important;
 }
 
 /* Fly down from Final Score position to XP bar target */
@@ -4937,13 +4937,13 @@
     0 0 35px rgba(0, 255, 170, 0.6);
   z-index: 1000;
   pointer-events: none;
-  animation: xpGainCircularFly 0.8s ease-out 0.5s forwards, xpGainPulse 2s ease-in-out infinite 1.3s, xpGainCircularFade 0.6s ease-in-out 2.9s forwards;
+  animation: xpGainCircularFly 0.8s ease-out 1.0s forwards, xpGainPulse 2s ease-in-out infinite 1.8s, xpGainCircularFade 0.6s ease-in-out 3.4s forwards;
   white-space: nowrap;
   opacity: 0;
 }
 
 .xp-gain-indicator-circular.early-fade {
-  animation: xpGainCircularFly 0.8s ease-out 0.5s forwards, xpGainPulse 2s ease-in-out infinite 1.3s, xpGainCircularFade 0.4s ease-in-out 1.8s forwards !important;
+  animation: xpGainCircularFly 0.8s ease-out 1.0s forwards, xpGainPulse 2s ease-in-out infinite 1.8s, xpGainCircularFade 0.4s ease-in-out 2.3s forwards !important;
 }
 
 @keyframes xpGainCircularFly {
@@ -8583,7 +8583,7 @@
   z-index: 10000;
   pointer-events: none;
   white-space: nowrap;
-  animation: playlistXPFlyToTarget 0.8s ease-out 0.1s forwards, playlistXPPulse 2s ease-in-out infinite 0.9s, playlistXPFadeOut 0.6s ease-out 2.3s forwards;
+  animation: playlistXPFlyToTarget 0.8s ease-out 1.0s forwards, playlistXPPulse 2s ease-in-out infinite 1.8s, playlistXPFadeOut 0.6s ease-out 3.2s forwards;
   opacity: 0;
 }
 

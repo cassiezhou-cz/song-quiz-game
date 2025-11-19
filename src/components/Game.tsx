@@ -3889,13 +3889,15 @@ const Game = () => {
                   finalXP
                 })
                 
-                // Calculate display percentage: current XP / XP required for this level * 100
-                const displayXP = levelsGained > 0 ? 100 : Math.min((finalXP / xpRequired) * 100, 100)
-                setXpProgress(displayXP)
-                setXpAnimationComplete(true)
-                
-                // Handle level up(s) - Process ONE level at a time
-                if (levelsGained > 0) {
+                // Wait 0.5s delay, then start counter and bar fill together
+                setTimeout(() => {
+                  // Calculate display percentage: current XP / XP required for this level * 100
+                  const displayXP = levelsGained > 0 ? 100 : Math.min((finalXP / xpRequired) * 100, 100)
+                  setXpProgress(displayXP)
+                  setXpAnimationComplete(true)
+                  
+                  // Handle level up(s) - Process ONE level at a time
+                  if (levelsGained > 0) {
                   console.log('🎉 LEVEL UP! Will gain', levelsGained, 'level(s) total, processing first level now')
                   
                   const currentLevelUpCount = parseInt(localStorage.getItem('level_up_count') || '0', 10)
@@ -3969,7 +3971,7 @@ const Game = () => {
                     })
                     console.log('🎯 Pending XP refill to:', xpAfterFirstLevel, 'after 1 modal closes. Remaining levels:', remainingLevels)
                     }, 1500) // Wait for level-up animation (1.5s)
-                  }, 2100) // Wait for XP counter animation to complete (2s) plus small buffer
+                  }, 2500) // Wait for XP counter/bar animation (2s) + 0.5s delay
                 } else {
                   // No level up, just save the new XP
                   // Update startingXP after animation completes (2 seconds)
@@ -3983,9 +3985,10 @@ const Game = () => {
                   setTimeout(() => {
                     console.log('🎵 Showing Your Answers section (no level-up)')
                     setShowSongList(true)
-                  }, 2500) // Wait for XP bar fill animation (1.5s) + 1.0s pause
+                  }, 2500) // Wait for XP bar fill (2s) + 0.5s delay
                 }
-              }, 1300) // Wait for indicator to arrive (0.5s delay + 0.8s flight)
+                }, 500) // 0.5s delay so counter and bar start together
+              }, 1800) // Wait for indicator to arrive (1.0s delay + 0.8s flight)
             }, 100)
           }
           
@@ -4060,13 +4063,15 @@ const Game = () => {
                 setShowFlyingPlaylistXP(true)
               }, 100)
               
-              // After indicator arrives at target (0.8s flight), start bar fill
+              // After indicator arrives at target (1.0s delay + 0.8s flight = 1.8s), wait 0.5s, then start bar fill
               setTimeout(() => {
-                // Calculate new total XP
-                const newTotalXP = playlistXP + finalScore
-                
-                // Check for level up
-                if (newTotalXP >= xpRequired && currentPlaylistLevel < 10) {
+                // Wait 0.5s delay, then start counter and bar fill together
+                setTimeout(() => {
+                  // Calculate new total XP
+                  const newTotalXP = playlistXP + finalScore
+                  
+                  // Check for level up
+                  if (newTotalXP >= xpRequired && currentPlaylistLevel < 10) {
                     // Level up!
                     const newLevel = currentPlaylistLevel + 1
                     const remainingXP = newTotalXP - xpRequired
@@ -4136,7 +4141,7 @@ const Game = () => {
                           }, 1600) // Wait for refill animation (1.5s transition + buffer)
                         }, 1600) // Wait for drain animation (1.5s transition + buffer)
                       }, 1900) // Wait for level flash animation (1400ms) + 0.5s delay
-                    }, 1500) // Wait for bar to fill to 100%
+                    }, 2000) // Wait for bar to fill (1.5s) + 0.5s delay
                   } else {
                     // No level up, just add XP
                     setPlaylistXP(newTotalXP)
@@ -4164,11 +4169,12 @@ const Game = () => {
                     setTimeout(() => {
                       console.log('🎵 Showing Your Answers section (no level-up)')
                       setShowSongList(true)
-                    }, 2500)
-                }
-                
-                setPlaylistXPAnimationComplete(true)
-              }, 850) // Wait for indicator to arrive at target
+                    }, 2000) // Wait for bar fill (1.5s) + 0.5s delay
+                  }
+                  
+                  setPlaylistXPAnimationComplete(true)
+                }, 500) // 0.5s delay so counter and bar start together
+              }, 1800) // Wait for indicator to arrive at target (1.0s delay + 0.8s flight)
             }, 100) // Small delay before showing bar
           }
           
