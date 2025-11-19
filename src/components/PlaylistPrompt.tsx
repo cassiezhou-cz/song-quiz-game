@@ -140,19 +140,29 @@ const PlaylistPrompt = ({
               className={`prompt-button prompt-event-button ${!eventUnlocked || !isDailyChallengeAvailable ? 'locked' : ''}`}
               onClick={handleEvent}
               disabled={!eventUnlocked || !isDailyChallengeAvailable}
-              title={!eventUnlocked ? "Unlock at Gold Tier (10 segments)" : !isDailyChallengeAvailable ? "Come back later" : "Daily Challenge"}
+              title={!eventUnlocked ? "Unlock at Level 5" : !isDailyChallengeAvailable ? "Come back later" : "Daily Challenge"}
             >
+              {!eventUnlocked && (
+                <div className="button-lock-badge">
+                  <span className="lock-emoji">🔒</span>
+                  <div className="button-level-badge">5</div>
+                </div>
+              )}
               Event
-              {!eventUnlocked && <span className="lock-icon">🔒</span>}
             </button>
             <button 
               className={`prompt-button prompt-master-button ${!masterModeUnlocked ? 'locked' : ''}`}
               onClick={handleMasterMode}
               disabled={!masterModeUnlocked}
-              title={!masterModeUnlocked ? "Unlock at Platinum Tier (15 segments)" : "Master Mode"}
+              title={!masterModeUnlocked ? "Unlock at Level 10" : "Master"}
             >
-              Master Mode
-              {!masterModeUnlocked && <span className="lock-icon">🔒</span>}
+              {!masterModeUnlocked && (
+                <div className="button-lock-badge">
+                  <span className="lock-emoji">🔒</span>
+                  <div className="button-level-badge">10</div>
+                </div>
+              )}
+              Master
             </button>
           </div>
         </div>
