@@ -8411,34 +8411,21 @@
 }
 
 .playlist-mastered-result {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 900;
   color: #ffffff;
-  text-shadow: 
-    0 0 20px rgba(185, 147, 214, 1),
-    0 0 40px rgba(185, 147, 214, 0.8),
-    0 4px 12px rgba(0, 0, 0, 0.6);
-  letter-spacing: 4px;
-  background: linear-gradient(135deg, #b893d6 0%, #8e7cc3 50%, #b893d6 100%);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 5px;
+  background: linear-gradient(135deg, #ffffff 0%, #e8d5f7 20%, #d4b3f0 40%, #b893d6 50%, #d4b3f0 60%, #e8d5f7 80%, #ffffff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: masteredShimmerResult 3s ease-in-out infinite;
 }
 
 .playlist-mastered-diamond-result {
-  font-size: 3rem;
-  filter: drop-shadow(0 0 15px rgba(185, 147, 214, 1));
+  font-size: 3.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   animation: diamondPulseResult 2s ease-in-out infinite;
-}
-
-@keyframes masteredShimmerResult {
-  0%, 100% {
-    filter: brightness(1);
-  }
-  50% {
-    filter: brightness(1.4);
-  }
 }
 
 @keyframes diamondPulseResult {
@@ -8479,7 +8466,7 @@
   }
   
   .playlist-mastered-result {
-    font-size: 1.8rem;
+    font-size: 2.5rem;
     padding: 1.5rem;
   }
 }
@@ -8890,20 +8877,20 @@
 }
 
 .playlist-mastered-result {
-  font-size: 2.5rem;
+  font-size: 3.5rem;
   font-weight: 900;
-  background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #e8d5f7 20%, #d4b3f0 40%, #b893d6 50%, #d4b3f0 60%, #e8d5f7 80%, #ffffff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: 0 4px 20px rgba(147, 51, 234, 0.6);
-  letter-spacing: 0.15em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
 .playlist-mastered-diamond-result {
-  font-size: 2.5rem;
-  filter: drop-shadow(0 4px 15px rgba(147, 51, 234, 0.8));
+  font-size: 3.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   animation: diamondSpin 3s linear infinite;
 }
 
@@ -8958,11 +8945,11 @@
   }
   
   .playlist-mastered-result {
-    font-size: 1.8rem;
+    font-size: 2.5rem;
   }
   
   .playlist-mastered-diamond-result {
-    font-size: 1.8rem;
+    font-size: 2.5rem;
   }
 }
 

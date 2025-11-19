@@ -119,13 +119,25 @@ const PlaylistSelection = () => {
 
   // Playlist progression system state
   const playlists = ['2020s', '2010s', '2000s', '90s', 'Iconic Songs', 'Most Streamed Songs']
-  const [playlistProgress, setPlaylistProgress] = useState<Record<string, PlaylistProgress>>({
-    '2020s': { level: 1, xp: 0 },
-    '2010s': { level: 1, xp: 0 },
-    '2000s': { level: 1, xp: 0 },
-    '90s': { level: 1, xp: 0 },
-    'Iconic Songs': { level: 1, xp: 0 },
-    'Most Streamed Songs': { level: 1, xp: 0 }
+  const [playlistProgress, setPlaylistProgress] = useState<Record<string, PlaylistProgress>>(() => {
+    // Initialize from localStorage to prevent animation on mount
+    const savedProgress = localStorage.getItem('playlist_progress')
+    if (savedProgress) {
+      try {
+        return JSON.parse(savedProgress) as Record<string, PlaylistProgress>
+      } catch (e) {
+        console.error('Failed to parse playlist progress:', e)
+      }
+    }
+    // Fallback to defaults if no saved data
+    return {
+      '2020s': { level: 1, xp: 0 },
+      '2010s': { level: 1, xp: 0 },
+      '2000s': { level: 1, xp: 0 },
+      '90s': { level: 1, xp: 0 },
+      'Iconic Songs': { level: 1, xp: 0 },
+      'Most Streamed Songs': { level: 1, xp: 0 }
+    }
   })
 
   // Track which playlists have new songs
@@ -171,17 +183,19 @@ const PlaylistSelection = () => {
       }
     }
 
-    // Load playlist progress (with migration from old segment system)
+    // Load playlist progress only if migration is needed (to prevent unnecessary re-renders)
     const savedPlaylistProgress = localStorage.getItem('playlist_progress')
     if (savedPlaylistProgress) {
       try {
         const parsed = JSON.parse(savedPlaylistProgress) as Record<string, any>
+        let needsMigration = false
         const migratedProgress: Record<string, PlaylistProgress> = {}
         
         // Migrate from old progress format to new level/xp format
         for (const [playlist, data] of Object.entries(parsed)) {
           if ('progress' in data && typeof data.progress === 'number') {
             // Old format: convert segments to approximate level
+            needsMigration = true
             const segments = data.progress
             const approximateLevel = Math.min(Math.floor(segments / 1.5) + 1, 10)
             migratedProgress[playlist] = { level: approximateLevel, xp: 0 }
@@ -195,10 +209,13 @@ const PlaylistSelection = () => {
           }
         }
         
-        setPlaylistProgress(migratedProgress)
-        // Save migrated data
-        localStorage.setItem('playlist_progress', JSON.stringify(migratedProgress))
-        console.log('📊 Loaded playlist progress:', migratedProgress)
+        // Only update state if migration occurred (prevents animation on mount)
+        if (needsMigration) {
+          setPlaylistProgress(migratedProgress)
+          // Save migrated data
+          localStorage.setItem('playlist_progress', JSON.stringify(migratedProgress))
+          console.log('📊 Migrated playlist progress:', migratedProgress)
+        }
       } catch (e) {
         console.error('Failed to parse playlist progress:', e)
       }
@@ -772,61 +789,6 @@ const PlaylistSelection = () => {
                       onClick={() => handlePlaylistSelect(playlist)}
                       disabled={selectedPlaylist !== null}
                     >
-                      {/* Daily Challenge Button - Shows for Level 5 and above */}
-                      {level >= 5 && (
-                        <button
-                          className={`daily-challenge-button ${!isDailyChallengeAvailable(playlist) ? 'disabled' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            if (isDailyChallengeAvailable(playlist)) {
-                              setDailyChallengePlaylist(playlist)
-                              setShowDailyChallengeModal(true)
-                            }
-                          }}
-                          onMouseEnter={() => handleDailyChallengeButtonHover(playlist)}
-                          title={isDailyChallengeAvailable(playlist) ? "Daily Challenge" : "Come back later"}
-                          disabled={!isDailyChallengeAvailable(playlist)}
-                        >
-                          {dailyChallengeNewBadges.has(playlist) && (
-                            <div className="daily-challenge-new-badge">NEW</div>
-                          )}
-                          <img 
-                            src="/assets/PM_FireNote.png"
-                            alt="Daily Challenge"
-                            className="daily-challenge-icon"
-                          />
-                          {!isDailyChallengeAvailable(playlist) && dailyChallengeTimers[playlist] && (
-                            <div className="daily-challenge-timer">
-                              {dailyChallengeTimers[playlist]}
-                            </div>
-                          )}
-                        </button>
-                      )}
-
-                      {/* Master Mode Button - Shows for Level 10 (Mastered) */}
-                      {masterModeUnlocked && (
-                        <button
-                          className="master-mode-button-small"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            // Master Mode will be handled through the prompt
-                            setPromptPlaylist(playlist)
-                            setShowPlaylistPrompt(true)
-                          }}
-                          onMouseEnter={() => handleMasterModeButtonHover(playlist)}
-                          title="Master Mode"
-                          disabled={selectedPlaylist !== null}
-                        >
-                          {masterModeNewBadges.has(playlist) && (
-                            <div className="master-mode-new-badge">NEW</div>
-                          )}
-                          <img 
-                            src="/assets/PM_WinnerPodium.png"
-                            alt="Master Mode"
-                            className="master-mode-icon"
-                          />
-                        </button>
-                      )}
                       <span className="decade">{playlist}</span>
                     </button>
                     

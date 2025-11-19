@@ -1131,7 +1131,7 @@ const Game = () => {
           // Show song list after XP bar finishes refilling
           // If no overflow XP (finalXP === 0), skip the refill animation wait
           const hasOverflow = pendingXPDrain.finalXP > 0
-          const delay = hasOverflow ? 2150 : 650 // With overflow: wait for refill animation (1.5s) + pause. No overflow: just pause
+          const delay = hasOverflow ? 2500 : 500 // With overflow: wait for refill animation (2s) + 0.5s. No overflow: just 0.5s pause
           
           // Update startingXP after animation completes
           if (hasOverflow) {
@@ -4134,10 +4134,10 @@ const Game = () => {
                           setTimeout(() => {
                             setShowPlaylistLevelUpModal(true)
                             
-                            // Auto-show song list after modal has been visible for 2 seconds
+                            // Auto-show song list after modal has been visible for 0.5 seconds
                             setTimeout(() => {
                               setShowSongList(true)
-                            }, 2000)
+                            }, 500)
                           }, 1600) // Wait for refill animation (1.5s transition + buffer)
                         }, 1600) // Wait for drain animation (1.5s transition + buffer)
                       }, 1900) // Wait for level flash animation (1400ms) + 0.5s delay
