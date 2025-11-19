@@ -5986,9 +5986,18 @@ const Game = () => {
                         ) : (
                           <div className="playlist-mastered-result-container">
                             <div className="playlist-mastered-result">MASTERED</div>
-                            <div className="playlist-mastered-diamond-result">💎</div>
                           </div>
                         )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Next Reward Indicator - Outside Container */}
+                  {showPlaylistXPBar && currentPlaylistLevel < 10 && (
+                    <div className="next-reward-container">
+                      <span className="next-reward-label">NEXT REWARD</span>
+                      <div className="next-reward-level">
+                        {currentPlaylistLevel < 3 ? '3' : currentPlaylistLevel < 5 ? '5' : '10'}
                       </div>
                     </div>
                   )}
