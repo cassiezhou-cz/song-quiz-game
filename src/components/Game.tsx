@@ -583,7 +583,7 @@ const Game = () => {
   const [playlistXPGain, setPlaylistXPGain] = useState(0) // Total XP gained this session
   const [showFlyingPlaylistXP, setShowFlyingPlaylistXP] = useState(false) // Flying +XP indicator
   const [isFadingOutFlyingXP, setIsFadingOutFlyingXP] = useState(false) // Fade out flying XP
-  const [targetPlaylistXPPosition, setTargetPlaylistXPPosition] = useState('50%') // Target position for flying XP
+  const [flyingXPTransform, setFlyingXPTransform] = useState({ x: '-50%', y: '0' }) // Transform for flying XP indicator
   const [pendingLevelUp, setPendingLevelUp] = useState(false) // Level up pending
   const [showLevelUpPulse, setShowLevelUpPulse] = useState(false) // Pulse animation on level up
   const [showPlaylistLevelUpModal, setShowPlaylistLevelUpModal] = useState(false) // Level up modal
@@ -3964,36 +3964,62 @@ const Game = () => {
             const xpRequired = getPlaylistXPRequired(currentPlaylistLevel)
             const startingPercentage = (playlistXP / xpRequired) * 100
             
-            // Show flying XP indicator
-            setPlaylistXPGain(finalScore)
-            setShowFlyingPlaylistXP(true)
-            
-            // Calculate target position for flying indicator
-            const targetXP = Math.min(playlistXP + finalScore, xpRequired)
-            const targetPercentage = (targetXP / xpRequired) * 100
-            const calculatedTarget = Math.min(targetPercentage, 92) // Cap at 92% for visual
-            setTargetPlaylistXPPosition(`${calculatedTarget}%`)
-            console.log('🎯 Playlist Target XP Position:', calculatedTarget, `(${targetXP}/${xpRequired})`)
-            
-            // Show Playlist XP bar
+            // Show Playlist XP bar and flying indicator
             setTimeout(() => {
               setShowPlaylistXPBar(true)
               setDisplayedPlaylistXP(playlistXP) // Start from current XP
+              setPlaylistXPGain(finalScore)
               
-              // Fly the indicator to target (0.8s flight time)
+              // Calculate positions for the flying indicator animation
               setTimeout(() => {
-                setIsFadingOutFlyingXP(true)
+                const finalScoreEl = document.querySelector('.final-score-value')
+                const xpBarBgEl = document.querySelector('.playlist-xp-bar-bg')
                 
-                // Trigger bar fill animation after indicator arrives
-                setTimeout(() => {
-                  setShowFlyingPlaylistXP(false)
-                  setIsFadingOutFlyingXP(false)
+                if (finalScoreEl && xpBarBgEl) {
+                  const scoreRect = finalScoreEl.getBoundingClientRect()
+                  const barRect = xpBarBgEl.getBoundingClientRect()
                   
-                  // Calculate new total XP
+                  // Calculate start position (Final Score center)
+                  const startX = scoreRect.left + (scoreRect.width / 2)
+                  const startY = scoreRect.top + (scoreRect.height / 2)
+                  
+                  // Calculate where the bar will fill to based on new XP
                   const newTotalXP = playlistXP + finalScore
+                  const xpRequired = getPlaylistXPRequired(currentPlaylistLevel)
+                  const fillPercentage = Math.min((newTotalXP / xpRequired) * 100, 100)
                   
-                  // Check for level up
-                  if (newTotalXP >= xpRequired && currentPlaylistLevel < 10) {
+                  // Calculate end position - where the bar will fill to
+                  const barFillWidth = (barRect.width * fillPercentage) / 100
+                  const endX = barRect.left + barFillWidth
+                  const endY = barRect.top + (barRect.height / 2)
+                  
+                  console.log('🎯 Flying XP Animation Positions:')
+                  console.log('   Start (Final Score):', startX, startY)
+                  console.log('   End (XP Bar @ ' + fillPercentage.toFixed(1) + '%):', endX, endY)
+                  console.log('   New XP:', newTotalXP, '/', xpRequired)
+                  
+                  // Store positions for the animation
+                  setFlyingXPTransform({ 
+                    x: `${startX}px`, 
+                    y: `${startY}px`,
+                    startX: `${startX}px`,
+                    startY: `${startY}px`,
+                    endX: `${endX}px`,
+                    endY: `${endY}px`
+                  } as any)
+                }
+                
+                // Show the indicator after positions are calculated
+                setShowFlyingPlaylistXP(true)
+              }, 100)
+              
+              // After indicator arrives at target (0.8s flight), start bar fill
+              setTimeout(() => {
+                // Calculate new total XP
+                const newTotalXP = playlistXP + finalScore
+                
+                // Check for level up
+                if (newTotalXP >= xpRequired && currentPlaylistLevel < 10) {
                     // Level up!
                     const newLevel = currentPlaylistLevel + 1
                     const remainingXP = newTotalXP - xpRequired
@@ -4003,11 +4029,20 @@ const Game = () => {
                     // Animate bar to 100% first
                     setDisplayedPlaylistXP(xpRequired)
                     
-                    // Wait for bar to fill, then show level up animation
+                    // Hide the flying indicator after animations complete
                     setTimeout(() => {
+                      setShowFlyingPlaylistXP(false)
+                    }, 3000)
+                    
+                    // Wait for bar to fill, then animate level increment
+                    setTimeout(() => {
+                      console.log('🎯 Level animation: Setting currentPlaylistLevel to', newLevel, 'from', currentPlaylistLevel)
+                      
+                      // Animate the level number increment BEFORE draining bar
+                      // This triggers the displayedPlaylistLevel animation
                       setCurrentPlaylistLevel(newLevel)
-                      setPlaylistXP(remainingXP)
                       setNewPlaylistLevelReached(newLevel)
+                      setPlaylistXP(remainingXP)
                       
                       // Save to localStorage
                       const savedProgress = localStorage.getItem('playlist_progress')
@@ -4022,15 +4057,17 @@ const Game = () => {
                       allProgress[actualPlaylist] = { level: newLevel, xp: remainingXP }
                       localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
                       
-                      // Show level up modal
+                      // Wait for level counting animation to complete, then drain bar
                       setTimeout(() => {
-                        setShowPlaylistLevelUpModal(true)
+                        // Drain bar to show remaining XP
+                        setDisplayedPlaylistXP(remainingXP)
                         
-                        // Reset bar and set remaining XP after modal appears
+                        // Show level up modal after bar drains
                         setTimeout(() => {
-                          setDisplayedPlaylistXP(remainingXP)
+                          console.log('🎯 Showing Playlist Level-Up Modal')
+                          setShowPlaylistLevelUpModal(true)
                         }, 500)
-                      }, 800)
+                      }, 800) // Wait for level counting animation (0.8s)
                       
                       // Show song list after modal closes (user will click continue)
                     }, 1500) // Wait for bar fill
@@ -4052,17 +4089,21 @@ const Game = () => {
                     allProgress[actualPlaylist] = { level: currentPlaylistLevel, xp: newTotalXP }
                     localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
                     
+                    // Hide the flying indicator after animations complete
+                    setTimeout(() => {
+                      setShowFlyingPlaylistXP(false)
+                    }, 3000)
+                    
                     // Show song list after XP bar finishes filling
                     setTimeout(() => {
                       console.log('🎵 Showing Your Answers section (no level-up)')
                       setShowSongList(true)
                     }, 2500)
-                  }
-                  
-                  setPlaylistXPAnimationComplete(true)
-                }, 300) // Small delay after indicator fades
-              }, 800) // Flight time
-            }, 100)
+                }
+                
+                setPlaylistXPAnimationComplete(true)
+              }, 850) // Wait for indicator to arrive at target
+            }, 100) // Small delay before showing bar
           }
           
           // For normal mode (non-Daily Challenge), trigger Playlist XP bar on a timer
@@ -5828,15 +5869,18 @@ const Game = () => {
                     </p>
                   )}
                   
-                  {/* Flying Playlist XP Indicator */}
+                  {/* Flying Playlist XP Indicator - positioned fixed to viewport */}
                   {showFlyingPlaylistXP && (
                     <div 
-                      className={`playlist-xp-indicator-flying ${isFadingOutFlyingXP ? 'fade-out' : ''}`}
-                      style={{ 
-                        left: targetPlaylistXPPosition,
-                      }}
+                      className="playlist-xp-indicator-flying"
+                      style={{
+                        '--start-x': (flyingXPTransform as any).startX || flyingXPTransform.x,
+                        '--start-y': (flyingXPTransform as any).startY || flyingXPTransform.y,
+                        '--end-x': (flyingXPTransform as any).endX || flyingXPTransform.x,
+                        '--end-y': (flyingXPTransform as any).endY || flyingXPTransform.y
+                      } as React.CSSProperties}
                     >
-                      +{playlistXPGain} XP
+                      +{playlistXPGain}
                     </div>
                   )}
                   
