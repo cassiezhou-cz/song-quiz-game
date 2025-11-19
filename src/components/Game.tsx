@@ -572,10 +572,16 @@ const Game = () => {
   const [targetXPPosition, setTargetXPPosition] = useState(0) // Static target for indicator (Global XP)
   const [showSongList, setShowSongList] = useState(false) // Show Your Answers section
   
+  // Debug: Track showSongList changes
+  useEffect(() => {
+    console.log('🎯 showSongList changed to:', showSongList)
+  }, [showSongList])
+  
   // Playlist XP System State
   const [playlistXP, setPlaylistXP] = useState(0) // Current XP toward next level
   const [currentPlaylistLevel, setCurrentPlaylistLevel] = useState(playlistLevel) // Current playlist level
   const [displayedPlaylistLevel, setDisplayedPlaylistLevel] = useState(playlistLevel) // Animated level display
+  const [showLevelFlash, setShowLevelFlash] = useState(false) // Flashy animation on level up
   const [startingPlaylistXP, setStartingPlaylistXP] = useState(0) // XP at start (for animation)
   const [displayedPlaylistXP, setDisplayedPlaylistXP] = useState(0) // Animated XP display
   const [animatedPlaylistXP, setAnimatedPlaylistXP] = useState(0) // For smooth counting animation
@@ -707,30 +713,13 @@ const Game = () => {
   // Playlist XP will now be awarded based on score, not new songs
   // This logic has been moved to the results sequence to match Global XP animation pattern
 
-  // Animate level number counting
+  // Instant level number update (no counting animation)
   useEffect(() => {
-    if (displayedPlaylistLevel === currentPlaylistLevel) return
-    
-    const start = displayedPlaylistLevel
-    const end = currentPlaylistLevel
-    const duration = 800 // 0.8 seconds
-    const steps = 30
-    const stepTime = duration / steps
-    const increment = (end - start) / steps
-    
-    let currentStep = 0
-    const timer = setInterval(() => {
-      currentStep++
-      if (currentStep >= steps) {
-        setDisplayedPlaylistLevel(end)
-        clearInterval(timer)
-      } else {
-        setDisplayedPlaylistLevel(start + (increment * currentStep))
-      }
-    }, stepTime)
-    
-    return () => clearInterval(timer)
-  }, [currentPlaylistLevel, displayedPlaylistLevel])
+    if (displayedPlaylistLevel !== currentPlaylistLevel) {
+      console.log('🎯 Instantly updating level:', displayedPlaylistLevel, '→', currentPlaylistLevel)
+      setDisplayedPlaylistLevel(currentPlaylistLevel)
+    }
+  }, [currentPlaylistLevel])
 
   // Keyboard shortcuts for debug scoring (Version B)
   useEffect(() => {
@@ -4037,12 +4026,19 @@ const Game = () => {
                     // Wait for bar to fill, then animate level increment
                     setTimeout(() => {
                       console.log('🎯 Level animation: Setting currentPlaylistLevel to', newLevel, 'from', currentPlaylistLevel)
+                      console.log('🎯 displayedPlaylistLevel before:', displayedPlaylistLevel)
                       
-                      // Animate the level number increment BEFORE draining bar
-                      // This triggers the displayedPlaylistLevel animation
+                      // Animate the level number increment FIRST (without flash)
+                      // This triggers the displayedPlaylistLevel animation via useEffect
                       setCurrentPlaylistLevel(newLevel)
                       setNewPlaylistLevelReached(newLevel)
-                      setPlaylistXP(remainingXP)
+                      
+                      console.log('🎯 After setState - currentPlaylistLevel should be:', newLevel)
+                      
+                      // Wait a frame for state to update, then set XP
+                      setTimeout(() => {
+                        setPlaylistXP(remainingXP)
+                      }, 0)
                       
                       // Save to localStorage
                       const savedProgress = localStorage.getItem('playlist_progress')
@@ -4057,7 +4053,7 @@ const Game = () => {
                       allProgress[actualPlaylist] = { level: newLevel, xp: remainingXP }
                       localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
                       
-                      // Wait for level counting animation to complete, then drain bar
+                      // Level updates instantly, then immediately drain bar and show modal
                       setTimeout(() => {
                         // Drain bar to show remaining XP
                         setDisplayedPlaylistXP(remainingXP)
@@ -4066,10 +4062,14 @@ const Game = () => {
                         setTimeout(() => {
                           console.log('🎯 Showing Playlist Level-Up Modal')
                           setShowPlaylistLevelUpModal(true)
+                          
+                          // Auto-show song list after modal has been visible for 2 seconds
+                          setTimeout(() => {
+                            console.log('🎵 Auto-showing Your Answers section (after modal display)')
+                            setShowSongList(true)
+                          }, 2000)
                         }, 500)
-                      }, 800) // Wait for level counting animation (0.8s)
-                      
-                      // Show song list after modal closes (user will click continue)
+                      }, 100) // Small delay for DOM to update with new level
                     }, 1500) // Wait for bar fill
                   } else {
                     // No level up, just add XP
@@ -5905,7 +5905,7 @@ const Game = () => {
                                 {Math.floor(displayedPlaylistXP)}/{getPlaylistXPRequired(currentPlaylistLevel)}
                               </div>
                             </div>
-                            <div className="playlist-level-badge-result">{Math.floor(displayedPlaylistLevel)}</div>
+                            <div className={`playlist-level-badge-result ${showLevelFlash ? 'level-up-flash' : ''}`}>{Math.floor(displayedPlaylistLevel)}</div>
                           </div>
                         ) : (
                           <div className="playlist-mastered-result-container">
@@ -7722,9 +7722,11 @@ const Game = () => {
               <button 
                 className="level-up-confirm-btn" 
                 onClick={() => {
+                  console.log('🎯 MODAL: Continue button clicked')
                   setShowPlaylistLevelUpModal(false)
                   // Show song list after modal closes
                   setTimeout(() => {
+                    console.log('🎯 MODAL: Setting showSongList to TRUE')
                     setShowSongList(true)
                   }, 300)
                 }}
