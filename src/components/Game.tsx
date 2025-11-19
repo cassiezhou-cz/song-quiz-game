@@ -576,6 +576,7 @@ const Game = () => {
   const [playlistXP, setPlaylistXP] = useState(0) // Current XP toward next level
   const [currentPlaylistLevel, setCurrentPlaylistLevel] = useState(playlistLevel) // Current playlist level
   const [displayedPlaylistLevel, setDisplayedPlaylistLevel] = useState(playlistLevel) // Animated level display
+  const [levelForXPCalc, setLevelForXPCalc] = useState(playlistLevel) // Level to use for XP bar percentage calculation (prevents hitch during drain)
   const [showLevelFlash, setShowLevelFlash] = useState(false) // Flashy animation on level up
   const [startingPlaylistXP, setStartingPlaylistXP] = useState(0) // XP at start (for animation)
   const [displayedPlaylistXP, setDisplayedPlaylistXP] = useState(0) // Animated XP display
@@ -681,6 +682,7 @@ const Game = () => {
         if (playlistData && 'level' in playlistData && 'xp' in playlistData) {
           setCurrentPlaylistLevel(playlistData.level)
           setDisplayedPlaylistLevel(playlistData.level)
+          setLevelForXPCalc(playlistData.level)
           setPlaylistXP(playlistData.xp)
           setStartingPlaylistXP(playlistData.xp)
           setDisplayedPlaylistXP(playlistData.xp)
@@ -693,6 +695,7 @@ const Game = () => {
           const migratedXP = 0
           setCurrentPlaylistLevel(migratedLevel)
           setDisplayedPlaylistLevel(migratedLevel)
+          setLevelForXPCalc(migratedLevel)
           setPlaylistXP(migratedXP)
           setStartingPlaylistXP(migratedXP)
           setDisplayedPlaylistXP(migratedXP)
@@ -708,12 +711,29 @@ const Game = () => {
   // Playlist XP will now be awarded based on score, not new songs
   // This logic has been moved to the results sequence to match Global XP animation pattern
 
-  // Instant level number update (no counting animation)
+  // Level number update with flash animation
   useEffect(() => {
     if (displayedPlaylistLevel !== currentPlaylistLevel) {
-      setDisplayedPlaylistLevel(currentPlaylistLevel)
+      const levelDifference = currentPlaylistLevel - displayedPlaylistLevel
+      
+      // If leveling up, trigger flash animation
+      if (levelDifference > 0) {
+        console.log('🎯 Level up detected, triggering flash animation')
+        setShowLevelFlash(true)
+        
+        // Update level instantly
+        setDisplayedPlaylistLevel(currentPlaylistLevel)
+        
+        // Remove flash after animation completes
+        setTimeout(() => {
+          setShowLevelFlash(false)
+        }, 1400) // Match animation duration
+      } else {
+        // Instant update for level decreases (shouldn't happen)
+        setDisplayedPlaylistLevel(currentPlaylistLevel)
+      }
     }
-  }, [currentPlaylistLevel])
+  }, [currentPlaylistLevel, displayedPlaylistLevel])
 
   // Keyboard shortcuts for debug scoring (Version B)
   useEffect(() => {
@@ -3950,6 +3970,7 @@ const Game = () => {
             // Show Playlist XP bar and flying indicator
             setTimeout(() => {
               setShowPlaylistXPBar(true)
+              setLevelForXPCalc(currentPlaylistLevel) // Lock in current level for XP calc
               setDisplayedPlaylistXP(playlistXP) // Start from current XP
               setPlaylistXPGain(finalScore)
               
@@ -4029,10 +4050,7 @@ const Game = () => {
                       
                       console.log('🎯 After setState - currentPlaylistLevel should be:', newLevel)
                       
-                      // Wait a frame for state to update, then set XP
-                      setTimeout(() => {
-                        setPlaylistXP(remainingXP)
-                      }, 0)
+                      // Don't set XP yet - we'll do it after the drain/refill animation
                       
                       // Save to localStorage
                       const savedProgress = localStorage.getItem('playlist_progress')
@@ -4047,22 +4065,35 @@ const Game = () => {
                       allProgress[actualPlaylist] = { level: newLevel, xp: remainingXP }
                       localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
                       
-                      // Level updates instantly, then immediately drain bar and show modal
+                      // Wait for level flash animation + 0.5s delay, then drain and refill
                       setTimeout(() => {
-                        // Drain bar to show remaining XP
-                        setDisplayedPlaylistXP(remainingXP)
+                        console.log('🎬 Level flash complete + 0.5s delay, draining bar to 0')
+                        // Keep using old level for XP calculation during drain (prevents hitch)
+                        // levelForXPCalc stays at old level here
                         
-                        // Show level up modal after bar drains
+                        // First, drain bar to 0 (smooth transition)
+                        setDisplayedPlaylistXP(0)
+                        
+                        // After drain completes smoothly, refill to remaining XP
                         setTimeout(() => {
-                          setShowPlaylistLevelUpModal(true)
+                          console.log('🎬 Drain complete, switching to new level for XP calc and refilling to', remainingXP)
+                          // NOW update the level used for XP calculations (after drain completes)
+                          setLevelForXPCalc(newLevel)
+                          setPlaylistXP(remainingXP) // Set the underlying state
+                          setDisplayedPlaylistXP(remainingXP) // Animate the display
                           
-                          // Auto-show song list after modal has been visible for 2 seconds
+                          // Show level up modal after refill completes
                           setTimeout(() => {
-                            setShowSongList(true)
-                          }, 2000)
-                        }, 500)
-                      }, 100) // Small delay for DOM to update with new level
-                    }, 1500) // Wait for bar fill
+                            setShowPlaylistLevelUpModal(true)
+                            
+                            // Auto-show song list after modal has been visible for 2 seconds
+                            setTimeout(() => {
+                              setShowSongList(true)
+                            }, 2000)
+                          }, 1600) // Wait for refill animation (1.5s transition + buffer)
+                        }, 1600) // Wait for drain animation (1.5s transition + buffer)
+                      }, 1900) // Wait for level flash animation (1400ms) + 0.5s delay
+                    }, 1500) // Wait for bar to fill to 100%
                   } else {
                     // No level up, just add XP
                     setPlaylistXP(newTotalXP)
@@ -5891,13 +5922,17 @@ const Game = () => {
                             <div className="playlist-xp-bar-bg">
                               <div 
                                 className="playlist-xp-bar-fill"
-                                style={{ width: `${(displayedPlaylistXP / getPlaylistXPRequired(currentPlaylistLevel)) * 100}%` }}
+                                style={{ width: `${(displayedPlaylistXP / getPlaylistXPRequired(levelForXPCalc)) * 100}%` }}
                               />
                               <div className="playlist-xp-text">
-                                {Math.floor(displayedPlaylistXP)}/{getPlaylistXPRequired(currentPlaylistLevel)}
+                                {Math.floor(displayedPlaylistXP)}/{getPlaylistXPRequired(levelForXPCalc)}
                               </div>
                             </div>
-                            <div className={`playlist-level-badge-result ${showLevelFlash ? 'level-up-flash' : ''}`}>{Math.floor(displayedPlaylistLevel)}</div>
+                            <div className="playlist-level-badge-result">
+                              <span className={showLevelFlash ? 'level-number-flash' : ''}>
+                                {Math.floor(displayedPlaylistLevel)}
+                              </span>
+                            </div>
                           </div>
                         ) : (
                           <div className="playlist-mastered-result-container">
@@ -7733,3 +7768,4 @@ const Game = () => {
 }
 
 export default Game
+
