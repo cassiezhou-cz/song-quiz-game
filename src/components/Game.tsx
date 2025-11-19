@@ -591,7 +591,32 @@ const Game = () => {
   const [showLevelUpPulse, setShowLevelUpPulse] = useState(false) // Pulse animation on level up
   const [showPlaylistLevelUpModal, setShowPlaylistLevelUpModal] = useState(false) // Level up modal
   const [newPlaylistLevelReached, setNewPlaylistLevelReached] = useState(0) // New level number
+  const [showUnlockNotification, setShowUnlockNotification] = useState(false) // Simple unlock notification
+  const [unlockMessage, setUnlockMessage] = useState('') // Unlock message text
+  const unlockNotificationRef = useRef<HTMLDivElement>(null)
+  
+  // Track notification state changes
+  useEffect(() => {
+    console.log('🎊 NOTIFICATION STATE CHANGED - showUnlockNotification:', showUnlockNotification, 'message:', unlockMessage)
+  }, [showUnlockNotification, unlockMessage])
   const [playlistXPAnimationComplete, setPlaylistXPAnimationComplete] = useState(false) // XP animation done
+  
+  // Dummy state to force re-renders
+  const [forceRenderKey, setForceRenderKey] = useState(0)
+  
+  // Debug: Track modal state changes
+  useEffect(() => {
+    console.log('🎊 showPlaylistLevelUpModal state changed to:', showPlaylistLevelUpModal)
+    console.log('🎊 newPlaylistLevelReached is:', newPlaylistLevelReached)
+    
+    // Force a re-render by logging to console when modal should be visible
+    if (showPlaylistLevelUpModal) {
+      console.log('🎊 MODAL STATE IS TRUE - Component should re-render and show modal!')
+      console.log('🎊 Attempting to force re-render...')
+      // Force React to re-render by setting a dummy state
+      setForceRenderKey(prev => prev + 1)
+    }
+  }, [showPlaylistLevelUpModal, newPlaylistLevelReached])
   const playlistXPAnimationStartedRef = useRef(false) // Prevent duplicate XP awards
   const [hasAwardedPlaylistXP, setHasAwardedPlaylistXP] = useState(false) // Track if XP was awarded
   const [iconUnlockProgress, setIconUnlockProgress] = useState(0) // Controls icon colorization separately from medal
@@ -4077,6 +4102,12 @@ const Game = () => {
                     const remainingXP = newTotalXP - xpRequired
                     
                     console.log(`🎉 PLAYLIST LEVEL UP! ${actualPlaylist} reached Level ${newLevel}`)
+                    console.log(`📊 XP Details: Total XP: ${newTotalXP}, Required: ${xpRequired}, Remaining: ${remainingXP}`)
+                    
+                    setNewPlaylistLevelReached(newLevel)
+                    
+                    // Store milestone info for unlock notification
+                    const isMilestone = newLevel === 3 || newLevel === 5 || newLevel === 10
                     
                     // Animate bar to 100% first
                     setDisplayedPlaylistXP(xpRequired)
@@ -4094,7 +4125,9 @@ const Game = () => {
                       // Animate the level number increment FIRST (without flash)
                       // This triggers the displayedPlaylistLevel animation via useEffect
                       setCurrentPlaylistLevel(newLevel)
-                      setNewPlaylistLevelReached(newLevel)
+                      if (newLevel !== 3 && newLevel !== 5 && newLevel !== 10) {
+                        setNewPlaylistLevelReached(newLevel)
+                      }
                       
                       console.log('🎯 After setState - currentPlaylistLevel should be:', newLevel)
                       
@@ -4113,33 +4146,137 @@ const Game = () => {
                       allProgress[actualPlaylist] = { level: newLevel, xp: remainingXP }
                       localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
                       
-                      // Wait for level flash animation + 0.5s delay, then drain and refill
+                      // Wait for level flash animation + 0.5s delay, then show unlock notification (if milestone)
                       setTimeout(() => {
-                        console.log('🎬 Level flash complete + 0.5s delay, draining bar to 0')
-                        // Keep using old level for XP calculation during drain (prevents hitch)
-                        // levelForXPCalc stays at old level here
+                        console.log('🎬 Level flash complete + 0.5s delay')
                         
-                        // First, drain bar to 0 (smooth transition)
-                        setDisplayedPlaylistXP(0)
-                        
-                        // After drain completes smoothly, refill to remaining XP
-                        setTimeout(() => {
-                          console.log('🎬 Drain complete, switching to new level for XP calc and refilling to', remainingXP)
-                          // NOW update the level used for XP calculations (after drain completes)
-                          setLevelForXPCalc(newLevel)
-                          setPlaylistXP(remainingXP) // Set the underlying state
-                          setDisplayedPlaylistXP(remainingXP) // Animate the display
+                        // Helper function to drain/refill and show song list
+                        const completeLevelUpSequence = () => {
+                          console.log('🎬 Starting drain/refill sequence')
+                          // Keep using old level for XP calculation during drain (prevents hitch)
+                          // levelForXPCalc stays at old level here
                           
-                          // Show level up modal after refill completes
+                          // First, drain bar to 0 (smooth transition)
+                          setDisplayedPlaylistXP(0)
+                          
+                          // After drain completes smoothly, refill to remaining XP
                           setTimeout(() => {
-                            setShowPlaylistLevelUpModal(true)
+                            console.log('🎬 Drain complete, switching to new level for XP calc and refilling to', remainingXP)
+                            // NOW update the level used for XP calculations (after drain completes)
+                            setLevelForXPCalc(newLevel)
+                            setPlaylistXP(remainingXP) // Set the underlying state
+                            setDisplayedPlaylistXP(remainingXP) // Animate the display
                             
-                            // Auto-show song list after modal has been visible for 0.5 seconds
+                            // Show song list after refill animation completes
                             setTimeout(() => {
+                              console.log('🎵 Showing Your Answers section (after level-up)')
                               setShowSongList(true)
-                            }, 500)
-                          }, 1600) // Wait for refill animation (1.5s transition + buffer)
-                        }, 1600) // Wait for drain animation (1.5s transition + buffer)
+                            }, 1700) // After refill animation completes
+                          }, 1600) // Wait for drain animation (1.5s transition + buffer)
+                        }
+                        
+                        // Check if this is a milestone level
+                        let message = ''
+                        let icon = ''
+                        
+                        if (newLevel === 3) {
+                          console.log('🎊 SHOWING SPECIAL QUESTIONS UNLOCK')
+                          message = 'Special Questions Unlocked'
+                          icon = '🎵'
+                        } else if (newLevel === 5) {
+                          console.log('🎊 SHOWING EVENTS UNLOCK')
+                          message = 'Events Unlocked'
+                          icon = '🔥'
+                        } else if (newLevel === 10) {
+                          console.log('🎊 SHOWING MASTER MODE UNLOCK')
+                          message = 'Master Mode Unlocked'
+                          icon = '⚡'
+                        }
+                        
+                        if (message) {
+                          // Milestone level - show unlock notification BEFORE drain/refill
+                          const notificationDiv = document.createElement('div')
+                          notificationDiv.id = 'unlock-notification-forced'
+                          notificationDiv.style.cssText = `
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            z-index: 999999;
+                            background: rgba(0, 0, 0, 0.95);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            backdrop-filter: blur(10px);
+                          `
+                          notificationDiv.innerHTML = `
+                            <div style="
+                              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                              padding: 3rem 4rem;
+                              border-radius: 20px;
+                              text-align: center;
+                              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 100px rgba(102, 126, 234, 0.5);
+                              max-width: 500px;
+                            ">
+                              <h3 style="
+                                font-size: 1.5rem;
+                                color: rgba(255, 255, 255, 0.9);
+                                margin: 0 0 2rem 0;
+                                font-weight: 700;
+                                text-transform: uppercase;
+                                letter-spacing: 0.15em;
+                              ">New Reward!</h3>
+                              
+                              <div style="
+                                font-size: 8rem;
+                                margin: 0 0 2rem 0;
+                                filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+                              ">${icon}</div>
+                              
+                              <p style="
+                                font-size: 2rem;
+                                color: white;
+                                margin: 0 0 3rem 0;
+                                font-weight: 700;
+                                line-height: 1.4;
+                              ">${message}</p>
+                              
+                              <button id="unlock-continue-btn" style="
+                                background: rgba(255, 255, 255, 0.2);
+                                border: 2px solid rgba(255, 255, 255, 0.5);
+                                color: white;
+                                font-size: 1.2rem;
+                                font-weight: 700;
+                                padding: 1rem 3rem;
+                                border-radius: 12px;
+                                cursor: pointer;
+                                text-transform: uppercase;
+                                letter-spacing: 0.1em;
+                                transition: all 0.3s ease;
+                                backdrop-filter: blur(10px);
+                              " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'; this.style.transform='scale(1.05)'" 
+                                 onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='scale(1)'">
+                                Continue
+                              </button>
+                            </div>
+                          `
+                          document.body.appendChild(notificationDiv)
+                          console.log('🎊 UNLOCK NOTIFICATION ADDED TO DOM')
+                          
+                          // Add click handler to Continue button
+                          const continueBtn = document.getElementById('unlock-continue-btn')
+                          if (continueBtn) {
+                            continueBtn.addEventListener('click', () => {
+                              document.body.removeChild(notificationDiv)
+                              console.log('🎊 UNLOCK NOTIFICATION CLOSED - starting drain/refill')
+                              completeLevelUpSequence()
+                            })
+                          }
+                        } else {
+                          // Non-milestone level up - proceed directly to drain/refill
+                          completeLevelUpSequence()
+                        }
                       }, 1900) // Wait for level flash animation (1400ms) + 0.5s delay
                     }, 2000) // Wait for bar to fill (1.5s) + 0.5s delay
                   } else {
@@ -4169,7 +4306,7 @@ const Game = () => {
                     setTimeout(() => {
                       console.log('🎵 Showing Your Answers section (no level-up)')
                       setShowSongList(true)
-                    }, 2000) // Wait for bar fill (1.5s) + 0.5s delay
+                    }, 2500) // Wait for bar fill (2s) + 0.5s delay
                   }
                   
                   setPlaylistXPAnimationComplete(true)
@@ -7744,55 +7881,97 @@ const Game = () => {
           </div>
         )}
 
-        {/* Playlist Level-Up Modal */}
-        {showPlaylistLevelUpModal && (
-          <div className="level-up-modal-overlay">
-            <div className="level-up-modal">
-              <h1 className="level-up-big-text">LEVEL UP!</h1>
-              <div className="level-up-content">
-                <div className="level-up-playlist-info">
-                  <div className="level-up-playlist-name">{actualPlaylist}</div>
-                  <div className="level-up-new-level">
-                    Level {newPlaylistLevelReached}
-                  </div>
-                </div>
-                
-                {/* Show unlock messages */}
-                {newPlaylistLevelReached === 3 && (
-                  <div className="level-up-unlock-message">
-                    🎵 Special Questions Unlocked!
-                  </div>
-                )}
-                {newPlaylistLevelReached === 5 && (
-                  <div className="level-up-unlock-message">
-                    🔥 Daily Challenge Unlocked!
-                  </div>
-                )}
-                {newPlaylistLevelReached === 10 && (
-                  <div className="level-up-unlock-message">
-                    ⚡ Master Mode Unlocked!
-                    <br />
-                    <span style={{ fontSize: '1.5rem', display: 'block', marginTop: '0.5rem' }}>
-                      Playlist Mastered!
-                    </span>
-                  </div>
-                )}
-              </div>
-              <button 
-                className="level-up-confirm-btn" 
-                onClick={() => {
-                  setShowPlaylistLevelUpModal(false)
-                  // Show song list after modal closes
-                  setTimeout(() => {
-                    setShowSongList(true)
-                  }, 300)
-                }}
-              >
-                Continue
-              </button>
+        {/* Simple Unlock Notification */}
+        {showUnlockNotification && (() => {
+          console.log('🎊 NOTIFICATION IS RENDERING - Message:', unlockMessage)
+          return (
+          <div className="unlock-notification-overlay" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 99999,
+            background: 'rgba(0, 0, 0, 0.95)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <div className="unlock-notification" style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              padding: '4rem',
+              borderRadius: '20px',
+              textAlign: 'center'
+            }}>
+              <h2 className="unlock-title" style={{fontSize: '3rem', color: 'white', margin: '0 0 2rem 0'}}>LEVEL UP!</h2>
+              <p className="unlock-message" style={{fontSize: '2rem', color: 'white', margin: 0, whiteSpace: 'pre-line'}}>{unlockMessage}</p>
             </div>
           </div>
-        )}
+          )
+        })()}
+
+        {/* Playlist Level-Up Modal */}
+        {showPlaylistLevelUpModal && (() => {
+          console.log('🎊 RENDERING LEVEL UP MODAL - Level:', newPlaylistLevelReached, 'Show Modal:', showPlaylistLevelUpModal)
+          return (
+            <div className="level-up-modal-overlay" onClick={(e) => {
+              // Allow clicking overlay to close modal
+              if (e.target === e.currentTarget) {
+                console.log('🎊 CLOSING MODAL via overlay click')
+                setShowPlaylistLevelUpModal(false)
+                setTimeout(() => {
+                  setShowSongList(true)
+                }, 300)
+              }
+            }}>
+              <div className="level-up-modal">
+                <h1 className="level-up-big-text">LEVEL UP!</h1>
+                <div className="level-up-content">
+                  <div className="level-up-playlist-info">
+                    <div className="level-up-playlist-name">{actualPlaylist}</div>
+                    <div className="level-up-new-level">
+                      Level {newPlaylistLevelReached}
+                    </div>
+                  </div>
+                  
+                  {/* Show unlock messages */}
+                  {newPlaylistLevelReached === 3 && (
+                    <div className="level-up-unlock-message">
+                      🎵 Special Questions Unlocked!
+                    </div>
+                  )}
+                  {newPlaylistLevelReached === 5 && (
+                    <div className="level-up-unlock-message">
+                      🔥 Daily Challenge Unlocked!
+                    </div>
+                  )}
+                  {newPlaylistLevelReached === 10 && (
+                    <div className="level-up-unlock-message">
+                      ⚡ Master Mode Unlocked!
+                      <br />
+                      <span style={{ fontSize: '1.5rem', display: 'block', marginTop: '0.5rem' }}>
+                        Playlist Mastered!
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <button 
+                  className="level-up-confirm-btn" 
+                  onClick={() => {
+                    console.log('🎊 CLOSING LEVEL UP MODAL')
+                    setShowPlaylistLevelUpModal(false)
+                    // Show song list after modal closes
+                    setTimeout(() => {
+                      setShowSongList(true)
+                    }, 300)
+                  }}
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          )
+        })()}
 
       </div>
     </div>

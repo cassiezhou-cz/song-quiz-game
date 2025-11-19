@@ -486,6 +486,55 @@ const PlaylistSelection = () => {
     }
   }
 
+  const handleDebugAddXP = (playlist: string) => {
+    const current = playlistProgress[playlist] || { level: 1, xp: 0 }
+    
+    // Don't add XP if already at max level
+    if (current.level >= 10) {
+      console.log(`🎮 DEBUG: ${playlist} is already at max level (10), no XP added`)
+      return
+    }
+    
+    const xpRequired = getPlaylistXPRequired(current.level)
+    const newXP = current.xp + 80 // Add 80 XP
+    
+    let newLevel = current.level
+    let remainingXP = newXP
+    
+    // Check for level up
+    if (remainingXP >= xpRequired && current.level < 10) {
+      newLevel = current.level + 1
+      remainingXP = remainingXP - xpRequired // Carry over XP
+    }
+    
+    const newProgress = { level: newLevel, xp: remainingXP }
+    
+    // Update local state
+    setPlaylistProgress(prev => ({
+      ...prev,
+      [playlist]: newProgress
+    }))
+    
+    // Save to localStorage
+    const savedProgress = localStorage.getItem('playlist_progress')
+    let allProgress: Record<string, PlaylistProgress> = {}
+    if (savedProgress) {
+      try {
+        allProgress = JSON.parse(savedProgress)
+      } catch (e) {
+        console.error('Failed to parse playlist progress:', e)
+      }
+    }
+    allProgress[playlist] = newProgress
+    localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+    
+    if (newLevel > current.level) {
+      console.log(`🎮 DEBUG: ${playlist} gained 80 XP and leveled up! Level ${current.level} → Level ${newLevel} (${remainingXP}/${getPlaylistXPRequired(newLevel)} XP)`)
+    } else {
+      console.log(`🎮 DEBUG: ${playlist} gained 80 XP: Level ${newLevel} (${remainingXP}/${xpRequired} XP)`)
+    }
+  }
+
   // Start the multi-stage level-up animation
   const startLevelUpAnimation = (lifeline: LifelineType | null, isHatUnlock: boolean = false, specificPlayerLevel?: number) => {
     // Determine prize type based on actual player level reached (not level-up event count)
@@ -680,17 +729,24 @@ const PlaylistSelection = () => {
     console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist progress reset to 0, NEW badges cleared, all stats (including Master Mode ranks) cleared, Daily Challenge cooldowns and viewed buttons cleared, Master Mode viewed buttons cleared')
   }
 
-  // Debug hotkey: Press Up arrow while hovering over a playlist to level it up by 1
+  // Debug hotkeys: Press Up arrow to level up by 1, Right arrow to add 80 XP
   useEffect(() => {
     const handleDebugHotkey = (event: KeyboardEvent) => {
       // Only trigger if a playlist is hovered
       if (!hoveredPlaylist) return
       
-      // Trigger on ArrowUp key
+      // Trigger on ArrowUp key - level up by 1
       if (event.key === 'ArrowUp') {
         event.preventDefault()
         console.log('🐛 DEBUG: Up arrow pressed for', hoveredPlaylist)
         handleDebugRankUp(hoveredPlaylist)
+      }
+      
+      // Trigger on ArrowRight key - add 80 XP
+      if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        console.log('🐛 DEBUG: Right arrow pressed for', hoveredPlaylist)
+        handleDebugAddXP(hoveredPlaylist)
       }
     }
     
