@@ -8865,6 +8865,10 @@
   animation: levelBadgePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
 }
 
+.playlist-level-badge-result.level-up-flash {
+  /* No animation - just instant level change */
+}
+
 @keyframes levelBadgePop {
   0% {
     opacity: 0;
