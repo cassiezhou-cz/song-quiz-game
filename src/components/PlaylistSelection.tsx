@@ -40,7 +40,6 @@ const PlaylistSelection = () => {
   const [showDailyChallengeModal, setShowDailyChallengeModal] = useState(false)
   const [dailyChallengePlaylist, setDailyChallengePlaylist] = useState('')
   const [dailyChallengeClosing, setDailyChallengeClosing] = useState(false)
-  const [dailyChallengeTimers, setDailyChallengeTimers] = useState<Record<string, string>>({})
   const [dailyChallengeNewBadges, setDailyChallengeNewBadges] = useState<Set<string>>(new Set())
   const [masterModeNewBadges, setMasterModeNewBadges] = useState<Set<string>>(new Set())
   const [xpProgress, setXpProgress] = useState(() => {
@@ -70,41 +69,6 @@ const PlaylistSelection = () => {
   // Debug hotkey state
   const [isHoveringXPBar, setIsHoveringXPBar] = useState(false)
   const [showLevelUpModal, setShowLevelUpModal] = useState(false)
-
-  // Helper function: Check if Daily Challenge is available for a playlist
-  const isDailyChallengeAvailable = (playlist: string): boolean => {
-    const completedKey = `daily_challenge_completed_${playlist}`
-    const completedTimestamp = localStorage.getItem(completedKey)
-    
-    if (!completedTimestamp) return true // Never completed, available
-    
-    const completed = parseInt(completedTimestamp, 10)
-    const now = Date.now()
-    const twentyFourHours = 24 * 60 * 60 * 1000
-    
-    return (now - completed) >= twentyFourHours
-  }
-
-  // Helper function: Get time remaining until Daily Challenge is available
-  const getTimeRemaining = (playlist: string): string => {
-    const completedKey = `daily_challenge_completed_${playlist}`
-    const completedTimestamp = localStorage.getItem(completedKey)
-    
-    if (!completedTimestamp) return '00:00:00'
-    
-    const completed = parseInt(completedTimestamp, 10)
-    const now = Date.now()
-    const twentyFourHours = 24 * 60 * 60 * 1000
-    const timeRemaining = twentyFourHours - (now - completed)
-    
-    if (timeRemaining <= 0) return '00:00:00'
-    
-    const hours = Math.floor(timeRemaining / (60 * 60 * 1000))
-    const minutes = Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000))
-    const seconds = Math.floor((timeRemaining % (60 * 1000)) / 1000)
-    
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-  }
 
   const [newlyUnlockedLifeline, setNewlyUnlockedLifeline] = useState<LifelineType | null>(null)
   const [showHatUnlockModal, setShowHatUnlockModal] = useState(false)
@@ -147,6 +111,15 @@ const PlaylistSelection = () => {
   // Load data whenever we navigate to this page
   useEffect(() => {
     console.log('🔄 PlaylistSelection mounted/navigated, location:', location.pathname)
+    
+    // Clean up any old event completion timestamps (Events are now always available)
+    playlists.forEach(playlist => {
+      const key = `daily_challenge_completed_${playlist}`
+      if (localStorage.getItem(key)) {
+        localStorage.removeItem(key)
+        console.log(`🧹 Removed stale event data: ${key}`)
+      }
+    })
     
     // Check for player name first
     const savedName = localStorage.getItem('player_name')
@@ -307,25 +280,6 @@ const PlaylistSelection = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isHoveringXPBar, playerLevel, unlockedLifelines, hatUnlocked])
 
-  // Update countdown timers every second
-  useEffect(() => {
-    const updateTimers = () => {
-      const timers: Record<string, string> = {}
-      playlists.forEach(playlist => {
-        if (!isDailyChallengeAvailable(playlist)) {
-          timers[playlist] = getTimeRemaining(playlist)
-        }
-      })
-      setDailyChallengeTimers(timers)
-    }
-
-    // Update immediately
-    updateTimers()
-
-    // Update every second
-    const interval = setInterval(updateTimers, 1000)
-    return () => clearInterval(interval)
-  }, [])
 
   // Helper function to get rank from level (for visual display only)
   const getRankFromLevel = (level: number): PlaylistRank => {
@@ -733,9 +687,6 @@ const PlaylistSelection = () => {
     })
     setPlaylistStats(emptyStats)
     
-    // Clear Daily Challenge timers state
-    setDailyChallengeTimers({})
-    
     // Clear viewed Daily Challenge buttons
     localStorage.removeItem('viewed_daily_challenge_buttons')
     setDailyChallengeNewBadges(new Set())
@@ -1107,23 +1058,26 @@ const PlaylistSelection = () => {
       )}
 
       {/* Playlist Prompt Modal */}
-      {showPlaylistPrompt && promptPlaylist && (
-        <PlaylistPrompt
-          playlist={promptPlaylist}
-          level={playlistProgress[promptPlaylist]?.level || 1}
-          xp={playlistProgress[promptPlaylist]?.xp || 0}
-          rank={getRankFromLevel(playlistProgress[promptPlaylist]?.level || 1)}
-          stats={playlistStats[promptPlaylist] || { timesPlayed: 0, averageScore: 0, highestScore: 0 }}
-          isDailyChallengeAvailable={isDailyChallengeAvailable(promptPlaylist)}
-          masterModeUnlocked={isMasterModeUnlocked(playlistProgress[promptPlaylist]?.level || 1)}
-          onClose={handleClosePrompt}
-          onStartDailyChallenge={() => {
-            setShowPlaylistPrompt(false)
-            setDailyChallengePlaylist(promptPlaylist)
-            setShowDailyChallengeModal(true)
-          }}
-        />
-      )}
+      {showPlaylistPrompt && promptPlaylist && (() => {
+        const playlistLevel = playlistProgress[promptPlaylist]?.level || 1
+        console.log(`🎯 Rendering PlaylistPrompt for "${promptPlaylist}": level=${playlistLevel}, progress=`, playlistProgress[promptPlaylist])
+        return (
+          <PlaylistPrompt
+            playlist={promptPlaylist}
+            level={playlistLevel}
+            xp={playlistProgress[promptPlaylist]?.xp || 0}
+            rank={getRankFromLevel(playlistLevel)}
+            stats={playlistStats[promptPlaylist] || { timesPlayed: 0, averageScore: 0, highestScore: 0 }}
+            masterModeUnlocked={isMasterModeUnlocked(playlistLevel)}
+            onClose={handleClosePrompt}
+            onStartDailyChallenge={() => {
+              setShowPlaylistPrompt(false)
+              setDailyChallengePlaylist(promptPlaylist)
+              setShowDailyChallengeModal(true)
+            }}
+          />
+        )
+      })()}
     </div>
   )
 }

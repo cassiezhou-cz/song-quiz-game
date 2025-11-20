@@ -21,7 +21,6 @@ interface PlaylistPromptProps {
   xp: number
   rank: PlaylistRank
   stats: PlaylistStats
-  isDailyChallengeAvailable: boolean
   masterModeUnlocked: boolean
   onClose: () => void
   onStartDailyChallenge: () => void
@@ -32,13 +31,16 @@ const PlaylistPrompt = ({
   level,
   xp, 
   rank, 
-  stats, 
-  isDailyChallengeAvailable,
+  stats,
   masterModeUnlocked,
   onClose,
   onStartDailyChallenge
 }: PlaylistPromptProps) => {
   const navigate = useNavigate()
+  
+  // Check if Event is unlocked (Level 5 or above)
+  const eventUnlocked = level >= 5
+  console.log(`🎯🎯🎯 PlaylistPrompt for "${playlist}": level=${level}, eventUnlocked=${eventUnlocked}, disabled=${!eventUnlocked}`)
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -62,12 +64,12 @@ const PlaylistPrompt = ({
         console.log('🐛 DEBUG: Q pressed - triggering Play button')
         handlePlay()
       } else if (key === 'w') {
-        if (eventUnlocked && isDailyChallengeAvailable) {
+        if (eventUnlocked) {
           event.preventDefault()
           console.log('🐛 DEBUG: W pressed - triggering Event button')
           handleEvent()
         } else {
-          console.log('🐛 DEBUG: W pressed - Event button locked or unavailable')
+          console.log('🐛 DEBUG: W pressed - Event button locked (need Level 5)')
         }
       } else if (key === 'e') {
         if (masterModeUnlocked) {
@@ -82,7 +84,7 @@ const PlaylistPrompt = ({
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [level, isDailyChallengeAvailable, masterModeUnlocked, onClose])
+  }, [level, masterModeUnlocked, onClose])
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -105,13 +107,11 @@ const PlaylistPrompt = ({
   }
 
   const handleEvent = () => {
-    if (isDailyChallengeAvailable && level >= 5) {
+    console.log(`🎯 Event button CLICKED - level=${level}, will start=${level >= 5}`)
+    if (level >= 5) {
       onStartDailyChallenge()
     }
   }
-
-  // Check if Daily Challenge is unlocked (Level 5 or above)
-  const eventUnlocked = level >= 5
 
   return (
     <div className="playlist-prompt-backdrop" onClick={handleBackdropClick}>
@@ -173,10 +173,10 @@ const PlaylistPrompt = ({
               Play
             </button>
             <button 
-              className={`prompt-button prompt-event-button ${!eventUnlocked || !isDailyChallengeAvailable ? 'locked' : ''}`}
+              className={`prompt-button prompt-event-button ${!eventUnlocked ? 'locked' : ''}`}
               onClick={handleEvent}
-              disabled={!eventUnlocked || !isDailyChallengeAvailable}
-              title={!eventUnlocked ? "Unlock at Level 5" : !isDailyChallengeAvailable ? "Come back later" : "Event"}
+              disabled={!eventUnlocked}
+              title={!eventUnlocked ? "Unlock at Level 5" : "Event - Play Anytime!"}
             >
               {!eventUnlocked && (
                 <div className="button-lock-badge">

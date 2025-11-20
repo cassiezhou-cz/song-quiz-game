@@ -3782,13 +3782,6 @@ const Game = () => {
     if (gameComplete && version === 'Version B' && !showQuizComplete) {
       console.log('🎬 Starting NEW Results Screen sequence')
       
-      // Mark Daily Challenge as completed immediately when game finishes
-      if (isDailyChallenge) {
-        const completedKey = `daily_challenge_completed_${actualPlaylist}`
-        localStorage.setItem(completedKey, Date.now().toString())
-        console.log('🔥 Daily Challenge marked as completed for:', actualPlaylist)
-      }
-      
       // Ensure we're scrolled to top to prevent layout shifts
       window.scrollTo({ top: 0, behavior: 'auto' })
       
