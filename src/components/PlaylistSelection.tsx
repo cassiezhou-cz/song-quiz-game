@@ -416,14 +416,19 @@ const PlaylistSelection = () => {
     }
   }
 
-  // Keyboard shortcut: Spacebar to activate PLAY button in Daily Challenge modal
+  // Keyboard shortcuts: Spacebar to activate PLAY button, ESC to close Event modal
   useEffect(() => {
     if (!showDailyChallengeModal) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault() // Prevent page scroll
+        console.log('🐛 DEBUG: Spacebar pressed - starting Event')
         handleDailyChallengePlay()
+      } else if (event.key === 'Escape') {
+        event.preventDefault()
+        console.log('🐛 DEBUG: ESC pressed - closing Event modal')
+        handleCloseDailyChallengeModal()
       }
     }
 
@@ -754,6 +759,33 @@ const PlaylistSelection = () => {
     return () => window.removeEventListener('keydown', handleDebugHotkey)
   }, [hoveredPlaylist, playlistProgress])
 
+  // Debug hotkeys: Number keys 1-6 to select playlists
+  useEffect(() => {
+    const handleNumberKeySelection = (event: KeyboardEvent) => {
+      // Skip if any prompt/modal is showing
+      if (showPlaylistPrompt || showDailyChallengeModal || showNamePrompt) return
+      
+      const playlistMap: { [key: string]: string } = {
+        '1': '2020s',
+        '2': '2010s',
+        '3': '2000s',
+        '4': '90s',
+        '5': 'Iconic Songs',
+        '6': 'Most Streamed Songs'
+      }
+      
+      const playlist = playlistMap[event.key]
+      if (playlist) {
+        event.preventDefault()
+        console.log(`🐛 DEBUG: Number key ${event.key} pressed - selecting ${playlist}`)
+        handlePlaylistSelect(playlist)
+      }
+    }
+    
+    window.addEventListener('keydown', handleNumberKeySelection)
+    return () => window.removeEventListener('keydown', handleNumberKeySelection)
+  }, [showPlaylistPrompt, showDailyChallengeModal, showNamePrompt])
+
 
   return (
     <div className="playlist-container">
@@ -913,10 +945,10 @@ const PlaylistSelection = () => {
             <div className="daily-challenge-header">
               <img 
                 src="/assets/PM_FireNote.png"
-                alt="Daily Challenge"
+                alt="Event"
                 className="daily-challenge-header-icon"
               />
-              <h2 className="daily-challenge-title">Daily Challenge</h2>
+              <h2 className="daily-challenge-title">Event</h2>
             </div>
 
             {/* Playlist Name */}

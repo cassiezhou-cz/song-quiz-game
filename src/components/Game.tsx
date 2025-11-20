@@ -4294,19 +4294,38 @@ const Game = () => {
                           // Add click handler to Continue button
                           const continueBtn = document.getElementById('unlock-continue-btn')
                           const notificationBox = document.getElementById('unlock-notification-box')
+                          
+                          // Function to close the notification
+                          const closeNotification = () => {
+                            if (!notificationBox) return
+                            
+                            // Trigger exit animations
+                            notificationDiv.style.animation = 'unlockOverlayFadeOut 0.3s ease-out forwards'
+                            notificationBox.style.animation = 'unlockBoxPopOut 0.3s ease-out forwards'
+                            
+                            // Remove keyboard listener
+                            window.removeEventListener('keydown', handleSpacebarClose)
+                            
+                            // Wait for animations to complete before removing
+                            setTimeout(() => {
+                              document.body.removeChild(notificationDiv)
+                              console.log('🎊 UNLOCK NOTIFICATION CLOSED - starting drain/refill')
+                              completeLevelUpSequence()
+                            }, 300) // Match animation duration
+                          }
+                          
+                          // Spacebar handler for debug
+                          const handleSpacebarClose = (event: KeyboardEvent) => {
+                            if (event.code === 'Space' || event.key === ' ') {
+                              event.preventDefault()
+                              console.log('🐛 DEBUG: Spacebar pressed - closing unlock notification')
+                              closeNotification()
+                            }
+                          }
+                          
                           if (continueBtn && notificationBox) {
-                            continueBtn.addEventListener('click', () => {
-                              // Trigger exit animations
-                              notificationDiv.style.animation = 'unlockOverlayFadeOut 0.3s ease-out forwards'
-                              notificationBox.style.animation = 'unlockBoxPopOut 0.3s ease-out forwards'
-                              
-                              // Wait for animations to complete before removing
-                              setTimeout(() => {
-                                document.body.removeChild(notificationDiv)
-                                console.log('🎊 UNLOCK NOTIFICATION CLOSED - starting drain/refill')
-                                completeLevelUpSequence()
-                              }, 300) // Match animation duration
-                            })
+                            continueBtn.addEventListener('click', closeNotification)
+                            window.addEventListener('keydown', handleSpacebarClose)
                           }
                         } else {
                           // Non-milestone level up - proceed directly to drain/refill
@@ -6106,7 +6125,7 @@ const Game = () => {
                       Final Score: 
                       <span className="final-score-value-container">
                         {showDailyChallenge2X && (
-                          <span className="daily-challenge-2x-text">DAILY 2X</span>
+                          <span className="daily-challenge-2x-text">EVENT 2X</span>
                         )}
                         <span className="final-score-value">{displayedScore}</span>
                       </span>

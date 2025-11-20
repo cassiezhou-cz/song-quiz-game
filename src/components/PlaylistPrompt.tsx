@@ -48,6 +48,42 @@ const PlaylistPrompt = ({
     }
   }, [])
 
+  // Debug hotkeys for quick navigation
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase()
+      
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        console.log('🐛 DEBUG: ESC pressed - closing prompt')
+        onClose()
+      } else if (key === 'q') {
+        event.preventDefault()
+        console.log('🐛 DEBUG: Q pressed - triggering Play button')
+        handlePlay()
+      } else if (key === 'w') {
+        if (eventUnlocked && isDailyChallengeAvailable) {
+          event.preventDefault()
+          console.log('🐛 DEBUG: W pressed - triggering Event button')
+          handleEvent()
+        } else {
+          console.log('🐛 DEBUG: W pressed - Event button locked or unavailable')
+        }
+      } else if (key === 'e') {
+        if (masterModeUnlocked) {
+          event.preventDefault()
+          console.log('🐛 DEBUG: E pressed - triggering Master button')
+          handleMasterMode()
+        } else {
+          console.log('🐛 DEBUG: E pressed - Master button locked')
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [level, isDailyChallengeAvailable, masterModeUnlocked, onClose])
+
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose()
@@ -140,7 +176,7 @@ const PlaylistPrompt = ({
               className={`prompt-button prompt-event-button ${!eventUnlocked || !isDailyChallengeAvailable ? 'locked' : ''}`}
               onClick={handleEvent}
               disabled={!eventUnlocked || !isDailyChallengeAvailable}
-              title={!eventUnlocked ? "Unlock at Level 5" : !isDailyChallengeAvailable ? "Come back later" : "Daily Challenge"}
+              title={!eventUnlocked ? "Unlock at Level 5" : !isDailyChallengeAvailable ? "Come back later" : "Event"}
             >
               {!eventUnlocked && (
                 <div className="button-lock-badge">
