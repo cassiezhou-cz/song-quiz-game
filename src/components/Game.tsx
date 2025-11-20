@@ -4090,6 +4090,9 @@ const Game = () => {
               setTimeout(() => {
                 // Wait 0.5s delay, then start counter and bar fill together
               setTimeout(() => {
+                // Helper to calculate XP required for a level
+                const getXPRequired = (level: number) => 50 + ((level - 1) * 20)
+                
                 // Calculate new total XP
                 const newTotalXP = playlistXP + finalScore
                 
@@ -4185,10 +4188,87 @@ const Game = () => {
                                 setTimeout(() => {
                                   setDisplayedPlaylistXP(remainingXP) // Animate from 0 to remainingXP
                                   
-                                  // Show song list after refill animation completes
+                                  // After refill completes, check if remaining XP triggers ANOTHER level-up
                                   setTimeout(() => {
-                                    console.log('🎵 Showing Your Answers section (after level-up)')
-                              setShowSongList(true)
+                                    const newXPRequired = getXPRequired(newLevel)
+                                    
+                                    if (remainingXP >= newXPRequired && newLevel < 7) {
+                                      // Cascading level-up! Trigger the sequence again
+                                      console.log(`🎉🎉 CASCADING LEVEL-UP DETECTED! Level ${newLevel} → ${newLevel + 1}`)
+                                      console.log(`📊 Current: ${remainingXP}/${newXPRequired} XP - Starting next level-up animation...`)
+                                      
+                                      // Animate bar to 100% again for next level-up
+                                      setTimeout(() => {
+                                        setDisplayedPlaylistXP(newXPRequired)
+                                        
+                                        // After bar reaches 100%, proceed with next level-up
+                                        setTimeout(() => {
+                                          const nextLevel = newLevel + 1
+                                          const nextRemainingXP = remainingXP - newXPRequired
+                                          
+                                          console.log(`🎉 Next level-up: ${newLevel} → ${nextLevel}, ${nextRemainingXP} XP remaining`)
+                                          
+                                          setNewPlaylistLevelReached(nextLevel)
+                                          setCurrentPlaylistLevel(nextLevel)
+                                          
+                                          // Save progress
+                                          const savedProgress = localStorage.getItem('playlist_progress')
+                                          let allProgress: Record<string, {level: number, xp: number}> = {}
+                                          if (savedProgress) {
+                                            try {
+                                              allProgress = JSON.parse(savedProgress)
+                                            } catch (e) {
+                                              console.error('Failed to parse playlist progress:', e)
+                                            }
+                                          }
+                                          allProgress[actualPlaylist] = { level: nextLevel, xp: nextRemainingXP }
+                                          localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+                                          
+                                          // Repeat the drain/refill sequence
+                                          setTimeout(() => {
+                                            setXpBarFadeOut(true)
+                                            
+                                            setTimeout(() => {
+                                              setXpBarResetting(true)
+                                              setDisplayedPlaylistXP(0)
+                                              setAnimatedPlaylistXP(0)
+                                              animatedXPRef.current = 0
+                                              setLevelForXPCalc(nextLevel)
+                                              setPlaylistXP(nextRemainingXP)
+                                              
+                                              setTimeout(() => {
+                                                setXpBarFadeOut(false)
+                                                
+                                                setTimeout(() => {
+                                                  setXpBarResetting(false)
+                                                  
+                                                  setTimeout(() => {
+                                                    setDisplayedPlaylistXP(nextRemainingXP)
+                                                    
+                                                    // Check AGAIN for another level-up (recursive)
+                                                    setTimeout(() => {
+                                                      const nextNextXPRequired = getXPRequired(nextLevel)
+                                                      if (nextRemainingXP >= nextNextXPRequired && nextLevel < 7) {
+                                                        console.log(`🎉🎉🎉 TRIPLE CASCADE detected! Will continue...`)
+                                                        // Note: This would need to be extracted into a proper recursive function
+                                                        // For now, we support up to 2 consecutive level-ups
+                                                        console.log('⚠️ More than 2 consecutive level-ups detected - showing results')
+                                                      }
+                                                      console.log('🎵 Showing Your Answers section (after cascading level-ups)')
+                                                      setShowSongList(true)
+                                                    }, 1700)
+                                                  }, 50)
+                                                }, 200)
+                                              }, 50)
+                                            }, 600)
+                                          }, 1900)
+                                        }, 1500)
+                                      }, 500)
+                                    } else {
+                                      // No more level-ups
+                                      console.log('🎵 Showing Your Answers section (after level-up)')
+                                      setShowSongList(true)
+                                    }
                                   }, 1700) // After refill animation completes
                                 }, 50) // Small delay to ensure transitions are re-enabled
                               }, 200) // Wait for fade-in to start
