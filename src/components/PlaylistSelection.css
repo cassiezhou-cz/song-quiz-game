@@ -775,7 +775,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(185, 147, 214, 0.3) 0%, rgba(140, 122, 230, 0.3) 100%);
+  background: rgba(0, 0, 0, 0.5);
   padding: 1.75rem 1.5rem;
   border-radius: 0;
   gap: 0;
