@@ -423,6 +423,7 @@ const Game = () => {
   const [opponentQuestionsCorrectness, setOpponentQuestionsCorrectness] = useState<Array<{artistCorrect: boolean, songCorrect: boolean}>>([])
   
   const [pointsEarned, setPointsEarned] = useState(0)
+  const [feedbackPoints, setFeedbackPoints] = useState(0) // Separate state for avatar feedback in Version C
   const [opponentCorrect, setOpponentCorrect] = useState(false)
   const [opponentPointsEarned, setOpponentPointsEarned] = useState(0)
   const [gameComplete, setGameComplete] = useState(false)
@@ -4969,6 +4970,10 @@ const Game = () => {
     // Store current question as previous question for answer feedback
     setPreviousQuestion(currentQuestion)
     
+    // Set points earned for avatar emotion (Happy for points > 0, Sad for 0)
+    setPointsEarned(points)
+    setFeedbackPoints(points) // Store points for feedback avatar display
+    
     // Show feedback with correct answer
     setShowVersionCFeedback(true)
     
@@ -4981,6 +4986,7 @@ const Game = () => {
     // Hide feedback after a brief display (but don't wait for this to start next song)
     setTimeout(() => {
       setShowVersionCFeedback(false)
+      setFeedbackPoints(0) // Reset feedback points after hiding
     }, 2000) // Show feedback for 2 seconds
   }
 
@@ -7827,7 +7833,7 @@ const Game = () => {
                 src={
                   version === 'Version C'
                         ? (showVersionCFeedback 
-                        ? getAvatarPath(pointsEarned > 0 ? 'Happy' : 'Sad', hatUnlocked)
+                        ? getAvatarPath(feedbackPoints > 0 ? 'Happy' : 'Sad', hatUnlocked)
                         : getAvatarPath('Neutral', hatUnlocked))
                     : "/assets/YourAvatar.png"
                 }
