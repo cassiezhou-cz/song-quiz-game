@@ -16,7 +16,7 @@ interface PlaylistProgress {
 }
 
 const getPlaylistXPRequired = (level: number): number => {
-  return 100 + ((level - 1) * 20) // Level 1: 100, Level 2: 120, Level 3: 140, etc.
+  return 50 + ((level - 1) * 20) // Level 1: 50, Level 2: 70, Level 3: 90, etc.
 }
 
 // GLOBAL PLAYER XP SYSTEM - Each level requires 30 more XP than the previous
@@ -329,7 +329,7 @@ const PlaylistSelection = () => {
 
   // Helper function to get rank from level (for visual display only)
   const getRankFromLevel = (level: number): PlaylistRank => {
-    if (level >= 10) return 'platinum'
+    if (level >= 7) return 'platinum'
     if (level >= 5) return 'gold'
     if (level >= 3) return 'silver'
     return 'bronze'
@@ -337,7 +337,7 @@ const PlaylistSelection = () => {
 
   // Helper function to check if Master Mode is unlocked
   const isMasterModeUnlocked = (level: number): boolean => {
-    return level >= 10 // Master Mode available at Level 10
+    return level >= 7 // Master Mode available at Level 7
   }
 
   // Helper function to get medal image path
@@ -474,8 +474,8 @@ const PlaylistSelection = () => {
   const handleDebugRankUp = (playlist: string) => {
     const current = playlistProgress[playlist] || { level: 1, xp: 0 }
     
-    // Increase by a full level (cap at 10)
-    if (current.level < 10) {
+    // Increase by a full level (cap at 7)
+    if (current.level < 7) {
       const newLevel = current.level + 1
       const newProgress = { level: newLevel, xp: 0 }
       
@@ -500,7 +500,7 @@ const PlaylistSelection = () => {
       
       console.log(`🎮 DEBUG: ${playlist} leveled up from Level ${current.level} to Level ${newLevel}`)
     } else {
-      console.log(`🎮 DEBUG: ${playlist} is already at max level (10)`)
+      console.log(`🎮 DEBUG: ${playlist} is already at max level (7)`)
     }
   }
 
@@ -508,8 +508,8 @@ const PlaylistSelection = () => {
     const current = playlistProgress[playlist] || { level: 1, xp: 0 }
     
     // Don't add XP if already at max level
-    if (current.level >= 10) {
-      console.log(`🎮 DEBUG: ${playlist} is already at max level (10), no XP added`)
+    if (current.level >= 7) {
+      console.log(`🎮 DEBUG: ${playlist} is already at max level (7), no XP added`)
       return
     }
     
@@ -520,7 +520,7 @@ const PlaylistSelection = () => {
     let remainingXP = newXP
     
     // Check for level up
-    if (remainingXP >= xpRequired && current.level < 10) {
+    if (remainingXP >= xpRequired && current.level < 7) {
       newLevel = current.level + 1
       remainingXP = remainingXP - xpRequired // Carry over XP
     }
@@ -890,7 +890,7 @@ const PlaylistSelection = () => {
                     
                     <div className="playlist-meter-row">
                       {/* Playlist XP Bar */}
-                      {level < 10 ? (
+                      {level < 7 ? (
                         <div className="playlist-xp-container">
                           <div className="playlist-xp-bar-bg">
                             <div 

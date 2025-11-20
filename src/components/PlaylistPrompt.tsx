@@ -6,7 +6,7 @@ type PlaylistRank = 'bronze' | 'silver' | 'gold' | 'platinum'
 
 // PLAYLIST XP SYSTEM - Each level requires 20 more XP than the previous
 const getPlaylistXPRequired = (level: number): number => {
-  return 100 + ((level - 1) * 20) // Level 1: 100, Level 2: 120, Level 3: 140, etc.
+  return 50 + ((level - 1) * 20) // Level 1: 50, Level 2: 70, Level 3: 90, etc.
 }
 
 interface PlaylistStats {
@@ -145,7 +145,7 @@ const PlaylistPrompt = ({
 
           {/* Playlist Meter */}
           <div className="prompt-meter-section">
-            {level < 10 ? (
+            {level < 7 ? (
               <div className="prompt-meter-container">
                 <div className="prompt-meter-bar-bg">
                   <div 
@@ -190,12 +190,12 @@ const PlaylistPrompt = ({
               className={`prompt-button prompt-master-button ${!masterModeUnlocked ? 'locked' : ''}`}
               onClick={handleMasterMode}
               disabled={!masterModeUnlocked}
-              title={!masterModeUnlocked ? "Unlock at Level 10" : "Master"}
+              title={!masterModeUnlocked ? "Unlock at Level 7" : "Master"}
             >
               {!masterModeUnlocked && (
                 <div className="button-lock-badge">
                   <span className="lock-emoji">🔒</span>
-                  <div className="button-level-badge">10</div>
+                  <div className="button-level-badge">7</div>
                 </div>
               )}
               Master
