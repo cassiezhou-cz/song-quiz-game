@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'
 import { getAvailableSongs, addPlayedSong } from '../utils/songTracker'
+import { getAvatarPath } from '../utils/avatarUtils'
 import './Game.css'
 
 interface Song {
@@ -6468,7 +6469,7 @@ const Game = () => {
                 <img 
                   src={
                     version === 'Version C'
-                      ? (hatUnlocked ? "/assets/CatHatNeutral.png" : "/assets/CatNeutral.png")
+                      ? getAvatarPath('Neutral', hatUnlocked)
                       : "/assets/YourAvatar.png"
                   }
                   alt="Your Avatar" 
@@ -7567,20 +7568,18 @@ const Game = () => {
         {/* Competitive Avatars */}
         <div className="avatars">
           {version === 'Version B' ? (
-            <div className="avatar-container player-container version-b-cat-container">
-              <img 
-                src={
-                  hatUnlocked
-                    ? (showFeedback 
-                        ? (pointsEarned > 0 ? "/assets/CatHatHappy.png" : "/assets/CatHatSad.png")
-                        : "/assets/CatHatNeutral.png")
-                    : (showFeedback 
-                        ? (pointsEarned > 0 ? "/assets/CatHappy.png" : "/assets/CatSad.png")
-                        : "/assets/CatNeutral.png")
-                }
-                alt="Player Avatar" 
-                className="version-b-cat-avatar"
-              />
+            <div className="version-b-cat-container">
+              <div className="version-b-cat-avatar-wrapper">
+                <img 
+                  src={
+                    showFeedback 
+                      ? getAvatarPath(pointsEarned > 0 ? 'Happy' : 'Sad', hatUnlocked)
+                      : getAvatarPath('Neutral', hatUnlocked)
+                  }
+                  alt="Player Avatar" 
+                  className="version-b-cat-avatar"
+                />
+              </div>
               <div className="version-b-player-label">{playerName || 'Player'}</div>
               
               {/* Confetti effect */}
@@ -7614,13 +7613,9 @@ const Game = () => {
               <img 
                 src={
                   version === 'Version C'
-                    ? (hatUnlocked
-                        ? (showVersionCFeedback 
-                            ? (pointsEarned > 0 ? "/assets/CatHatHappy.png" : "/assets/CatHatSad.png")
-                            : "/assets/CatHatNeutral.png")
-                        : (showVersionCFeedback 
-                            ? (pointsEarned > 0 ? "/assets/CatHappy.png" : "/assets/CatSad.png")
-                            : "/assets/CatNeutral.png"))
+                    ? (showVersionCFeedback 
+                        ? getAvatarPath(pointsEarned > 0 ? 'Happy' : 'Sad', hatUnlocked)
+                        : getAvatarPath('Neutral', hatUnlocked))
                     : "/assets/YourAvatar.png"
                 }
                 alt="Your Avatar" 
