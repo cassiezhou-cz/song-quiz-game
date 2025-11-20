@@ -113,6 +113,19 @@ const PlaylistPrompt = ({
     }
   }
 
+  // Get playlist description
+  const getPlaylistDescription = (playlistName: string): string => {
+    const descriptions: { [key: string]: string } = {
+      '2020s': 'Jam out to these modern classics!',
+      '2010s': 'A collection of 2010\'s hits!',
+      '2000s': 'Smash hits from the turn of the century!',
+      '90s': 'Radical songs from the 90\'s!',
+      'Iconic Songs': 'A playlist of familiar ear worms!',
+      'Most Streamed Songs': 'You just can\'t get enough of these hit songs!'
+    }
+    return descriptions[playlistName] || ''
+  }
+
   return (
     <div className="playlist-prompt-backdrop" onClick={handleBackdropClick}>
       <div className="playlist-prompt-modal">
@@ -120,6 +133,7 @@ const PlaylistPrompt = ({
           {/* Playlist Name */}
           <header className="prompt-header">
             <h1 className="prompt-playlist-title">{playlist}</h1>
+            <p className="prompt-playlist-description">{getPlaylistDescription(playlist)}</p>
           </header>
 
           {/* Stats Section */}
