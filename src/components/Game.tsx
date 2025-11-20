@@ -584,6 +584,8 @@ const Game = () => {
   const [animatedPlaylistXP, setAnimatedPlaylistXP] = useState(0) // For smooth counting animation
   const [showPlaylistXPBar, setShowPlaylistXPBar] = useState(false) // Show playlist XP bar on results
   const [playlistXPGain, setPlaylistXPGain] = useState(0) // Total XP gained this session
+  const [xpBarFadeOut, setXpBarFadeOut] = useState(false) // Fade out XP bar on level up
+  const [xpBarResetting, setXpBarResetting] = useState(false) // Bar is resetting to 0 (no transitions)
   const [showFlyingPlaylistXP, setShowFlyingPlaylistXP] = useState(false) // Flying +XP indicator
   const [isFadingOutFlyingXP, setIsFadingOutFlyingXP] = useState(false) // Fade out flying XP
   const [flyingXPTransform, setFlyingXPTransform] = useState({ x: '-50%', y: '0' }) // Transform for flying XP indicator
@@ -4152,27 +4154,50 @@ const Game = () => {
                         
                         // Helper function to drain/refill and show song list
                         const completeLevelUpSequence = () => {
-                          console.log('🎬 Starting drain/refill sequence')
-                          // Keep using old level for XP calculation during drain (prevents hitch)
-                          // levelForXPCalc stays at old level here
+                          console.log('🎬 Starting fade-out/refill sequence')
                           
-                          // First, drain bar to 0 (smooth transition)
-                          setDisplayedPlaylistXP(0)
+                          // Fade out the XP bar instead of draining
+                          setXpBarFadeOut(true)
                           
-                          // After drain completes smoothly, refill to remaining XP
+                          // No mid-fade update needed - let text fade out completely first
+                          
+                          // After fade completes, reset and refill
                           setTimeout(() => {
-                            console.log('🎬 Drain complete, switching to new level for XP calc and refilling to', remainingXP)
-                            // NOW update the level used for XP calculations (after drain completes)
+                            console.log('🎬 Fade complete, resetting bar to 0 with no transitions')
+                            // Enable no-transition mode
+                            setXpBarResetting(true)
+                            
+                            // Instantly reset the bar to 0 (no animation)
+                            setDisplayedPlaylistXP(0)
+                            setAnimatedPlaylistXP(0)
+                            animatedXPRef.current = 0
+                            // Update level for XP calculations NOW (while text is invisible)
                             setLevelForXPCalc(newLevel)
                             setPlaylistXP(remainingXP) // Set the underlying state
-                            setDisplayedPlaylistXP(remainingXP) // Animate the display
                             
-                            // Show song list after refill animation completes
+                            // Small delay to ensure reset completes
                             setTimeout(() => {
-                              console.log('🎵 Showing Your Answers section (after level-up)')
-                              setShowSongList(true)
-                            }, 1700) // After refill animation completes
-                          }, 1600) // Wait for drain animation (1.5s transition + buffer)
+                              console.log('🎬 Fading bar and text back in at 0 with new level values')
+                              setXpBarFadeOut(false) // Fade back in (bar is at 0, text shows new values)
+                              
+                              // Small delay to ensure fade-in has started, then re-enable transitions
+                              setTimeout(() => {
+                                console.log('🎬 Re-enabling transitions and filling to', remainingXP)
+                                setXpBarResetting(false) // Re-enable transitions
+                                
+                                // Start filling from 0 to remainingXP
+                                setTimeout(() => {
+                                  setDisplayedPlaylistXP(remainingXP) // Animate from 0 to remainingXP
+                                  
+                                  // Show song list after refill animation completes
+                                  setTimeout(() => {
+                                    console.log('🎵 Showing Your Answers section (after level-up)')
+                                    setShowSongList(true)
+                                  }, 1700) // After refill animation completes
+                                }, 50) // Small delay to ensure transitions are re-enabled
+                              }, 200) // Wait for fade-in to start
+                            }, 50) // Small delay for reset
+                          }, 600) // Wait for fade-out animation (0.6s)
                         }
                         
                         // Check if this is a milestone level
@@ -6117,10 +6142,10 @@ const Game = () => {
                           <div className="playlist-xp-container-result">
                             <div className="playlist-xp-bar-bg">
                               <div 
-                                className="playlist-xp-bar-fill"
+                                className={`playlist-xp-bar-fill ${xpBarFadeOut ? 'xp-bar-fade-out' : ''} ${xpBarResetting ? 'xp-bar-no-transition' : ''}`}
                                 style={{ width: `${(displayedPlaylistXP / getPlaylistXPRequired(levelForXPCalc)) * 100}%` }}
                               />
-                              <div className="playlist-xp-text">
+                              <div className={`playlist-xp-text ${xpBarFadeOut ? 'xp-bar-fade-out' : ''}`}>
                                 {Math.floor(animatedPlaylistXP)}/{getPlaylistXPRequired(levelForXPCalc)}
                               </div>
                             </div>

@@ -8586,6 +8586,7 @@
   white-space: nowrap;
   z-index: 2;
   pointer-events: none;
+  transition: opacity 0.6s ease-out; /* Match bar fade timing */
 }
 
 .playlist-mastered-result-container {
@@ -9106,6 +9107,19 @@
   box-sizing: border-box;
 }
 
+.playlist-xp-bar-fill.xp-bar-fade-out {
+  transition: opacity 0.6s ease-out; /* Only transition opacity, not width */
+  opacity: 0;
+}
+
+.playlist-xp-text.xp-bar-fade-out {
+  opacity: 0; /* Fade out text with bar */
+}
+
+.playlist-xp-bar-fill.xp-bar-no-transition {
+  transition: none !important; /* Disable all transitions during reset */
+}
+
 /* XP Text */
 .playlist-xp-text {
   position: absolute;
@@ -9118,6 +9132,7 @@
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   z-index: 2;
   white-space: nowrap;
+  transition: opacity 0.6s ease-out; /* Match bar fade timing */
 }
 
 /* MASTERED State for Results */
