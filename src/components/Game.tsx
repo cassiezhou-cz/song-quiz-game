@@ -394,7 +394,7 @@ const Game = () => {
   // Playlist XP System Constants
   const PLAYLIST_XP_PER_NEW_SONG = 20
   const getPlaylistXPRequired = (level: number): number => {
-    return 100 + ((level - 1) * 20) // Level 1: 100, Level 2: 120, Level 3: 140, etc.
+    return 50 + ((level - 1) * 20) // Level 1: 50, Level 2: 70, Level 3: 90, etc.
   }
   
   
@@ -3919,13 +3919,13 @@ const Game = () => {
                 
                 // Wait 0.5s delay, then start counter and bar fill together
                 setTimeout(() => {
-                  // Calculate display percentage: current XP / XP required for this level * 100
-                  const displayXP = levelsGained > 0 ? 100 : Math.min((finalXP / xpRequired) * 100, 100)
-                  setXpProgress(displayXP)
-                  setXpAnimationComplete(true)
-                  
-                  // Handle level up(s) - Process ONE level at a time
-                  if (levelsGained > 0) {
+                // Calculate display percentage: current XP / XP required for this level * 100
+                const displayXP = levelsGained > 0 ? 100 : Math.min((finalXP / xpRequired) * 100, 100)
+                setXpProgress(displayXP)
+                setXpAnimationComplete(true)
+                
+                // Handle level up(s) - Process ONE level at a time
+                if (levelsGained > 0) {
                   console.log('🎉 LEVEL UP! Will gain', levelsGained, 'level(s) total, processing first level now')
                   
                   const currentLevelUpCount = parseInt(localStorage.getItem('level_up_count') || '0', 10)
@@ -4024,7 +4024,7 @@ const Game = () => {
           const triggerPlaylistXPAnimation = (finalScore: number) => {
             console.log('🎬💰 triggerPlaylistXPAnimation called with finalScore:', finalScore)
             
-            if (!actualPlaylist || currentPlaylistLevel >= 10) {
+            if (!actualPlaylist || currentPlaylistLevel >= 7) {
               console.log('⚠️ Skipping Playlist XP - no playlist or already mastered')
               // Show song list immediately if playlist is mastered
               setTimeout(() => {
@@ -4094,12 +4094,12 @@ const Game = () => {
               // After indicator arrives at target (1.0s delay + 0.8s flight = 1.8s), wait 0.5s, then start bar fill
               setTimeout(() => {
                 // Wait 0.5s delay, then start counter and bar fill together
-                setTimeout(() => {
-                  // Calculate new total XP
-                  const newTotalXP = playlistXP + finalScore
-                  
-                  // Check for level up
-                  if (newTotalXP >= xpRequired && currentPlaylistLevel < 10) {
+              setTimeout(() => {
+                // Calculate new total XP
+                const newTotalXP = playlistXP + finalScore
+                
+                // Check for level up
+                if (newTotalXP >= xpRequired && currentPlaylistLevel < 7) {
                     // Level up!
                     const newLevel = currentPlaylistLevel + 1
                     const remainingXP = newTotalXP - xpRequired
@@ -4110,7 +4110,7 @@ const Game = () => {
                     setNewPlaylistLevelReached(newLevel)
                     
                     // Store milestone info for unlock notification
-                    const isMilestone = newLevel === 3 || newLevel === 5 || newLevel === 10
+                    const isMilestone = newLevel === 3 || newLevel === 5 || newLevel === 7
                     
                     // Animate bar to 100% first
                     setDisplayedPlaylistXP(xpRequired)
@@ -4128,8 +4128,8 @@ const Game = () => {
                       // Animate the level number increment FIRST (without flash)
                       // This triggers the displayedPlaylistLevel animation via useEffect
                       setCurrentPlaylistLevel(newLevel)
-                      if (newLevel !== 3 && newLevel !== 5 && newLevel !== 10) {
-                        setNewPlaylistLevelReached(newLevel)
+                      if (newLevel !== 3 && newLevel !== 5 && newLevel !== 7) {
+                      setNewPlaylistLevelReached(newLevel)
                       }
                       
                       console.log('🎯 After setState - currentPlaylistLevel should be:', newLevel)
@@ -4163,7 +4163,7 @@ const Game = () => {
                           // No mid-fade update needed - let text fade out completely first
                           
                           // After fade completes, reset and refill
-                          setTimeout(() => {
+                        setTimeout(() => {
                             console.log('🎬 Fade complete, resetting bar to 0 with no transitions')
                             // Enable no-transition mode
                             setXpBarResetting(true)
@@ -4173,16 +4173,16 @@ const Game = () => {
                             setAnimatedPlaylistXP(0)
                             animatedXPRef.current = 0
                             // Update level for XP calculations NOW (while text is invisible)
-                            setLevelForXPCalc(newLevel)
-                            setPlaylistXP(remainingXP) // Set the underlying state
-                            
+                          setLevelForXPCalc(newLevel)
+                          setPlaylistXP(remainingXP) // Set the underlying state
+                          
                             // Small delay to ensure reset completes
-                            setTimeout(() => {
+                          setTimeout(() => {
                               console.log('🎬 Fading bar and text back in at 0 with new level values')
                               setXpBarFadeOut(false) // Fade back in (bar is at 0, text shows new values)
-                              
+                            
                               // Small delay to ensure fade-in has started, then re-enable transitions
-                              setTimeout(() => {
+                            setTimeout(() => {
                                 console.log('🎬 Re-enabling transitions and filling to', remainingXP)
                                 setXpBarResetting(false) // Re-enable transitions
                                 
@@ -4193,7 +4193,7 @@ const Game = () => {
                                   // Show song list after refill animation completes
                                   setTimeout(() => {
                                     console.log('🎵 Showing Your Answers section (after level-up)')
-                                    setShowSongList(true)
+                              setShowSongList(true)
                                   }, 1700) // After refill animation completes
                                 }, 50) // Small delay to ensure transitions are re-enabled
                               }, 200) // Wait for fade-in to start
@@ -4213,7 +4213,7 @@ const Game = () => {
                           console.log('🎊 SHOWING EVENTS UNLOCK')
                           message = 'Events Unlocked'
                           icon = '🔥'
-                        } else if (newLevel === 10) {
+                        } else if (newLevel === 7) {
                           console.log('🎊 SHOWING MASTER MODE UNLOCK')
                           message = 'Master Mode Unlocked'
                           icon = '⚡'
@@ -4362,9 +4362,9 @@ const Game = () => {
                       console.log('🎵 Showing Your Answers section (no level-up)')
                       setShowSongList(true)
                     }, 2500) // Wait for bar fill (2s) + 0.5s delay
-                  }
-                  
-                  setPlaylistXPAnimationComplete(true)
+                }
+                
+                setPlaylistXPAnimationComplete(true)
                 }, 500) // 0.5s delay so counter and bar start together
               }, 1800) // Wait for indicator to arrive at target (1.0s delay + 0.8s flight)
             }, 100) // Small delay before showing bar
@@ -6158,7 +6158,7 @@ const Game = () => {
                       
                       {/* XP Bar and Level Badge */}
                       <div className="results-playlist-xp-row">
-                        {currentPlaylistLevel < 10 ? (
+                        {currentPlaylistLevel < 7 ? (
                           <div className="playlist-xp-container-result">
                             <div className="playlist-xp-bar-bg">
                               <div 
@@ -6190,11 +6190,11 @@ const Game = () => {
                   )}
 
                   {/* Next Reward Indicator - Outside Container */}
-                  {showPlaylistXPBar && currentPlaylistLevel < 10 && (
+                  {showPlaylistXPBar && currentPlaylistLevel < 7 && (
                     <div className="next-reward-container">
                       <span className="next-reward-label">NEXT REWARD</span>
                       <div className="next-reward-level">
-                        {currentPlaylistLevel < 3 ? '3' : currentPlaylistLevel < 5 ? '5' : '10'}
+                        {currentPlaylistLevel < 3 ? '3' : currentPlaylistLevel < 5 ? '5' : '7'}
                       </div>
                     </div>
                   )}
@@ -7978,52 +7978,48 @@ const Game = () => {
                 }, 300)
               }
             }}>
-              <div className="level-up-modal">
-                <h1 className="level-up-big-text">LEVEL UP!</h1>
-                <div className="level-up-content">
-                  <div className="level-up-playlist-info">
-                    <div className="level-up-playlist-name">{actualPlaylist}</div>
-                    <div className="level-up-new-level">
-                      Level {newPlaylistLevelReached}
-                    </div>
+            <div className="level-up-modal">
+              <h1 className="level-up-big-text">LEVEL UP!</h1>
+              <div className="level-up-content">
+                <div className="level-up-playlist-info">
+                  <div className="level-up-playlist-name">{actualPlaylist}</div>
+                  <div className="level-up-new-level">
+                    Level {newPlaylistLevelReached}
                   </div>
-                  
-                  {/* Show unlock messages */}
-                  {newPlaylistLevelReached === 3 && (
-                    <div className="level-up-unlock-message">
-                      🎵 Special Questions Unlocked!
-                    </div>
-                  )}
-                  {newPlaylistLevelReached === 5 && (
-                    <div className="level-up-unlock-message">
-                      🔥 Daily Challenge Unlocked!
-                    </div>
-                  )}
-                  {newPlaylistLevelReached === 10 && (
-                    <div className="level-up-unlock-message">
-                      ⚡ Master Mode Unlocked!
-                      <br />
-                      <span style={{ fontSize: '1.5rem', display: 'block', marginTop: '0.5rem' }}>
-                        Playlist Mastered!
-                      </span>
-                    </div>
-                  )}
                 </div>
-                <button 
-                  className="level-up-confirm-btn" 
-                  onClick={() => {
-                    console.log('🎊 CLOSING LEVEL UP MODAL')
-                    setShowPlaylistLevelUpModal(false)
-                    // Show song list after modal closes
-                    setTimeout(() => {
-                      setShowSongList(true)
-                    }, 300)
-                  }}
-                >
-                  Continue
-                </button>
+                
+                {/* Show unlock messages */}
+                {newPlaylistLevelReached === 3 && (
+                  <div className="level-up-unlock-message">
+                    🎵 Special Questions Unlocked!
+                  </div>
+                )}
+                {newPlaylistLevelReached === 5 && (
+                  <div className="level-up-unlock-message">
+                    🔥 Daily Challenge Unlocked!
+                  </div>
+                )}
+                {newPlaylistLevelReached === 7 && (
+                  <div className="level-up-unlock-message">
+                    ⚡ Master Mode Unlocked!
+                  </div>
+                )}
               </div>
+              <button 
+                className="level-up-confirm-btn" 
+                onClick={() => {
+                    console.log('🎊 CLOSING LEVEL UP MODAL')
+                  setShowPlaylistLevelUpModal(false)
+                  // Show song list after modal closes
+                  setTimeout(() => {
+                    setShowSongList(true)
+                  }, 300)
+                }}
+              >
+                Continue
+              </button>
             </div>
+          </div>
           )
         })()}
 
