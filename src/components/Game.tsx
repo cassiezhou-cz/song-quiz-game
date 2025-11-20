@@ -597,6 +597,7 @@ const Game = () => {
   const [showUnlockNotification, setShowUnlockNotification] = useState(false) // Simple unlock notification
   const [unlockMessage, setUnlockMessage] = useState('') // Unlock message text
   const unlockNotificationRef = useRef<HTMLDivElement>(null)
+  const [showMasteryTransformation, setShowMasteryTransformation] = useState(false) // Mastery transformation animation
   
   // Track notification state changes
   useEffect(() => {
@@ -4214,13 +4215,13 @@ const Game = () => {
                           message = 'Events Unlocked'
                           icon = '🔥'
                         } else if (newLevel === 7) {
-                          console.log('🎊 SHOWING MASTER MODE UNLOCK')
+                          console.log('💎 SHOWING MASTER MODE UNLOCK (after mastery transformation)')
                           message = 'Master Mode Unlocked'
                           icon = '⚡'
                         }
                         
-                        if (message) {
-                          // Milestone level - show unlock notification BEFORE drain/refill
+                        // Function to show unlock notification
+                        const showUnlockNotificationDOM = () => {
                           const notificationDiv = document.createElement('div')
                           notificationDiv.id = 'unlock-notification-forced'
                           notificationDiv.style.cssText = `
@@ -4310,8 +4311,18 @@ const Game = () => {
                             // Wait for animations to complete before removing
                             setTimeout(() => {
                               document.body.removeChild(notificationDiv)
-                              console.log('🎊 UNLOCK NOTIFICATION CLOSED - starting drain/refill')
-                              completeLevelUpSequence()
+                              
+                              // For level 7 (mastery), just show song list - no drain/refill
+                              if (newLevel === 7) {
+                                console.log('💎 MASTERY COMPLETE - showing Your Answers')
+                                setTimeout(() => {
+                                  setShowSongList(true)
+                                }, 500)
+                              } else {
+                                // For levels 3 and 5, proceed with drain/refill
+                                console.log('🎊 UNLOCK NOTIFICATION CLOSED - starting drain/refill')
+                                completeLevelUpSequence()
+                              }
                             }, 300) // Match animation duration
                           }
                           
@@ -4327,6 +4338,30 @@ const Game = () => {
                           if (continueBtn && notificationBox) {
                             continueBtn.addEventListener('click', closeNotification)
                             window.addEventListener('keydown', handleSpacebarClose)
+                          }
+                        }
+                        
+                        if (message) {
+                          // Check if this is level 7 (mastery) - special handling
+                          if (newLevel === 7) {
+                            console.log('💎 Level up animation complete - waiting 0.5s before mastery transformation')
+                            setShowLevelFlash(false) // Hide LEVEL UP text
+                            
+                            // Wait 0.5s after level up animation, then trigger mastery transformation
+                            setTimeout(() => {
+                              console.log('💎 TRIGGERING MASTERY TRANSFORMATION')
+                              setShowMasteryTransformation(true)
+                              
+                              // Wait for mastery transformation animation (2.5s) + 0.5s delay
+                              setTimeout(() => {
+                                console.log('💎 MASTERY TRANSFORMATION COMPLETE - waiting 0.5s before showing unlock notification')
+                                // Show unlock notification after mastery transformation + delay
+                                showUnlockNotificationDOM()
+                              }, 3000) // 2.5 seconds for flashy mastery animation + 0.5s delay
+                            }, 500) // 0.5s delay after level up animation
+                          } else {
+                            // Levels 3 and 5 - show unlock notification immediately
+                            showUnlockNotificationDOM()
                           }
                         } else {
                           // Non-milestone level up - proceed directly to drain/refill
@@ -6150,7 +6185,14 @@ const Game = () => {
                   
                   {/* Playlist XP Bar - New System */}
                   {showPlaylistXPBar && (
-                    <div className="results-playlist-xp-container">
+                    <div className={`results-playlist-xp-container ${showMasteryTransformation ? 'mastery-transformation' : ''}`}>
+                      {showMasteryTransformation ? (
+                        /* Full Container Mastery Display */
+                        <div className="mastery-takeover">
+                          <div className="mastery-takeover-text">MASTERED</div>
+                        </div>
+                      ) : (
+                        <>
                       {/* Playlist Name */}
                       <div className="results-playlist-name-container">
                         <div className="results-playlist-name">{actualPlaylist}</div>
@@ -6158,39 +6200,35 @@ const Game = () => {
                       
                       {/* XP Bar and Level Badge */}
                       <div className="results-playlist-xp-row">
-                        {currentPlaylistLevel < 7 ? (
-                          <div className="playlist-xp-container-result">
-                            <div className="playlist-xp-bar-bg">
-                              <div 
-                                className={`playlist-xp-bar-fill ${xpBarFadeOut ? 'xp-bar-fade-out' : ''} ${xpBarResetting ? 'xp-bar-no-transition' : ''}`}
-                                style={{ width: `${(displayedPlaylistXP / getPlaylistXPRequired(levelForXPCalc)) * 100}%` }}
-                              />
-                              <div className={`playlist-xp-text ${xpBarFadeOut ? 'xp-bar-fade-out' : ''}`}>
-                                {Math.floor(animatedPlaylistXP)}/{getPlaylistXPRequired(levelForXPCalc)}
+                        <div className="playlist-xp-container-result">
+                          <div className="playlist-xp-bar-bg">
+                            <div 
+                              className={`playlist-xp-bar-fill ${xpBarFadeOut ? 'xp-bar-fade-out' : ''} ${xpBarResetting ? 'xp-bar-no-transition' : ''}`}
+                              style={{ width: `${(displayedPlaylistXP / getPlaylistXPRequired(levelForXPCalc)) * 100}%` }}
+                            />
+                            <div className={`playlist-xp-text ${xpBarFadeOut ? 'xp-bar-fade-out' : ''}`}>
+                              {Math.floor(animatedPlaylistXP)}/{getPlaylistXPRequired(levelForXPCalc)}
+                            </div>
+                          </div>
+                          <div className="playlist-level-badge-result">
+                            {showLevelFlash && (
+                              <div className="level-up-text-container">
+                                <span className="level-up-text">LEVEL UP</span>
                               </div>
-                            </div>
-                            <div className="playlist-level-badge-result">
-                              {showLevelFlash && (
-                                <div className="level-up-text-container">
-                                  <span className="level-up-text">LEVEL UP</span>
-                                </div>
-                              )}
-                              <span className={showLevelFlash ? 'level-number-flash' : ''}>
-                                {Math.floor(displayedPlaylistLevel)}
-                              </span>
-                            </div>
+                            )}
+                            <span className={showLevelFlash ? 'level-number-flash' : ''}>
+                              {Math.floor(displayedPlaylistLevel)}
+                            </span>
                           </div>
-                        ) : (
-                          <div className="playlist-mastered-result-container">
-                            <div className="playlist-mastered-result">MASTERED</div>
-                          </div>
-                        )}
+                        </div>
                       </div>
+                        </>
+                      )}
                     </div>
                   )}
 
                   {/* Next Reward Indicator - Outside Container */}
-                  {showPlaylistXPBar && currentPlaylistLevel < 7 && (
+                  {showPlaylistXPBar && currentPlaylistLevel < 7 && !showMasteryTransformation && (
                     <div className="next-reward-container">
                       <span className="next-reward-label">NEXT REWARD</span>
                       <div className="next-reward-level">
@@ -7570,15 +7608,15 @@ const Game = () => {
           {version === 'Version B' ? (
             <div className="version-b-cat-container">
               <div className="version-b-cat-avatar-wrapper">
-                <img 
-                  src={
+              <img 
+                src={
                     showFeedback 
                       ? getAvatarPath(pointsEarned > 0 ? 'Happy' : 'Sad', hatUnlocked)
                       : getAvatarPath('Neutral', hatUnlocked)
-                  }
-                  alt="Player Avatar" 
-                  className="version-b-cat-avatar"
-                />
+                }
+                alt="Player Avatar" 
+                className="version-b-cat-avatar"
+              />
               </div>
               <div className="version-b-player-label">{playerName || 'Player'}</div>
               
@@ -7613,7 +7651,7 @@ const Game = () => {
               <img 
                 src={
                   version === 'Version C'
-                    ? (showVersionCFeedback 
+                        ? (showVersionCFeedback 
                         ? getAvatarPath(pointsEarned > 0 ? 'Happy' : 'Sad', hatUnlocked)
                         : getAvatarPath('Neutral', hatUnlocked))
                     : "/assets/YourAvatar.png"
