@@ -4090,6 +4090,9 @@ const Game = () => {
               setTimeout(() => {
                 // Wait 0.5s delay, then start counter and bar fill together
               setTimeout(() => {
+                // Helper to calculate XP required for a level
+                const getXPRequired = (level: number) => 50 + ((level - 1) * 20)
+                
                 // Calculate new total XP
                 const newTotalXP = playlistXP + finalScore
                 
@@ -4185,10 +4188,188 @@ const Game = () => {
                                 setTimeout(() => {
                                   setDisplayedPlaylistXP(remainingXP) // Animate from 0 to remainingXP
                                   
-                                  // Show song list after refill animation completes
+                                  // After refill completes, check if remaining XP triggers ANOTHER level-up
                                   setTimeout(() => {
-                                    console.log('🎵 Showing Your Answers section (after level-up)')
-                              setShowSongList(true)
+                                    const newXPRequired = getXPRequired(newLevel)
+                                    
+                                    if (remainingXP >= newXPRequired && newLevel < 7) {
+                                      // Cascading level-up! Trigger the sequence again
+                                      console.log(`🎉🎉 CASCADING LEVEL-UP DETECTED! Level ${newLevel} → ${newLevel + 1}`)
+                                      console.log(`📊 Current: ${remainingXP}/${newXPRequired} XP - Starting next level-up animation...`)
+                                      
+                                      // Animate bar to 100% again for next level-up
+                                      setTimeout(() => {
+                                        setDisplayedPlaylistXP(newXPRequired)
+                                        
+                                        // After bar reaches 100%, proceed with next level-up
+                                        setTimeout(() => {
+                                          const nextLevel = newLevel + 1
+                                          const nextRemainingXP = remainingXP - newXPRequired
+                                          
+                                          console.log(`🎉 Next level-up: ${newLevel} → ${nextLevel}, ${nextRemainingXP} XP remaining`)
+                                          
+                                          setNewPlaylistLevelReached(nextLevel)
+                                          setCurrentPlaylistLevel(nextLevel)
+                                          
+                                          // Save progress
+                                          const savedProgress = localStorage.getItem('playlist_progress')
+                                          let allProgress: Record<string, {level: number, xp: number}> = {}
+                                          if (savedProgress) {
+                                            try {
+                                              allProgress = JSON.parse(savedProgress)
+                                            } catch (e) {
+                                              console.error('Failed to parse playlist progress:', e)
+                                            }
+                                          }
+                                          allProgress[actualPlaylist] = { level: nextLevel, xp: nextRemainingXP }
+                                          localStorage.setItem('playlist_progress', JSON.stringify(allProgress))
+                                          
+                                          // Check if this cascading level is a milestone
+                                          setTimeout(() => {
+                                            let cascadeMessage = ''
+                                            let cascadeIcon = ''
+                                            
+                                            if (nextLevel === 3) {
+                                              cascadeMessage = 'Special Questions Unlocked'
+                                              cascadeIcon = '🎵'
+                                            } else if (nextLevel === 5) {
+                                              cascadeMessage = 'Events Unlocked'
+                                              cascadeIcon = '🔥'
+                                            } else if (nextLevel === 7) {
+                                              cascadeMessage = 'Master Mode Unlocked'
+                                              cascadeIcon = '⚡'
+                                            }
+                                            
+                                            // Function to complete the cascade drain/refill
+                                            const completeCascadeLevelUp = () => {
+                                              setXpBarFadeOut(true)
+                                              
+                                              setTimeout(() => {
+                                                setXpBarResetting(true)
+                                                setDisplayedPlaylistXP(0)
+                                                setAnimatedPlaylistXP(0)
+                                                animatedXPRef.current = 0
+                                                setLevelForXPCalc(nextLevel)
+                                                setPlaylistXP(nextRemainingXP)
+                                                
+                                                setTimeout(() => {
+                                                  setXpBarFadeOut(false)
+                                                  
+                                                  setTimeout(() => {
+                                                    setXpBarResetting(false)
+                                                    
+                                                    setTimeout(() => {
+                                                      setDisplayedPlaylistXP(nextRemainingXP)
+                                                      
+                                                      // Check AGAIN for another level-up (recursive)
+                                                      setTimeout(() => {
+                                                        const nextNextXPRequired = getXPRequired(nextLevel)
+                                                        if (nextRemainingXP >= nextNextXPRequired && nextLevel < 7) {
+                                                          console.log(`🎉🎉🎉 TRIPLE CASCADE detected! Will continue...`)
+                                                          console.log('⚠️ More than 2 consecutive level-ups detected - showing results')
+                                                        }
+                                                        console.log('🎵 Showing Your Answers section (after cascading level-ups)')
+                                                        setShowSongList(true)
+                                                      }, 1700)
+                                                    }, 50)
+                                                  }, 200)
+                                                }, 50)
+                                              }, 600)
+                                            }
+                                            
+                                            // If milestone, show notification first, then complete
+                                            if (cascadeMessage) {
+                                              console.log(`🎊 SHOWING CASCADE MILESTONE: ${cascadeMessage}`)
+                                              
+                                              // Create notification DOM element
+                                              const notificationDiv = document.createElement('div')
+                                              notificationDiv.id = 'cascade-unlock-notification'
+                                              notificationDiv.style.cssText = `
+                                                position: fixed;
+                                                top: 0;
+                                                left: 0;
+                                                right: 0;
+                                                bottom: 0;
+                                                z-index: 999999;
+                                                background: rgba(0, 0, 0, 0);
+                                                display: flex;
+                                                align-items: center;
+                                                justify-content: center;
+                                                backdrop-filter: blur(0px);
+                                                animation: unlockOverlayFadeIn 0.4s ease-out forwards;
+                                              `
+                                              notificationDiv.innerHTML = `
+                                                <div style="
+                                                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                                  padding: 3rem 4rem;
+                                                  border-radius: 20px;
+                                                  text-align: center;
+                                                  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 100px rgba(102, 126, 234, 0.5);
+                                                  max-width: 500px;
+                                                  animation: unlockBoxPopIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.2s backwards;
+                                                ">
+                                                  <h3 style="
+                                                    font-size: 1.5rem;
+                                                    color: rgba(255, 255, 255, 0.9);
+                                                    margin: 0 0 2rem 0;
+                                                    font-weight: 700;
+                                                    text-transform: uppercase;
+                                                    letter-spacing: 0.15em;
+                                                  ">New Reward!</h3>
+                                                  
+                                                  <div style="
+                                                    font-size: 8rem;
+                                                    margin: 0 0 2rem 0;
+                                                    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+                                                  ">${cascadeIcon}</div>
+                                                  
+                                                  <p style="
+                                                    font-size: 2rem;
+                                                    color: white;
+                                                    margin: 0 0 3rem 0;
+                                                    font-weight: 700;
+                                                    line-height: 1.4;
+                                                  ">${cascadeMessage}</p>
+                                                  
+                                                  <button id="cascade-unlock-btn" style="
+                                                    background: rgba(255, 255, 255, 0.2);
+                                                    border: 2px solid rgba(255, 255, 255, 0.3);
+                                                    color: white;
+                                                    padding: 1rem 3rem;
+                                                    font-size: 1.3rem;
+                                                    font-weight: 700;
+                                                    border-radius: 50px;
+                                                    cursor: pointer;
+                                                    transition: all 0.3s ease;
+                                                    text-transform: uppercase;
+                                                    letter-spacing: 0.1em;
+                                                  " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='scale(1)'">
+                                                    Continue
+                                                  </button>
+                                                </div>
+                                              `
+                                              document.body.appendChild(notificationDiv)
+                                              
+                                              // Handle button click
+                                              const continueBtn = document.getElementById('cascade-unlock-btn')
+                                              if (continueBtn) {
+                                                continueBtn.onclick = () => {
+                                                  notificationDiv.remove()
+                                                  completeCascadeLevelUp()
+                                                }
+                                              }
+                                            } else {
+                                              // No milestone, proceed directly
+                                              completeCascadeLevelUp()
+                                            }
+                                          }, 1900)
+                                        }, 1500)
+                                      }, 500)
+                                    } else {
+                                      // No more level-ups
+                                      console.log('🎵 Showing Your Answers section (after level-up)')
+                                      setShowSongList(true)
+                                    }
                                   }, 1700) // After refill animation completes
                                 }, 50) // Small delay to ensure transitions are re-enabled
                               }, 200) // Wait for fade-in to start
