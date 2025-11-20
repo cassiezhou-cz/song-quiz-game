@@ -3598,8 +3598,9 @@ const Game = () => {
     // Version B: Reset lifelines when starting a new session
     if (version === 'Version B') {
       // Determine rank based on playlist level
-      const rank = currentPlaylistLevel >= 7 ? 'gold' : currentPlaylistLevel >= 4 ? 'silver' : 'bronze'
-      console.log(`🎮 Starting game with Playlist: ${playlist}, Level: ${currentPlaylistLevel}/10, Rank: ${rank}, Total Questions: ${totalQuestions}`)
+      // Level 3+ unlocks special questions, so they need at least silver rank
+      const rank = currentPlaylistLevel >= 7 ? 'platinum' : currentPlaylistLevel >= 5 ? 'gold' : currentPlaylistLevel >= 3 ? 'silver' : 'bronze'
+      console.log(`🎮 Starting game with Playlist: ${playlist}, Level: ${currentPlaylistLevel}/7, Rank: ${rank}, Total Questions: ${totalQuestions}`)
       
       // All lifelines are always unlocked
       const currentUnlockedLifelines: LifelineType[] = allLifelines
@@ -3632,10 +3633,10 @@ const Game = () => {
       const assignedTypes: {[key: number]: 'time-warp' | 'slo-mo' | 'hyperspeed' | 'song-trivia' | 'finish-the-lyric'} = {}
       
       if (rank === 'bronze') {
-        // Bronze (0-4): No special questions
-        console.log('🎯 BRONZE RANK: No special questions')
+        // Bronze (Level 1-2): No special questions
+        console.log('🎯 BRONZE RANK (Level 1-2): No special questions')
       } else if (rank === 'silver' || rank === 'gold' || rank === 'platinum') {
-        // Silver (5-9), Gold (10-14), Platinum (15): 1 special question at position 3, 4, or 5
+        // Silver (Level 3-4), Gold (Level 5-6), Platinum (Level 7): 1 special question at position 3, 4, or 5
         const availablePositions = [3, 4, 5]
         const randomIndex = Math.floor(Math.random() * availablePositions.length)
         const selectedQuestion = availablePositions[randomIndex]
