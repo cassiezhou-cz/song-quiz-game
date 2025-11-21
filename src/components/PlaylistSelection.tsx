@@ -280,6 +280,18 @@ const PlaylistSelection = () => {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isHoveringXPBar, playerLevel, unlockedLifelines, hatUnlocked])
 
+  // ESC key handler: Navigate back to Avatar Selection
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        navigate('/avatar-selection')
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [navigate])
 
   // Helper function to get rank from level (for visual display only)
   const getRankFromLevel = (level: number): PlaylistRank => {
@@ -785,7 +797,7 @@ const PlaylistSelection = () => {
       )}
 
       {/* Top Left Avatar and Name */}
-      <div className="top-left-avatar-container">
+      <div className="top-left-avatar-container" onClick={() => navigate('/avatar-selection')} style={{ cursor: 'pointer' }}>
         <div className="top-left-avatar-wrapper">
           <img 
             src={getAvatarPath('Neutral', hatUnlocked)}
