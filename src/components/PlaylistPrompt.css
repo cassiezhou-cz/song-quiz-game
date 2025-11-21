@@ -307,6 +307,34 @@
   background-clip: text;
 }
 
+/* Master Mode Rank Display */
+.prompt-master-rank-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.prompt-master-rank-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.prompt-master-rank-value {
+  font-size: 3.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f7b731 0%, #ffc837 50%, #f7b731 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 8px rgba(247, 183, 49, 0.4);
+  letter-spacing: 2px;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -377,6 +405,10 @@
 
   .prompt-mastered-text {
     font-size: 1.8rem;
+  }
+
+  .prompt-master-rank-value {
+    font-size: 2.5rem;
   }
 }
 

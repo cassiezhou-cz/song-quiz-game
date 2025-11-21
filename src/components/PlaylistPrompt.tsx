@@ -22,6 +22,7 @@ interface PlaylistPromptProps {
   rank: PlaylistRank
   stats: PlaylistStats
   masterModeUnlocked: boolean
+  masterModeRank?: number // Player's best rank on Master Mode leaderboard
   onClose: () => void
   onStartDailyChallenge: () => void
 }
@@ -33,6 +34,7 @@ const PlaylistPrompt = ({
   rank, 
   stats,
   masterModeUnlocked,
+  masterModeRank,
   onClose,
   onStartDailyChallenge
 }: PlaylistPromptProps) => {
@@ -157,7 +159,7 @@ const PlaylistPrompt = ({
             </div>
           </div>
 
-          {/* Playlist Meter */}
+          {/* Playlist Meter or Master Mode Rank */}
           <div className="prompt-meter-section">
             {level < 7 ? (
               <div className="prompt-meter-container">
@@ -173,9 +175,10 @@ const PlaylistPrompt = ({
                 <div className="prompt-level-badge">{level}</div>
               </div>
             ) : (
-              <div className="prompt-mastered-container">
-                <div className="prompt-mastered-text">
-                  MASTERED
+              <div className="prompt-master-rank-container">
+                <div className="prompt-master-rank-label">GLOBAL MASTER RANK</div>
+                <div className="prompt-master-rank-value">
+                  #{masterModeRank || '—'}
                 </div>
               </div>
             )}

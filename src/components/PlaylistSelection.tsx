@@ -1072,7 +1072,9 @@ const PlaylistSelection = () => {
       {/* Playlist Prompt Modal */}
       {showPlaylistPrompt && promptPlaylist && (() => {
         const playlistLevel = playlistProgress[promptPlaylist]?.level || 1
-        console.log(`🎯 Rendering PlaylistPrompt for "${promptPlaylist}": level=${playlistLevel}, progress=`, playlistProgress[promptPlaylist])
+        const masterModeRankKey = `master_mode_rank_${promptPlaylist}`
+        const masterModeRank = parseInt(localStorage.getItem(masterModeRankKey) || '0') || undefined
+        console.log(`🎯 Rendering PlaylistPrompt for "${promptPlaylist}": level=${playlistLevel}, masterModeRank=${masterModeRank}, progress=`, playlistProgress[promptPlaylist])
         return (
           <PlaylistPrompt
             playlist={promptPlaylist}
@@ -1081,6 +1083,7 @@ const PlaylistSelection = () => {
             rank={getRankFromLevel(playlistLevel)}
             stats={playlistStats[promptPlaylist] || { timesPlayed: 0, averageScore: 0, highestScore: 0 }}
             masterModeUnlocked={isMasterModeUnlocked(playlistLevel)}
+            masterModeRank={masterModeRank}
             onClose={handleClosePrompt}
             onStartDailyChallenge={() => {
               setShowPlaylistPrompt(false)
