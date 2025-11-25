@@ -3609,9 +3609,15 @@ const Game = () => {
       
       console.log('🎯 VERSION B START: All lifelines unlocked by default')
       
-      // Select 3 random lifelines from all available lifelines
-      const shuffled = [...currentUnlockedLifelines].sort(() => Math.random() - 0.5)
-      lifelinesForInitialQuestion = shuffled.slice(0, 3)
+      // Select 3 lifelines with specific rules:
+      // 1st: Always Song Swap (skip)
+      // 2nd: Randomly choose between Artist Letter Reveal or Artist Multiple Choice
+      // 3rd: Randomly choose between Song Letter Reveal or Song Multiple Choice
+      const firstLifeline: LifelineType = 'skip'
+      const secondLifeline: LifelineType = Math.random() < 0.5 ? 'artistLetterReveal' : 'multipleChoiceArtist'
+      const thirdLifeline: LifelineType = Math.random() < 0.5 ? 'songLetterReveal' : 'multipleChoiceSong'
+      
+      lifelinesForInitialQuestion = [firstLifeline, secondLifeline, thirdLifeline]
       setAvailableLifelines(lifelinesForInitialQuestion)
       console.log('🎯 VERSION B START: Selected lifelines for this run:', lifelinesForInitialQuestion)
       
@@ -4917,7 +4923,7 @@ const Game = () => {
     if (points > 0 && isTimerRunning) {
       let bonusSeconds = 0
       if (points >= 20) {
-        bonusSeconds = 6 // 20 points button gives +6 seconds
+        bonusSeconds = 3 // 20 points button gives +3 seconds
       } else if (points >= 10) {
         bonusSeconds = 3 // 10 points button gives +3 seconds
       }
