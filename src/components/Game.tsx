@@ -1244,6 +1244,14 @@ const Game = () => {
     },
     { 
       id: '4', 
+      title: 'Chandelier', 
+      artist: 'Sia', 
+      file: '/songs/2010s/ChandelierSia.mp3', 
+      albumArt: '/assets/album-art/2010s/ChandelierSia.jpeg',
+      alternatives: ['Elastic Heart - Sia', 'Cheap Thrills - Sia', 'Titanium - Sia']
+    },
+    { 
+      id: '5', 
       title: 'Closer', 
       artist: 'The Chainsmokers', 
       file: '/songs/2010s/CloserChainsmokers.mp3', 
@@ -1255,7 +1263,15 @@ const Game = () => {
       triviaCorrectAnswer: 'Halsey'
     },
     { 
-      id: '5', 
+      id: '6', 
+      title: 'Diamonds', 
+      artist: 'Rihanna', 
+      file: '/songs/2010s/DiamondsRihanna.mp3', 
+      albumArt: '/assets/album-art/2010s/DiamondsRihanna.jpeg',
+      alternatives: ['We Found Love - Rihanna feat. Calvin Harris', 'Only Girl (In The World) - Rihanna', 'What\'s My Name? - Rihanna feat. Drake']
+    },
+    { 
+      id: '7', 
       title: 'Everybody Talks', 
       artist: 'Neon Trees', 
       file: '/songs/2010s/EverybodyTalksNeonTrees.mp3', 
@@ -1263,7 +1279,7 @@ const Game = () => {
       alternatives: ['Tongue Tied - Grouplove', 'Some Nights - Fun.', 'Pumped Up Kicks - Foster the People']
     },
     { 
-      id: '6', 
+      id: '8', 
       title: 'Goosebumps', 
       artist: 'Travis Scott', 
       file: '/songs/2010s/GoosebumpsTravisScott.mp3', 
@@ -1274,7 +1290,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Kendrick Lamar'
     },
     { 
-      id: '7', 
+      id: '9', 
       title: 'Havana', 
       artist: 'Camila Cabello', 
       file: '/songs/2010s/HavanaCamilaCabello.mp3', 
@@ -1282,7 +1298,15 @@ const Game = () => {
       alternatives: ['Senorita - Shawn Mendes & Camila Cabello', 'New Rules - Dua Lipa', 'Despacito - Luis Fonsi feat. Daddy Yankee']
     },
     { 
-      id: '8', 
+      id: '10', 
+      title: 'Ho Hey', 
+      artist: 'The Lumineers', 
+      file: '/songs/2010s/HoHeyTheLumineers.mp3', 
+      albumArt: '/assets/album-art/2010s/HoHeyTheLumineers.jpeg',
+      alternatives: ['Stubborn Love - The Lumineers', 'Ophelia - The Lumineers', 'Sleep on the Floor - The Lumineers']
+    },
+    { 
+      id: '11', 
       title: 'HUMBLE', 
       artist: 'Kendrick Lamar', 
       file: '/songs/2010s/HUMBLEKendrickLamar.mp3', 
@@ -1294,7 +1318,15 @@ const Game = () => {
       triviaCorrectAnswer: 'DAMN.'
     },
     { 
-      id: '9', 
+      id: '12', 
+      title: 'If I Die Young', 
+      artist: 'The Band Perry', 
+      file: '/songs/2010s/IfIDieYoungTheBandPerry.mp3', 
+      albumArt: '/assets/album-art/2010s/IfIDieYoungTheBandPerry.jpeg',
+      alternatives: ['Need You Now - Lady A', 'Pontoon - Little Big Town', 'Wagon Wheel - Darius Rucker']
+    },
+    { 
+      id: '13', 
       title: 'I Gotta Feeling', 
       artist: 'The Black Eyed Peas', 
       file: '/songs/2010s/IGottaFeelingTheBlackEyedPea.mp3', 
@@ -1302,7 +1334,7 @@ const Game = () => {
       alternatives: ['Boom Boom Pow - The Black Eyed Peas', 'Meet Me Halfway - The Black Eyed Peas', 'Imma Be - The Black Eyed Peas']
     },
     { 
-      id: '10', 
+      id: '14', 
       title: 'Just Dance', 
       artist: 'Lady Gaga', 
       file: '/songs/2010s/JustDanceLadyGaga.mp3', 
@@ -1310,7 +1342,15 @@ const Game = () => {
       alternatives: ['Poker Face - Lady Gaga', 'Bad Romance - Lady Gaga', 'Paparazzi - Lady Gaga']
     },
     { 
-      id: '11', 
+      id: '15', 
+      title: 'Location', 
+      artist: 'Khalid', 
+      file: '/songs/2010s/LocationKhalid.mp3', 
+      albumArt: '/assets/album-art/2010s/LocationKhalid.jpeg',
+      alternatives: ['Young Dumb & Broke - Khalid', 'Love Lies - Khalid & Normani', 'Better - Khalid']
+    },
+    { 
+      id: '16', 
       title: 'Lost', 
       artist: 'Frank Ocean', 
       file: '/songs/2010s/LostFrankOcean.mp3', 
@@ -1318,7 +1358,7 @@ const Game = () => {
       alternatives: ['Thinkin Bout You - Frank Ocean', 'Pyramids - Frank Ocean', 'Sweet Life - Frank Ocean']
     },
     { 
-      id: '12', 
+      id: '17', 
       title: 'Love The Way You Lie', 
       artist: 'Eminem', 
       file: '/songs/2010s/LoveTheWayYouLieEminem.mp3', 
@@ -1326,7 +1366,7 @@ const Game = () => {
       alternatives: ['Not Afraid - Eminem', 'Recovery - Eminem', 'The Monster - Eminem feat. Rihanna']
     },
     { 
-      id: '13', 
+      id: '18', 
       title: 'Love Yourself', 
       artist: 'Justin Bieber', 
       file: '/songs/2010s/LoveYourselfJustinBieber.mp3', 
@@ -1334,7 +1374,7 @@ const Game = () => {
       alternatives: ['Sorry - Justin Bieber', 'What Do You Mean? - Justin Bieber', 'Cold Water - Major Lazer feat. Justin Bieber']
     },
     { 
-      id: '14', 
+      id: '19', 
       title: 'Low', 
       artist: 'Flo Rida', 
       file: '/songs/2010s/LowFloRida.mp3', 
@@ -1343,7 +1383,7 @@ const Game = () => {
       artistAlternatives: ['Flow Rider', 'Flow Rida', 'Flo Rider', 'Florida']
     },
     { 
-      id: '15', 
+      id: '20', 
       title: 'One Dance', 
       artist: 'Drake', 
       file: '/songs/2010s/OneDanceDrake.mp3', 
@@ -1354,7 +1394,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Views'
     },
     { 
-      id: '16', 
+      id: '21', 
       title: 'One Last Time', 
       artist: 'Ariana Grande', 
       file: '/songs/2010s/OneLastTimeArianaGrande.mp3', 
@@ -1362,7 +1402,7 @@ const Game = () => {
       alternatives: ['Problem - Ariana Grande feat. Iggy Azalea', 'Bang Bang - Jessie J, Ariana Grande & Nicki Minaj', 'Break Free - Ariana Grande feat. Zedd']
     },
     { 
-      id: '17', 
+      id: '22', 
       title: 'Only Girl (In The World)', 
       artist: 'Rihanna', 
       file: '/songs/2010s/OnlyGirl(InTheWorld)Rihanna.mp3', 
@@ -1370,7 +1410,7 @@ const Game = () => {
       alternatives: ['What\'s My Name? - Rihanna feat. Drake', 'S&M - Rihanna', 'We Found Love - Rihanna feat. Calvin Harris']
     },
     { 
-      id: '18', 
+      id: '23', 
       title: 'Pillow Talk', 
       artist: 'Zayn', 
       file: '/songs/2010s/PILLOWTALKZayn.mp3', 
@@ -1378,7 +1418,15 @@ const Game = () => {
       alternatives: ['Dusk Till Dawn - Zayn feat. Sia', 'I Don\'t Wanna Live Forever - Zayn & Taylor Swift', 'Like I Would - Zayn']
     },
     { 
-      id: '19', 
+      id: '24', 
+      title: 'Pumped Up Kicks', 
+      artist: 'Foster the People', 
+      file: '/songs/2010s/PumpedUpKicksFosterThePeople.mp3', 
+      albumArt: '/assets/album-art/2010s/PumpedUpKicksFosterThePeople.jpeg',
+      alternatives: ['Houdini - Foster the People', 'Helena Beat - Foster the People', 'Call It What You Want - Foster the People']
+    },
+    { 
+      id: '25', 
       title: 'Put Your Records On', 
       artist: 'Corrine Bailey Rae', 
       file: '/songs/2010s/PutYourRecordsOnCorrineBaileyRae.mp3', 
@@ -1386,7 +1434,26 @@ const Game = () => {
       alternatives: ['Come Away With Me - Norah Jones', 'Black to Black - Amy Winehouse', 'Breathe Me - Sia']
     },
     { 
-      id: '20', 
+      id: '26', 
+      title: 'Royals', 
+      artist: 'Lorde', 
+      file: '/songs/2010s/RoyalsLorde.mp3', 
+      albumArt: '/assets/album-art/2010s/RoyalsLorde.jpeg',
+      alternatives: ['Team - Lorde', 'Green Light - Lorde', 'Tennis Court - Lorde'],
+      triviaQuestion: 'At what age did Lorde release "Royals"?',
+      triviaOptions: ['15', '16', '17', '18'],
+      triviaCorrectAnswer: '16'
+    },
+    { 
+      id: '27', 
+      title: 'Shake It Off', 
+      artist: 'Taylor Swift', 
+      file: '/songs/2010s/ShakeItOffTaylorSwift.mp3', 
+      albumArt: '/assets/album-art/2010s/ShakeItOffTaylorSwift.jpeg',
+      alternatives: ['Blank Space - Taylor Swift', 'Style - Taylor Swift', 'Bad Blood - Taylor Swift']
+    },
+    { 
+      id: '28', 
       title: 'Shut Up and Dance', 
       artist: 'Walk the Moon', 
       file: '/songs/2010s/ShupUpAndDance.mp3', 
@@ -1397,7 +1464,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Cincinnati'
     },
     { 
-      id: '21', 
+      id: '29', 
       title: 'Smack That', 
       artist: 'Akon', 
       file: '/songs/2010s/SmackThatAkon.mp3', 
@@ -1405,7 +1472,23 @@ const Game = () => {
       alternatives: ['I Wanna Love You - Akon feat. Snoop Dogg', 'Don\'t Matter - Akon', 'Lonely - Akon']
     },
     { 
-      id: '22', 
+      id: '30', 
+      title: 'Started from the Bottom', 
+      artist: 'Drake', 
+      file: '/songs/2010s/StartedFromTheBottomDrake.mp3', 
+      albumArt: '/assets/album-art/2010s/StartedFromTheBottomDrake.jpeg',
+      alternatives: ['0 to 100 - Drake', 'Headlines - Drake', 'Hold On, We\'re Going Home - Drake']
+    },
+    { 
+      id: '31', 
+      title: 'Suit & Tie', 
+      artist: 'Justin Timberlake', 
+      file: '/songs/2010s/Suit&TieJustinTimberlake.mp3', 
+      albumArt: '/assets/album-art/2010s/Suit&TieJustinTimberlake.jpeg',
+      alternatives: ['Mirrors - Justin Timberlake', 'Can\'t Stop the Feeling! - Justin Timberlake', 'TKO - Justin Timberlake']
+    },
+    { 
+      id: '32', 
       title: 'Sunflower', 
       artist: 'Post Malone', 
       file: '/songs/2010s/SunflowerPostMalone.mp3', 
@@ -1413,7 +1496,7 @@ const Game = () => {
       alternatives: ['Circles - Post Malone', 'Better Now - Post Malone', 'Rockstar - Post Malone feat. 21 Savage']
     },
     { 
-      id: '23', 
+      id: '33', 
       title: 'Super Bass', 
       artist: 'Nicki Minaj', 
       file: '/songs/2010s/SuperBassNickiMinaj.mp3', 
@@ -1421,7 +1504,7 @@ const Game = () => {
       alternatives: ['Starships - Nicki Minaj', 'Anaconda - Nicki Minaj', 'Your Love - Nicki Minaj']
     },
     { 
-      id: '24', 
+      id: '34', 
       title: 'Sweater Weather', 
       artist: 'The Neighbourhood', 
       file: '/songs/2010s/SweaterWeatherTheNeighborhood.mp3', 
@@ -1430,7 +1513,15 @@ const Game = () => {
       artistAlternatives: ['Neighbourhood', 'Neighborhood', 'The Neighborhood']
     },
     { 
-      id: '25', 
+      id: '35', 
+      title: 'Teenage Dream', 
+      artist: 'Katy Perry', 
+      file: '/songs/2010s/TeenageDreamKatyPerry.mp3', 
+      albumArt: '/assets/album-art/2010s/TeenageDreamKatyPerry.jpeg',
+      alternatives: ['California Gurls - Katy Perry feat. Snoop Dogg', 'Firework - Katy Perry', 'E.T. - Katy Perry feat. Kanye West']
+    },
+    { 
+      id: '36', 
       title: 'This Love', 
       artist: 'Maroon 5', 
       file: '/songs/2010s/ThisLoveMaroon5.mp3', 
@@ -1438,7 +1529,15 @@ const Game = () => {
       alternatives: ['She Will Be Loved - Maroon 5', 'Sunday Morning - Maroon 5', 'Harder to Breathe - Maroon 5']
     },
     { 
-      id: '26', 
+      id: '37', 
+      title: 'Titanium', 
+      artist: 'David Guetta', 
+      file: '/songs/2010s/TitaniumDavidGuetta.mp3', 
+      albumArt: '/assets/album-art/2010s/TitaniumDavidGuetta.jpeg',
+      alternatives: ['Without You - David Guetta feat. Usher', 'When Love Takes Over - David Guetta feat. Kelly Rowland', 'Memories - David Guetta feat. Kid Cudi']
+    },
+    { 
+      id: '38', 
       title: 'Uptown Funk', 
       artist: 'Mark Ronson', 
       file: '/songs/2010s/UptownFunkMarkRonson.mp3', 
@@ -1446,12 +1545,28 @@ const Game = () => {
       alternatives: ['24K Magic - Bruno Mars', 'Treasure - Bruno Mars', 'Count on Me - Bruno Mars']
     },
     { 
-      id: '27', 
+      id: '39', 
       title: 'Wake Me Up', 
       artist: 'Avicii', 
       file: '/songs/2010s/WakeMeUpAvicii.mp3', 
       albumArt: '/assets/album-art/2010s/WakeMeUpAvicii.jpeg',
       alternatives: ['Broken Arrows - Kygo', 'The Nights - Martin Garrix', 'Sunburst - Tobtok']
+    },
+    { 
+      id: '40', 
+      title: 'When I Was Your Man', 
+      artist: 'Bruno Mars', 
+      file: '/songs/2010s/WhenIWasYourManBrunoMars.mp3', 
+      albumArt: '/assets/album-art/2010s/WhenIWasYourManBrunoMars.jpeg',
+      alternatives: ['Just the Way You Are - Bruno Mars', 'Grenade - Bruno Mars', 'Locked Out of Heaven - Bruno Mars']
+    },
+    { 
+      id: '41', 
+      title: 'Wrecking Ball', 
+      artist: 'Miley Cyrus', 
+      file: '/songs/2010s/WreckingBallMileyCyrus.mp3', 
+      albumArt: '/assets/album-art/2010s/WreckingBallMileyCyrus.jpeg',
+      alternatives: ['We Can\'t Stop - Miley Cyrus', 'Malibu - Miley Cyrus', 'The Climb - Miley Cyrus']
     }
   ]
 
@@ -1478,6 +1593,25 @@ const Game = () => {
     },
     { 
       id: '3', 
+      title: 'Bleeding Love', 
+      artist: 'Leona Lewis', 
+      file: '/songs/2000s/BleedingLoveLeonaLewis.mp3', 
+      albumArt: '/assets/album-art/2000s/BleedingLoveLeonaLewis.jpeg',
+      alternatives: ['Better in Time - Leona Lewis', 'Run - Leona Lewis', 'Happy - Leona Lewis']
+    },
+    { 
+      id: '4', 
+      title: 'Bring Me to Life', 
+      artist: 'Evanescence', 
+      file: '/songs/2000s/BringMeToLiveEvanescence.mp3', 
+      albumArt: '/assets/album-art/2000s/BringMeToLiveEvanescence.jpeg',
+      alternatives: ['My Immortal - Evanescence', 'Going Under - Evanescence', 'Call Me When You\'re Sober - Evanescence'],
+      triviaQuestion: 'Which album features "Bring Me to Life" by Evanescence?',
+      triviaOptions: ['Fallen', 'The Open Door', 'Evanescence', 'Synthesis'],
+      triviaCorrectAnswer: 'Fallen'
+    },
+    { 
+      id: '5', 
       title: 'Complicated', 
       artist: 'Avril Lavigne', 
       file: '/songs/2000s/ComplicatedAvrilLavigne.mp3', 
@@ -1485,7 +1619,35 @@ const Game = () => {
       alternatives: ['Sk8er Boi - Avril Lavigne', 'My Happy Ending - Avril Lavigne', 'I\'m with You - Avril Lavigne']
     },
     { 
-      id: '4', 
+      id: '6', 
+      title: 'Crank That (Soulja Boy)', 
+      artist: 'Soulja Boy', 
+      file: '/songs/2000s/CrankThatSouljaBoy.mp3', 
+      albumArt: '/assets/album-art/2000s/CrankThatSouljaBoy.jpeg',
+      alternatives: ['Kiss Me Thru the Phone - Soulja Boy', 'Turn My Swag On - Soulja Boy', 'Pretty Boy Swag - Soulja Boy'],
+      artistAlternatives: ['Soulja Boy Tell\'Em', 'Soulja Boy Tell Em']
+    },
+    { 
+      id: '7', 
+      title: 'Crazy in Love', 
+      artist: 'Beyoncé', 
+      file: '/songs/2000s/CrazyInLoveBeyonce.mp3', 
+      albumArt: '/assets/album-art/2000s/CrazyInLoveBeyonce.jpeg',
+      alternatives: ['Single Ladies - Beyoncé', 'Irreplaceable - Beyoncé', 'Halo - Beyoncé'],
+      triviaQuestion: 'Which rapper is featured on "Crazy in Love" by Beyoncé?',
+      triviaOptions: ['Jay-Z', 'Kanye West', 'Drake', 'Missy Elliott'],
+      triviaCorrectAnswer: 'Jay-Z'
+    },
+    { 
+      id: '8', 
+      title: 'Cry Me a River', 
+      artist: 'Justin Timberlake', 
+      file: '/songs/2000s/CryMeARiverJustinTimberlake.mp3', 
+      albumArt: '/assets/album-art/2000s/CryMeARiverJustinTimberlake.jpeg',
+      alternatives: ['Rock Your Body - Justin Timberlake', 'SexyBack - Justin Timberlake', 'My Love - Justin Timberlake']
+    },
+    { 
+      id: '9', 
       title: 'Dog Days Are Over', 
       artist: 'Florence + The Machine', 
       file: '/songs/2000s/DogDaysAreOverFlorence+TheMachine.mp3', 
@@ -1493,7 +1655,7 @@ const Game = () => {
       alternatives: ['You\'ve Got the Love - Florence + The Machine', 'Shake It Out - Florence + The Machine', 'Rabbit Heart - Florence + The Machine']
     },
     { 
-      id: '5', 
+      id: '10', 
       title: 'Drops of Jupiter', 
       artist: 'Train', 
       file: '/songs/2000s/DropsOfJupiterTrain.mp3', 
@@ -1504,7 +1666,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Best Rock Song'
     },
     { 
-      id: '6', 
+      id: '11', 
       title: 'Empire State of Mind', 
       artist: 'Jay Z (feat. Alicia Keys)', 
       file: '/songs/2000s/EmpireStateOfMindJayZ.mp3', 
@@ -1515,7 +1677,23 @@ const Game = () => {
       triviaCorrectAnswer: 'New York'
     },
     { 
-      id: '7', 
+      id: '12', 
+      title: 'Everytime We Touch', 
+      artist: 'Cascada', 
+      file: '/songs/2000s/EverytimeWeTouchCascada.mp3', 
+      albumArt: '/assets/album-art/2000s/EverytimeWeTouchCascada.jpeg',
+      alternatives: ['Evacuate the Dancefloor - Cascada', 'What Hurts the Most - Cascada', 'Miracle - Cascada']
+    },
+    { 
+      id: '13', 
+      title: 'Fergalicious', 
+      artist: 'Fergie', 
+      file: '/songs/2000s/FergaliciousFergie.mp3', 
+      albumArt: '/assets/album-art/2000s/FergaliciousFergie.jpeg',
+      alternatives: ['Glamorous - Fergie', 'Big Girls Don\'t Cry - Fergie', 'Clumsy - Fergie']
+    },
+    { 
+      id: '14', 
       title: 'Fireflies', 
       artist: 'Owl City', 
       file: '/songs/2000s/FirefliesOwlCity.mp3', 
@@ -1526,7 +1704,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Adam Young'
     },
     { 
-      id: '8', 
+      id: '15', 
       title: 'Gimme More', 
       artist: 'Britney Spears', 
       file: '/songs/2000s/GimmeMoreBritneySpears.mp3', 
@@ -1537,7 +1715,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Blackout'
     },
     { 
-      id: '9', 
+      id: '16', 
       title: 'Hey Soul Sister', 
       artist: 'Train', 
       file: '/songs/2000s/HeySoulSisterTrain.mp3', 
@@ -1545,7 +1723,23 @@ const Game = () => {
       alternatives: ['Drops of Jupiter - Train', 'Drive By - Train', 'Meet Virginia - Train']
     },
     { 
-      id: '10', 
+      id: '17', 
+      title: 'Hollaback Girl', 
+      artist: 'Gwen Stefani', 
+      file: '/songs/2000s/HollabackGirlGwenStefani.mp3', 
+      albumArt: '/assets/album-art/2000s/HollabackGirlGwenStefani.jpeg',
+      alternatives: ['What You Waiting For? - Gwen Stefani', 'Rich Girl - Gwen Stefani feat. Eve', 'The Sweet Escape - Gwen Stefani']
+    },
+    { 
+      id: '18', 
+      title: 'How You Remind Me', 
+      artist: 'Nickelback', 
+      file: '/songs/2000s/HowYouRemindMeNickelback.mp3', 
+      albumArt: '/assets/album-art/2000s/HowYouRemindMeNickelback.jpeg',
+      alternatives: ['Photograph - Nickelback', 'Someday - Nickelback', 'Rockstar - Nickelback']
+    },
+    { 
+      id: '19', 
       title: 'I Gotta Feeling', 
       artist: 'The Black Eyed Peas', 
       file: '/songs/2000s/IGottaFeelingTheBlackEyedPeas.mp3', 
@@ -1553,7 +1747,18 @@ const Game = () => {
       alternatives: ['Boom Boom Pow - The Black Eyed Peas', 'My Humps - The Black Eyed Peas', 'Meet Me Halfway - The Black Eyed Peas']
     },
     { 
-      id: '11', 
+      id: '20', 
+      title: 'In Da Club', 
+      artist: '50 Cent', 
+      file: '/songs/2000s/InDaClub50Cent.mp3', 
+      albumArt: '/assets/album-art/2000s/InDaClub50Cent.jpeg',
+      alternatives: ['Candy Shop - 50 Cent', 'P.I.M.P. - 50 Cent', '21 Questions - 50 Cent'],
+      triviaQuestion: 'Which album features "In Da Club" by 50 Cent?',
+      triviaOptions: ['Get Rich or Die Tryin\'', 'The Massacre', 'Curtis', 'Before I Self Destruct'],
+      triviaCorrectAnswer: 'Get Rich or Die Tryin\''
+    },
+    { 
+      id: '21', 
       title: 'I Want It That Way', 
       artist: 'Backstreet Boys', 
       file: '/songs/2000s/IWantItThatWayBackstreetBoys.mp3', 
@@ -1561,7 +1766,7 @@ const Game = () => {
       alternatives: ['Everybody - Backstreet Boys', 'As Long As You Love Me - Backstreet Boys', 'Quit Playing Games - Backstreet Boys']
     },
     { 
-      id: '12', 
+      id: '22', 
       title: 'Just Dance', 
       artist: 'Lady Gaga', 
       file: '/songs/2000s/JustDanceLadyGaga.mp3', 
@@ -1569,7 +1774,7 @@ const Game = () => {
       alternatives: ['Poker Face - Lady Gaga', 'Bad Romance - Lady Gaga', 'Paparazzi - Lady Gaga']
     },
     { 
-      id: '13', 
+      id: '23', 
       title: 'Kids', 
       artist: 'MGMT', 
       file: '/songs/2000s/KidsMGMT.mp3', 
@@ -1577,7 +1782,7 @@ const Game = () => {
       alternatives: ['Electric Feel - MGMT', 'Time to Dance - MGMT', 'Weekend Wars - MGMT']
     },
     { 
-      id: '14', 
+      id: '24', 
       title: 'Last Resort', 
       artist: 'Papa Roach', 
       file: '/songs/2000s/LastResortPapaRoach.mp3', 
@@ -1585,7 +1790,15 @@ const Game = () => {
       alternatives: ['Scars to Your Beautiful - Papa Roach', 'Between Angels and Insects - Papa Roach', 'She Loves Me Not - Papa Roach']
     },
     { 
-      id: '15', 
+      id: '25', 
+      title: 'Let Me Love You', 
+      artist: 'Mario', 
+      file: '/songs/2000s/LetMeLoveYouMario.mp3', 
+      albumArt: '/assets/album-art/2000s/LetMeLoveYouMario.jpeg',
+      alternatives: ['Just a Friend 2002 - Mario', 'How Do I Breathe - Mario', 'Crying Out for Me - Mario']
+    },
+    { 
+      id: '26', 
       title: 'Love Song', 
       artist: 'Sara Bareilles', 
       file: '/songs/2000s/LoveSongSaraBareilles.mp3', 
@@ -1593,7 +1806,7 @@ const Game = () => {
       alternatives: ['King of Anything - Sara Bareilles', 'Gravity - Sara Bareilles', 'Brave - Sara Bareilles']
     },
     { 
-      id: '16', 
+      id: '27', 
       title: 'Maneater', 
       artist: 'Nelly Furtado', 
       file: '/songs/2000s/ManeaterNellyFurtado.mp3', 
@@ -1604,7 +1817,24 @@ const Game = () => {
       triviaCorrectAnswer: 'Loose'
     },
     { 
-      id: '17', 
+      id: '28', 
+      title: 'Milkshake', 
+      artist: 'Kelis', 
+      file: '/songs/2000s/MilkshakeKelis.mp3', 
+      albumArt: '/assets/album-art/2000s/MilkshakeKelis.jpeg',
+      alternatives: ['Bossy - Kelis', 'Trick Me - Kelis', 'Caught Out There - Kelis']
+    },
+    { 
+      id: '29', 
+      title: 'Ms. Jackson', 
+      artist: 'OutKast', 
+      file: '/songs/2000s/MsJacksonOutkast.mp3', 
+      albumArt: '/assets/album-art/2000s/MsJacksonOutkast.jpeg',
+      alternatives: ['Hey Ya! - OutKast', 'The Way You Move - OutKast', 'So Fresh, So Clean - OutKast'],
+      artistAlternatives: ['Outkast', 'Out Kast']
+    },
+    { 
+      id: '30', 
       title: 'Sexy Back', 
       artist: 'Justin Timberlake', 
       file: '/songs/2000s/SexyBackJustinTimberlake.mp3', 
@@ -1612,7 +1842,7 @@ const Game = () => {
       alternatives: ['Can\'t Stop the Feeling! - Justin Timberlake', 'Rock Your Body - Justin Timberlake', 'Cry Me a River - Justin Timberlake']
     },
     { 
-      id: '18', 
+      id: '31', 
       title: 'Since U Been Gone', 
       artist: 'Kelly Clarkson', 
       file: '/songs/2000s/SinceUBeenGoneKellyClarkson.mp3', 
@@ -1620,7 +1850,7 @@ const Game = () => {
       alternatives: ['Behind These Hazel Eyes - Kelly Clarkson', 'Because of You - Kelly Clarkson', 'Breakaway - Kelly Clarkson']
     },
     { 
-      id: '19', 
+      id: '32', 
       title: 'Temperature', 
       artist: 'Sean Paul', 
       file: '/songs/2000s/TemperatureSeanPaul.mp3', 
@@ -1628,7 +1858,7 @@ const Game = () => {
       alternatives: ['Get Busy - Sean Paul', 'Gimme the Light - Sean Paul', 'We Be Burnin\' - Sean Paul']
     },
     { 
-      id: '20', 
+      id: '33', 
       title: 'The Anthem', 
       artist: 'Good Charlotte', 
       file: '/songs/2000s/TheAnthemGoodCharlotte.mp3', 
@@ -1636,7 +1866,7 @@ const Game = () => {
       alternatives: ['Lifestyles of the Rich & Famous - Good Charlotte', 'I Just Wanna Live - Good Charlotte', 'The River - Good Charlotte']
     },
     { 
-      id: '21', 
+      id: '34', 
       title: 'The Kill', 
       artist: 'Thirty Seconds To Mars', 
       file: '/songs/2000s/TheKillThirtySecondsToMars.mp3', 
@@ -1644,7 +1874,7 @@ const Game = () => {
       alternatives: ['A Beautiful Lie - Thirty Seconds To Mars', 'Attack - Thirty Seconds To Mars', 'From Yesterday - Thirty Seconds To Mars']
     },
     { 
-      id: '22', 
+      id: '35', 
       title: 'The Middle', 
       artist: 'Jimmy Eat World', 
       file: '/songs/2000s/TheMiddleJimmyEatWorld.mp3', 
@@ -1652,7 +1882,15 @@ const Game = () => {
       alternatives: ['The Sweetness - Jimmy Eat World', 'Bleed American - Jimmy Eat World', 'Salt Sweat Sugar - Jimmy Eat World']
     },
     { 
-      id: '23', 
+      id: '36', 
+      title: 'The Reason', 
+      artist: 'Hoobastank', 
+      file: '/songs/2000s/TheReasonHoobastank.mp3', 
+      albumArt: '/assets/album-art/2000s/TheReasonHoobastank.jpeg',
+      alternatives: ['Crawling in the Dark - Hoobastank', 'Out of Control - Hoobastank', 'Same Direction - Hoobastank']
+    },
+    { 
+      id: '37', 
       title: 'The Sweet Escape', 
       artist: 'Gwen Stefani', 
       file: '/songs/2000s/TheSweetEscapeGwenStefani.mp3', 
@@ -1660,7 +1898,7 @@ const Game = () => {
       alternatives: ['Hollaback Girl - Gwen Stefani', 'What You Waiting For? - Gwen Stefani', 'Rich Girl - Gwen Stefani feat. Eve']
     },
     { 
-      id: '24', 
+      id: '38', 
       title: 'Unwritten', 
       artist: 'Natasha Bedingfield', 
       file: '/songs/2000s/UnwrittenNatashaBedingfield.mp3', 
@@ -1668,7 +1906,7 @@ const Game = () => {
       alternatives: ['Pocketful of Sunshine - Natasha Bedingfield', 'These Words - Natasha Bedingfield', 'Single - Natasha Bedingfield']
     },
     { 
-      id: '25', 
+      id: '39', 
       title: 'Viva La Vida', 
       artist: 'Coldplay', 
       file: '/songs/2000s/VivaLaVidaColdplay.mp3', 
@@ -1676,7 +1914,23 @@ const Game = () => {
       alternatives: ['Clocks - Coldplay', 'The Scientist - Coldplay', 'Yellow - Coldplay']
     },
     { 
-      id: '26', 
+      id: '40', 
+      title: 'We Belong Together', 
+      artist: 'Mariah Carey', 
+      file: '/songs/2000s/WeBelongTogetherMariahCarey.mp3', 
+      albumArt: '/assets/album-art/2000s/WeBelongTogetherMariahCarey.jpeg',
+      alternatives: ['Always Be My Baby - Mariah Carey', 'Touch My Body - Mariah Carey', 'Shake It Off - Mariah Carey']
+    },
+    { 
+      id: '41', 
+      title: 'Welcome to the Black Parade', 
+      artist: 'My Chemical Romance', 
+      file: '/songs/2000s/WelcomeToTheBlackParadeMyChemicalRomance.mp3', 
+      albumArt: '/assets/album-art/2000s/WelcomeToTheBlackParadeMyChemicalRomance.jpeg',
+      alternatives: ['Helena - My Chemical Romance', 'I\'m Not Okay - My Chemical Romance', 'Teenagers - My Chemical Romance']
+    },
+    { 
+      id: '42', 
       title: 'When You Were Young', 
       artist: 'The Killers', 
       file: '/songs/2000s/WhenYouWereYoungTheKiller.mp3', 
@@ -1684,7 +1938,7 @@ const Game = () => {
       alternatives: ['Mr. Brightside - The Killers', 'Somebody Told Me - The Killers', 'All These Things That I\'ve Done - The Killers']
     },
     { 
-      id: '27', 
+      id: '43', 
       title: 'Without Me', 
       artist: 'Eminem', 
       file: '/songs/2000s/WithoutMeEminem.mp3', 
@@ -1692,7 +1946,7 @@ const Game = () => {
       alternatives: ['The Real Slim Shady - Eminem', 'Stan - Eminem feat. Dido', 'Lose Yourself - Eminem']
     },
     { 
-      id: '28', 
+      id: '44', 
       title: 'Yeah!', 
       artist: 'Usher', 
       file: '/songs/2000s/Yeah!Usher.mp3', 
@@ -1705,6 +1959,38 @@ const Game = () => {
   const songs2020s: Song[] = [
     { 
       id: '1', 
+      title: 'abcdefu', 
+      artist: 'GAYLE', 
+      file: '/songs/2020s/abcdefuGayle.mp3', 
+      albumArt: '/assets/album-art/2020s/abcdefuGayle.jpeg',
+      alternatives: ['good 4 u - Olivia Rodrigo', 'Traitor - Olivia Rodrigo', 'drivers license - Olivia Rodrigo']
+    },
+    { 
+      id: '2', 
+      title: 'About Damn Time', 
+      artist: 'Lizzo', 
+      file: '/songs/2020s/AboutDamnTimeLizzo.mp3', 
+      albumArt: '/assets/album-art/2020s/AboutDamnTimeLizzo.jpeg',
+      alternatives: ['Truth Hurts - Lizzo', 'Good as Hell - Lizzo', 'Juice - Lizzo']
+    },
+    { 
+      id: '3', 
+      title: 'As It Was', 
+      artist: 'Harry Styles', 
+      file: '/songs/2020s/AsItWasHarryStyles.mp3', 
+      albumArt: '/assets/album-art/2020s/AsItWasHarryStyles.jpeg',
+      alternatives: ['Watermelon Sugar - Harry Styles', 'Adore You - Harry Styles', 'Sign of the Times - Harry Styles']
+    },
+    { 
+      id: '4', 
+      title: 'august', 
+      artist: 'Taylor Swift', 
+      file: '/songs/2020s/augustTaylorSwift.mp3', 
+      albumArt: '/assets/album-art/2020s/augustTaylorSwift.jpeg',
+      alternatives: ['cardigan - Taylor Swift', 'willow - Taylor Swift', 'betty - Taylor Swift']
+    },
+    { 
+      id: '5', 
       title: 'Beautiful Mistakes', 
       artist: 'Maroon 5', 
       file: '/songs/2020s/BeautifulMistakesMaroon5.mp3', 
@@ -1712,7 +1998,7 @@ const Game = () => {
       alternatives: ['Memories - Maroon 5', 'Sugar - Maroon 5', 'Don\'t Wanna Know - Maroon 5']
     },
     { 
-      id: '2', 
+      id: '6', 
       title: 'cardigan', 
       artist: 'Taylor Swift', 
       file: '/songs/2020s/cardiganTaylorSwift.mp3', 
@@ -1723,7 +2009,35 @@ const Game = () => {
       triviaCorrectAnswer: 'folklore'
     },
     { 
-      id: '3', 
+      id: '7', 
+      title: 'Creepin\'', 
+      artist: 'Metro Boomin', 
+      file: '/songs/2020s/Creepin\'MetroBoomin.mp3', 
+      albumArt: '/assets/album-art/2020s/Creepin\'MetroBoomin.jpeg',
+      alternatives: ['Superhero - Future & Metro Boomin', 'Too Many Nights - Metro Boomin', 'Raindrops - Metro Boomin'],
+      artistAlternatives: ['Metro Booming', 'Metro Boomin\'', 'Metro']
+    },
+    { 
+      id: '8', 
+      title: 'Diamonds', 
+      artist: 'Sam Smith', 
+      file: '/songs/2020s/DiamondsSamSmith.mp3', 
+      albumArt: '/assets/album-art/2020s/DiamondsSamSmith.jpeg',
+      alternatives: ['Unholy - Sam Smith', 'Stay With Me - Sam Smith', 'Too Good at Goodbyes - Sam Smith']
+    },
+    { 
+      id: '9', 
+      title: 'drivers license', 
+      artist: 'Olivia Rodrigo', 
+      file: '/songs/2020s/driverslicenseOliviaRodrigo.mp3', 
+      albumArt: '/assets/album-art/2020s/driverslicenseOliviaRodrigo.jpeg',
+      alternatives: ['good 4 u - Olivia Rodrigo', 'Traitor - Olivia Rodrigo', 'deja vu - Olivia Rodrigo'],
+      triviaQuestion: 'How old was Olivia Rodrigo when "drivers license" was released?',
+      triviaOptions: ['16', '17', '18', '19'],
+      triviaCorrectAnswer: '17'
+    },
+    { 
+      id: '10', 
       title: 'Enemy', 
       artist: 'Imagine Dragons', 
       file: '/songs/2020s/EnemyImagineDragons.mp3', 
@@ -1731,7 +2045,7 @@ const Game = () => {
       alternatives: ['Believer - Imagine Dragons', 'Thunder - Imagine Dragons', 'Radioactive - Imagine Dragons']
     },
     { 
-      id: '4', 
+      id: '11', 
       title: 'Fast Car', 
       artist: 'Luke Combs', 
       file: '/songs/2020s/FastCarLukeCombs.mp3', 
@@ -1739,7 +2053,15 @@ const Game = () => {
       alternatives: ['When It Rains It Pours - Luke Combs', 'Hurricane - Luke Combs', 'Beautiful Crazy - Luke Combs']
     },
     { 
-      id: '5', 
+      id: '12', 
+      title: 'First Class', 
+      artist: 'Jack Harlow', 
+      file: '/songs/2020s/FirstClassJackHarlow.mp3', 
+      albumArt: '/assets/album-art/2020s/FirstClassJackHarlow.jpeg',
+      alternatives: ['Industry Baby - Lil Nas X feat. Jack Harlow', 'Whats Poppin - Jack Harlow', 'Tyler Herro - Jack Harlow']
+    },
+    { 
+      id: '13', 
       title: 'Flowers', 
       artist: 'Miley Cyrus', 
       file: '/songs/2020s/FlowersMileyCyrus.mp3', 
@@ -1747,7 +2069,15 @@ const Game = () => {
       alternatives: ['Party in the U.S.A. - Miley Cyrus', 'Wrecking Ball - Miley Cyrus', 'The Climb - Miley Cyrus']
     },
     { 
-      id: '6', 
+      id: '14', 
+      title: 'Golden', 
+      artist: 'HUNTR:X', 
+      file: '/songs/2020s/GoldenHUNTR:X.mp3', 
+      albumArt: '/assets/album-art/2020s/GoldenHUNTR:X.jpeg',
+      alternatives: ['Midnight Sky - Miley Cyrus', 'positions - Ariana Grande', 'Blinding Lights - The Weeknd']
+    },
+    { 
+      id: '15', 
       title: 'Good Luck, Babe', 
       artist: 'Chappell Roan', 
       file: '/songs/2020s/GoodLuckBabeChappellRoan.mp3', 
@@ -1759,7 +2089,15 @@ const Game = () => {
       triviaCorrectAnswer: 'The Rise and Fall of a Midwest Princess'
     },
     { 
-      id: '7', 
+      id: '16', 
+      title: 'Heather', 
+      artist: 'Conan Gray', 
+      file: '/songs/2020s/HeatherConanGray.mp3', 
+      albumArt: '/assets/album-art/2020s/HeatherConanGray.jpeg',
+      alternatives: ['Maniac - Conan Gray', 'Astronomy - Conan Gray', 'Memories - Conan Gray']
+    },
+    { 
+      id: '17', 
       title: 'Heat Waves', 
       artist: 'Glass Animals', 
       file: '/songs/2020s/HeatWavesGlassAnimals.mp3', 
@@ -1770,7 +2108,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Dreamland'
     },
     { 
-      id: '8', 
+      id: '18', 
       title: 'Here With Me', 
       artist: 'd4vd', 
       file: '/songs/2020s/HereWithMed4vd.mp3', 
@@ -1779,7 +2117,7 @@ const Game = () => {
       artistAlternatives: ['David', 'D4VD', 'D four V D', 'Dee Four Vee Dee']
     },
     { 
-      id: '9', 
+      id: '19', 
       title: 'Houdini', 
       artist: 'Eminem', 
       file: '/songs/2020s/HoudiniEminem.mp3', 
@@ -1790,7 +2128,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Without Me'
     },
     { 
-      id: '10', 
+      id: '20', 
       title: 'I Don\'t Wanna Wait', 
       artist: 'David Guetta', 
       file: '/songs/2020s/IDontWannaWaitDavidGuetta.mp3', 
@@ -1798,7 +2136,7 @@ const Game = () => {
       alternatives: ['Titanium - David Guetta feat. Sia', 'When Love Takes Over - David Guetta feat. Kelly Rowland', 'Memories - David Guetta feat. Kid Cudi']
     },
     { 
-      id: '11', 
+      id: '21', 
       title: 'Industry Baby', 
       artist: 'Lil Nas X', 
       file: '/songs/2020s/INDUSTRYBABYLilNasX.mp3', 
@@ -1809,7 +2147,15 @@ const Game = () => {
       triviaCorrectAnswer: 'Jack Harlow'
     },
     { 
-      id: '12', 
+      id: '22', 
+      title: 'Levitating', 
+      artist: 'Dua Lipa', 
+      file: '/songs/2020s/LevitatingDuaLipa.mp3', 
+      albumArt: '/assets/album-art/2020s/LevitatingDuaLipa.jpeg',
+      alternatives: ['Don\'t Start Now - Dua Lipa', 'Physical - Dua Lipa', 'Break My Heart - Dua Lipa']
+    },
+    { 
+      id: '23', 
       title: 'Lose Somebody', 
       artist: 'Kygo', 
       file: '/songs/2020s/LoseSomebodyKygo.mp3', 
@@ -1817,7 +2163,7 @@ const Game = () => {
       alternatives: ['Firestone - Kygo feat. Conrad Sewell', 'Stole the Show - Kygo feat. Parson James', 'It Ain\'t Me - Kygo & Selena Gomez']
     },
     { 
-      id: '13', 
+      id: '24', 
       title: 'Made You Look', 
       artist: 'Meghan Trainor', 
       file: '/songs/2020s/MadeYouLookMeghanTrainor.mp3', 
@@ -1825,7 +2171,7 @@ const Game = () => {
       alternatives: ['All About That Bass - Meghan Trainor', 'Lips Are Movin - Meghan Trainor', 'Dear Future Husband - Meghan Trainor']
     },
     { 
-      id: '14', 
+      id: '25', 
       title: 'Peaches', 
       artist: 'Justin Bieber', 
       file: '/songs/2020s/PeachesJustinBieber.mp3', 
@@ -1833,7 +2179,15 @@ const Game = () => {
       alternatives: ['Sorry - Justin Bieber', 'Love Yourself - Justin Bieber', 'What Do You Mean? - Justin Bieber']
     },
     { 
-      id: '15', 
+      id: '26', 
+      title: 'Say So', 
+      artist: 'Doja Cat', 
+      file: '/songs/2020s/SaySoDojaCat.mp3', 
+      albumArt: '/assets/album-art/2020s/SaySoDojaCat.jpeg',
+      alternatives: ['Woman - Doja Cat', 'Kiss Me More - Doja Cat feat. SZA', 'Paint The Town Red - Doja Cat']
+    },
+    { 
+      id: '27', 
       title: 'Smile', 
       artist: 'Katy Perry', 
       file: '/songs/2020s/SmileKatyPerry.mp3', 
@@ -1841,7 +2195,7 @@ const Game = () => {
       alternatives: ['Roar - Katy Perry', 'Firework - Katy Perry', 'California Gurls - Katy Perry feat. Snoop Dogg']
     },
     { 
-      id: '16', 
+      id: '28', 
       title: 'Snooze', 
       artist: 'SZA', 
       file: '/songs/2020s/SnoozeSZA.mp3', 
@@ -1850,7 +2204,7 @@ const Game = () => {
       artistAlternatives: ['Essa', 'S-Z-A', 'Sza', 'Solana']
     },
     { 
-      id: '17', 
+      id: '29', 
       title: 'Stick Season', 
       artist: 'Noah Kahan', 
       file: '/songs/2020s/StickSeasonNoahKahan.mp3', 
@@ -1858,7 +2212,7 @@ const Game = () => {
       alternatives: ['I Am Not Okay - Noah Kahan', 'Hurt Somebody - Noah Kahan', 'False Confidence - Noah Kahan']
     },
     { 
-      id: '18', 
+      id: '30', 
       title: 'Taste', 
       artist: 'Sabrina Carpenter', 
       file: '/songs/2020s/TasteSabrinaCarpenter.mp3', 
@@ -1866,7 +2220,7 @@ const Game = () => {
       alternatives: ['Espresso - Sabrina Carpenter', 'Nonsense - Sabrina Carpenter', 'Feather - Sabrina Carpenter']
     },
     { 
-      id: '19', 
+      id: '31', 
       title: 'Tattoo', 
       artist: 'Loreen', 
       file: '/songs/2020s/TattooLoreen.mp3', 
@@ -1874,7 +2228,15 @@ const Game = () => {
       alternatives: ['Euphoria - Loreen', 'Statements - Loreen', 'Is It Love - Loreen']
     },
     { 
-      id: '20', 
+      id: '32', 
+      title: 'That\'s So True', 
+      artist: 'Gracie Abrams', 
+      file: '/songs/2020s/That\'sSoTrueGracieAbrams.mp3', 
+      albumArt: '/assets/album-art/2020s/That\'sSoTrueGracieAbrams.jpeg',
+      alternatives: ['I miss you, I\'m sorry - Gracie Abrams', 'Where do we go now? - Gracie Abrams', 'Close to You - Gracie Abrams']
+    },
+    { 
+      id: '33', 
       title: 'the boy is mine', 
       artist: 'Ariana Grande', 
       file: '/songs/2020s/theboyismineArianaGrande.mp3', 
@@ -1882,7 +2244,7 @@ const Game = () => {
       alternatives: ['7 rings - Ariana Grande', 'thank u, next - Ariana Grande', 'positions - Ariana Grande']
     },
     { 
-      id: '21', 
+      id: '34', 
       title: 'Too Many Nights', 
       artist: 'Metro Boomin', 
       file: '/songs/2020s/TooManyNightsMetroBoomin.mp3', 
@@ -1891,15 +2253,15 @@ const Game = () => {
       artistAlternatives: ['Metro Booming', 'Metro Boomin\'', 'Metro']
     },
     { 
-      id: '22', 
+      id: '35', 
       title: 'Traitor', 
       artist: 'Olivia Rodrigo', 
-      file: '/songs/2020s/traitorOliviaRodrigo.mp3', 
+      file: '/songs/2020s/TraitorOliviaRodrigo.mp3', 
       albumArt: '/assets/album-art/2020s/traitorOliviaRodrigo.jpeg',
       alternatives: ['drivers license - Olivia Rodrigo', 'good 4 u - Olivia Rodrigo', 'deja vu - Olivia Rodrigo']
     },
     { 
-      id: '23', 
+      id: '36', 
       title: 'Unholy', 
       artist: 'Sam Smith', 
       file: '/songs/2020s/UnholySamSmith.mp3', 
@@ -1907,7 +2269,15 @@ const Game = () => {
       alternatives: ['Stay With Me - Sam Smith', 'Too Good at Goodbyes - Sam Smith', 'I\'m Not the Only One - Sam Smith']
     },
     { 
-      id: '24', 
+      id: '37', 
+      title: 'Water', 
+      artist: 'Tyla', 
+      file: '/songs/2020s/WaterTyla.mp3', 
+      albumArt: '/assets/album-art/2020s/WaterTyla.jpeg',
+      alternatives: ['Truth or Dare - Tyla', 'Been Thinking - Tyla', 'Art - Tyla']
+    },
+    { 
+      id: '38', 
       title: 'What It Is', 
       artist: 'Doechii', 
       file: '/songs/2020s/WhatItIsDoechii.mp3', 
@@ -1915,12 +2285,28 @@ const Game = () => {
       alternatives: ['Crazy - Doechii', 'Persuasive - Doechii', 'Bitch I\'m Nice - Doechii']
     },
     { 
-      id: '25', 
+      id: '39', 
+      title: 'What Was I Made For?', 
+      artist: 'Billie Eilish', 
+      file: '/songs/2020s/WhatWasIMadeForBillieEilish.mp3', 
+      albumArt: '/assets/album-art/2020s/WhatWasIMadeForBillieEilish.jpeg',
+      alternatives: ['bad guy - Billie Eilish', 'lovely - Billie Eilish', 'everything i wanted - Billie Eilish']
+    },
+    { 
+      id: '40', 
       title: 'Woman', 
       artist: 'Doja Cat', 
       file: '/songs/2020s/WomanDojaCat.mp3', 
       albumArt: '/assets/album-art/2020s/WomanDojaCat.jpeg',
       alternatives: ['Say So - Doja Cat', 'Kiss Me More - Doja Cat feat. SZA', 'Paint The Town Red - Doja Cat']
+    },
+    { 
+      id: '41', 
+      title: 'Your Best American Girl', 
+      artist: 'Mitski', 
+      file: '/songs/2020s/YourBestAmericanGirlMitski.mp3', 
+      albumArt: '/assets/album-art/2020s/YourBestAmericanGirlMitski.jpeg',
+      alternatives: ['Nobody - Mitski', 'Washing Machine Heart - Mitski', 'First Love / Late Spring - Mitski']
     }
   ]
 
@@ -1928,39 +2314,76 @@ const Game = () => {
   const songs90s: Song[] = [
     { 
       id: '1', 
-      title: 'Wonderwall', 
-      artist: 'Oasis', 
-      file: '/songs/90s/WonderwallOasis.mp3', 
-      albumArt: '/assets/album-art/90s/WonderwallOasis.jpeg',
-      alternatives: ['Champagne Supernova - Oasis', 'Creep - Radiohead', 'Mr. Brightside - The Killers'],
-      triviaQuestion: 'Which album features "Wonderwall" by Oasis?',
-      triviaOptions: ['Definitely Maybe', '(What\'s the Story) Morning Glory?', 'Be Here Now', 'The Masterplan'],
-      triviaCorrectAnswer: '(What\'s the Story) Morning Glory?'
+      title: '(Everything I Do) I Do It for You', 
+      artist: 'Bryan Adams', 
+      file: '/songs/90s/(EverythingIDo)IDoItForYouBryanAdams.mp3', 
+      albumArt: '/assets/album-art/90s/(EverythingIDo)IDoItForYouBryanAdams.jpeg',
+      alternatives: ['Summer of \'69 - Bryan Adams', 'Heaven - Bryan Adams', 'Run to You - Bryan Adams']
     },
     { 
       id: '2', 
-      title: 'Come As You Are', 
-      artist: 'Nirvana', 
-      file: '/songs/90s/ComeAsYouAreNirvana.mp3', 
-      albumArt: '/assets/album-art/90s/ComeAsYouAreNirvana.jpeg',
-      alternatives: ['Smells Like Teen Spirit - Nirvana', 'Black - Pearl Jam', 'Alive - Pearl Jam'],
-      triviaQuestion: 'Which album features "Come As You Are" by Nirvana?',
-      triviaOptions: ['Bleach', 'Nevermind', 'In Utero', 'MTV Unplugged in New York'],
-      triviaCorrectAnswer: 'Nevermind'
+      title: '1979', 
+      artist: 'The Smashing Pumpkins', 
+      file: '/songs/90s/1979TheSmashingPumpkins.mp3', 
+      albumArt: '/assets/album-art/90s/1979TheSmashingPumpkins.jpeg',
+      alternatives: ['Tonight, Tonight - The Smashing Pumpkins', 'Zero - The Smashing Pumpkins', 'Bullet with Butterfly Wings - The Smashing Pumpkins'],
+      triviaQuestion: 'Which album features "1979" by The Smashing Pumpkins?',
+      triviaOptions: ['Siamese Dream', 'Mellon Collie and the Infinite Sadness', 'Adore', 'Machina/The Machines of God'],
+      triviaCorrectAnswer: 'Mellon Collie and the Infinite Sadness'
     },
     { 
       id: '3', 
-      title: 'No Scrubs', 
-      artist: 'TLC', 
-      file: '/songs/90s/NoScrubsTLC.mp3', 
-      albumArt: '/assets/album-art/90s/NoScrubsTLC.jpeg',
-      alternatives: ['Waterfalls - TLC', 'What\'s Up? - 4 Non Blondes', 'I Will Always Love You - Whitney Houston'],
-      triviaQuestion: 'How many members were in the R&B group TLC?',
-      triviaOptions: ['2', '3', '4', '5'],
-      triviaCorrectAnswer: '3'
+      title: 'Always Be My Baby', 
+      artist: 'Mariah Carey', 
+      file: '/songs/90s/AlwaysBeMyBabyMariahCarey.mp3', 
+      albumArt: '/assets/album-art/90s/AlwaysBeMyBabyMariahCarey.jpeg',
+      alternatives: ['Vision of Love - Mariah Carey', 'Hero - Mariah Carey', 'Fantasy - Mariah Carey']
     },
     { 
       id: '4', 
+      title: 'Always', 
+      artist: 'Bon Jovi', 
+      file: '/songs/90s/AlwaysBonJovi.mp3', 
+      albumArt: '/assets/album-art/90s/AlwaysBonJovi.jpeg',
+      alternatives: ['Bed of Roses - Bon Jovi', 'Livin\' on a Prayer - Bon Jovi', 'Wanted Dead or Alive - Bon Jovi']
+    },
+    { 
+      id: '5', 
+      title: 'Around the World', 
+      artist: 'Daft Punk', 
+      file: '/songs/90s/AroundTheWorldDaftPunk.mp3', 
+      albumArt: '/assets/album-art/90s/AroundTheWorldDaftPunk.jpeg',
+      alternatives: ['One More Time - Daft Punk', 'Get Lucky - Daft Punk', 'Harder, Better, Faster, Stronger - Daft Punk']
+    },
+    { 
+      id: '6', 
+      title: 'Believe', 
+      artist: 'Cher', 
+      file: '/songs/90s/BelieveCher.mp3', 
+      albumArt: '/assets/album-art/90s/BelieveCher.jpeg',
+      alternatives: ['If I Could Turn Back Time - Cher', 'Strong Enough - Cher', 'The Shoop Shoop Song - Cher'],
+      triviaQuestion: 'What groundbreaking vocal effect was used in "Believe" by Cher?',
+      triviaOptions: ['Auto-Tune', 'Vocoder', 'Reverb', 'Echo'],
+      triviaCorrectAnswer: 'Auto-Tune'
+    },
+    { 
+      id: '7', 
+      title: 'Black', 
+      artist: 'Pearl Jam', 
+      file: '/songs/90s/BlackPearlJam.mp3', 
+      albumArt: '/assets/album-art/90s/BlackPearlJam.jpeg',
+      alternatives: ['Alive - Pearl Jam', 'Jeremy - Pearl Jam', 'Even Flow - Pearl Jam']
+    },
+    { 
+      id: '8', 
+      title: 'Blue (Da Ba Dee)', 
+      artist: 'Eiffel 65', 
+      file: '/songs/90s/Blue(DaBaDee)Eiffel65.mp3', 
+      albumArt: '/assets/album-art/90s/Blue(DaBaDee)Eiffel65.jpeg',
+      alternatives: ['Move Your Body - Eiffel 65', 'Too Much of Heaven - Eiffel 65', 'My Console - Eiffel 65']
+    },
+    { 
+      id: '9', 
       title: 'California Love', 
       artist: '2Pac', 
       file: '/songs/90s/CaliforniaLove2Pac.mp3', 
@@ -1972,42 +2395,95 @@ const Game = () => {
       triviaCorrectAnswer: 'Dr. Dre'
     },
     { 
-      id: '5', 
-      title: 'Wannabe', 
-      artist: 'Spice Girls', 
-      file: '/songs/90s/WannabeSpiceGirls.mp3', 
-      albumArt: '/assets/album-art/90s/WannabeSpiceGirls.jpeg',
-      alternatives: ['Say You\'ll Be There - Spice Girls', 'MMMBop - Hanson', 'I Want It That Way - Backstreet Boys']
+      id: '10', 
+      title: 'Come As You Are', 
+      artist: 'Nirvana', 
+      file: '/songs/90s/ComeAsYouAreNirvana.mp3', 
+      albumArt: '/assets/album-art/90s/ComeAsYouAreNirvana.jpeg',
+      alternatives: ['Smells Like Teen Spirit - Nirvana', 'Black - Pearl Jam', 'Alive - Pearl Jam'],
+      triviaQuestion: 'Which album features "Come As You Are" by Nirvana?',
+      triviaOptions: ['Bleach', 'Nevermind', 'In Utero', 'MTV Unplugged in New York'],
+      triviaCorrectAnswer: 'Nevermind'
     },
     { 
-      id: '6', 
-      title: '1979', 
-      artist: 'The Smashing Pumpkins', 
-      file: '/songs/90s/1979TheSmashingPumpkins.mp3', 
-      albumArt: '/assets/album-art/90s/1979TheSmashingPumpkins.jpeg',
-      alternatives: ['Tonight, Tonight - The Smashing Pumpkins', 'Zero - The Smashing Pumpkins', 'Bullet with Butterfly Wings - The Smashing Pumpkins'],
-      triviaQuestion: 'Which album features "1979" by The Smashing Pumpkins?',
-      triviaOptions: ['Siamese Dream', 'Mellon Collie and the Infinite Sadness', 'Adore', 'Machina/The Machines of God'],
-      triviaCorrectAnswer: 'Mellon Collie and the Infinite Sadness'
+      id: '11', 
+      title: 'Crazy', 
+      artist: 'Aerosmith', 
+      file: '/songs/90s/CrazyAerosmith.mp3', 
+      albumArt: '/assets/album-art/90s/CrazyAerosmith.jpeg',
+      alternatives: ['I Don\'t Want to Miss a Thing - Aerosmith', 'Love in an Elevator - Aerosmith', 'Sweet Emotion - Aerosmith']
     },
     { 
-      id: '7', 
-      title: 'Zombie', 
-      artist: 'The Cranberries', 
-      file: '/songs/90s/ZombieTheCranberries.mp3', 
-      albumArt: '/assets/album-art/90s/ZombieTheCranberries.jpeg',
-      alternatives: ['Linger - The Cranberries', 'Dreams - The Cranberries', 'Ode to My Family - The Cranberries']
+      id: '12', 
+      title: 'Don\'t Speak', 
+      artist: 'No Doubt', 
+      file: '/songs/90s/Don\'tSpeakNoDoubt.mp3', 
+      albumArt: '/assets/album-art/90s/Don\'tSpeakNoDoubt.jpeg',
+      alternatives: ['Just a Girl - No Doubt', 'Spiderwebs - No Doubt', 'Sunday Girl - No Doubt']
     },
     { 
-      id: '8', 
-      title: 'Black', 
-      artist: 'Pearl Jam', 
-      file: '/songs/90s/BlackPearlJam.mp3', 
-      albumArt: '/assets/album-art/90s/BlackPearlJam.jpeg',
-      alternatives: ['Alive - Pearl Jam', 'Jeremy - Pearl Jam', 'Even Flow - Pearl Jam']
+      id: '13', 
+      title: 'End of the Road', 
+      artist: 'Boyz II Men', 
+      file: '/songs/90s/EndOfTheRoadBoyztoMen.mp3', 
+      albumArt: '/assets/album-art/90s/EndOfTheRoadBoyztoMen.jpeg',
+      alternatives: ['I\'ll Make Love to You - Boyz II Men', 'Motownphilly - Boyz II Men', 'On Bended Knee - Boyz II Men'],
+      artistAlternatives: ['Boys 2 Men', 'Boys II Men', 'Boyz 2 Men']
     },
     { 
-      id: '9', 
+      id: '14', 
+      title: 'Enjoy the Silence', 
+      artist: 'Depeche Mode', 
+      file: '/songs/90s/EnjoyTheSilenceDepecheMode.mp3', 
+      albumArt: '/assets/album-art/90s/EnjoyTheSilenceDepecheMode.jpeg',
+      alternatives: ['Personal Jesus - Depeche Mode', 'Policy of Truth - Depeche Mode', 'World in My Eyes - Depeche Mode']
+    },
+    { 
+      id: '15', 
+      title: 'Enter Sandman', 
+      artist: 'Metallica', 
+      file: '/songs/90s/EnterSandmanMetallica.mp3', 
+      albumArt: '/assets/album-art/90s/EnterSandmanMetallica.jpeg',
+      alternatives: ['Nothing Else Matters - Metallica', 'Master of Puppets - Metallica', 'One - Metallica'],
+      triviaQuestion: 'Which album features "Enter Sandman" by Metallica?',
+      triviaOptions: ['Master of Puppets', 'Metallica (Black Album)', '...And Justice for All', 'Ride the Lightning'],
+      triviaCorrectAnswer: 'Metallica (Black Album)'
+    },
+    { 
+      id: '16', 
+      title: 'Fly Away', 
+      artist: 'Lenny Kravitz', 
+      file: '/songs/90s/FlyAwayLennyKravitz.mp3', 
+      albumArt: '/assets/album-art/90s/FlyAwayLennyKravitz.jpeg',
+      alternatives: ['Are You Gonna Go My Way - Lenny Kravitz', 'It Ain\'t Over \'til It\'s Over - Lenny Kravitz', 'American Woman - Lenny Kravitz']
+    },
+    { 
+      id: '17', 
+      title: 'Genie in a Bottle', 
+      artist: 'Christina Aguilera', 
+      file: '/songs/90s/GenieInaBottleChristinaAguilera.mp3', 
+      albumArt: '/assets/album-art/90s/GenieInaBottleChristinaAguilera.jpeg',
+      alternatives: ['What a Girl Wants - Christina Aguilera', 'Come On Over Baby - Christina Aguilera', 'I Turn to You - Christina Aguilera']
+    },
+    { 
+      id: '18', 
+      title: 'Gin and Juice', 
+      artist: 'Snoop Dogg', 
+      file: '/songs/90s/GinAndJuiceSnoopDogg.mp3', 
+      albumArt: '/assets/album-art/90s/GinAndJuiceSnoopDogg.jpeg',
+      alternatives: ['Who Am I? (What\'s My Name?) - Snoop Dogg', 'Nuthin\' but a \'G\' Thang - Dr. Dre', 'Regulate - Warren G'],
+      artistAlternatives: ['Snoop Dog', 'Snoop Doggy Dogg', 'Snoop']
+    },
+    { 
+      id: '19', 
+      title: 'High and Dry', 
+      artist: 'Radiohead', 
+      file: '/songs/90s/HighAndDryRadiohead.mp3', 
+      albumArt: '/assets/album-art/90s/HighAndDryRadiohead.jpeg',
+      alternatives: ['Creep - Radiohead', 'Fake Plastic Trees - Radiohead', 'Just - Radiohead']
+    },
+    { 
+      id: '20', 
       title: 'Ironic', 
       artist: 'Alanis Morissette', 
       file: '/songs/90s/ironicAlanisMorissette.mp3', 
@@ -2018,136 +2494,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Jagged Little Pill'
     },
     { 
-      id: '10', 
-      title: 'U Can\'t Touch This', 
-      artist: 'MC Hammer', 
-      file: '/songs/90s/UCan\'tTouchThisMCHammer.mp3', 
-      albumArt: '/assets/album-art/90s/UCan\'tTouchThisMCHammer.jpeg',
-      alternatives: ['Ice Ice Baby - Vanilla Ice', 'Push It - Salt-N-Pepa', '2 Legit 2 Quit - MC Hammer']
-    },
-    { 
-      id: '11', 
-      title: 'Don\'t Speak', 
-      artist: 'No Doubt', 
-      file: '/songs/90s/Don\'tSpeakNoDoubt.mp3', 
-      albumArt: '/assets/album-art/90s/Don\'tSpeakNoDoubt.jpeg',
-      alternatives: ['Just a Girl - No Doubt', 'Spiderwebs - No Doubt', 'Sunday Girl - No Doubt']
-    },
-    { 
-      id: '12', 
-      title: 'Kiss Me', 
-      artist: 'Sixpence None The Richer', 
-      file: '/songs/90s/KissMeSixpenceNoneTheRicher.mp3', 
-      albumArt: '/assets/album-art/90s/KissMeSixpenceNoneTheRicher.jpeg',
-      alternatives: ['There She Goes - The La\'s', 'I\'m Gonna Be (500 Miles) - The Proclaimers', 'Semi-Charmed Life - Third Eye Blind']
-    },
-    { 
-      id: '13', 
-      title: 'Torn', 
-      artist: 'Natalie Imbruglia', 
-      file: '/songs/90s/TornNatalieImbruglia.mp3', 
-      albumArt: '/assets/album-art/90s/TornNatalieImbruglia.jpeg',
-      alternatives: ['Big Me - Foo Fighters', 'Counting Blue Cars - Dishwalla', 'Name - Goo Goo Dolls']
-    },
-    { 
-      id: '14', 
-      title: 'Always', 
-      artist: 'Bon Jovi', 
-      file: '/songs/90s/AlwaysBonJovi.mp3', 
-      albumArt: '/assets/album-art/90s/AlwaysBonJovi.jpeg',
-      alternatives: ['Bed of Roses - Bon Jovi', 'Livin\' on a Prayer - Bon Jovi', 'Wanted Dead or Alive - Bon Jovi']
-    },
-    { 
-      id: '15', 
-      title: '(Everything I Do) I Do It for You', 
-      artist: 'Bryan Adams', 
-      file: '/songs/90s/(EverythingIDo)IDoItForYouBryanAdams.mp3', 
-      albumArt: '/assets/album-art/90s/(EverythingIDo)IDoItForYouBryanAdams.jpeg',
-      alternatives: ['Summer of \'69 - Bryan Adams', 'Heaven - Bryan Adams', 'Run to You - Bryan Adams']
-    },
-    { 
-      id: '16', 
-      title: 'End of the Road', 
-      artist: 'Boyz II Men', 
-      file: '/songs/90s/EndOfTheRoadBoyztoMen.mp3', 
-      albumArt: '/assets/album-art/90s/EndOfTheRoadBoyztoMen.jpeg',
-      alternatives: ['I\'ll Make Love to You - Boyz II Men', 'Motownphilly - Boyz II Men', 'On Bended Knee - Boyz II Men'],
-      artistAlternatives: ['Boys 2 Men', 'Boys II Men', 'Boyz 2 Men']
-    },
-    { 
-      id: '17', 
-      title: 'Always Be My Baby', 
-      artist: 'Mariah Carey', 
-      file: '/songs/90s/AlwaysBeMyBabyMariahCarey.mp3', 
-      albumArt: '/assets/album-art/90s/AlwaysBeMyBabyMariahCarey.jpeg',
-      alternatives: ['Vision of Love - Mariah Carey', 'Hero - Mariah Carey', 'Fantasy - Mariah Carey']
-    },
-    { 
-      id: '18', 
-      title: 'Shoop', 
-      artist: 'Salt-N-Pepa', 
-      file: '/songs/90s/ShoopSaltNPepa.mp3', 
-      albumArt: '/assets/album-art/90s/ShoopSaltNPepa.jpeg',
-      alternatives: ['Push It - Salt-N-Pepa', 'Whatta Man - Salt-N-Pepa feat. En Vogue', 'Let\'s Talk About Sex - Salt-N-Pepa']
-    },
-    { 
-      id: '19', 
-      title: 'Loser', 
-      artist: 'Beck', 
-      file: '/songs/90s/LoserBeck.mp3', 
-      albumArt: '/assets/album-art/90s/LoserBeck.jpeg',
-      alternatives: ['Where It\'s At - Beck', 'Devils Haircut - Beck', 'E-Pro - Beck']
-    },
-    { 
-      id: '20', 
-      title: 'Crazy', 
-      artist: 'Aerosmith', 
-      file: '/songs/90s/CrazyAerosmith.mp3', 
-      albumArt: '/assets/album-art/90s/CrazyAerosmith.jpeg',
-      alternatives: ['I Don\'t Want to Miss a Thing - Aerosmith', 'Love in an Elevator - Aerosmith', 'Sweet Emotion - Aerosmith']
-    },
-    { 
       id: '21', 
-      title: 'High and Dry', 
-      artist: 'Radiohead', 
-      file: '/songs/90s/HighAndDryRadiohead.mp3', 
-      albumArt: '/assets/album-art/90s/HighAndDryRadiohead.jpeg',
-      alternatives: ['Creep - Radiohead', 'Fake Plastic Trees - Radiohead', 'Just - Radiohead']
-    },
-    { 
-      id: '22', 
-      title: 'Fly Away', 
-      artist: 'Lenny Kravitz', 
-      file: '/songs/90s/FlyAwayLennyKravitz.mp3', 
-      albumArt: '/assets/album-art/90s/FlyAwayLennyKravitz.jpeg',
-      alternatives: ['Are You Gonna Go My Way - Lenny Kravitz', 'It Ain\'t Over \'til It\'s Over - Lenny Kravitz', 'American Woman - Lenny Kravitz']
-    },
-    { 
-      id: '23', 
-      title: 'Killing Me Softly with His Song', 
-      artist: 'Fugees', 
-      file: '/songs/90s/KillingMeSoftlyWithHisSongFugees.mp3', 
-      albumArt: '/assets/album-art/90s/KillingMeSoftlyWithHisSongFugees.jpeg',
-      alternatives: ['Ready or Not - Fugees', 'Fu-Gee-La - Fugees', 'No Woman, No Cry - Fugees']
-    },
-    { 
-      id: '24', 
-      title: 'Under the Bridge', 
-      artist: 'Red Hot Chili Peppers', 
-      file: '/songs/90s/UnderTheBridgeTheRedHotChiliPeppers.mp3', 
-      albumArt: '/assets/album-art/90s/UnderTheBridgeTheRedHotChiliPeppers.jpeg',
-      alternatives: ['Give It Away - Red Hot Chili Peppers', 'Soul to Squeeze - Red Hot Chili Peppers', 'Californication - Red Hot Chili Peppers']
-    },
-    { 
-      id: '25', 
-      title: 'November Rain', 
-      artist: 'Guns N\' Roses', 
-      file: '/songs/90s/NovemberRainGunsNRoses.mp3', 
-      albumArt: '/assets/album-art/90s/NovemberRainGunsNRoses.jpeg',
-      alternatives: ['Sweet Child O\' Mine - Guns N\' Roses', 'Welcome to the Jungle - Guns N\' Roses', 'Paradise City - Guns N\' Roses']
-    },
-    { 
-      id: '26', 
       title: 'Killing in the Name', 
       artist: 'Rage Against the Machine', 
       file: '/songs/90s/KillingInTheNameRageAgainstTheMachine.mp3', 
@@ -2155,20 +2502,191 @@ const Game = () => {
       alternatives: ['Bulls on Parade - Rage Against the Machine', 'Guerrilla Radio - Rage Against the Machine', 'Wake Up - Rage Against the Machine']
     },
     { 
+      id: '22', 
+      title: 'Killing Me Softly with His Song', 
+      artist: 'Fugees', 
+      file: '/songs/90s/KillingMeSoftlyWithHisSongFugees.mp3', 
+      albumArt: '/assets/album-art/90s/KillingMeSoftlyWithHisSongFugees.jpeg',
+      alternatives: ['Ready or Not - Fugees', 'Fu-Gee-La - Fugees', 'No Woman, No Cry - Fugees']
+    },
+    { 
+      id: '23', 
+      title: 'Kiss Me', 
+      artist: 'Sixpence None The Richer', 
+      file: '/songs/90s/KissMeSixpenceNoneTheRicher.mp3', 
+      albumArt: '/assets/album-art/90s/KissMeSixpenceNoneTheRicher.jpeg',
+      alternatives: ['There She Goes - The La\'s', 'I\'m Gonna Be (500 Miles) - The Proclaimers', 'Semi-Charmed Life - Third Eye Blind']
+    },
+    { 
+      id: '24', 
+      title: 'Loser', 
+      artist: 'Beck', 
+      file: '/songs/90s/LoserBeck.mp3', 
+      albumArt: '/assets/album-art/90s/LoserBeck.jpeg',
+      alternatives: ['Where It\'s At - Beck', 'Devils Haircut - Beck', 'E-Pro - Beck']
+    },
+    { 
+      id: '25', 
+      title: 'Losing My Religion', 
+      artist: 'R.E.M.', 
+      file: '/songs/90s/LosingMyReligionREM.mp3', 
+      albumArt: '/assets/album-art/90s/LosingMyReligionREM.jpeg',
+      alternatives: ['Everybody Hurts - R.E.M.', 'Man on the Moon - R.E.M.', 'Shiny Happy People - R.E.M.'],
+      artistAlternatives: ['REM', 'R E M']
+    },
+    { 
+      id: '26', 
+      title: 'MMMBop', 
+      artist: 'Hanson', 
+      file: '/songs/90s/MMMBopHanson.mp3', 
+      albumArt: '/assets/album-art/90s/MMMBopHanson.jpeg',
+      alternatives: ['I Want You Back - *NSYNC', 'Quit Playing Games - Backstreet Boys', 'As Long As You Love Me - Backstreet Boys']
+    },
+    { 
       id: '27', 
-      title: 'Enjoy the Silence', 
-      artist: 'Depeche Mode', 
-      file: '/songs/90s/EnjoyTheSilenceDepecheMode.mp3', 
-      albumArt: '/assets/album-art/90s/EnjoyTheSilenceDepecheMode.jpeg',
-      alternatives: ['Personal Jesus - Depeche Mode', 'Policy of Truth - Depeche Mode', 'World in My Eyes - Depeche Mode']
+      title: 'My Name Is', 
+      artist: 'Eminem', 
+      file: '/songs/90s/MyNameIsEminem.mp3', 
+      albumArt: '/assets/album-art/90s/MyNameIsEminem.jpeg',
+      alternatives: ['The Real Slim Shady - Eminem', 'Stan - Eminem', 'Without Me - Eminem'],
+      triviaQuestion: 'Which album features "My Name Is" by Eminem?',
+      triviaOptions: ['The Slim Shady LP', 'The Marshall Mathers LP', 'The Eminem Show', 'Encore'],
+      triviaCorrectAnswer: 'The Slim Shady LP'
     },
     { 
       id: '28', 
+      title: 'No Diggity', 
+      artist: 'Blackstreet', 
+      file: '/songs/90s/NoDiggityBlackstreet.mp3', 
+      albumArt: '/assets/album-art/90s/NoDiggityBlackstreet.jpeg',
+      alternatives: ['Pony - Ginuwine', 'Return of the Mack - Mark Morrison', 'Tell Me - Groove Theory']
+    },
+    { 
+      id: '29', 
+      title: 'No Scrubs', 
+      artist: 'TLC', 
+      file: '/songs/90s/NoScrubsTLC.mp3', 
+      albumArt: '/assets/album-art/90s/NoScrubsTLC.jpeg',
+      alternatives: ['Waterfalls - TLC', 'What\'s Up? - 4 Non Blondes', 'I Will Always Love You - Whitney Houston'],
+      triviaQuestion: 'How many members were in the R&B group TLC?',
+      triviaOptions: ['2', '3', '4', '5'],
+      triviaCorrectAnswer: '3'
+    },
+    { 
+      id: '30', 
+      title: 'November Rain', 
+      artist: 'Guns N\' Roses', 
+      file: '/songs/90s/NovemberRainGunsNRoses.mp3', 
+      albumArt: '/assets/album-art/90s/NovemberRainGunsNRoses.jpeg',
+      alternatives: ['Sweet Child O\' Mine - Guns N\' Roses', 'Welcome to the Jungle - Guns N\' Roses', 'Paradise City - Guns N\' Roses']
+    },
+    { 
+      id: '31', 
+      title: 'Pony', 
+      artist: 'Ginuwine', 
+      file: '/songs/90s/PonyGinuwine.mp3', 
+      albumArt: '/assets/album-art/90s/PonyGinuwine.jpeg',
+      alternatives: ['Differences - Ginuwine', 'So Anxious - Ginuwine', 'In Those Jeans - Ginuwine']
+    },
+    { 
+      id: '32', 
+      title: 'Return of the Mack', 
+      artist: 'Mark Morrison', 
+      file: '/songs/90s/ReturnOfTheMackMarkMorrison.mp3', 
+      albumArt: '/assets/album-art/90s/ReturnOfTheMackMarkMorrison.jpeg',
+      alternatives: ['Crazy for You - Mark Morrison', 'Trippin\' - Mark Morrison', 'Who\'s the Mack? - Mark Morrison']
+    },
+    { 
+      id: '33', 
+      title: 'Say My Name', 
+      artist: 'Destiny\'s Child', 
+      file: '/songs/90s/SayMyNameDestiny\'sChild.mp3', 
+      albumArt: '/assets/album-art/90s/SayMyNameDestiny\'sChild.jpeg',
+      alternatives: ['Bills, Bills, Bills - Destiny\'s Child', 'Jumpin\', Jumpin\' - Destiny\'s Child', 'No, No, No - Destiny\'s Child'],
+      artistAlternatives: ['Destinys Child', 'Destiny\'s Child']
+    },
+    { 
+      id: '34', 
+      title: 'Shoop', 
+      artist: 'Salt-N-Pepa', 
+      file: '/songs/90s/ShoopSaltNPepa.mp3', 
+      albumArt: '/assets/album-art/90s/ShoopSaltNPepa.jpeg',
+      alternatives: ['Push It - Salt-N-Pepa', 'Whatta Man - Salt-N-Pepa feat. En Vogue', 'Let\'s Talk About Sex - Salt-N-Pepa']
+    },
+    { 
+      id: '35', 
+      title: 'Torn', 
+      artist: 'Natalie Imbruglia', 
+      file: '/songs/90s/TornNatalieImbruglia.mp3', 
+      albumArt: '/assets/album-art/90s/TornNatalieImbruglia.jpeg',
+      alternatives: ['Big Me - Foo Fighters', 'Counting Blue Cars - Dishwalla', 'Name - Goo Goo Dolls']
+    },
+    { 
+      id: '36', 
+      title: 'U Can\'t Touch This', 
+      artist: 'MC Hammer', 
+      file: '/songs/90s/UCan\'tTouchThisMCHammer.mp3', 
+      albumArt: '/assets/album-art/90s/UCan\'tTouchThisMCHammer.jpeg',
+      alternatives: ['Ice Ice Baby - Vanilla Ice', 'Push It - Salt-N-Pepa', '2 Legit 2 Quit - MC Hammer']
+    },
+    { 
+      id: '37', 
+      title: 'Under the Bridge', 
+      artist: 'Red Hot Chili Peppers', 
+      file: '/songs/90s/UnderTheBridgeTheRedHotChiliPeppers.mp3', 
+      albumArt: '/assets/album-art/90s/UnderTheBridgeTheRedHotChiliPeppers.jpeg',
+      alternatives: ['Give It Away - Red Hot Chili Peppers', 'Soul to Squeeze - Red Hot Chili Peppers', 'Californication - Red Hot Chili Peppers']
+    },
+    { 
+      id: '38', 
+      title: 'Vogue', 
+      artist: 'Madonna', 
+      file: '/songs/90s/VogueMadonna.mp3', 
+      albumArt: '/assets/album-art/90s/VogueMadonna.jpeg',
+      alternatives: ['Like a Prayer - Madonna', 'Justify My Love - Madonna', 'Express Yourself - Madonna']
+    },
+    { 
+      id: '39', 
       title: 'Walking on Broken Glass', 
       artist: 'Annie Lennox', 
       file: '/songs/90s/WalkingOnBrokenGlassAnnieLennox.mp3', 
       albumArt: '/assets/album-art/90s/WalkingOnBrokenGlassAnnieLennox.jpeg',
       alternatives: ['Why - Annie Lennox', 'Little Bird - Annie Lennox', 'Sweet Dreams - Eurythmics']
+    },
+    { 
+      id: '40', 
+      title: 'Wannabe', 
+      artist: 'Spice Girls', 
+      file: '/songs/90s/WannabeSpiceGirls.mp3', 
+      albumArt: '/assets/album-art/90s/WannabeSpiceGirls.jpeg',
+      alternatives: ['Say You\'ll Be There - Spice Girls', 'MMMBop - Hanson', 'I Want It That Way - Backstreet Boys']
+    },
+    { 
+      id: '41', 
+      title: 'Wonderwall', 
+      artist: 'Oasis', 
+      file: '/songs/90s/WonderwallOasis.mp3', 
+      albumArt: '/assets/album-art/90s/WonderwallOasis.jpeg',
+      alternatives: ['Champagne Supernova - Oasis', 'Creep - Radiohead', 'Mr. Brightside - The Killers'],
+      triviaQuestion: 'Which album features "Wonderwall" by Oasis?',
+      triviaOptions: ['Definitely Maybe', '(What\'s the Story) Morning Glory?', 'Be Here Now', 'The Masterplan'],
+      triviaCorrectAnswer: '(What\'s the Story) Morning Glory?'
+    },
+    { 
+      id: '42', 
+      title: 'You Oughta Know', 
+      artist: 'Alanis Morissette', 
+      file: '/songs/90s/YouOughtaKnowAlanisMorissette.mp3', 
+      albumArt: '/assets/album-art/90s/YouOughtaKnowAlanisMorissette.jpeg',
+      alternatives: ['Ironic - Alanis Morissette', 'Hand in My Pocket - Alanis Morissette', 'Head over Feet - Alanis Morissette']
+    },
+    { 
+      id: '43', 
+      title: 'Zombie', 
+      artist: 'The Cranberries', 
+      file: '/songs/90s/ZombieTheCranberries.mp3', 
+      albumArt: '/assets/album-art/90s/ZombieTheCranberries.jpeg',
+      alternatives: ['Linger - The Cranberries', 'Dreams - The Cranberries', 'Ode to My Family - The Cranberries']
     }
   ]
 
@@ -2234,6 +2752,14 @@ const Game = () => {
     },
     { 
       id: '7', 
+      title: 'Brown Eyed Girl', 
+      artist: 'Van Morrison', 
+      file: '/songs/Iconic Songs/BrownEyedGirlVanMorrison.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/BrownEyedGirlVanMorrison.jpeg',
+      alternatives: ['Moondance - Van Morrison', 'Into the Mystic - Van Morrison', 'Wild Night - Van Morrison']
+    },
+    { 
+      id: '8', 
       title: 'Cotton Eye Joe', 
       artist: 'Rednex', 
       file: '/songs/Iconic Songs/CottonEyeJoeRedneck.mp3', 
@@ -2241,7 +2767,18 @@ const Game = () => {
       alternatives: ['Old Pop in an Oak - Rednex', 'Wish You Were Here - Rednex', 'Spirit of the Hawk - Rednex']
     },
     { 
-      id: '8', 
+      id: '9', 
+      title: 'Dancing Queen', 
+      artist: 'ABBA', 
+      file: '/songs/Iconic Songs/DancingQueenABBA.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/DancingQueenABBA.jpeg',
+      alternatives: ['Mamma Mia - ABBA', 'Waterloo - ABBA', 'Take a Chance on Me - ABBA'],
+      triviaQuestion: 'In what year was "Dancing Queen" by ABBA released?',
+      triviaOptions: ['1974', '1976', '1978', '1980'],
+      triviaCorrectAnswer: '1976'
+    },
+    { 
+      id: '10', 
       title: 'Don\'t Stop Believin\'', 
       artist: 'Journey', 
       file: '/songs/Iconic Songs/Don\'tStopBelievin\'Journey.mp3', 
@@ -2252,7 +2789,7 @@ const Game = () => {
       triviaCorrectAnswer: 'The Sopranos'
     },
     { 
-      id: '9', 
+      id: '11', 
       title: 'Eye of the Tiger', 
       artist: 'Survivor', 
       file: '/songs/Iconic Songs/EyeoftheTigerSurvivor.mp3', 
@@ -2263,7 +2800,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Rocky III'
     },
     { 
-      id: '10', 
+      id: '12', 
       title: 'Forget You', 
       artist: 'CeeLo Green', 
       file: '/songs/Iconic Songs/ForgetYouCeeloGreen.mp3', 
@@ -2272,7 +2809,16 @@ const Game = () => {
       artistAlternatives: ['Ceelo Green', 'Cee Lo Green', 'Cee-Lo Green']
     },
     { 
-      id: '11', 
+      id: '13', 
+      title: 'Hey There Delilah', 
+      artist: 'Plain White T\'s', 
+      file: '/songs/Iconic Songs/HeyThereDeliliahPlainWhiteTs.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/HeyThereDeliliahPlainWhiteTs.jpeg',
+      alternatives: ['1, 2, 3, 4 - Plain White T\'s', 'Rhythm of Love - Plain White T\'s', 'Our Time Now - Plain White T\'s'],
+      artistAlternatives: ['Plain White Ts', 'Plain White T s', 'The Plain White T\'s']
+    },
+    { 
+      id: '14', 
       title: 'Hey Ya!', 
       artist: 'OutKast', 
       file: '/songs/Iconic Songs/HeyYa!Outkast.mp3', 
@@ -2284,7 +2830,7 @@ const Game = () => {
       triviaCorrectAnswer: 'André 3000'
     },
     { 
-      id: '12', 
+      id: '15', 
       title: 'How to Save a Life', 
       artist: 'The Fray', 
       file: '/songs/Iconic Songs/HowToSaveALifeTheFray.mp3', 
@@ -2292,7 +2838,7 @@ const Game = () => {
       alternatives: ['Over My Head (Cable Car) - The Fray', 'You Found Me - The Fray', 'Never Say Never - The Fray']
     },
     { 
-      id: '13', 
+      id: '16', 
       title: 'Ice Ice Baby', 
       artist: 'Vanilla Ice', 
       file: '/songs/Iconic Songs/IceIceBabyVanillaIce.mp3', 
@@ -2300,7 +2846,7 @@ const Game = () => {
       alternatives: ['U Can\'t Touch This - MC Hammer', 'Play That Funky Music - Vanilla Ice', 'Rollin\' in My 5.0 - Vanilla Ice']
     },
     { 
-      id: '14', 
+      id: '17', 
       title: 'I Have Nothing', 
       artist: 'Whitney Houston', 
       file: '/songs/Iconic Songs/IHaveNothingWhitneyHouston.mp3', 
@@ -2308,7 +2854,34 @@ const Game = () => {
       alternatives: ['I Will Always Love You - Whitney Houston', 'Greatest Love of All - Whitney Houston', 'I Wanna Dance with Somebody - Whitney Houston']
     },
     { 
-      id: '15', 
+      id: '18', 
+      title: 'I Wanna Dance with Somebody', 
+      artist: 'Whitney Houston', 
+      file: '/songs/Iconic Songs/IWannaDanceWithSomebodyWhitneyHouston.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/IWannaDanceWithSomebodyWhitneyHouston.jpeg',
+      alternatives: ['I Will Always Love You - Whitney Houston', 'Greatest Love of All - Whitney Houston', 'How Will I Know - Whitney Houston'],
+      triviaQuestion: 'What year did "I Wanna Dance with Somebody" by Whitney Houston top the charts?',
+      triviaOptions: ['1985', '1987', '1989', '1991'],
+      triviaCorrectAnswer: '1987'
+    },
+    { 
+      id: '19', 
+      title: 'I Was Made for Lovin\' You', 
+      artist: 'Kiss', 
+      file: '/songs/Iconic Songs/IWasMadeForLovin\'YouKiss.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/IWasMadeForLovin\'YouKiss.jpeg',
+      alternatives: ['Rock and Roll All Nite - Kiss', 'Detroit Rock City - Kiss', 'Shout It Out Loud - Kiss']
+    },
+    { 
+      id: '20', 
+      title: 'I Will Survive', 
+      artist: 'Gloria Gaynor', 
+      file: '/songs/Iconic Songs/IWillSurviveGloriaGaynor.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/IWillSurviveGloriaGaynor.jpeg',
+      alternatives: ['Never Can Say Goodbye - Gloria Gaynor', 'I Am What I Am - Gloria Gaynor', 'Let Me Know (I Have a Right) - Gloria Gaynor']
+    },
+    { 
+      id: '21', 
       title: 'Last Friday Night', 
       artist: 'Katy Perry', 
       file: '/songs/Iconic Songs/LastFridayNightKatyPerry.mp3', 
@@ -2316,7 +2889,7 @@ const Game = () => {
       alternatives: ['Teenage Dream - Katy Perry', 'California Gurls - Katy Perry', 'Firework - Katy Perry']
     },
     { 
-      id: '16', 
+      id: '22', 
       title: 'Mockingbird', 
       artist: 'Eminem', 
       file: '/songs/Iconic Songs/MockingbirdEminem.mp3', 
@@ -2324,7 +2897,18 @@ const Game = () => {
       alternatives: ['When I\'m Gone - Eminem', 'Hailie\'s Song - Eminem', 'Beautiful - Eminem']
     },
     { 
-      id: '17', 
+      id: '23', 
+      title: 'My Heart Will Go On', 
+      artist: 'Celine Dion', 
+      file: '/songs/Iconic Songs/MyHeartWillGoOnCelineDion.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/MyHeartWillGoOnCelineDion.jpeg',
+      alternatives: ['The Power of Love - Celine Dion', 'Because You Loved Me - Celine Dion', 'It\'s All Coming Back to Me Now - Celine Dion'],
+      triviaQuestion: 'Which blockbuster movie features "My Heart Will Go On" as its theme song?',
+      triviaOptions: ['Pearl Harbor', 'Titanic', 'The Notebook', 'Avatar'],
+      triviaCorrectAnswer: 'Titanic'
+    },
+    { 
+      id: '24', 
       title: 'Never Gonna Give You Up', 
       artist: 'Rick Astley', 
       file: '/songs/Iconic Songs/NeverGonnaGiveYouUpRickAstley.mp3', 
@@ -2332,7 +2916,7 @@ const Game = () => {
       alternatives: ['Together Forever - Rick Astley', 'Whenever You Need Somebody - Rick Astley', 'She Wants to Dance with Me - Rick Astley']
     },
     { 
-      id: '18', 
+      id: '25', 
       title: 'Piano Man', 
       artist: 'Billy Joel', 
       file: '/songs/Iconic Songs/PianoManBillyJoel.mp3', 
@@ -2340,7 +2924,7 @@ const Game = () => {
       alternatives: ['Uptown Girl - Billy Joel', 'We Didn\'t Start the Fire - Billy Joel', 'It\'s Still Rock and Roll to Me - Billy Joel']
     },
     { 
-      id: '19', 
+      id: '26', 
       title: 'Rocket Man', 
       artist: 'Elton John', 
       file: '/songs/Iconic Songs/RocketManEltonJohn.mp3', 
@@ -2348,7 +2932,16 @@ const Game = () => {
       alternatives: ['Tiny Dancer - Elton John', 'Bennie and the Jets - Elton John', 'Your Song - Elton John']
     },
     { 
-      id: '20', 
+      id: '27', 
+      title: 'September', 
+      artist: 'Earth, Wind & Fire', 
+      file: '/songs/Iconic Songs/SeptemberEarthWindFire.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/SeptemberEarthWindFire.jpeg',
+      alternatives: ['Boogie Wonderland - Earth, Wind & Fire', 'Let\'s Groove - Earth, Wind & Fire', 'Shining Star - Earth, Wind & Fire'],
+      artistAlternatives: ['Earth Wind and Fire', 'Earth Wind & Fire', 'EWF']
+    },
+    { 
+      id: '28', 
       title: 'SexyBack', 
       artist: 'Justin Timberlake', 
       file: '/songs/Iconic Songs/SexyBackJustinTimberlake.mp3', 
@@ -2356,7 +2949,7 @@ const Game = () => {
       alternatives: ['My Love - Justin Timberlake', 'What Goes Around... Comes Around - Justin Timberlake', 'Cry Me a River - Justin Timberlake']
     },
     { 
-      id: '21', 
+      id: '29', 
       title: 'Stayin\' Alive', 
       artist: 'Bee Gees', 
       file: '/songs/Iconic Songs/StayinAliveBeeGees.mp3', 
@@ -2365,7 +2958,38 @@ const Game = () => {
       artistAlternatives: ['BeeGees', 'The Bee Gees']
     },
     { 
-      id: '22', 
+      id: '30', 
+      title: 'Sweet Caroline', 
+      artist: 'Neil Diamond', 
+      file: '/songs/Iconic Songs/SweetCarolineNeilDiamond.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/SweetCarolineNeilDiamond.jpeg',
+      alternatives: ['Cracklin\' Rosie - Neil Diamond', 'Song Sung Blue - Neil Diamond', 'America - Neil Diamond'],
+      triviaQuestion: 'What stadium famously plays "Sweet Caroline" during the 8th inning?',
+      triviaOptions: ['Yankee Stadium', 'Fenway Park', 'Wrigley Field', 'Dodger Stadium'],
+      triviaCorrectAnswer: 'Fenway Park'
+    },
+    { 
+      id: '31', 
+      title: 'Take On Me', 
+      artist: 'a-ha', 
+      file: '/songs/Iconic Songs/TakeOnMea-ha.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/TakeOnMea-ha.jpeg',
+      alternatives: ['The Sun Always Shines on T.V. - a-ha', 'Hunting High and Low - a-ha', 'Stay on These Roads - a-ha'],
+      artistAlternatives: ['aha', 'A-ha', 'A-Ha']
+    },
+    { 
+      id: '32', 
+      title: 'Thriller', 
+      artist: 'Michael Jackson', 
+      file: '/songs/Iconic Songs/ThrillerMichaelJackson.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/ThrillerMichaelJackson.jpeg',
+      alternatives: ['Beat It - Michael Jackson', 'Billie Jean - Michael Jackson', 'Smooth Criminal - Michael Jackson'],
+      triviaQuestion: 'Who narrates the famous spoken-word section in "Thriller"?',
+      triviaOptions: ['Vincent Price', 'Boris Karloff', 'Christopher Lee', 'Peter Cushing'],
+      triviaCorrectAnswer: 'Vincent Price'
+    },
+    { 
+      id: '33', 
       title: 'Thunderstruck', 
       artist: 'AC/DC', 
       file: '/songs/Iconic Songs/ThunderstruckAC:DC.mp3', 
@@ -2374,7 +2998,7 @@ const Game = () => {
       artistAlternatives: ['AC DC', 'ACDC', 'Ac/dc']
     },
     { 
-      id: '23', 
+      id: '34', 
       title: 'U Can\'t Touch This', 
       artist: 'MC Hammer', 
       file: '/songs/Iconic Songs/UCan\'tTouchThisMCHammer.mp3', 
@@ -2382,7 +3006,7 @@ const Game = () => {
       alternatives: ['2 Legit 2 Quit - MC Hammer', 'Ice Ice Baby - Vanilla Ice', 'Push It - Salt-N-Pepa']
     },
     { 
-      id: '24', 
+      id: '35', 
       title: 'Uptown Girl', 
       artist: 'Billy Joel', 
       file: '/songs/Iconic Songs/UptownGirlBillyJoel.mp3', 
@@ -2390,7 +3014,7 @@ const Game = () => {
       alternatives: ['Piano Man - Billy Joel', 'We Didn\'t Start the Fire - Billy Joel', 'It\'s Still Rock and Roll to Me - Billy Joel']
     },
     { 
-      id: '25', 
+      id: '36', 
       title: 'Wake Me Up Before You Go-Go', 
       artist: 'Wham!', 
       file: '/songs/Iconic Songs/WakeMeUpBeforeYouGo-GoWham!.mp3', 
@@ -2399,7 +3023,16 @@ const Game = () => {
       artistAlternatives: ['Wham', 'WHAM!', 'WHAM']
     },
     { 
-      id: '26', 
+      id: '37', 
+      title: 'Walking on Sunshine', 
+      artist: 'Katrina and the Waves', 
+      file: '/songs/Iconic Songs/WalkingOnSunshineKarinaAndTheWaves.mp3', 
+      albumArt: '/assets/album-art/Iconic Songs/WalkingOnSunshineKarinaAndTheWaves.jpeg',
+      alternatives: ['Love Shack - The B-52\'s', 'Girls Just Want to Have Fun - Cyndi Lauper', 'Footloose - Kenny Loggins'],
+      artistAlternatives: ['Katrina & the Waves', 'Karina and the Waves']
+    },
+    { 
+      id: '38', 
       title: 'Wannabe', 
       artist: 'Spice Girls', 
       file: '/songs/Iconic Songs/WannabeSpiceGirls.mp3', 
@@ -2410,7 +3043,7 @@ const Game = () => {
       triviaCorrectAnswer: '1996'
     },
     { 
-      id: '27', 
+      id: '39', 
       title: 'We Will Rock You', 
       artist: 'Queen', 
       file: '/songs/Iconic Songs/WeWillRockYouQueen.mp3', 
@@ -2421,7 +3054,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Freddie Mercury'
     },
     { 
-      id: '28', 
+      id: '40', 
       title: 'YMCA', 
       artist: 'Village People', 
       file: '/songs/Iconic Songs/YMCAVillagePeople.mp3', 
@@ -2429,7 +3062,7 @@ const Game = () => {
       alternatives: ['Macho Man - Village People', 'In the Navy - Village People', 'Go West - Village People']
     },
     { 
-      id: '29', 
+      id: '41', 
       title: 'You Give Love a Bad Name', 
       artist: 'Bon Jovi', 
       file: '/songs/Iconic Songs/YouGiveLoveABadNameBonJovi.mp3', 
@@ -2450,6 +3083,14 @@ const Game = () => {
     },
     { 
       id: '2', 
+      title: '7 Years', 
+      artist: 'Lukas Graham', 
+      file: '/songs/Most Streamed Songs/7YearsLukasGraham.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/7YearsLukasGraham.jpeg',
+      alternatives: ['Love Someone - Lukas Graham', 'Mama Said - Lukas Graham', 'You\'re Not There - Lukas Graham']
+    },
+    { 
+      id: '3', 
       title: 'As It Was', 
       artist: 'Harry Styles', 
       file: '/songs/Most Streamed Songs/AsItWasHarryStyles.mp3', 
@@ -2460,7 +3101,7 @@ const Game = () => {
       triviaCorrectAnswer: 'One Direction'
     },
     { 
-      id: '3', 
+      id: '4', 
       title: 'bad guy', 
       artist: 'Billie Eilish', 
       file: '/songs/Most Streamed Songs/badguyBillieEilish.mp3', 
@@ -2471,7 +3112,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Finneas O\'Connell'
     },
     { 
-      id: '4', 
+      id: '5', 
       title: 'Believer', 
       artist: 'Imagine Dragons', 
       file: '/songs/Most Streamed Songs/BelieverImagineDragons.mp3', 
@@ -2479,7 +3120,7 @@ const Game = () => {
       alternatives: ['Thunder - Imagine Dragons', 'Radioactive - Imagine Dragons', 'Demons - Imagine Dragons']
     },
     { 
-      id: '5', 
+      id: '6', 
       title: 'Blinding Lights', 
       artist: 'The Weeknd', 
       file: '/songs/Most Streamed Songs/BlindingLightsTheWeeknd.mp3', 
@@ -2490,7 +3131,7 @@ const Game = () => {
       triviaCorrectAnswer: 'Billboard Hot 100'
     },
     { 
-      id: '6', 
+      id: '7', 
       title: 'Can\'t Hold Us', 
       artist: 'Macklemore', 
       file: '/songs/Most Streamed Songs/Can\'tHoldUsMacklemore.mp3', 
@@ -2498,7 +3139,15 @@ const Game = () => {
       alternatives: ['Thrift Shop - Macklemore & Ryan Lewis', 'Downtown - Macklemore & Ryan Lewis', 'Good Old Days - Macklemore']
     },
     { 
-      id: '7', 
+      id: '8', 
+      title: 'Cheap Thrills', 
+      artist: 'Sia', 
+      file: '/songs/Most Streamed Songs/CheapThrillsSia.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/CheapThrillsSia.jpeg',
+      alternatives: ['Chandelier - Sia', 'Elastic Heart - Sia', 'Titanium - Sia']
+    },
+    { 
+      id: '9', 
       title: 'Circles', 
       artist: 'Post Malone', 
       file: '/songs/Most Streamed Songs/CirclesPostMalone.mp3', 
@@ -2506,7 +3155,7 @@ const Game = () => {
       alternatives: ['Sunflower - Post Malone', 'Congratulations - Post Malone', 'Better Now - Post Malone']
     },
     { 
-      id: '8', 
+      id: '10', 
       title: 'Closer', 
       artist: 'The Chainsmokers', 
       file: '/songs/Most Streamed Songs/CloserTheChainsmokers.mp3', 
@@ -2515,7 +3164,23 @@ const Game = () => {
       artistAlternatives: ['Chainsmokers', 'Chain Smokers']
     },
     { 
-      id: '9', 
+      id: '11', 
+      title: 'Congratulations', 
+      artist: 'Post Malone', 
+      file: '/songs/Most Streamed Songs/CongratulationsPostMalone.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/CongratulationsPostMalone.jpeg',
+      alternatives: ['Circles - Post Malone', 'rockstar - Post Malone', 'Sunflower - Post Malone']
+    },
+    { 
+      id: '12', 
+      title: 'Counting Stars', 
+      artist: 'OneRepublic', 
+      file: '/songs/Most Streamed Songs/CountingStarsOneRepublic.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/CountingStarsOneRepublic.jpeg',
+      alternatives: ['Apologize - OneRepublic', 'Secrets - OneRepublic', 'Good Life - OneRepublic']
+    },
+    { 
+      id: '13', 
       title: 'Cruel Summer', 
       artist: 'Taylor Swift', 
       file: '/songs/Most Streamed Songs/CruelSummerTaylorSwift.mp3', 
@@ -2523,7 +3188,7 @@ const Game = () => {
       alternatives: ['Lover - Taylor Swift', 'ME! - Taylor Swift', 'You Need to Calm Down - Taylor Swift']
     },
     { 
-      id: '10', 
+      id: '14', 
       title: 'Dance Monkey', 
       artist: 'Tones And I', 
       file: '/songs/Most Streamed Songs/DanceMonkeyTonesAndI.mp3', 
@@ -2531,7 +3196,7 @@ const Game = () => {
       alternatives: ['Never Seen the Rain - Tones And I', 'Fly Away - Tones And I', 'Johnny Run Away - Tones And I']
     },
     { 
-      id: '11', 
+      id: '15', 
       title: 'Don\'t Start Now', 
       artist: 'Dua Lipa', 
       file: '/songs/Most Streamed Songs/Don\'tStartNowDuaLipa.mp3', 
@@ -2539,7 +3204,7 @@ const Game = () => {
       alternatives: ['Levitating - Dua Lipa', 'New Rules - Dua Lipa', 'Physical - Dua Lipa']
     },
     { 
-      id: '12', 
+      id: '16', 
       title: 'Every Breath You Take', 
       artist: 'The Police', 
       file: '/songs/Most Streamed Songs/EveryBreathYouTakeThePolice.mp3', 
@@ -2547,7 +3212,31 @@ const Game = () => {
       alternatives: ['Roxanne - The Police', 'Message in a Bottle - The Police', 'Don\'t Stand So Close to Me - The Police']
     },
     { 
-      id: '13', 
+      id: '17', 
+      title: 'God\'s Plan', 
+      artist: 'Drake', 
+      file: '/songs/Most Streamed Songs/God\'sPlanDrake.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/God\'sPlanDrake.jpeg',
+      alternatives: ['One Dance - Drake', 'Hotline Bling - Drake', 'In My Feelings - Drake']
+    },
+    { 
+      id: '18', 
+      title: 'Happier', 
+      artist: 'Marshmello', 
+      file: '/songs/Most Streamed Songs/HappierMarshmello.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/HappierMarshmello.jpeg',
+      alternatives: ['Alone - Marshmello', 'Silence - Marshmello', 'Wolves - Marshmello']
+    },
+    { 
+      id: '19', 
+      title: 'I Took A Pill In Ibiza', 
+      artist: 'Mike Posner', 
+      file: '/songs/Most Streamed Songs/ITookAPillInIbizaMikePosner.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/ITookAPillInIbizaMikePosner.jpeg',
+      alternatives: ['Cooler Than Me - Mike Posner', 'Please Don\'t Go - Mike Posner', 'Bow Chicka Wow Wow - Mike Posner']
+    },
+    { 
+      id: '20', 
       title: 'Kill Bill', 
       artist: 'SZA', 
       file: '/songs/Most Streamed Songs/KillBillSZA.mp3', 
@@ -2555,7 +3244,15 @@ const Game = () => {
       alternatives: ['Snooze - SZA', 'The Weekend - SZA', 'Good Days - SZA']
     },
     { 
-      id: '14', 
+      id: '21', 
+      title: 'Let Me Love You', 
+      artist: 'Justin Bieber', 
+      file: '/songs/Most Streamed Songs/LetMeLoveYouJustinBieber.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/LetMeLoveYouJustinBieber.jpeg',
+      alternatives: ['Sorry - Justin Bieber', 'Love Yourself - Justin Bieber', 'What Do You Mean? - Justin Bieber']
+    },
+    { 
+      id: '22', 
       title: 'lovely', 
       artist: 'Billie Eilish', 
       file: '/songs/Most Streamed Songs/lovelyBillieEilish.mp3', 
@@ -2563,7 +3260,15 @@ const Game = () => {
       alternatives: ['bad guy - Billie Eilish', 'ocean eyes - Billie Eilish', 'when the party\'s over - Billie Eilish']
     },
     { 
-      id: '15', 
+      id: '23', 
+      title: 'Love Me Like You Do', 
+      artist: 'Ellie Goulding', 
+      file: '/songs/Most Streamed Songs/LoveMeLikeYouDoEllieGoulding.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/LoveMeLikeYouDoEllieGoulding.jpeg',
+      alternatives: ['Burn - Ellie Goulding', 'Lights - Ellie Goulding', 'On My Mind - Ellie Goulding']
+    },
+    { 
+      id: '24', 
       title: 'Lucid Dreams', 
       artist: 'Juice WRLD', 
       file: '/songs/Most Streamed Songs/LucidDreamsJuiceWRLD.mp3', 
@@ -2571,7 +3276,15 @@ const Game = () => {
       alternatives: ['All Girls Are the Same - Juice WRLD', 'Robbery - Juice WRLD', 'Wishing Well - Juice WRLD']
     },
     { 
-      id: '16', 
+      id: '25', 
+      title: 'New Rules', 
+      artist: 'Dua Lipa', 
+      file: '/songs/Most Streamed Songs/NewRulesDuaLipa.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/NewRulesDuaLipa.jpeg',
+      alternatives: ['Don\'t Start Now - Dua Lipa', 'Levitating - Dua Lipa', 'IDGAF - Dua Lipa']
+    },
+    { 
+      id: '26', 
       title: 'Night Changes', 
       artist: 'One Direction', 
       file: '/songs/Most Streamed Songs/NightChangesOneDirection.mp3', 
@@ -2579,7 +3292,7 @@ const Game = () => {
       alternatives: ['Story of My Life - One Direction', 'What Makes You Beautiful - One Direction', 'Steal My Girl - One Direction']
     },
     { 
-      id: '17', 
+      id: '27', 
       title: 'One Dance', 
       artist: 'Drake', 
       file: '/songs/Most Streamed Songs/OneDanceDrake.mp3', 
@@ -2587,7 +3300,7 @@ const Game = () => {
       alternatives: ['God\'s Plan - Drake', 'Hotline Bling - Drake', 'In My Feelings - Drake']
     },
     { 
-      id: '18', 
+      id: '28', 
       title: 'Perfect', 
       artist: 'Ed Sheeran', 
       file: '/songs/Most Streamed Songs/PerfectEdSheeran.mp3', 
@@ -2598,7 +3311,23 @@ const Game = () => {
       triviaCorrectAnswer: '÷ (Divide)'
     },
     { 
-      id: '19', 
+      id: '29', 
+      title: 'rockstar', 
+      artist: 'Post Malone', 
+      file: '/songs/Most Streamed Songs/rockstarPostMalone.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/rockstarPostMalone.jpeg',
+      alternatives: ['Circles - Post Malone', 'Congratulations - Post Malone', 'Sunflower - Post Malone']
+    },
+    { 
+      id: '30', 
+      title: 'Say You Won\'t Let Go', 
+      artist: 'James Arthur', 
+      file: '/songs/Most Streamed Songs/SayYouWon\'tLetGoJamesArthur.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/SayYouWon\'tLetGoJamesArthur.jpeg',
+      alternatives: ['Impossible - James Arthur', 'Naked - James Arthur', 'Can I Be Him - James Arthur']
+    },
+    { 
+      id: '31', 
       title: 'Señorita', 
       artist: 'Shawn Mendes', 
       file: '/songs/Most Streamed Songs/SeñoritaShawnMendes.mp3', 
@@ -2606,7 +3335,7 @@ const Game = () => {
       alternatives: ['Stitches - Shawn Mendes', 'Treat You Better - Shawn Mendes', 'There\'s Nothing Holdin\' Me Back - Shawn Mendes']
     },
     { 
-      id: '20', 
+      id: '32', 
       title: 'Shallow', 
       artist: 'Lady Gaga', 
       file: '/songs/Most Streamed Songs/ShallowLadyGaga.mp3', 
@@ -2617,7 +3346,15 @@ const Game = () => {
       triviaCorrectAnswer: 'A Star Is Born'
     },
     { 
-      id: '21', 
+      id: '33', 
+      title: 'SICKO MODE', 
+      artist: 'Travis Scott', 
+      file: '/songs/Most Streamed Songs/SICKOMODETravisScott.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/SICKOMODETravisScott.jpeg',
+      alternatives: ['Goosebumps - Travis Scott', 'HIGHEST IN THE ROOM - Travis Scott', 'Antidote - Travis Scott']
+    },
+    { 
+      id: '34', 
       title: 'Someone Like You', 
       artist: 'Adele', 
       file: '/songs/Most Streamed Songs/SomeoneLikeYouAdele.mp3', 
@@ -2628,7 +3365,7 @@ const Game = () => {
       triviaCorrectAnswer: '21'
     },
     { 
-      id: '22', 
+      id: '35', 
       title: 'Someone You Loved', 
       artist: 'Lewis Capaldi', 
       file: '/songs/Most Streamed Songs/SomeoneYouLovedLewisCapaldi.mp3', 
@@ -2636,7 +3373,23 @@ const Game = () => {
       alternatives: ['Before You Go - Lewis Capaldi', 'Bruises - Lewis Capaldi', 'Hold Me While You Wait - Lewis Capaldi']
     },
     { 
-      id: '23', 
+      id: '36', 
+      title: 'Something Just Like This', 
+      artist: 'Coldplay', 
+      file: '/songs/Most Streamed Songs/SomethingJustLikeThisColdplay.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/SomethingJustLikeThisColdplay.jpeg',
+      alternatives: ['Yellow - Coldplay', 'Viva La Vida - Coldplay', 'The Scientist - Coldplay']
+    },
+    { 
+      id: '37', 
+      title: 'Sorry', 
+      artist: 'Justin Bieber', 
+      file: '/songs/Most Streamed Songs/SorryJustinBieber.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/SorryJustinBieber.jpeg',
+      alternatives: ['Love Yourself - Justin Bieber', 'What Do You Mean? - Justin Bieber', 'Let Me Love You - Justin Bieber']
+    },
+    { 
+      id: '38', 
       title: 'Starboy', 
       artist: 'The Weeknd', 
       file: '/songs/Most Streamed Songs/StarboyTheWeeknd.mp3', 
@@ -2644,7 +3397,7 @@ const Game = () => {
       alternatives: ['Blinding Lights - The Weeknd', 'The Hills - The Weeknd', 'Can\'t Feel My Face - The Weeknd']
     },
     { 
-      id: '24', 
+      id: '39', 
       title: 'STAY', 
       artist: 'The Kid LAROI', 
       file: '/songs/Most Streamed Songs/STAYTheKidLAROI.mp3', 
@@ -2652,7 +3405,15 @@ const Game = () => {
       alternatives: ['WITHOUT YOU - The Kid LAROI', 'GO - The Kid LAROI', 'SO DONE - The Kid LAROI']
     },
     { 
-      id: '25', 
+      id: '40', 
+      title: 'Stressed Out', 
+      artist: 'Twenty One Pilots', 
+      file: '/songs/Most Streamed Songs/StressedOutTwentyOnePilots.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/StressedOutTwentyOnePilots.jpeg',
+      alternatives: ['Ride - Twenty One Pilots', 'Heathens - Twenty One Pilots', 'Chlorine - Twenty One Pilots']
+    },
+    { 
+      id: '41', 
       title: 'Take Me to Church', 
       artist: 'Hozier', 
       file: '/songs/Most Streamed Songs/TakeMeToChurchHozier.mp3', 
@@ -2660,7 +3421,23 @@ const Game = () => {
       alternatives: ['Someone New - Hozier', 'Cherry Wine - Hozier', 'Work Song - Hozier']
     },
     { 
-      id: '26', 
+      id: '42', 
+      title: 'thank u, next', 
+      artist: 'Ariana Grande', 
+      file: '/songs/Most Streamed Songs/thanku,nextArianaGrande.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/thanku,nextArianaGrande.jpeg',
+      alternatives: ['7 rings - Ariana Grande', 'breathin - Ariana Grande', 'no tears left to cry - Ariana Grande']
+    },
+    { 
+      id: '43', 
+      title: 'Too Good At Goodbyes', 
+      artist: 'Sam Smith', 
+      file: '/songs/Most Streamed Songs/TooGoodAtGoodbyesSamSmith.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/TooGoodAtGoodbyesSamSmith.jpeg',
+      alternatives: ['Stay With Me - Sam Smith', 'I\'m Not the Only One - Sam Smith', 'Writing\'s on the Wall - Sam Smith']
+    },
+    { 
+      id: '44', 
       title: 'Watermelon Sugar', 
       artist: 'Harry Styles', 
       file: '/songs/Most Streamed Songs/WatermelonSugarHarryStyles.mp3', 
@@ -2671,7 +3448,7 @@ const Game = () => {
       triviaCorrectAnswer: '2021'
     },
     { 
-      id: '27', 
+      id: '45', 
       title: 'When I Was Your Man', 
       artist: 'Bruno Mars', 
       file: '/songs/Most Streamed Songs/WhenIWasYourManBrunoMars.mp3', 
@@ -2679,7 +3456,15 @@ const Game = () => {
       alternatives: ['Just the Way You Are - Bruno Mars', 'Grenade - Bruno Mars', 'Locked Out of Heaven - Bruno Mars']
     },
     { 
-      id: '28', 
+      id: '46', 
+      title: 'Without Me', 
+      artist: 'Halsey', 
+      file: '/songs/Most Streamed Songs/WithoutMeHalsey.mp3', 
+      albumArt: '/assets/album-art/Most Streamed Songs/WithoutMeHalsey.jpeg',
+      alternatives: ['Closer - The Chainsmokers', 'Eastside - benny blanco', 'Bad at Love - Halsey']
+    },
+    { 
+      id: '47', 
       title: 'Yellow', 
       artist: 'Coldplay', 
       file: '/songs/Most Streamed Songs/YellowColdplay.mp3', 
@@ -2715,116 +3500,177 @@ const Game = () => {
         '1979-The Smashing Pumpkins': 2,
         'Always Be My Baby-Mariah Carey': 3,
         'Always-Bon Jovi': 4,
-        'Black-Pearl Jam': 5,
-        'California Love-2Pac': 6,
-        'Come As You Are-Nirvana': 7,
-        'Crazy-Aerosmith': 8,
-        "Don't Speak-No Doubt": 9,
-        'End of the Road-Boyz II Men': 10,
-        'Enjoy the Silence-Depeche Mode': 11,
-        'Fly Away-Lenny Kravitz': 12,
-        'High and Dry-Radiohead': 13,
-        'Ironic-Alanis Morissette': 14,
-        'Killing in the Name-Rage Against the Machine': 15,
-        'Killing Me Softly with His Song-Fugees': 16,
-        'Kiss Me-Sixpence None The Richer': 17,
-        'Loser-Beck': 18,
-        'No Scrubs-TLC': 19,
-        'November Rain-Guns N\' Roses': 20,
-        'Shoop-Salt-N-Pepa': 21,
-        'Torn-Natalie Imbruglia': 22,
-        "U Can't Touch This-MC Hammer": 23,
-        'Under the Bridge-Red Hot Chili Peppers': 24,
-        'Walking on Broken Glass-Annie Lennox': 25,
-        'Wannabe-Spice Girls': 26,
-        'Wonderwall-Oasis': 27,
-        'Zombie-The Cranberries': 28
+        'Around the World-Daft Punk': 5,
+        'Believe-Cher': 6,
+        'Black-Pearl Jam': 7,
+        'Blue (Da Ba Dee)-Eiffel 65': 8,
+        'California Love-2Pac': 9,
+        'Come As You Are-Nirvana': 10,
+        'Crazy-Aerosmith': 11,
+        "Don't Speak-No Doubt": 12,
+        'End of the Road-Boyz II Men': 13,
+        'Enjoy the Silence-Depeche Mode': 14,
+        'Enter Sandman-Metallica': 15,
+        'Fly Away-Lenny Kravitz': 16,
+        'Genie in a Bottle-Christina Aguilera': 17,
+        'Gin and Juice-Snoop Dogg': 18,
+        'High and Dry-Radiohead': 19,
+        'Ironic-Alanis Morissette': 20,
+        'Killing in the Name-Rage Against the Machine': 21,
+        'Killing Me Softly with His Song-Fugees': 22,
+        'Kiss Me-Sixpence None The Richer': 23,
+        'Loser-Beck': 24,
+        'Losing My Religion-R.E.M.': 25,
+        'MMMBop-Hanson': 26,
+        'My Name Is-Eminem': 27,
+        'No Diggity-Blackstreet': 28,
+        'No Scrubs-TLC': 29,
+        'November Rain-Guns N\' Roses': 30,
+        'Pony-Ginuwine': 31,
+        'Return of the Mack-Mark Morrison': 32,
+        "Say My Name-Destiny's Child": 33,
+        'Shoop-Salt-N-Pepa': 34,
+        'Torn-Natalie Imbruglia': 35,
+        "U Can't Touch This-MC Hammer": 36,
+        'Under the Bridge-Red Hot Chili Peppers': 37,
+        'Vogue-Madonna': 38,
+        'Walking on Broken Glass-Annie Lennox': 39,
+        'Wannabe-Spice Girls': 40,
+        'Wonderwall-Oasis': 41,
+        'You Oughta Know-Alanis Morissette': 42,
+        'Zombie-The Cranberries': 43
       },
       '2000s': {
         '1,2 Step-Ciara': 1,
         'Because of You-Ne-Yo': 2,
-        'Complicated-Avril Lavigne': 3,
-        'Dog Days Are Over-Florence + The Machine': 4,
-        'Drops of Jupiter-Train': 5,
-        'Empire State of Mind-Jay Z (feat. Alicia Keys)': 6,
-        'Fireflies-Owl City': 7,
-        'Gimme More-Britney Spears': 8,
-        'Hey Soul Sister-Train': 9,
-        'I Gotta Feeling-The Black Eyed Peas': 10,
-        'I Want It That Way-Backstreet Boys': 11,
-        'Just Dance-Lady Gaga': 12,
-        'Kids-MGMT': 13,
-        'Last Resort-Papa Roach': 14,
-        'Love Song-Sara Bareilles': 15,
-        'Maneater-Nelly Furtado': 16,
-        'Sexy Back-Justin Timberlake': 17,
-        'Since U Been Gone-Kelly Clarkson': 18,
-        'Temperature-Sean Paul': 19,
-        'The Anthem-Good Charlotte': 20,
-        'The Kill-Thirty Seconds To Mars': 21,
-        'The Middle-Jimmy Eat World': 22,
-        'The Sweet Escape-Gwen Stefani': 23,
-        'Unwritten-Natasha Bedingfield': 24,
-        'Viva La Vida-Coldplay': 25,
-        'When You Were Young-The Killers': 26,
-        'Without Me-Eminem': 27,
-        'Yeah!-Usher': 28
+        'Bleeding Love-Leona Lewis': 3,
+        'Bring Me to Life-Evanescence': 4,
+        'Complicated-Avril Lavigne': 5,
+        'Crank That (Soulja Boy)-Soulja Boy': 6,
+        'Crazy in Love-Beyoncé': 7,
+        'Cry Me a River-Justin Timberlake': 8,
+        'Dog Days Are Over-Florence + The Machine': 9,
+        'Drops of Jupiter-Train': 10,
+        'Empire State of Mind-Jay Z (feat. Alicia Keys)': 11,
+        'Everytime We Touch-Cascada': 12,
+        'Fergalicious-Fergie': 13,
+        'Fireflies-Owl City': 14,
+        'Gimme More-Britney Spears': 15,
+        'Hey Soul Sister-Train': 16,
+        'Hollaback Girl-Gwen Stefani': 17,
+        'How You Remind Me-Nickelback': 18,
+        'I Gotta Feeling-The Black Eyed Peas': 19,
+        'In Da Club-50 Cent': 20,
+        'I Want It That Way-Backstreet Boys': 21,
+        'Just Dance-Lady Gaga': 22,
+        'Kids-MGMT': 23,
+        'Last Resort-Papa Roach': 24,
+        'Let Me Love You-Mario': 25,
+        'Love Song-Sara Bareilles': 26,
+        'Maneater-Nelly Furtado': 27,
+        'Milkshake-Kelis': 28,
+        'Ms. Jackson-OutKast': 29,
+        'Sexy Back-Justin Timberlake': 30,
+        'Since U Been Gone-Kelly Clarkson': 31,
+        'Temperature-Sean Paul': 32,
+        'The Anthem-Good Charlotte': 33,
+        'The Kill-Thirty Seconds To Mars': 34,
+        'The Middle-Jimmy Eat World': 35,
+        'The Reason-Hoobastank': 36,
+        'The Sweet Escape-Gwen Stefani': 37,
+        'Unwritten-Natasha Bedingfield': 38,
+        'Viva La Vida-Coldplay': 39,
+        'We Belong Together-Mariah Carey': 40,
+        'Welcome to the Black Parade-My Chemical Romance': 41,
+        'When You Were Young-The Killers': 42,
+        'Without Me-Eminem': 43,
+        'Yeah!-Usher': 44
       },
       '2010s': {
         'All of Me-John Legend': 1,
         'All The Stars-Kendrick Lamar': 2,
         'Blurred Lines-Robin Thicke': 3,
-        'Closer-The Chainsmokers': 4,
-        'Everybody Talks-Neon Trees': 5,
-        'Goosebumps-Travis Scott': 6,
-        'Havana-Camila Cabello': 7,
-        'HUMBLE-Kendrick Lamar': 8,
-        'I Gotta Feeling-The Black Eyed Peas': 9,
-        'Just Dance-Lady Gaga': 10,
-        'Lost-Frank Ocean': 11,
-        'Love The Way You Lie-Eminem': 12,
-        'Love Yourself-Justin Bieber': 13,
-        'Low-Flo Rida': 14,
-        'One Dance-Drake': 15,
-        'One Last Time-Ariana Grande': 16,
-        'Only Girl (In The World)-Rihanna': 17,
-        'Pillow Talk-Zayn': 18,
-        'Put Your Records On-Corrine Bailey Rae': 19,
-        'Shut Up and Dance-Walk the Moon': 20,
-        'Smack That-Akon': 21,
-        'Sunflower-Post Malone': 22,
-        'Super Bass-Nicki Minaj': 23,
-        'Sweater Weather-The Neighbourhood': 24,
-        'This Love-Maroon 5': 25,
-        'Uptown Funk-Mark Ronson': 26,
-        'Wake Me Up-Avicii': 27
+        'Chandelier-Sia': 4,
+        'Closer-The Chainsmokers': 5,
+        'Diamonds-Rihanna': 6,
+        'Everybody Talks-Neon Trees': 7,
+        'Goosebumps-Travis Scott': 8,
+        'Havana-Camila Cabello': 9,
+        'Ho Hey-The Lumineers': 10,
+        'HUMBLE-Kendrick Lamar': 11,
+        'If I Die Young-The Band Perry': 12,
+        'I Gotta Feeling-The Black Eyed Peas': 13,
+        'Just Dance-Lady Gaga': 14,
+        'Location-Khalid': 15,
+        'Lost-Frank Ocean': 16,
+        'Love The Way You Lie-Eminem': 17,
+        'Love Yourself-Justin Bieber': 18,
+        'Low-Flo Rida': 19,
+        'One Dance-Drake': 20,
+        'One Last Time-Ariana Grande': 21,
+        'Only Girl (In The World)-Rihanna': 22,
+        'Pillow Talk-Zayn': 23,
+        'Pumped Up Kicks-Foster the People': 24,
+        'Put Your Records On-Corrine Bailey Rae': 25,
+        'Royals-Lorde': 26,
+        'Shake It Off-Taylor Swift': 27,
+        'Shut Up and Dance-Walk the Moon': 28,
+        'Smack That-Akon': 29,
+        'Started from the Bottom-Drake': 30,
+        'Suit & Tie-Justin Timberlake': 31,
+        'Sunflower-Post Malone': 32,
+        'Super Bass-Nicki Minaj': 33,
+        'Sweater Weather-The Neighbourhood': 34,
+        'Teenage Dream-Katy Perry': 35,
+        'This Love-Maroon 5': 36,
+        'Titanium-David Guetta': 37,
+        'Uptown Funk-Mark Ronson': 38,
+        'Wake Me Up-Avicii': 39,
+        'When I Was Your Man-Bruno Mars': 40,
+        'Wrecking Ball-Miley Cyrus': 41
       },
       '2020s': {
-        'Beautiful Mistakes-Maroon 5': 1,
-        'cardigan-Taylor Swift': 2,
-        'Enemy-Imagine Dragons': 3,
-        'Fast Car-Luke Combs': 4,
-        'Flowers-Miley Cyrus': 5,
-        'Good Luck, Babe-Chappell Roan': 6,
-        'Heat Waves-Glass Animals': 7,
-        'Here With Me-d4vd': 8,
-        'Houdini-Eminem': 9,
-        "I Don't Wanna Wait-David Guetta": 10,
-        'Industry Baby-Lil Nas X': 11,
-        'Lose Somebody-Kygo': 12,
-        'Made You Look-Meghan Trainor': 13,
-        'Peaches-Justin Bieber': 14,
-        'Smile-Katy Perry': 15,
-        'Snooze-SZA': 16,
-        'Stick Season-Noah Kahan': 17,
-        'Taste-Sabrina Carpenter': 18,
-        'Tattoo-Loreen': 19,
-        'the boy is mine-Ariana Grande': 20,
-        'Too Many Nights-Metro Boomin': 21,
-        'Traitor-Olivia Rodrigo': 22,
-        'Unholy-Sam Smith': 23,
-        'What It Is-Doechii': 24,
-        'Woman-Doja Cat': 25
+        'abcdefu-GAYLE': 1,
+        'About Damn Time-Lizzo': 2,
+        'As It Was-Harry Styles': 3,
+        'august-Taylor Swift': 4,
+        'Beautiful Mistakes-Maroon 5': 5,
+        'cardigan-Taylor Swift': 6,
+        "Creepin'-Metro Boomin": 7,
+        'Diamonds-Sam Smith': 8,
+        'drivers license-Olivia Rodrigo': 9,
+        'Enemy-Imagine Dragons': 10,
+        'Fast Car-Luke Combs': 11,
+        'First Class-Jack Harlow': 12,
+        'Flowers-Miley Cyrus': 13,
+        'Golden-HUNTR:X': 14,
+        'Good Luck, Babe-Chappell Roan': 15,
+        'Heather-Conan Gray': 16,
+        'Heat Waves-Glass Animals': 17,
+        'Here With Me-d4vd': 18,
+        'Houdini-Eminem': 19,
+        "I Don't Wanna Wait-David Guetta": 20,
+        'Industry Baby-Lil Nas X': 21,
+        'Levitating-Dua Lipa': 22,
+        'Lose Somebody-Kygo': 23,
+        'Made You Look-Meghan Trainor': 24,
+        'Peaches-Justin Bieber': 25,
+        'Say So-Doja Cat': 26,
+        'Smile-Katy Perry': 27,
+        'Snooze-SZA': 28,
+        'Stick Season-Noah Kahan': 29,
+        'Taste-Sabrina Carpenter': 30,
+        'Tattoo-Loreen': 31,
+        "That's So True-Gracie Abrams": 32,
+        'the boy is mine-Ariana Grande': 33,
+        'Too Many Nights-Metro Boomin': 34,
+        'Traitor-Olivia Rodrigo': 35,
+        'Unholy-Sam Smith': 36,
+        'Water-Tyla': 37,
+        'What It Is-Doechii': 38,
+        'What Was I Made For?-Billie Eilish': 39,
+        'Woman-Doja Cat': 40,
+        'Your Best American Girl-Mitski': 41
       },
       'Iconic Songs': {
         'Africa-Toto': 1,
@@ -2833,59 +3679,90 @@ const Game = () => {
         'Baby Got Back-Sir Mix-a-Lot': 4,
         'Bad Day-Daniel Powter': 5,
         'Beat It-Michael Jackson': 6,
-        'Cotton Eye Joe-Rednex': 7,
-        "Don't Stop Believin'-Journey": 8,
-        'Eye of the Tiger-Survivor': 9,
-        'Forget You-CeeLo Green': 10,
-        'Hey Ya!-OutKast': 11,
-        'How to Save a Life-The Fray': 12,
-        'Ice Ice Baby-Vanilla Ice': 13,
-        'I Have Nothing-Whitney Houston': 14,
-        'Last Friday Night-Katy Perry': 15,
-        'Mockingbird-Eminem': 16,
-        'Never Gonna Give You Up-Rick Astley': 17,
-        'Piano Man-Billy Joel': 18,
-        'Rocket Man-Elton John': 19,
-        'SexyBack-Justin Timberlake': 20,
-        "Stayin' Alive-Bee Gees": 21,
-        'Thunderstruck-AC/DC': 22,
-        "U Can't Touch This-MC Hammer": 23,
-        'Uptown Girl-Billy Joel': 24,
-        'Wake Me Up Before You Go-Go-Wham!': 25,
-        'Wannabe-Spice Girls': 26,
-        'We Will Rock You-Queen': 27,
-        'YMCA-Village People': 28,
-        'You Give Love a Bad Name-Bon Jovi': 29
+        'Brown Eyed Girl-Van Morrison': 7,
+        'Cotton Eye Joe-Rednex': 8,
+        'Dancing Queen-ABBA': 9,
+        "Don't Stop Believin'-Journey": 10,
+        'Eye of the Tiger-Survivor': 11,
+        'Forget You-CeeLo Green': 12,
+        "Hey There Delilah-Plain White T's": 13,
+        'Hey Ya!-OutKast': 14,
+        'How to Save a Life-The Fray': 15,
+        'Ice Ice Baby-Vanilla Ice': 16,
+        'I Have Nothing-Whitney Houston': 17,
+        'I Wanna Dance with Somebody-Whitney Houston': 18,
+        "I Was Made for Lovin' You-Kiss": 19,
+        'I Will Survive-Gloria Gaynor': 20,
+        'Last Friday Night-Katy Perry': 21,
+        'Mockingbird-Eminem': 22,
+        'My Heart Will Go On-Celine Dion': 23,
+        'Never Gonna Give You Up-Rick Astley': 24,
+        'Piano Man-Billy Joel': 25,
+        'Rocket Man-Elton John': 26,
+        'September-Earth, Wind & Fire': 27,
+        'SexyBack-Justin Timberlake': 28,
+        "Stayin' Alive-Bee Gees": 29,
+        'Sweet Caroline-Neil Diamond': 30,
+        'Take On Me-a-ha': 31,
+        'Thriller-Michael Jackson': 32,
+        'Thunderstruck-AC/DC': 33,
+        "U Can't Touch This-MC Hammer": 34,
+        'Uptown Girl-Billy Joel': 35,
+        'Wake Me Up Before You Go-Go-Wham!': 36,
+        'Walking on Sunshine-Katrina and the Waves': 37,
+        'Wannabe-Spice Girls': 38,
+        'We Will Rock You-Queen': 39,
+        'YMCA-Village People': 40,
+        'You Give Love a Bad Name-Bon Jovi': 41
       },
       'Most Streamed Songs': {
         '7 rings-Ariana Grande': 1,
-        'As It Was-Harry Styles': 2,
-        'bad guy-Billie Eilish': 3,
-        'Believer-Imagine Dragons': 4,
-        'Blinding Lights-The Weeknd': 5,
-        "Can't Hold Us-Macklemore": 6,
-        'Circles-Post Malone': 7,
-        'Closer-The Chainsmokers': 8,
-        'Cruel Summer-Taylor Swift': 9,
-        'Dance Monkey-Tones And I': 10,
-        "Don't Start Now-Dua Lipa": 11,
-        'Every Breath You Take-The Police': 12,
-        'Kill Bill-SZA': 13,
-        'lovely-Billie Eilish': 14,
-        'Lucid Dreams-Juice WRLD': 15,
-        'Night Changes-One Direction': 16,
-        'One Dance-Drake': 17,
-        'Perfect-Ed Sheeran': 18,
-        'Señorita-Shawn Mendes': 19,
-        'Shallow-Lady Gaga': 20,
-        'Someone Like You-Adele': 21,
-        'Someone You Loved-Lewis Capaldi': 22,
-        'Starboy-The Weeknd': 23,
-        'STAY-The Kid LAROI': 24,
-        'Take Me to Church-Hozier': 25,
-        'Watermelon Sugar-Harry Styles': 26,
-        'When I Was Your Man-Bruno Mars': 27,
-        'Yellow-Coldplay': 28
+        '7 Years-Lukas Graham': 2,
+        'As It Was-Harry Styles': 3,
+        'bad guy-Billie Eilish': 4,
+        'Believer-Imagine Dragons': 5,
+        'Blinding Lights-The Weeknd': 6,
+        "Can't Hold Us-Macklemore": 7,
+        'Cheap Thrills-Sia': 8,
+        'Circles-Post Malone': 9,
+        'Closer-The Chainsmokers': 10,
+        'Congratulations-Post Malone': 11,
+        'Counting Stars-OneRepublic': 12,
+        'Cruel Summer-Taylor Swift': 13,
+        'Dance Monkey-Tones And I': 14,
+        "Don't Start Now-Dua Lipa": 15,
+        'Every Breath You Take-The Police': 16,
+        "God's Plan-Drake": 17,
+        'Happier-Marshmello': 18,
+        'I Took A Pill In Ibiza-Mike Posner': 19,
+        'Kill Bill-SZA': 20,
+        'Let Me Love You-Justin Bieber': 21,
+        'lovely-Billie Eilish': 22,
+        'Love Me Like You Do-Ellie Goulding': 23,
+        'Lucid Dreams-Juice WRLD': 24,
+        'New Rules-Dua Lipa': 25,
+        'Night Changes-One Direction': 26,
+        'One Dance-Drake': 27,
+        'Perfect-Ed Sheeran': 28,
+        'rockstar-Post Malone': 29,
+        "Say You Won't Let Go-James Arthur": 30,
+        'Señorita-Shawn Mendes': 31,
+        'Shallow-Lady Gaga': 32,
+        'SICKO MODE-Travis Scott': 33,
+        'Someone Like You-Adele': 34,
+        'Someone You Loved-Lewis Capaldi': 35,
+        'Something Just Like This-Coldplay': 36,
+        'Sorry-Justin Bieber': 37,
+        'Starboy-The Weeknd': 38,
+        'STAY-The Kid LAROI': 39,
+        'Stressed Out-Twenty One Pilots': 40,
+        'Take Me to Church-Hozier': 41,
+        'thank u, next-Ariana Grande': 42,
+        'Too Good At Goodbyes-Sam Smith': 43,
+        'Watermelon Sugar-Harry Styles': 44,
+        'When I Was Your Man-Bruno Mars': 45,
+        'Without Me-Halsey': 46,
+        'Yellow-Coldplay': 47
       }
     }
 
