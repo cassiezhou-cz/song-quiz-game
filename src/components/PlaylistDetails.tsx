@@ -19,11 +19,11 @@ interface PlaylistStats {
 interface PlaylistDetailsProps {
   playlist: string
   tier: number
-  isMasterMode: boolean
+  isEndlessMode: boolean
   onClose: () => void
 }
 
-const PlaylistDetails = ({ playlist, tier, isMasterMode, onClose }: PlaylistDetailsProps) => {
+const PlaylistDetails = ({ playlist, tier, isEndlessMode, onClose }: PlaylistDetailsProps) => {
   const navigate = useNavigate()
   const [stats, setStats] = useState<PlaylistStats>({
     timesPlayed: 0,
@@ -58,7 +58,7 @@ const PlaylistDetails = ({ playlist, tier, isMasterMode, onClose }: PlaylistDeta
   }, [])
 
   const handleStartGame = () => {
-    const gameVersion = isMasterMode ? 'Version C' : 'Version B'
+    const gameVersion = isEndlessMode ? 'Version C' : 'Version B'
     const url = `/game/${playlist}?version=${encodeURIComponent(gameVersion)}&tier=${tier}`
     navigate(url)
   }
@@ -110,13 +110,13 @@ const PlaylistDetails = ({ playlist, tier, isMasterMode, onClose }: PlaylistDeta
         </div>
 
         <div className="action-section">
-          {isMasterMode && (
-            <div className="master-mode-badge">
-              ⚡ Master Mode ⚡
+          {isEndlessMode && (
+            <div className="endless-mode-badge">
+              ⚡ Endless Mode ⚡
             </div>
           )}
           <button className="start-game-button" onClick={handleStartGame}>
-            {isMasterMode ? 'Start Master Mode' : 'Start Game'}
+            {isEndlessMode ? 'Start Endless Mode' : 'Start Game'}
           </button>
         </div>
         </div>

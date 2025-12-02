@@ -29,7 +29,7 @@ const PlaylistSelection = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [selectedPlaylist, setSelectedPlaylist] = useState<string | null>(null)
-  const [selectedMasterMode, setSelectedMasterMode] = useState(false)
+  const [selectedEndlessMode, setSelectedEndlessMode] = useState(false)
   const [hoveredPlaylist, setHoveredPlaylist] = useState<string | null>(null)
   const [playlistStats, setPlaylistStats] = useState<Record<string, any>>({})
   const [showCollectionMenu, setShowCollectionMenu] = useState(false)
@@ -41,7 +41,7 @@ const PlaylistSelection = () => {
   const [dailyChallengePlaylist, setDailyChallengePlaylist] = useState('')
   const [dailyChallengeClosing, setDailyChallengeClosing] = useState(false)
   const [dailyChallengeNewBadges, setDailyChallengeNewBadges] = useState<Set<string>>(new Set())
-  const [masterModeNewBadges, setMasterModeNewBadges] = useState<Set<string>>(new Set())
+  const [endlessModeNewBadges, setEndlessModeNewBadges] = useState<Set<string>>(new Set())
   const [xpProgress, setXpProgress] = useState(() => {
     // Initialize from localStorage to avoid visual "fill up" on page load
     const savedLevel = parseInt(localStorage.getItem('player_level') || '1', 10)
@@ -232,11 +232,11 @@ const PlaylistSelection = () => {
     setDailyChallengeNewBadges(newBadges)
     console.log('🔥 Daily Challenge NEW badges for:', Array.from(newBadges))
 
-    // Load viewed Master Mode buttons
-    const savedViewedMM = localStorage.getItem('viewed_master_mode_buttons')
+    // Load viewed Endless Mode buttons
+    const savedViewedMM = localStorage.getItem('viewed_endless_mode_buttons')
     const viewedMM = savedViewedMM ? JSON.parse(savedViewedMM) : []
     
-    // Determine which playlists should show Master Mode NEW badge (Platinum tier and not yet viewed)
+    // Determine which playlists should show Endless Mode NEW badge (Platinum tier and not yet viewed)
     const mmNewBadges = new Set<string>()
     playlists.forEach(playlist => {
       const progress = progressData[playlist]?.progress || 0
@@ -244,8 +244,8 @@ const PlaylistSelection = () => {
         mmNewBadges.add(playlist)
       }
     })
-    setMasterModeNewBadges(mmNewBadges)
-    console.log('⚡ Master Mode NEW badges for:', Array.from(mmNewBadges))
+    setEndlessModeNewBadges(mmNewBadges)
+    console.log('⚡ Endless Mode NEW badges for:', Array.from(mmNewBadges))
 
     // Load stats for all playlists
     const stats: Record<string, any> = {}
@@ -301,9 +301,9 @@ const PlaylistSelection = () => {
     return 'bronze'
   }
 
-  // Helper function to check if Master Mode is unlocked
-  const isMasterModeUnlocked = (level: number): boolean => {
-    return level >= 7 // Master Mode available at Level 7
+  // Helper function to check if Endless Mode is unlocked
+  const isEndlessModeUnlocked = (level: number): boolean => {
+    return level >= 7 // Endless Mode available at Level 7
   }
 
   // Helper function to get medal image path
@@ -374,21 +374,21 @@ const PlaylistSelection = () => {
     }
   }
 
-  const handleMasterModeButtonHover = (playlist: string) => {
-    if (masterModeNewBadges.has(playlist)) {
+  const handleEndlessModeButtonHover = (playlist: string) => {
+    if (endlessModeNewBadges.has(playlist)) {
       // Mark as viewed
-      const savedViewedMM = localStorage.getItem('viewed_master_mode_buttons')
+      const savedViewedMM = localStorage.getItem('viewed_endless_mode_buttons')
       const viewedMM = savedViewedMM ? JSON.parse(savedViewedMM) : []
       if (!viewedMM.includes(playlist)) {
         viewedMM.push(playlist)
-        localStorage.setItem('viewed_master_mode_buttons', JSON.stringify(viewedMM))
+        localStorage.setItem('viewed_endless_mode_buttons', JSON.stringify(viewedMM))
       }
       
       // Remove from NEW badges
-      const updated = new Set(masterModeNewBadges)
+      const updated = new Set(endlessModeNewBadges)
       updated.delete(playlist)
-      setMasterModeNewBadges(updated)
-      console.log('⚡ Master Mode button viewed for:', playlist)
+      setEndlessModeNewBadges(updated)
+      console.log('⚡ Endless Mode button viewed for:', playlist)
     }
   }
 
@@ -668,11 +668,11 @@ const PlaylistSelection = () => {
     localStorage.removeItem('completed_songs')
     localStorage.removeItem('playlists_with_new_songs')
     
-    // Clear all playlist stats (including collections and master mode ranks)
+    // Clear all playlist stats (including collections and endless mode ranks)
     playlists.forEach(playlist => {
       localStorage.removeItem(`playlist_stats_${playlist}`)
       localStorage.removeItem(`new_songs_${playlist}`)
-      localStorage.removeItem(`master_mode_rank_${playlist}`)
+      localStorage.removeItem(`endless_mode_rank_${playlist}`)
     })
     setXpProgress(0)
     setActualXP(0)
@@ -703,11 +703,11 @@ const PlaylistSelection = () => {
     localStorage.removeItem('viewed_daily_challenge_buttons')
     setDailyChallengeNewBadges(new Set())
     
-    // Clear viewed Master Mode buttons
-    localStorage.removeItem('viewed_master_mode_buttons')
-    setMasterModeNewBadges(new Set())
+    // Clear viewed Endless Mode buttons
+    localStorage.removeItem('viewed_endless_mode_buttons')
+    setEndlessModeNewBadges(new Set())
     
-    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist progress reset to 0, NEW badges cleared, all stats (including Master Mode ranks) cleared, Daily Challenge cooldowns and viewed buttons cleared, Master Mode viewed buttons cleared')
+    console.log('XP Reset: Progress cleared, level reset to 1, all lifelines locked, hat removed, player name cleared, all playlist progress reset to 0, NEW badges cleared, all stats (including Endless Mode ranks) cleared, Daily Challenge cooldowns and viewed buttons cleared, Endless Mode viewed buttons cleared')
   }
 
   // Debug hotkeys: Press Up arrow to level up by 1, Right arrow to add 80 XP
@@ -826,7 +826,7 @@ const PlaylistSelection = () => {
                 const level = progressData.level
                 const xp = progressData.xp
                 const rank = getRankFromLevel(level)
-                const masterModeUnlocked = isMasterModeUnlocked(level)
+                const endlessModeUnlocked = isEndlessModeUnlocked(level)
                 const classNameMap: Record<string, string> = {
                   '2020s': 'playlist-2020s',
                   '2010s': 'playlist-2010s',
@@ -868,7 +868,7 @@ const PlaylistSelection = () => {
                         </div>
                       ) : (
                         <div className="playlist-mastered-container">
-                          <div className="playlist-mastered-text">MASTERED</div>
+                          <div className="playlist-mastered-text">COMING SOON</div>
                         </div>
                       )}
                     </div>
@@ -879,8 +879,8 @@ const PlaylistSelection = () => {
 
             {selectedPlaylist && (
               <div className="selection-feedback">
-                <p>✨ You selected the <strong>{selectedPlaylist}</strong> playlist{selectedMasterMode ? ' - Master Mode!' : '!'}</p>
-                <p><em>{selectedMasterMode ? '⚡ Entering speed challenge...' : 'Starting game...'}</em></p>
+                <p>✨ You selected the <strong>{selectedPlaylist}</strong> playlist{selectedEndlessMode ? ' - Endless Mode!' : '!'}</p>
+                <p><em>{selectedEndlessMode ? '⚡ Entering speed challenge...' : 'Starting game...'}</em></p>
               </div>
             )}
           </section>
@@ -1072,9 +1072,9 @@ const PlaylistSelection = () => {
       {/* Playlist Prompt Modal */}
       {showPlaylistPrompt && promptPlaylist && (() => {
         const playlistLevel = playlistProgress[promptPlaylist]?.level || 1
-        const masterModeRankKey = `master_mode_rank_${promptPlaylist}`
-        const masterModeRank = parseInt(localStorage.getItem(masterModeRankKey) || '0') || undefined
-        console.log(`🎯 Rendering PlaylistPrompt for "${promptPlaylist}": level=${playlistLevel}, masterModeRank=${masterModeRank}, progress=`, playlistProgress[promptPlaylist])
+        const endlessModeRankKey = `endless_mode_rank_${promptPlaylist}`
+        const endlessModeRank = parseInt(localStorage.getItem(endlessModeRankKey) || '0') || undefined
+        console.log(`🎯 Rendering PlaylistPrompt for "${promptPlaylist}": level=${playlistLevel}, endlessModeRank=${endlessModeRank}, progress=`, playlistProgress[promptPlaylist])
         return (
           <PlaylistPrompt
             playlist={promptPlaylist}
@@ -1082,8 +1082,8 @@ const PlaylistSelection = () => {
             xp={playlistProgress[promptPlaylist]?.xp || 0}
             rank={getRankFromLevel(playlistLevel)}
             stats={playlistStats[promptPlaylist] || { timesPlayed: 0, averageScore: 0, highestScore: 0 }}
-            masterModeUnlocked={isMasterModeUnlocked(playlistLevel)}
-            masterModeRank={masterModeRank}
+            endlessModeUnlocked={isEndlessModeUnlocked(playlistLevel)}
+            endlessModeRank={endlessModeRank}
             onClose={handleClosePrompt}
             onStartDailyChallenge={() => {
               setShowPlaylistPrompt(false)

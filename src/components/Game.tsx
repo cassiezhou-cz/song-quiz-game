@@ -5120,7 +5120,7 @@ const Game = () => {
                                               cascadeMessage = 'Events Unlocked'
                                               cascadeIcon = '🔥'
                                             } else if (nextLevel === 7) {
-                                              cascadeMessage = 'Master Mode Unlocked'
+                                              cascadeMessage = 'Endless Mode Unlocked'
                                               cascadeIcon = '⚡'
                                             }
                                             
@@ -5274,8 +5274,8 @@ const Game = () => {
                           message = 'Events Unlocked'
                           icon = '🔥'
                         } else if (newLevel === 7) {
-                          console.log('💎 SHOWING MASTER MODE UNLOCK (after mastery transformation)')
-                          message = 'Master Mode Unlocked'
+                          console.log('💎 SHOWING ENDLESS MODE UNLOCK (after mastery transformation)')
+                          message = 'Endless Mode Unlocked'
                           icon = '⚡'
                         }
                         
@@ -6893,7 +6893,7 @@ const Game = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
-  // Generate fake leaderboard data for Master Mode - Memoized to prevent re-generation on re-renders
+  // Generate fake leaderboard data for Endless Mode - Memoized to prevent re-generation on re-renders
   const leaderboardData = useMemo(() => {
     if (!gameComplete || version !== 'Version C') {
       return []
@@ -6953,16 +6953,16 @@ const Game = () => {
     return finalLeaderboard
   }, [gameComplete, score, version])
 
-  // Save Master Mode rank when leaderboard is generated
+  // Save Endless Mode rank when leaderboard is generated
   useEffect(() => {
     if (version === 'Version C' && gameComplete && leaderboardData.length > 0 && playlist) {
       const playerEntry = leaderboardData.find(entry => entry.isPlayer)
       if (playerEntry && playerEntry.rank <= 10) {
-        const masterModeRankKey = `master_mode_rank_${playlist}`
-        const currentBestRank = parseInt(localStorage.getItem(masterModeRankKey) || '999')
+        const endlessModeRankKey = `endless_mode_rank_${playlist}`
+        const currentBestRank = parseInt(localStorage.getItem(endlessModeRankKey) || '999')
         if (playerEntry.rank < currentBestRank) {
-          localStorage.setItem(masterModeRankKey, playerEntry.rank.toString())
-          console.log(`🏆 Saved Master Mode best rank for ${playlist}: #${playerEntry.rank}`)
+          localStorage.setItem(endlessModeRankKey, playerEntry.rank.toString())
+          console.log(`🏆 Saved Endless Mode best rank for ${playlist}: #${playerEntry.rank}`)
         }
       }
     }
@@ -7009,13 +7009,13 @@ const Game = () => {
     stats.averageScore = Math.round(stats.totalScoreSum / stats.timesPlayed)
     stats.highestScore = Math.max(stats.highestScore, finalScore)
     
-    // Save Master Mode high score separately (rank is saved via leaderboardData useEffect)
+    // Save Endless Mode high score separately (rank is saved via leaderboardData useEffect)
     if (version === 'Version C') {
-      const masterModeKey = `master_mode_high_score_${playlist}`
-      const currentMasterHighScore = parseInt(localStorage.getItem(masterModeKey) || '0')
-      if (finalScore > currentMasterHighScore) {
-        localStorage.setItem(masterModeKey, finalScore.toString())
-        console.log(`🏆 New Master Mode high score for ${playlist}: ${finalScore}`)
+      const endlessModeKey = `endless_mode_high_score_${playlist}`
+      const currentEndlessHighScore = parseInt(localStorage.getItem(endlessModeKey) || '0')
+      if (finalScore > currentEndlessHighScore) {
+        localStorage.setItem(endlessModeKey, finalScore.toString())
+        console.log(`🏆 New Endless Mode high score for ${playlist}: ${finalScore}`)
       }
     }
     
@@ -7253,7 +7253,7 @@ const Game = () => {
                       {showMasteryTransformation ? (
                         /* Full Container Mastery Display */
                         <div className="mastery-takeover">
-                          <div className="mastery-takeover-text">MASTERED</div>
+                          <div className="mastery-takeover-text">COMING SOON</div>
                         </div>
                       ) : (
                         <>
@@ -7465,9 +7465,9 @@ const Game = () => {
                     </div>
                   </div>
                   
-                  {/* Weekly Leaderboard */}
+                  {/* Global Leaderboard */}
                   <div className="weekly-leaderboard">
-                    <h4 className="leaderboard-title">🏆 Weekly Leaderboard 🏆</h4>
+                    <h4 className="leaderboard-title">🏆 Global Leaderboard 🏆</h4>
                     <div className="leaderboard-list">
                       {leaderboardData.map((entry) => (
                         <div 
@@ -7766,7 +7766,7 @@ const Game = () => {
               <div className="rank-up-description">
                 {rankUpTo === 'silver' && 'Special Questions Unlocked!'}
                 {rankUpTo === 'gold' && 'Daily Challenge Unlocked!'}
-                {rankUpTo === 'platinum' && 'Master Mode Unlocked!'}
+                {rankUpTo === 'platinum' && 'Endless Mode Unlocked!'}
               </div>
               <button 
                 className="level-up-confirm-btn" 
@@ -8399,7 +8399,7 @@ const Game = () => {
               <div className="version-c-layout">
                 <div className="manual-scoring version-c-scoring">
                   <div className="rapid-fire-header">
-                    <div className="rapid-fire-title">⚡ Rapid Fire Mode</div>
+                    <div className="rapid-fire-title">⚡ Endless Mode</div>
                     <div className="rapid-fire-instruction">Score and move to next song instantly!</div>
                   </div>
                   <div className="score-buttons">
@@ -9103,7 +9103,7 @@ const Game = () => {
                 )}
                 {newPlaylistLevelReached === 7 && (
                   <div className="level-up-unlock-message">
-                    ⚡ Master Mode Unlocked!
+                    ⚡ Endless Mode Unlocked!
                   </div>
                 )}
               </div>

@@ -21,8 +21,8 @@ interface PlaylistPromptProps {
   xp: number
   rank: PlaylistRank
   stats: PlaylistStats
-  masterModeUnlocked: boolean
-  masterModeRank?: number // Player's best rank on Master Mode leaderboard
+  endlessModeUnlocked: boolean
+  endlessModeRank?: number // Player's best rank on Endless Mode leaderboard
   onClose: () => void
   onStartDailyChallenge: () => void
 }
@@ -33,8 +33,8 @@ const PlaylistPrompt = ({
   xp, 
   rank, 
   stats,
-  masterModeUnlocked,
-  masterModeRank,
+  endlessModeUnlocked,
+  endlessModeRank,
   onClose,
   onStartDailyChallenge
 }: PlaylistPromptProps) => {
@@ -74,19 +74,19 @@ const PlaylistPrompt = ({
           console.log('🐛 DEBUG: W pressed - Event button locked (need Level 5)')
         }
       } else if (key === 'e') {
-        if (masterModeUnlocked) {
+        if (endlessModeUnlocked) {
           event.preventDefault()
-          console.log('🐛 DEBUG: E pressed - triggering Master button')
-          handleMasterMode()
+          console.log('🐛 DEBUG: E pressed - triggering Endless button')
+          handleEndlessMode()
         } else {
-          console.log('🐛 DEBUG: E pressed - Master button locked')
+          console.log('🐛 DEBUG: E pressed - Endless button locked')
         }
       }
     }
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [level, masterModeUnlocked, onClose])
+  }, [level, endlessModeUnlocked, onClose])
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -102,7 +102,7 @@ const PlaylistPrompt = ({
     navigate(url)
   }
 
-  const handleMasterMode = () => {
+  const handleEndlessMode = () => {
     const gameVersion = 'Version C'
     const url = `/game/${playlist}?version=${encodeURIComponent(gameVersion)}&level=${level}`
     navigate(url)
@@ -159,7 +159,7 @@ const PlaylistPrompt = ({
             </div>
           </div>
 
-          {/* Playlist Meter or Master Mode Rank */}
+          {/* Playlist Meter or Endless Mode Rank */}
           <div className="prompt-meter-section">
             {level < 7 ? (
               <div className="prompt-meter-container">
@@ -175,10 +175,10 @@ const PlaylistPrompt = ({
                 <div className="prompt-level-badge">{level}</div>
               </div>
             ) : (
-              <div className="prompt-master-rank-container">
-                <div className="prompt-master-rank-label">GLOBAL MASTER RANK</div>
-                <div className="prompt-master-rank-value">
-                  #{masterModeRank || '—'}
+              <div className="prompt-endless-rank-container">
+                <div className="prompt-endless-rank-label">GLOBAL ENDLESS RANK</div>
+                <div className="prompt-endless-rank-value">
+                  #{endlessModeRank || '—'}
                 </div>
               </div>
             )}
@@ -204,18 +204,18 @@ const PlaylistPrompt = ({
               Event
             </button>
             <button 
-              className={`prompt-button prompt-master-button ${!masterModeUnlocked ? 'locked' : ''}`}
-              onClick={handleMasterMode}
-              disabled={!masterModeUnlocked}
-              title={!masterModeUnlocked ? "Unlock at Level 7" : "Master"}
+              className={`prompt-button prompt-endless-button ${!endlessModeUnlocked ? 'locked' : ''}`}
+              onClick={handleEndlessMode}
+              disabled={!endlessModeUnlocked}
+              title={!endlessModeUnlocked ? "Unlock at Level 7" : "Endless"}
             >
-              {!masterModeUnlocked && (
+              {!endlessModeUnlocked && (
                 <div className="button-lock-badge">
                   <span className="lock-emoji">🔒</span>
                   <div className="button-level-badge">7</div>
                 </div>
               )}
-              Master
+              Endless
             </button>
           </div>
         </div>
