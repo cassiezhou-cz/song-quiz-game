@@ -1085,11 +1085,6 @@ const PlaylistSelection = () => {
             endlessModeUnlocked={isEndlessModeUnlocked(playlistLevel)}
             endlessModeRank={endlessModeRank}
             onClose={handleClosePrompt}
-            onStartDailyChallenge={() => {
-              setShowPlaylistPrompt(false)
-              setDailyChallengePlaylist(promptPlaylist)
-              setShowDailyChallengeModal(true)
-            }}
           />
         )
       })()}

@@ -4526,14 +4526,24 @@ const Game = () => {
         const selectedQuestion = availablePositions[randomIndex]
         selectedSpecialQuestions = [selectedQuestion]
         
-        // Assign a random type to this special question
-        // NOTE: Time Warp and Slo-Mo are disabled
-        const allTypes: ('hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['hyperspeed', 'song-trivia', 'finish-the-lyric']
-        const typeIndex = Math.floor(Math.random() * allTypes.length)
-        assignedTypes[selectedQuestion] = allTypes[typeIndex]
+        // Assign a random type based on unlocked special question types
+        // Level 3: Hyperspeed unlocked
+        // Level 5: Song Trivia unlocked
+        // Level 6: Finish the Lyric unlocked
+        let availableTypes: ('hyperspeed' | 'song-trivia' | 'finish-the-lyric')[] = ['hyperspeed']
+        if (currentPlaylistLevel >= 5) {
+          availableTypes.push('song-trivia')
+        }
+        if (currentPlaylistLevel >= 6) {
+          availableTypes.push('finish-the-lyric')
+        }
+        
+        const typeIndex = Math.floor(Math.random() * availableTypes.length)
+        assignedTypes[selectedQuestion] = availableTypes[typeIndex]
         
         const rankName = rank === 'silver' ? 'SILVER RANK' : rank === 'gold' ? 'GOLD RANK' : 'PLATINUM RANK'
-        console.log(`🎯 ${rankName}: 1 Special Question at position ${selectedQuestion} of type ${assignedTypes[selectedQuestion]}`)
+        console.log(`🎯 ${rankName} (Level ${currentPlaylistLevel}): 1 Special Question at position ${selectedQuestion} of type ${assignedTypes[selectedQuestion]}`)
+        console.log(`🎯 Available types at Level ${currentPlaylistLevel}:`, availableTypes)
       }
       
       setSpecialQuestionNumbers(selectedSpecialQuestions)
@@ -4992,7 +5002,7 @@ const Game = () => {
                     setNewPlaylistLevelReached(newLevel)
                     
                     // Store milestone info for unlock notification
-                    const isMilestone = newLevel === 3 || newLevel === 5 || newLevel === 7
+                    const isMilestone = newLevel === 3 || newLevel === 5 || newLevel === 6 || newLevel === 7
                     
                     // Animate bar to 100% first
                     setDisplayedPlaylistXP(xpRequired)
@@ -5113,15 +5123,23 @@ const Game = () => {
                                             let cascadeMessage = ''
                                             let cascadeIcon = ''
                                             
+                                            let cascadeTitle = 'New Reward!'
+                                            
                                             if (nextLevel === 3) {
-                                              cascadeMessage = 'Special Questions Unlocked'
-                                              cascadeIcon = '🎵'
+                                              cascadeMessage = 'Hyperspeed Unlocked'
+                                              cascadeIcon = '⚡'
+                                              cascadeTitle = 'New Special Question Type!'
                                             } else if (nextLevel === 5) {
-                                              cascadeMessage = 'Events Unlocked'
-                                              cascadeIcon = '🔥'
+                                              cascadeMessage = 'Song Trivia Unlocked'
+                                              cascadeIcon = '📖'
+                                              cascadeTitle = 'New Special Question Type!'
+                                            } else if (nextLevel === 6) {
+                                              cascadeMessage = 'Finish the Lyric Unlocked'
+                                              cascadeIcon = '🎤'
+                                              cascadeTitle = 'New Special Question Type!'
                                             } else if (nextLevel === 7) {
                                               cascadeMessage = 'Endless Mode Unlocked'
-                                              cascadeIcon = '⚡'
+                                              cascadeIcon = '🔥'
                                             }
                                             
                                             // Function to complete the cascade drain/refill
@@ -5199,7 +5217,7 @@ const Game = () => {
                                                     font-weight: 700;
                                                     text-transform: uppercase;
                                                     letter-spacing: 0.15em;
-                                                  ">New Reward!</h3>
+                                                  ">${cascadeTitle}</h3>
                                                   
                                                   <div style="
                                                     font-size: 8rem;
@@ -5264,19 +5282,27 @@ const Game = () => {
                         // Check if this is a milestone level
                         let message = ''
                         let icon = ''
+                        let title = 'New Reward!'
                         
                         if (newLevel === 3) {
-                          console.log('🎊 SHOWING SPECIAL QUESTIONS UNLOCK')
-                          message = 'Special Questions Unlocked'
-                          icon = '🎵'
+                          console.log('🎊 SHOWING HYPERSPEED UNLOCK')
+                          message = 'Hyperspeed Unlocked'
+                          icon = '⚡'
+                          title = 'New Special Question Type!'
                         } else if (newLevel === 5) {
-                          console.log('🎊 SHOWING EVENTS UNLOCK')
-                          message = 'Events Unlocked'
-                          icon = '🔥'
+                          console.log('🎊 SHOWING SONG TRIVIA UNLOCK')
+                          message = 'Song Trivia Unlocked'
+                          icon = '📖'
+                          title = 'New Special Question Type!'
+                        } else if (newLevel === 6) {
+                          console.log('🎊 SHOWING FINISH THE LYRIC UNLOCK')
+                          message = 'Finish the Lyric Unlocked'
+                          icon = '🎤'
+                          title = 'New Special Question Type!'
                         } else if (newLevel === 7) {
                           console.log('💎 SHOWING ENDLESS MODE UNLOCK (after mastery transformation)')
                           message = 'Endless Mode Unlocked'
-                          icon = '⚡'
+                          icon = '🔥'
                         }
                         
                         // Function to show unlock notification
@@ -5314,7 +5340,7 @@ const Game = () => {
                                 font-weight: 700;
                                 text-transform: uppercase;
                                 letter-spacing: 0.15em;
-                              ">New Reward!</h3>
+                              ">${title}</h3>
                               
                               <div style="
                                 font-size: 8rem;
@@ -7296,7 +7322,7 @@ const Game = () => {
                     <div className="next-reward-container">
                       <span className="next-reward-label">NEXT REWARD</span>
                       <div className="next-reward-level">
-                        {currentPlaylistLevel < 3 ? '3' : currentPlaylistLevel < 5 ? '5' : '7'}
+                        {currentPlaylistLevel < 3 ? '3' : currentPlaylistLevel < 5 ? '5' : currentPlaylistLevel < 6 ? '6' : '7'}
                       </div>
                     </div>
                   )}
@@ -7764,8 +7790,8 @@ const Game = () => {
                 />
               </div>
               <div className="rank-up-description">
-                {rankUpTo === 'silver' && 'Special Questions Unlocked!'}
-                {rankUpTo === 'gold' && 'Daily Challenge Unlocked!'}
+                {rankUpTo === 'silver' && 'Hyperspeed Unlocked!'}
+                {rankUpTo === 'gold' && 'Song Trivia Unlocked!'}
                 {rankUpTo === 'platinum' && 'Endless Mode Unlocked!'}
               </div>
               <button 
@@ -9093,17 +9119,22 @@ const Game = () => {
                 {/* Show unlock messages */}
                 {newPlaylistLevelReached === 3 && (
                   <div className="level-up-unlock-message">
-                    🎵 Special Questions Unlocked!
+                    ⚡ Hyperspeed Unlocked!
                   </div>
                 )}
                 {newPlaylistLevelReached === 5 && (
                   <div className="level-up-unlock-message">
-                    🔥 Daily Challenge Unlocked!
+                    📖 Song Trivia Unlocked!
+                  </div>
+                )}
+                {newPlaylistLevelReached === 6 && (
+                  <div className="level-up-unlock-message">
+                    🎤 Finish the Lyric Unlocked!
                   </div>
                 )}
                 {newPlaylistLevelReached === 7 && (
                   <div className="level-up-unlock-message">
-                    ⚡ Endless Mode Unlocked!
+                    🔥 Endless Mode Unlocked!
                   </div>
                 )}
               </div>

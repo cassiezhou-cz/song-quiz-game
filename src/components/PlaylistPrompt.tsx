@@ -24,7 +24,6 @@ interface PlaylistPromptProps {
   endlessModeUnlocked: boolean
   endlessModeRank?: number // Player's best rank on Endless Mode leaderboard
   onClose: () => void
-  onStartDailyChallenge: () => void
 }
 
 const PlaylistPrompt = ({ 
@@ -35,14 +34,11 @@ const PlaylistPrompt = ({
   stats,
   endlessModeUnlocked,
   endlessModeRank,
-  onClose,
-  onStartDailyChallenge
+  onClose
 }: PlaylistPromptProps) => {
   const navigate = useNavigate()
   
-  // Check if Event is unlocked (Level 5 or above)
-  const eventUnlocked = level >= 5
-  console.log(`🎯🎯🎯 PlaylistPrompt for "${playlist}": level=${level}, eventUnlocked=${eventUnlocked}, disabled=${!eventUnlocked}`)
+  console.log(`🎯🎯🎯 PlaylistPrompt for "${playlist}": level=${level}`)
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -65,14 +61,6 @@ const PlaylistPrompt = ({
         event.preventDefault()
         console.log('🐛 DEBUG: Q pressed - triggering Play button')
         handlePlay()
-      } else if (key === 'w') {
-        if (eventUnlocked) {
-          event.preventDefault()
-          console.log('🐛 DEBUG: W pressed - triggering Event button')
-          handleEvent()
-        } else {
-          console.log('🐛 DEBUG: W pressed - Event button locked (need Level 5)')
-        }
       } else if (key === 'e') {
         if (endlessModeUnlocked) {
           event.preventDefault()
@@ -106,13 +94,6 @@ const PlaylistPrompt = ({
     const gameVersion = 'Version C'
     const url = `/game/${playlist}?version=${encodeURIComponent(gameVersion)}&level=${level}`
     navigate(url)
-  }
-
-  const handleEvent = () => {
-    console.log(`🎯 Event button CLICKED - level=${level}, will start=${level >= 5}`)
-    if (level >= 5) {
-      onStartDailyChallenge()
-    }
   }
 
   // Get playlist description
@@ -188,20 +169,6 @@ const PlaylistPrompt = ({
           <div className="prompt-buttons-section">
             <button className="prompt-button prompt-play-button" onClick={handlePlay}>
               Play
-            </button>
-            <button 
-              className={`prompt-button prompt-event-button ${!eventUnlocked ? 'locked' : ''}`}
-              onClick={handleEvent}
-              disabled={!eventUnlocked}
-              title={!eventUnlocked ? "Unlock at Level 5" : "Event - Play Anytime!"}
-            >
-              {!eventUnlocked && (
-                <div className="button-lock-badge">
-                  <span className="lock-emoji">🔒</span>
-                  <div className="button-level-badge">5</div>
-                </div>
-              )}
-              Event
             </button>
             <button 
               className={`prompt-button prompt-endless-button ${!endlessModeUnlocked ? 'locked' : ''}`}
