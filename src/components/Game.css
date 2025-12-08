@@ -521,6 +521,73 @@
   text-transform: uppercase;
 }
 
+/* Version B Score Display */
+.version-b-score-display {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  margin-top: 0.5rem;
+}
+
+.version-b-score-display.player-score {
+  border-color: rgba(78, 205, 196, 0.6);
+}
+
+.version-b-score-display.opponent-score {
+  border-color: rgba(255, 165, 0, 0.6);
+}
+
+/* Version B Opponent Avatar (Right Side) */
+.version-b-opponent-container {
+  position: absolute;
+  top: 38%;
+  right: 50px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.version-b-opponent-avatar-wrapper {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 5px solid rgba(255, 165, 0, 0.6);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.5);
+  filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.6));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.version-b-opponent-avatar {
+  width: 350px;
+  height: 350px;
+  object-fit: cover;
+  object-position: center center;
+  transition: opacity 0.3s ease;
+}
+
+.version-b-opponent-label {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 4px 8px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
 /* Sparkles around avatars */
 .sparkles {
   position: absolute;
@@ -1752,8 +1819,8 @@
 
 .result-row {
   display: grid;
-  grid-template-columns: 1fr 70px;
-  gap: 1rem;
+  grid-template-columns: 40px 1fr 40px;
+  gap: 0.75rem;
   align-items: center;
   margin-bottom: 0.75rem;
 }
@@ -1774,13 +1841,45 @@
   }
 }
 
+/* Player and Opponent result indicators for song feedback */
+.result-indicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.result-indicator.correct {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(78, 205, 196, 0.5);
+}
+
+.result-indicator.incorrect {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: #ffffff;
+  box-shadow: 0 3px 12px rgba(255, 107, 107, 0.5);
+}
+
+.result-indicator.player-indicator {
+  border: 2px solid rgba(78, 205, 196, 0.3);
+}
+
+.result-indicator.opponent-indicator {
+  border: 2px solid rgba(255, 165, 0, 0.3);
+}
+
 .result-category {
   background: rgba(255, 255, 255, 0.05);
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.9);
   min-width: 0; /* Allow text to wrap if needed */
-  text-align: right;
+  text-align: center;
 }
 
 .result-category.correct {
@@ -2862,6 +2961,114 @@
   flex-shrink: 0; /* Prevent compression */
   margin-bottom: 0; /* Song list will add its own spacing */
   position: relative; /* Establish positioning context */
+}
+
+/* Competitive Results - Player vs Opponent */
+.competitive-results {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem;
+  margin: 1.5rem 0 2rem 0;
+}
+
+.competitor-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 2rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+
+.competitor-result.winner {
+  border-color: rgba(255, 215, 0, 0.8);
+  background: rgba(255, 215, 0, 0.1);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+.competitor-result.loser {
+  opacity: 0.8;
+}
+
+.winner-text {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #FFD700;
+  text-shadow: 
+    0 0 10px rgba(255, 215, 0, 0.8),
+    0 0 20px rgba(255, 215, 0, 0.6),
+    0 0 30px rgba(255, 215, 0, 0.4);
+  letter-spacing: 3px;
+  animation: winnerGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes winnerGlow {
+  0% {
+    text-shadow: 
+      0 0 10px rgba(255, 215, 0, 0.8),
+      0 0 20px rgba(255, 215, 0, 0.6),
+      0 0 30px rgba(255, 215, 0, 0.4);
+  }
+  100% {
+    text-shadow: 
+      0 0 15px rgba(255, 215, 0, 1),
+      0 0 30px rgba(255, 215, 0, 0.8),
+      0 0 45px rgba(255, 215, 0, 0.6);
+  }
+}
+
+.competitor-avatar-wrapper {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid rgba(78, 205, 196, 0.6);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.competitor-result.winner .competitor-avatar-wrapper {
+  border-color: rgba(255, 215, 0, 0.8);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.competitor-avatar {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.competitor-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.competitor-score {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.competitor-result.winner .competitor-score {
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.vs-text {
+  font-size: 2rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.6);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .score-button.score-30 {
@@ -5477,6 +5684,57 @@
   background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(255, 107, 107, 0.5);
+}
+
+/* Player and Opponent result indicators (side-by-side layout) */
+.song-result-player-indicators,
+.song-result-opponent-indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+}
+
+.result-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.result-icon.correct {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(78, 205, 196, 0.5);
+}
+
+.result-icon.incorrect {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.5);
+}
+
+.song-result-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: flex-end;
+  margin-left: auto;
+}
+
+.result-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 26px; /* Match icon height for alignment */
 }
 
 /* Mobile adjustments for Version B song results */

@@ -375,6 +375,16 @@ const getLevelFromTotalXP = (totalXP: number, currentLevel: number): { level: nu
   return { level, xpInCurrentLevel: xpRemaining }
 }
 
+// Set to true to show debug controls (restart button, special question triggers, etc.)
+const DEBUG_ENABLED = false
+
+// Available avatar types for CPU opponent (excluding player's avatar)
+const AVATAR_TYPES = ['Cat', 'Boy', 'Girl', 'Corgi', 'Robot', 'Panda'] as const
+type AvatarType = typeof AVATAR_TYPES[number]
+
+// CPU opponent names to randomly choose from
+const CPU_NAMES = ['Alex', 'Jordan', 'Taylor', 'Casey', 'Morgan', 'Riley', 'Quinn', 'Avery', 'Sage', 'Drew']
+
 const Game = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -428,6 +438,12 @@ const Game = () => {
   const [opponentPointsEarned, setOpponentPointsEarned] = useState(0)
   const [gameComplete, setGameComplete] = useState(false)
   
+  // CPU Opponent state
+  const [opponentAvatar, setOpponentAvatar] = useState<AvatarType>('Robot')
+  const [opponentName, setOpponentName] = useState('Opponent')
+  const [opponentArtistCorrect, setOpponentArtistCorrect] = useState(false)
+  const [opponentSongCorrect, setOpponentSongCorrect] = useState(false)
+  
   // Version B time bonus tracking
   const [timeBonusPoints, setTimeBonusPoints] = useState(0)
   
@@ -469,7 +485,11 @@ const Game = () => {
     songCorrect: boolean,
     isSpecialQuestion: boolean,
     specialType?: 'song-trivia' | 'finish-lyric',
-    isNewlyCompleted?: boolean
+    isNewlyCompleted?: boolean,
+    // CPU opponent results for this song
+    opponentArtistCorrect: boolean,
+    opponentSongCorrect: boolean,
+    opponentPointsEarned: number
   }>>([])
   
   // Completed songs tracking (for NEW indicators)
@@ -490,6 +510,25 @@ const Game = () => {
         console.error('Failed to parse completed songs:', e)
       }
     }
+  }, [])
+  
+  // Initialize random CPU opponent avatar and name on mount
+  useEffect(() => {
+    // Get player's avatar to exclude it from opponent selection
+    const playerAvatar = localStorage.getItem('player_avatar') || 'Cat'
+    
+    // Filter out player's avatar from available options
+    const availableAvatars = AVATAR_TYPES.filter(avatar => avatar !== playerAvatar)
+    
+    // Randomly select opponent avatar
+    const randomAvatar = availableAvatars[Math.floor(Math.random() * availableAvatars.length)]
+    setOpponentAvatar(randomAvatar)
+    
+    // Randomly select opponent name
+    const randomName = CPU_NAMES[Math.floor(Math.random() * CPU_NAMES.length)]
+    setOpponentName(randomName)
+    
+    console.log(`🤖 CPU Opponent initialized: ${randomName} with ${randomAvatar} avatar`)
   }, [])
 
   // Initialize Daily Challenge mode with Song Trivia questions
@@ -5761,6 +5800,42 @@ const Game = () => {
       songCorrect = false
     }
     
+    // Generate CPU opponent guesses for Version C
+    const cpuRoll = Math.random()
+    let cpuArtistCorrect = false
+    let cpuSongCorrect = false
+    let cpuPoints = 0
+    
+    // CPU probabilities: 30% for 0 correct, 50% for 1 correct, 20% for both correct
+    if (cpuRoll < 0.30) {
+      // 30% chance: CPU gets neither correct
+      cpuArtistCorrect = false
+      cpuSongCorrect = false
+      cpuPoints = 0
+    } else if (cpuRoll < 0.80) {
+      // 50% chance: CPU gets one correct (randomly artist or song)
+      if (Math.random() < 0.5) {
+        cpuArtistCorrect = true
+        cpuSongCorrect = false
+      } else {
+        cpuArtistCorrect = false
+        cpuSongCorrect = true
+      }
+      cpuPoints = 10
+    } else {
+      // 20% chance: CPU gets both correct
+      cpuArtistCorrect = true
+      cpuSongCorrect = true
+      cpuPoints = 20
+    }
+    
+    setOpponentArtistCorrect(cpuArtistCorrect)
+    setOpponentSongCorrect(cpuSongCorrect)
+    setOpponentPointsEarned(cpuPoints)
+    if (cpuPoints > 0) {
+      setOpponentScore(prev => prev + cpuPoints)
+    }
+    
     // Add this attempt to the tracking array
     setAllAttemptedSongs(prev => [...prev, {
       song: currentQuestion.song,
@@ -5768,7 +5843,10 @@ const Game = () => {
       artistCorrect,
       songCorrect,
       isSpecialQuestion: false,
-      specialType: undefined
+      specialType: undefined,
+      opponentArtistCorrect: cpuArtistCorrect,
+      opponentSongCorrect: cpuSongCorrect,
+      opponentPointsEarned: cpuPoints
     }])
     
     // Update streak and apply streak multiplier
@@ -6018,6 +6096,55 @@ const Game = () => {
         setIsNewCompletion(false)
       }
       
+      // Generate CPU opponent guesses
+      const cpuRoll = Math.random()
+      let cpuArtistCorrect = false
+      let cpuSongCorrect = false
+      let cpuPoints = 0
+      
+      if (isSpecialQuestion) {
+        // For special questions, CPU has 50% chance of getting it right
+        if (cpuRoll < 0.5) {
+          cpuArtistCorrect = true
+          cpuSongCorrect = true
+          cpuPoints = 20
+        }
+      } else {
+        // CPU probabilities: 30% for 0 correct, 50% for 1 correct, 20% for both correct
+        if (cpuRoll < 0.30) {
+          // 30% chance: CPU gets neither correct
+          cpuArtistCorrect = false
+          cpuSongCorrect = false
+          cpuPoints = 0
+        } else if (cpuRoll < 0.80) {
+          // 50% chance: CPU gets one correct (randomly artist or song)
+          if (Math.random() < 0.5) {
+            cpuArtistCorrect = true
+            cpuSongCorrect = false
+          } else {
+            cpuArtistCorrect = false
+            cpuSongCorrect = true
+          }
+          cpuPoints = 10
+        } else {
+          // 20% chance: CPU gets both correct
+          // CPU gets both correct
+          cpuArtistCorrect = true
+          cpuSongCorrect = true
+          cpuPoints = 20
+        }
+      }
+      
+      // Update CPU state for feedback display
+      setOpponentArtistCorrect(cpuArtistCorrect)
+      setOpponentSongCorrect(cpuSongCorrect)
+      setOpponentPointsEarned(cpuPoints)
+      
+      // Add CPU points to opponent score
+      if (cpuPoints > 0) {
+        setOpponentScore(prev => prev + cpuPoints)
+      }
+      
       setAllAttemptedSongs(prev => [...prev, {
         song: currentQuestion.song,
         pointsEarned: finalPoints,
@@ -6025,7 +6152,10 @@ const Game = () => {
         songCorrect,
         isSpecialQuestion,
         specialType,
-        isNewlyCompleted
+        isNewlyCompleted,
+        opponentArtistCorrect: cpuArtistCorrect,
+        opponentSongCorrect: cpuSongCorrect,
+        opponentPointsEarned: cpuPoints
       }])
     }
     
@@ -7246,16 +7376,40 @@ const Game = () => {
                     <h3 className="victory-message">Quiz Complete!</h3>
                   )}
                   
+                  {/* Competitive Results - Player vs Opponent */}
                   {showFinalScore && (
-                    <p className={`final-score-text ${isMultiplyingScore ? 'score-multiplying' : ''}`}>
-                      Final Score: 
-                      <span className="final-score-value-container">
-                        {showDailyChallenge2X && (
-                          <span className="daily-challenge-2x-text">EVENT 2X</span>
-                        )}
-                        <span className="final-score-value">{displayedScore}</span>
-                      </span>
-                    </p>
+                    <div className="competitive-results">
+                      {/* Player Side (Left) */}
+                      <div className={`competitor-result ${score > opponentScore ? 'winner' : score < opponentScore ? 'loser' : ''}`}>
+                        {score > opponentScore && <div className="winner-text">WINNER</div>}
+                        <div className="competitor-avatar-wrapper">
+                          <img 
+                            src={getAvatarPath(score >= opponentScore ? 'Happy' : 'Sad', hatUnlocked)}
+                            alt="Player Avatar"
+                            className="competitor-avatar"
+                          />
+                        </div>
+                        <div className="competitor-name">{playerName || 'Player'}</div>
+                        <div className="competitor-score">{displayedScore}</div>
+                      </div>
+                      
+                      {/* VS Divider */}
+                      <div className="vs-text">VS</div>
+                      
+                      {/* Opponent Side (Right) */}
+                      <div className={`competitor-result ${opponentScore > score ? 'winner' : opponentScore < score ? 'loser' : ''}`}>
+                        {opponentScore > score && <div className="winner-text">WINNER</div>}
+                        <div className="competitor-avatar-wrapper">
+                          <img 
+                            src={`/assets/${opponentAvatar}${opponentScore >= score ? 'Happy' : 'Sad'}.png`}
+                            alt="Opponent Avatar"
+                            className="competitor-avatar"
+                          />
+                        </div>
+                        <div className="competitor-name">{opponentName}</div>
+                        <div className="competitor-score">{opponentScore}</div>
+                      </div>
+                    </div>
                   )}
                   
                   {/* Flying Playlist XP Indicator - positioned fixed to viewport */}
@@ -7331,7 +7485,7 @@ const Game = () => {
                   {/* Detailed Song List - NEW ACTIVE */}
                   {showSongList && (
                   <div className="version-b-song-list">
-                    <h4 className="song-list-title">Your Answers</h4>
+                    <h4 className="song-list-title">Song Results</h4>
                     <div className="song-results-grid">
                       {allAttemptedSongs.map((attempt, index) => (
                         <div 
@@ -7341,11 +7495,29 @@ const Game = () => {
                             animationDelay: `${index * 0.15}s`
                           }}
                         >
+                          {/* Player Indicators (Left Side) */}
+                          <div className="song-result-player-indicators">
+                            {attempt.isSpecialQuestion ? (
+                              <div className={`result-icon ${attempt.pointsEarned > 0 ? 'correct' : 'incorrect'}`}>
+                                {attempt.pointsEarned > 0 ? '✓' : '✗'}
+                              </div>
+                            ) : (
+                              <>
+                                <div className={`result-icon ${attempt.artistCorrect ? 'correct' : 'incorrect'}`}>
+                                  {attempt.artistCorrect ? '✓' : '✗'}
+                                </div>
+                                <div className={`result-icon ${attempt.songCorrect ? 'correct' : 'incorrect'}`}>
+                                  {attempt.songCorrect ? '✓' : '✗'}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          
                           <div className="song-result-album">
                             <img 
                               src={attempt.song.albumArt} 
                               alt={`${attempt.song.title} album art`}
-                              className={`song-result-image ${attempt.pointsEarned === 0 ? 'grayed-out' : ''}`}
+                              className={`song-result-image ${attempt.pointsEarned === 0 && attempt.opponentPointsEarned === 0 ? 'grayed-out' : ''}`}
                             />
                           </div>
                           <div className="song-result-details">
@@ -7353,33 +7525,34 @@ const Game = () => {
                               <div className="song-result-title">{attempt.song.title}</div>
                               <div className="song-result-artist">{attempt.song.artist}</div>
                             </div>
-                            <div className="song-result-indicators">
+                            <div className="song-result-labels">
                               {attempt.isSpecialQuestion ? (
-                                // Special Question (Song Trivia, Finish Lyric): Show single indicator
-                                <div className="indicator-row">
-                                  <span className="indicator-label">Correct Answer:</span>
-                                  <div className={`indicator-circle ${attempt.pointsEarned > 0 ? 'correct' : 'incorrect'}`}>
-                                    {attempt.pointsEarned > 0 ? '✓' : '✗'}
-                                  </div>
-                                </div>
+                                <span className="result-label">Answer</span>
                               ) : (
-                                // Regular Question: Show Artist and Song indicators
                                 <>
-                                  <div className="indicator-row">
-                                    <span className="indicator-label">Artist:</span>
-                                    <div className={`indicator-circle ${attempt.artistCorrect ? 'correct' : 'incorrect'}`}>
-                                      {attempt.artistCorrect ? '✓' : '✗'}
-                                    </div>
-                                  </div>
-                                  <div className="indicator-row">
-                                    <span className="indicator-label">Song:</span>
-                                    <div className={`indicator-circle ${attempt.songCorrect ? 'correct' : 'incorrect'}`}>
-                                      {attempt.songCorrect ? '✓' : '✗'}
-                                    </div>
-                                  </div>
+                                  <span className="result-label">Artist</span>
+                                  <span className="result-label">Song</span>
                                 </>
                               )}
                             </div>
+                          </div>
+                          
+                          {/* Opponent Indicators (Right Side) */}
+                          <div className="song-result-opponent-indicators">
+                            {attempt.isSpecialQuestion ? (
+                              <div className={`result-icon ${attempt.opponentPointsEarned > 0 ? 'correct' : 'incorrect'}`}>
+                                {attempt.opponentPointsEarned > 0 ? '✓' : '✗'}
+                              </div>
+                            ) : (
+                              <>
+                                <div className={`result-icon ${attempt.opponentArtistCorrect ? 'correct' : 'incorrect'}`}>
+                                  {attempt.opponentArtistCorrect ? '✓' : '✗'}
+                                </div>
+                                <div className={`result-icon ${attempt.opponentSongCorrect ? 'correct' : 'incorrect'}`}>
+                                  {attempt.opponentSongCorrect ? '✓' : '✗'}
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -8565,10 +8738,15 @@ const Game = () => {
                               <strong>{currentQuestion.song.title}</strong> by {currentQuestion.song.artist}
                             </p>
                             <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
+                              <div className={`result-indicator player-indicator ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}>
+                                {pointsEarned > 0 ? '✓' : '✗'}
+                              </div>
                               <div className="result-category" style={{ color: '#ffffff' }}>
                                 🎤 "{formatFinishTheLyricAnswer(currentQuestion.lyricAnswer || '', pointsEarned > 0)}"
                               </div>
-                              <div className={`result-points ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}>{pointsEarned > 0 ? `+${specialQuestionNumbers.includes(questionNumber) ? (pointsEarned - timeBonusPoints) / 2 : pointsEarned - timeBonusPoints}` : '+0'}</div>
+                              <div className={`result-indicator opponent-indicator ${opponentPointsEarned > 0 ? 'correct' : 'incorrect'}`}>
+                                {opponentPointsEarned > 0 ? '✓' : '✗'}
+                              </div>
                             </div>
                             {pointsEarned > 0 && specialQuestionNumbers.includes(questionNumber) && (
                               <div className="result-row result-row-animate" style={{ animationDelay: '0.3s' }}>
@@ -8587,8 +8765,13 @@ const Game = () => {
                           <>
                             <p className="trivia-question-text">{currentQuestion.triviaQuestionText}</p>
                             <div className="result-row result-row-animate" style={{ animationDelay: '0.1s' }}>
+                              <div className={`result-indicator player-indicator ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}>
+                                {pointsEarned > 0 ? '✓' : '✗'}
+                              </div>
                               <div className={`result-category ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}><strong>Correct Answer:</strong> {currentQuestion.correctAnswer}</div>
-                              <div className={`result-points ${pointsEarned > 0 ? 'correct' : 'incorrect'}`}>{pointsEarned > 0 ? `+${specialQuestionNumbers.includes(questionNumber) ? pointsEarned / 2 : pointsEarned}` : '+0'}</div>
+                              <div className={`result-indicator opponent-indicator ${opponentPointsEarned > 0 ? 'correct' : 'incorrect'}`}>
+                                {opponentPointsEarned > 0 ? '✓' : '✗'}
+                              </div>
                             </div>
                             {pointsEarned > 0 && (
                               <>
@@ -8606,27 +8789,25 @@ const Game = () => {
                         ) : (
                           <>
                             {/* Regular questions: Show artist and song */}
-                            {pointsEarned === 10 && !artistCorrect && !songCorrect ? (
-                              <>
-                                <div className="result-row result-row-animate" style={{ animationDelay: '0.1s' }}>
-                                  <div className="result-category"><strong>Artist:</strong> {currentQuestion.song.artist}</div>
-                                </div>
-                                <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
-                                  <div className="result-category"><strong>Song:</strong> {currentQuestion.song.title}</div>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="result-row result-row-animate" style={{ animationDelay: '0.1s' }}>
-                                  <div className={`result-category ${artistCorrect ? 'correct' : 'incorrect'}`}><strong>Artist:</strong> {currentQuestion.song.artist}</div>
-                                  <div className={`result-points ${artistCorrect ? 'correct' : 'incorrect'}`}>{artistCorrect ? (specialQuestionNumbers.includes(questionNumber) ? '+20' : '+10') : '+0'}</div>
-                                </div>
-                                <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
-                                  <div className={`result-category ${songCorrect ? 'correct' : 'incorrect'}`}><strong>Song:</strong> {currentQuestion.song.title}</div>
-                                  <div className={`result-points ${songCorrect ? 'correct' : 'incorrect'}`}>{songCorrect ? (specialQuestionNumbers.includes(questionNumber) ? '+20' : '+10') : '+0'}</div>
-                                </div>
-                              </>
-                            )}
+                            {/* Result rows with Player (left) and Opponent (right) indicators */}
+                            <div className="result-row result-row-animate" style={{ animationDelay: '0.1s' }}>
+                              <div className={`result-indicator player-indicator ${artistCorrect ? 'correct' : 'incorrect'}`}>
+                                {artistCorrect ? '✓' : '✗'}
+                              </div>
+                              <div className={`result-category ${artistCorrect ? 'correct' : 'incorrect'}`}><strong>Artist:</strong> {currentQuestion.song.artist}</div>
+                              <div className={`result-indicator opponent-indicator ${opponentArtistCorrect ? 'correct' : 'incorrect'}`}>
+                                {opponentArtistCorrect ? '✓' : '✗'}
+                              </div>
+                            </div>
+                            <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
+                              <div className={`result-indicator player-indicator ${songCorrect ? 'correct' : 'incorrect'}`}>
+                                {songCorrect ? '✓' : '✗'}
+                              </div>
+                              <div className={`result-category ${songCorrect ? 'correct' : 'incorrect'}`}><strong>Song:</strong> {currentQuestion.song.title}</div>
+                              <div className={`result-indicator opponent-indicator ${opponentSongCorrect ? 'correct' : 'incorrect'}`}>
+                                {opponentSongCorrect ? '✓' : '✗'}
+                              </div>
+                            </div>
                             {pointsEarned > 0 && (
                               <>
                                 {/* Show bonus indicators */}
@@ -8696,6 +8877,8 @@ const Game = () => {
         {/* Competitive Avatars */}
         <div className="avatars">
           {version === 'Version B' ? (
+            <>
+            {/* Player Avatar (Left Side) */}
             <div className="version-b-cat-container">
               <div className="version-b-cat-avatar-wrapper">
               <img 
@@ -8709,6 +8892,7 @@ const Game = () => {
               />
               </div>
               <div className="version-b-player-label">{playerName || 'Player'}</div>
+              <div className="version-b-score-display player-score">Score: {score}</div>
               
               {/* Confetti effect */}
               {activeConfetti.map(confettiId => (
@@ -8728,6 +8912,24 @@ const Game = () => {
                 </div>
               ))}
             </div>
+            
+            {/* CPU Opponent Avatar (Right Side) */}
+            <div className="version-b-opponent-container">
+              <div className="version-b-opponent-avatar-wrapper">
+                <img 
+                  src={
+                    showFeedback 
+                      ? `/assets/${opponentAvatar}${opponentPointsEarned > 0 ? 'Happy' : 'Sad'}.png`
+                      : `/assets/${opponentAvatar}Neutral.png`
+                  }
+                  alt="Opponent Avatar" 
+                  className="version-b-opponent-avatar"
+                />
+              </div>
+              <div className="version-b-opponent-label">{opponentName}</div>
+              <div className="version-b-score-display opponent-score">Score: {opponentScore}</div>
+            </div>
+            </>
           ) : (
             <div className="avatar-container player-container">
               {/* Total Score Display Above Player Avatar */}
@@ -8896,7 +9098,7 @@ const Game = () => {
         )} */}
 
         {/* Version B Debug Controls - Debug Only */}
-        {version === 'Version B' && !showSpecialQuestionTransition && (
+        {DEBUG_ENABLED && version === 'Version B' && !showSpecialQuestionTransition && (
           <div className="debug-controls-container">
             <div className="debug-label">DEBUG</div>
             <button 
