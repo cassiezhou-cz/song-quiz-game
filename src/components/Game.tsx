@@ -449,6 +449,7 @@ const Game = () => {
   
   // Version B confetti effect
   const [activeConfetti, setActiveConfetti] = useState<number[]>([])
+  const [opponentActiveConfetti, setOpponentActiveConfetti] = useState<number[]>([])
   
   // Version B time bonus tracking
   const [questionStartTime, setQuestionStartTime] = useState<number>(0)
@@ -6157,19 +6158,33 @@ const Game = () => {
         opponentSongCorrect: cpuSongCorrect,
         opponentPointsEarned: cpuPoints
       }])
+      
+      // Trigger confetti effect only when BOTH answers are correct
+      if (version === 'Version B') {
+        // Player confetti: both correct for regular questions, or got points for special questions
+        const playerGotBothCorrect = isSpecialQuestion ? finalPoints > 0 : (artistCorrect && songCorrect)
+        if (playerGotBothCorrect) {
+          const confettiId = Date.now()
+          setActiveConfetti(prev => [...prev, confettiId])
+          setTimeout(() => {
+            setActiveConfetti(prev => prev.filter(id => id !== confettiId))
+          }, 3000)
+        }
+        
+        // Opponent confetti: both correct for regular questions, or got points for special questions
+        const opponentGotBothCorrect = isSpecialQuestion ? cpuPoints > 0 : (cpuArtistCorrect && cpuSongCorrect)
+        if (opponentGotBothCorrect) {
+          const opponentConfettiId = Date.now() + 1
+          setOpponentActiveConfetti(prev => [...prev, opponentConfettiId])
+          setTimeout(() => {
+            setOpponentActiveConfetti(prev => prev.filter(id => id !== opponentConfettiId))
+          }, 3000)
+        }
+      }
     }
     
     if (finalPoints > 0) {
       playCorrectAnswerSfx()
-      // Trigger confetti effect
-      if (version === 'Version B') {
-        const confettiId = Date.now()
-        setActiveConfetti(prev => [...prev, confettiId])
-        // Remove this confetti instance after 3 seconds
-        setTimeout(() => {
-          setActiveConfetti(prev => prev.filter(id => id !== confettiId))
-        }, 3000)
-      }
     }
     
     setShowFeedback(true)
@@ -8748,13 +8763,6 @@ const Game = () => {
                                 {opponentPointsEarned > 0 ? '✓' : '✗'}
                               </div>
                             </div>
-                            {pointsEarned > 0 && specialQuestionNumbers.includes(questionNumber) && (
-                              <div className="result-row result-row-animate" style={{ animationDelay: '0.3s' }}>
-                                <div className="result-category bonus-indicator special-question-bonus" style={{ textAlign: 'right' }}>✨ Special Question</div>
-                                <div className="result-points bonus-indicator special-question-bonus">2x</div>
-                              </div>
-                            )}
-                            <p className="points-earned-display points-earned-animate" style={{ animationDelay: (pointsEarned > 0 && specialQuestionNumbers.includes(questionNumber)) ? '0.4s' : '0.3s' }}>Points Earned: {pointsEarned}</p>
                           </>
                         ) : (pointsEarned === 10 && !artistCorrect && !songCorrect) ? (
                           <>
@@ -8773,18 +8781,6 @@ const Game = () => {
                                 {opponentPointsEarned > 0 ? '✓' : '✗'}
                               </div>
                             </div>
-                            {pointsEarned > 0 && (
-                              <>
-                                {/* Show bonus indicators */}
-                                {specialQuestionNumbers.includes(questionNumber) && (
-                                  <div className="result-row result-row-animate" style={{ animationDelay: '0.2s' }}>
-                                    <div className="result-category bonus-indicator special-question-bonus" style={{ textAlign: 'right' }}>✨ Special Question</div>
-                                    <div className="result-points bonus-indicator special-question-bonus">2x</div>
-                                  </div>
-                                )}
-                              </>
-                            )}
-                            <p className="points-earned-display points-earned-animate" style={{ animationDelay: specialQuestionNumbers.includes(questionNumber) ? '0.3s' : '0.2s' }}>Points Earned: {pointsEarned}</p>
                           </>
                         ) : (
                           <>
@@ -8808,21 +8804,6 @@ const Game = () => {
                                 {opponentSongCorrect ? '✓' : '✗'}
                               </div>
                             </div>
-                            {pointsEarned > 0 && (
-                              <>
-                                {/* Show bonus indicators */}
-                                {version === 'Version B' && (
-                                  <>
-                                    {specialQuestionNumbers.includes(questionNumber) && (
-                                      <div className="bonus-indicator special-question-bonus result-row-animate" style={{ animationDelay: '0.3s' }}>
-                                        🎯 Special Question 2x
-                                      </div>
-                                    )}
-                                  </>
-                                )}
-                                <p className="points-earned-display points-earned-animate" style={{ animationDelay: (version === 'Version B' && specialQuestionNumbers.includes(questionNumber)) ? '0.4s' : '0.3s' }}>Points Earned: {pointsEarned}</p>
-                              </>
-                            )}
                           </>
                         )}
                       </div>
@@ -8894,6 +8875,16 @@ const Game = () => {
               <div className="version-b-player-label">{playerName || 'Player'}</div>
               <div className="version-b-score-display player-score">Score: {score}</div>
               
+              {/* Floating points indicator */}
+              {showFeedback && (
+                <div className={`floating-points player-floating-points ${pointsEarned > 0 ? 'positive' : 'zero'} ${pointsEarned > 0 && specialQuestionNumbers.includes(questionNumber) ? 'special-bonus' : ''}`}>
+                  {pointsEarned > 0 && specialQuestionNumbers.includes(questionNumber) && (
+                    <span className="special-bonus-text">SPECIAL BONUS 2X</span>
+                  )}
+                  {pointsEarned > 0 ? `+${pointsEarned}` : '+0'}
+                </div>
+              )}
+              
               {/* Confetti effect */}
               {activeConfetti.map(confettiId => (
                 <div key={confettiId} className="confetti-container">
@@ -8928,6 +8919,34 @@ const Game = () => {
               </div>
               <div className="version-b-opponent-label">{opponentName}</div>
               <div className="version-b-score-display opponent-score">Score: {opponentScore}</div>
+              
+              {/* Floating points indicator */}
+              {showFeedback && (
+                <div className={`floating-points opponent-floating-points ${opponentPointsEarned > 0 ? 'positive' : 'zero'} ${opponentPointsEarned > 0 && specialQuestionNumbers.includes(questionNumber) ? 'special-bonus' : ''}`}>
+                  {opponentPointsEarned > 0 && specialQuestionNumbers.includes(questionNumber) && (
+                    <span className="special-bonus-text">SPECIAL BONUS 2X</span>
+                  )}
+                  {opponentPointsEarned > 0 ? `+${opponentPointsEarned}` : '+0'}
+                </div>
+              )}
+              
+              {/* Opponent Confetti effect */}
+              {opponentActiveConfetti.map(confettiId => (
+                <div key={confettiId} className="confetti-container">
+                  {[...Array(120)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="confetti-piece"
+                      style={{
+                        left: `${Math.random() * 120 - 10}%`,
+                        animationDelay: `${Math.random() * 0.2}s`,
+                        animationDuration: `${1 + Math.random() * 0.5}s`,
+                        backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#FF1493', '#00FF00', '#FF4500', '#9370DB'][Math.floor(Math.random() * 10)]
+                      }}
+                    />
+                  ))}
+                </div>
+              ))}
             </div>
             </>
           ) : (

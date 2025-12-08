@@ -542,6 +542,113 @@
   border-color: rgba(255, 165, 0, 0.6);
 }
 
+/* Floating Points Animation */
+.floating-points {
+  font-size: 2.8rem;
+  font-weight: 800;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  animation: floatUpFade 2s ease-out forwards;
+  pointer-events: none;
+}
+
+.floating-points.positive {
+  color: #4ecdc4;
+  text-shadow: 
+    0 0 10px rgba(78, 205, 196, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.floating-points.zero {
+  color: #ff6b6b;
+  text-shadow: 
+    0 0 10px rgba(255, 107, 107, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.player-floating-points.positive {
+  color: #4ecdc4;
+}
+
+.opponent-floating-points.positive {
+  color: #ffa500;
+  text-shadow: 
+    0 0 10px rgba(255, 165, 0, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes floatUpFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-15px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-25px);
+  }
+}
+
+/* Special Bonus floating text */
+.floating-points.special-bonus {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  animation: floatUpFadeSpecial 2.5s ease-out forwards;
+}
+
+.special-bonus-text {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, #FFD700, #FFA500, #FF6B6B, #FFD700);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: specialBonusGlow 0.5s ease-in-out infinite alternate, specialBonusShimmer 1.5s linear infinite;
+  text-shadow: none;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 20px rgba(255, 165, 0, 0.6));
+}
+
+@keyframes specialBonusGlow {
+  0% {
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 15px rgba(255, 165, 0, 0.6));
+    transform: scale(1);
+  }
+  100% {
+    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 1)) drop-shadow(0 0 25px rgba(255, 165, 0, 0.8)) drop-shadow(0 0 35px rgba(255, 107, 107, 0.5));
+    transform: scale(1.05);
+  }
+}
+
+@keyframes specialBonusShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 300% 50%;
+  }
+}
+
+@keyframes floatUpFadeSpecial {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-35px);
+  }
+}
+
 /* Version B Opponent Avatar (Right Side) */
 .version-b-opponent-container {
   position: absolute;
