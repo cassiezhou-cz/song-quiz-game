@@ -4987,9 +4987,9 @@ const Game = () => {
                   const scoreRect = finalScoreEl.getBoundingClientRect()
                   const barRect = xpBarBgEl.getBoundingClientRect()
                   
-                  // Calculate start position (Final Score center)
+                  // Calculate start position (Final Score center, offset down 40px)
                   const startX = scoreRect.left + (scoreRect.width / 2)
-                  const startY = scoreRect.top + (scoreRect.height / 2)
+                  const startY = scoreRect.top + (scoreRect.height / 2) + 40
                   
                   // Calculate where the bar will fill to based on new XP
                   const newTotalXP = playlistXP + finalScore
