@@ -488,7 +488,7 @@ const Game = () => {
     artistCorrect: boolean,
     songCorrect: boolean,
     isSpecialQuestion: boolean,
-    specialType?: 'song-trivia' | 'finish-lyric',
+    specialType?: 'song-trivia' | 'finish-lyric' | 'time-warp' | 'slo-mo' | 'hyperspeed' | 'finish-the-lyric',
     isNewlyCompleted?: boolean,
     // CPU opponent results for this song
     opponentArtistCorrect: boolean,
@@ -6089,8 +6089,9 @@ const Game = () => {
     if (currentQuestion) {
       const isSongTrivia = currentQuestion.isSongTrivia || false
       const isFinishLyric = currentQuestion.isFinishTheLyric || false
-      const isSpecialQuestion = isSongTrivia || isFinishLyric
-      const specialType = isSongTrivia ? 'song-trivia' : isFinishLyric ? 'finish-lyric' : undefined
+      // Check if this is ANY special question (Song Trivia, Finish Lyric, Time Warp, Slo-Mo, Hyperspeed)
+      const isSpecialQuestion = isSongTrivia || isFinishLyric || specialQuestionNumbers.includes(questionNumber)
+      const specialType = isSongTrivia ? 'song-trivia' : isFinishLyric ? 'finish-lyric' : specialQuestionTypes[questionNumber] || undefined
       
       // Generate unique song ID
       const songId = `${currentQuestion.song.title}-${currentQuestion.song.artist}`.toLowerCase()
@@ -6121,10 +6122,11 @@ const Game = () => {
       
       if (isSpecialQuestion) {
         // For special questions, CPU has 50% chance of getting it right
+        // Apply 2X multiplier: 40 points instead of 20
         if (cpuRoll < 0.5) {
           cpuArtistCorrect = true
           cpuSongCorrect = true
-          cpuPoints = 20
+          cpuPoints = 40
         }
       } else {
         // CPU probabilities: 30% for 0 correct, 50% for 1 correct, 20% for both correct
