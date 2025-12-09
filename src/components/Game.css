@@ -568,11 +568,16 @@
 
 /* Floating Points Animation */
 .floating-points {
+  position: absolute;
+  top: 100%; /* Position below the score display */
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 2.8rem;
   font-weight: 800;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   animation: floatUpFade 2s ease-out forwards;
   pointer-events: none;
+  white-space: nowrap;
 }
 
 .floating-points.positive {
@@ -603,15 +608,15 @@
 @keyframes floatUpFade {
   0% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
   70% {
     opacity: 1;
-    transform: translateY(-15px);
+    transform: translateX(-50%) translateY(-15px);
   }
   100% {
     opacity: 0;
-    transform: translateY(-25px);
+    transform: translateX(-50%) translateY(-25px);
   }
 }
 
@@ -661,15 +666,15 @@
 @keyframes floatUpFadeSpecial {
   0% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
   80% {
     opacity: 1;
-    transform: translateY(-20px);
+    transform: translateX(-50%) translateY(-20px);
   }
   100% {
     opacity: 0;
-    transform: translateY(-35px);
+    transform: translateX(-50%) translateY(-35px);
   }
 }
 
