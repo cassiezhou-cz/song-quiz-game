@@ -376,7 +376,7 @@ const getLevelFromTotalXP = (totalXP: number, currentLevel: number): { level: nu
 }
 
 // Set to true to show debug controls (restart button, special question triggers, etc.)
-const DEBUG_ENABLED = false
+const DEBUG_ENABLED = true
 
 // Available avatar types for CPU opponent (excluding player's avatar)
 const AVATAR_TYPES = ['Cat', 'Boy', 'Girl', 'Corgi', 'Robot', 'Panda'] as const
@@ -6752,6 +6752,10 @@ const Game = () => {
         
         // After 3 seconds, hide transition and proceed to Special Question
         setTimeout(() => {
+          // Reset feedback state BEFORE showing avatars again to prevent floating points flash
+          setShowFeedback(false)
+          setSelectedAnswer(null)
+          
           setShowSpecialQuestionTransition(false)
           setQuestionNumber(newQuestionNumber)
           console.log('🎯 SPECIAL QUESTION: Starting Question', newQuestionNumber, 'with special scoring')
@@ -8805,7 +8809,7 @@ const Game = () => {
         </main>}
 
         {/* Version B Manual Scoring - Outside game-main so it's visible during fade */}
-        {version === 'Version B' && !selectedAnswer && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
+        {version === 'Version B' && !selectedAnswer && !showFeedback && !showSpecialQuestionTransition && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
           <div className="debug-scoring-container">
             <div className="debug-label-scoring">DEBUG SCORING</div>
             <div className="manual-scoring">
@@ -8857,8 +8861,8 @@ const Game = () => {
         
         {/* Version C Boosters removed - now using progressive streak multiplier system */}
         
-        {/* Competitive Avatars */}
-        <div className="avatars">
+        {/* Competitive Avatars - hidden during Special Question transition */}
+        <div className="avatars" style={{ display: showSpecialQuestionTransition ? 'none' : 'flex' }}>
           {version === 'Version B' ? (
             <>
             {/* Player Avatar (Left Side) */}
@@ -9094,13 +9098,16 @@ const Game = () => {
 
 
 
-        <button
-          className="back-to-playlists-btn"
-          onClick={backToPlaylist}
-        >
-          <span style={{ position: 'absolute', top: '-8px', right: '-2px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.7rem', fontWeight: 'bold' }}>ESC</span>
-          ← Back to Playlists
-        </button>
+        {/* Back to Playlists button - hidden during Special Question transition */}
+        {!showSpecialQuestionTransition && (
+          <button
+            className="back-to-playlists-btn"
+            onClick={backToPlaylist}
+          >
+            <span style={{ position: 'absolute', top: '-8px', right: '-2px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.7rem', fontWeight: 'bold' }}>ESC</span>
+            ← Back to Playlists
+          </button>
+        )}
 
         {/* Version B Special Questions Debug Display - DISABLED */}
         {/* {version === 'Version B' && specialQuestionNumbers.length > 0 && (
