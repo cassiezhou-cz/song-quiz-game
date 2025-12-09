@@ -4979,7 +4979,8 @@ const Game = () => {
               
               // Calculate positions for the flying indicator animation
               setTimeout(() => {
-                const finalScoreEl = document.querySelector('.final-score-value')
+                // For Version B, the player's score is in .competitor-score within the left competitor card
+                const finalScoreEl = document.querySelector('.results-competitor-left .competitor-score')
                 const xpBarBgEl = document.querySelector('.playlist-xp-bar-bg')
                 
                 if (finalScoreEl && xpBarBgEl) {
