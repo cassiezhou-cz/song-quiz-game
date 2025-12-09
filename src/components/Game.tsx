@@ -7391,41 +7391,6 @@ const Game = () => {
                     <h3 className="victory-message">Quiz Complete!</h3>
                   )}
                   
-                  {/* Competitive Results - Player vs Opponent */}
-                  {showFinalScore && (
-                    <div className="competitive-results">
-                      {/* Player Side (Left) */}
-                      <div className={`competitor-result ${score > opponentScore ? 'winner' : score < opponentScore ? 'loser' : ''}`}>
-                        {score > opponentScore && <div className="winner-text">WINNER</div>}
-                        <div className="competitor-avatar-wrapper">
-                          <img 
-                            src={getAvatarPath(score >= opponentScore ? 'Happy' : 'Sad', hatUnlocked)}
-                            alt="Player Avatar"
-                            className="competitor-avatar"
-                          />
-                        </div>
-                        <div className="competitor-name">{playerName || 'Player'}</div>
-                        <div className="competitor-score">{displayedScore}</div>
-                      </div>
-                      
-                      {/* VS Divider */}
-                      <div className="vs-text">VS</div>
-                      
-                      {/* Opponent Side (Right) */}
-                      <div className={`competitor-result ${opponentScore > score ? 'winner' : opponentScore < score ? 'loser' : ''}`}>
-                        {opponentScore > score && <div className="winner-text">WINNER</div>}
-                        <div className="competitor-avatar-wrapper">
-                          <img 
-                            src={`/assets/${opponentAvatar}${opponentScore >= score ? 'Happy' : 'Sad'}.png`}
-                            alt="Opponent Avatar"
-                            className="competitor-avatar"
-                          />
-                        </div>
-                        <div className="competitor-name">{opponentName}</div>
-                        <div className="competitor-score">{opponentScore}</div>
-                      </div>
-                    </div>
-                  )}
                   
                   {/* Flying Playlist XP Indicator - positioned fixed to viewport */}
                   {showFlyingPlaylistXP && (
@@ -7777,6 +7742,39 @@ const Game = () => {
 
             </div>
           </main>
+          
+          {/* Version B Competitive Results - Positioned on sides */}
+          {version === 'Version B' && showFinalScore && (
+            <>
+              {/* Player Side (Left) */}
+              <div className={`results-competitor-left ${score > opponentScore ? 'winner' : score < opponentScore ? 'loser' : ''}`}>
+                {score > opponentScore && <div className="winner-text">WINNER</div>}
+                <div className="competitor-avatar-wrapper">
+                  <img 
+                    src={getAvatarPath(score >= opponentScore ? 'Happy' : 'Sad', hatUnlocked)}
+                    alt="Player Avatar"
+                    className="competitor-avatar"
+                  />
+                </div>
+                <div className="competitor-name">{playerName || 'Player'}</div>
+                <div className="competitor-score">{displayedScore}</div>
+              </div>
+              
+              {/* Opponent Side (Right) */}
+              <div className={`results-competitor-right ${opponentScore > score ? 'winner' : opponentScore < score ? 'loser' : ''}`}>
+                {opponentScore > score && <div className="winner-text">WINNER</div>}
+                <div className="competitor-avatar-wrapper">
+                  <img 
+                    src={`/assets/${opponentAvatar}${opponentScore >= score ? 'Happy' : 'Sad'}.png`}
+                    alt="Opponent Avatar"
+                    className="competitor-avatar"
+                  />
+                </div>
+                <div className="competitor-name">{opponentName}</div>
+                <div className="competitor-score">{opponentScore}</div>
+              </div>
+            </>
+          )}
           
           {/* Competitive Avatars */}
           <div className="avatars">

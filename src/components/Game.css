@@ -3070,36 +3070,37 @@
   position: relative; /* Establish positioning context */
 }
 
-/* Competitive Results - Player vs Opponent */
-.competitive-results {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3rem;
-  margin: 1.5rem 0 2rem 0;
-}
-
-.competitor-result {
+/* Competitive Results - Player vs Opponent (Flanking progress bar) */
+.results-competitor-left {
+  position: fixed;
+  top: 200px;
+  left: calc(50% - 600px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1.5rem 2rem;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-  min-width: 180px;
+  gap: 0.4rem;
+  z-index: 10;
 }
 
-.competitor-result.winner {
-  border-color: rgba(255, 215, 0, 0.8);
-  background: rgba(255, 215, 0, 0.1);
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+.results-competitor-right {
+  position: fixed;
+  top: 200px;
+  right: calc(50% - 600px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 10;
 }
 
-.competitor-result.loser {
-  opacity: 0.8;
+.results-competitor-left.winner,
+.results-competitor-right.winner {
+  filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
+}
+
+.results-competitor-left.loser,
+.results-competitor-right.loser {
+  opacity: 0.6;
 }
 
 .winner-text {
@@ -3171,12 +3172,6 @@
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-.vs-text {
-  font-size: 2rem;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.6);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
 
 .score-button.score-30 {
   background: linear-gradient(135deg, #f59e0b, #d97706);
