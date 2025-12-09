@@ -3071,6 +3071,11 @@
 }
 
 /* Competitive Results - Player vs Opponent (Flanking progress bar) */
+.results-competitors-wrapper {
+  opacity: 0;
+  animation: competitorAppear 0.3s ease-in 0.5s forwards;
+}
+
 .results-competitor-left {
   position: fixed;
   top: 200px;
@@ -3091,6 +3096,12 @@
   align-items: center;
   gap: 0.4rem;
   z-index: 10;
+}
+
+@keyframes competitorAppear {
+  to {
+    opacity: 1;
+  }
 }
 
 .results-competitor-left.winner,

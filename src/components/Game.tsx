@@ -7745,7 +7745,7 @@ const Game = () => {
           
           {/* Version B Competitive Results - Positioned on sides */}
           {version === 'Version B' && showFinalScore && (
-            <>
+            <div className="results-competitors-wrapper">
               {/* Player Side (Left) */}
               <div className={`results-competitor-left ${score > opponentScore ? 'winner' : score < opponentScore ? 'loser' : ''}`}>
                 {score > opponentScore && <div className="winner-text">WINNER</div>}
@@ -7773,7 +7773,7 @@ const Game = () => {
                 <div className="competitor-name">{opponentName}</div>
                 <div className="competitor-score">{opponentScore}</div>
               </div>
-            </>
+            </div>
           )}
           
           {/* Competitive Avatars */}
