@@ -38,6 +38,11 @@ const PlaylistPrompt = ({
 }: PlaylistPromptProps) => {
   const navigate = useNavigate()
   
+  // Matchmaking state
+  const [isMatchmaking, setIsMatchmaking] = useState(false)
+  const [matchmakingText, setMatchmakingText] = useState('Searching for opponent...')
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  
   console.log(`🎯🎯🎯 PlaylistPrompt for "${playlist}": level=${level}`)
 
   // Prevent body scroll when modal is open
@@ -51,6 +56,9 @@ const PlaylistPrompt = ({
   // Debug hotkeys for quick navigation
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
+      // Disable shortcuts during matchmaking
+      if (isMatchmaking) return
+      
       const key = event.key.toLowerCase()
       
       if (event.key === 'Escape') {
@@ -74,7 +82,7 @@ const PlaylistPrompt = ({
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [level, endlessModeUnlocked, onClose])
+  }, [level, endlessModeUnlocked, onClose, isMatchmaking])
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -85,9 +93,28 @@ const PlaylistPrompt = ({
   const xpRequired = getPlaylistXPRequired(level)
 
   const handlePlay = () => {
-    const gameVersion = 'Version B'
-    const url = `/game/${playlist}?version=${encodeURIComponent(gameVersion)}&level=${level}`
-    navigate(url)
+    // Start matchmaking sequence
+    setIsMatchmaking(true)
+    setMatchmakingText('Searching for opponent...')
+    
+    // Random delay between 2-4 seconds before finding opponent
+    const searchDuration = 2000 + Math.random() * 2000
+    
+    setTimeout(() => {
+      setMatchmakingText('Opponent found!')
+      
+      // Start fade-out transition after showing "Opponent found!" for a moment
+      setTimeout(() => {
+        setIsTransitioning(true)
+        
+        // Navigate after fade-out completes
+        setTimeout(() => {
+          const gameVersion = 'Version B'
+          const url = `/game/${playlist}?version=${encodeURIComponent(gameVersion)}&level=${level}`
+          navigate(url)
+        }, 600) // Match the CSS transition duration
+      }, 800) // Show "Opponent found!" for 0.8s before fading
+    }, searchDuration)
   }
 
   const handleEndlessMode = () => {
@@ -110,8 +137,24 @@ const PlaylistPrompt = ({
   }
 
   return (
-    <div className="playlist-prompt-backdrop" onClick={handleBackdropClick}>
-      <div className="playlist-prompt-modal">
+    <div className={`playlist-prompt-backdrop ${isTransitioning ? 'transitioning' : ''}`} onClick={isMatchmaking ? undefined : handleBackdropClick}>
+      <div className={`playlist-prompt-modal ${isTransitioning ? 'transitioning' : ''}`}>
+        {/* Matchmaking Overlay */}
+        {isMatchmaking && (
+          <div className="matchmaking-overlay">
+            <div className="matchmaking-content">
+              {matchmakingText === 'Searching for opponent...' ? (
+                <div className="matchmaking-spinner"></div>
+              ) : (
+                <div className="matchmaking-found-icon">✓</div>
+              )}
+              <div className={`matchmaking-text ${matchmakingText === 'Opponent found!' ? 'found' : ''}`}>
+                {matchmakingText}
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="playlist-prompt-content">
           {/* Playlist Name */}
           <header className="prompt-header">

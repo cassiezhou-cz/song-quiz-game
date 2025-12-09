@@ -413,6 +413,9 @@ const Game = () => {
   const victoryApplauseSfxRef = useRef<HTMLAudioElement>(null)
   const versionCScoreSfxRef = useRef<HTMLAudioElement>(null) // Version C scoring sound
   
+  // Track initial page fade-in to hide loading screen during transition
+  const [isInitialFadeComplete, setIsInitialFadeComplete] = useState(false)
+  
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -530,6 +533,14 @@ const Game = () => {
     setOpponentName(randomName)
     
     console.log(`🤖 CPU Opponent initialized: ${randomName} with ${randomAvatar} avatar`)
+  }, [])
+
+  // Mark initial fade-in as complete after 1100ms (0.5s delay + 0.6s fade)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialFadeComplete(true)
+    }, 1100)
+    return () => clearTimeout(timer)
   }, [])
 
   // Initialize Daily Challenge mode with Song Trivia questions
@@ -4453,7 +4464,8 @@ const Game = () => {
     // Reduced delay for Version C rapid-fire gameplay
     // Add extended delay for Version B first question (varies based on lifeline presence)
       let autoPlayDelay = version === 'Version C' ? 100 : 500
-      if (version === 'Version B' && questionNumber === 1 && hasShownLifelineEntrance.current && !isDailyChallenge) {
+      const currentQuestionNum = actualQuestionNumber !== undefined ? actualQuestionNumber : questionNumber
+      if (version === 'Version B' && currentQuestionNum === 1 && hasShownLifelineEntrance.current && !isDailyChallenge) {
         // Use passed lifelines if provided, otherwise fall back to state
         const lifelinesToCheck = lifelinesForRun !== undefined ? lifelinesForRun : availableLifelines
         // Check if there were lifelines to show
@@ -4606,8 +4618,11 @@ const Game = () => {
     if (!hasStartedInitialQuestion.current && !isDailyChallenge) {
       console.log('🎵 USEEFFECT: Starting initial question for playlist:', playlist)
       hasStartedInitialQuestion.current = true
-      // Pass lifelines directly for Version B to avoid state timing issues
-      startNewQuestion(false, version === 'Version B' ? lifelinesForInitialQuestion : undefined)
+      // Delay initial animations to allow page fade-in to complete (0.5s delay + 0.6s fade = 1.1s)
+      setTimeout(() => {
+        // Pass lifelines directly for Version B to avoid state timing issues
+        startNewQuestion(false, version === 'Version B' ? lifelinesForInitialQuestion : undefined)
+      }, 1100)
     }
   }, [playlist])
   
@@ -7351,22 +7366,8 @@ const Game = () => {
   }
 
 
-  // Only show loading screen if no current question AND it's not Version B special question
-  if (!currentQuestion && !(version === 'Version B' && questionNumber === totalQuestions)) {
-    return (
-      <div className="game-loading">
-        <div className="loading-content">
-          <img 
-            src="/assets/Opponent found.png" 
-            alt="Opponent Found" 
-            className="loading-image"
-          />
-          <h2 className="loading-title">Opponent Found!</h2>
-          <p className="loading-subtitle">Preparing your musical challenge...</p>
-        </div>
-      </div>
-    )
-  }
+  // Skip the old loading screen entirely - we now use matchmaking screen before game loads
+  // The black overlay fade-out handles the transition smoothly
 
   if (gameComplete) {
     return (
@@ -8046,7 +8047,7 @@ const Game = () => {
       <div className="game-content">
         
         <header className="game-header" style={{ display: showSpecialQuestionTransition ? 'none' : 'flex' }}>
-          <div className="quiz-info">
+          {isInitialFadeComplete && <div className="quiz-info">
             {(() => {
               console.log('🕐 TIMER RENDERING CHECK:', { version, isVersionC: version === 'Version C', timeRemaining });
               return null;
@@ -8111,7 +8112,7 @@ const Game = () => {
               </div>
             )}
             {/* Version B Star Progress moved to right side */}
-          </div>
+          </div>}
         </header>
 
       {/* Version B Special Question Transition Screen */}
@@ -8201,7 +8202,7 @@ const Game = () => {
         </div>
       )}
 
-        <main className="game-main" style={{ display: showSpecialQuestionTransition ? 'none' : 'block' }}>
+        {isInitialFadeComplete && <main className="game-main" style={{ display: showSpecialQuestionTransition ? 'none' : 'block' }}>
           <div className="quiz-section">
             {!showFeedback && (
               <div className="audio-controls">
@@ -8523,56 +8524,7 @@ const Game = () => {
               </div>
             )} */}
             
-            {/* Version B Manual Scoring - Debug Only */}
-            {version === 'Version B' && !selectedAnswer && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
-              <div className="debug-scoring-container">
-                <div className="debug-label-scoring">DEBUG SCORING</div>
-                <div className="manual-scoring">
-                  <div className="score-buttons">
-                    <button
-                      className="score-button score-0"
-                      onClick={() => handleVersionBScore(0, 'none')}
-                      style={{ position: 'relative' }}
-                    >
-                      <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>Q</span>
-                      None
-                    </button>
-                  <div className="score-button-group">
-                    <button
-                      className="score-button score-10 score-half"
-                      onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'artist')}
-                      style={{ position: 'relative' }}
-                    >
-                      <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>W</span>
-                      A
-                    </button>
-                    <button
-                      className="score-button score-10 score-half"
-                      onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'song')}
-                      style={{ position: 'relative' }}
-                    >
-                      <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>E</span>
-                      S
-                    </button>
-                  </div>
-                  <button
-                    className="score-button score-20"
-                    onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20, 'both')}
-                    style={{ position: 'relative' }}
-                  >
-                    <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>R</span>
-                    Both
-                  </button>
-                    {/* No special scoring for question 7 since it's now a special question */}
-                  </div>
-                  {currentQuestion && (
-                    <div className="song-number-display">
-                      Song #{getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Version B Manual Scoring moved outside game-main for visibility during fade */}
             
             {/* Finish The Lyric UI */}
             {version === 'Version B' && currentQuestion && currentQuestion.isFinishTheLyric && !selectedAnswer && !showFeedback && (
@@ -8850,7 +8802,58 @@ const Game = () => {
               </div>
             )}
           </div>
-        </main>
+        </main>}
+
+        {/* Version B Manual Scoring - Outside game-main so it's visible during fade */}
+        {version === 'Version B' && !selectedAnswer && !showFeedback && !(currentQuestion && currentQuestion.isSongTrivia) && !(currentQuestion && currentQuestion.isFinishTheLyric) && (
+          <div className="debug-scoring-container">
+            <div className="debug-label-scoring">DEBUG SCORING</div>
+            <div className="manual-scoring">
+              <div className="score-buttons">
+                <button
+                  className="score-button score-0"
+                  onClick={() => handleVersionBScore(0, 'none')}
+                  style={{ position: 'relative' }}
+                >
+                  <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>Q</span>
+                  None
+                </button>
+                <div className="score-button-group">
+                  <button
+                    className="score-button score-10 score-half"
+                    onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'artist')}
+                    style={{ position: 'relative' }}
+                  >
+                    <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>W</span>
+                    A
+                  </button>
+                  <button
+                    className="score-button score-10 score-half"
+                    onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 20 : 10, 'song')}
+                    style={{ position: 'relative' }}
+                  >
+                    <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>E</span>
+                    S
+                  </button>
+                </div>
+                <button
+                  className="score-button score-20"
+                  onClick={() => handleVersionBScore(specialQuestionNumbers.includes(questionNumber) ? 40 : 20, 'both')}
+                  style={{ position: 'relative' }}
+                >
+                  <span style={{ position: 'absolute', top: '4px', right: '4px', background: '#000', color: '#fff', padding: '2px 6px', borderRadius: '3px', fontSize: '0.75rem', fontWeight: 'bold' }}>R</span>
+                  Both
+                </button>
+              </div>
+              <div className="song-number-display">
+                {currentQuestion 
+                  ? `Song #${getSongNumber(playlist || '2010s', currentQuestion.song.title, currentQuestion.song.artist)}`
+                  : 'Song #—'
+                }
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Version C Boosters removed - now using progressive streak multiplier system */}
         

@@ -10,6 +10,29 @@
   position: relative;
 }
 
+/* Black overlay that fades out for smooth transition from matchmaking */
+.game-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: black;
+  z-index: 9999;
+  pointer-events: none;
+  animation: fadeOutOverlay 0.6s ease-out 0.5s forwards; /* 0.5s delay before fade starts */
+}
+
+@keyframes fadeOutOverlay {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 /* Version B specific background */
 .game-container.version-b {
   background: url('/assets/VersionBBackground.png') center/cover no-repeat fixed;
@@ -20,7 +43,8 @@
   background: url('/assets/VersionCBackground.png') center/cover no-repeat fixed;
 }
 
-.game-container::before {
+/* Dark overlay for background - using ::after since ::before is used for fade transition */
+.game-container::after {
   content: '';
   position: absolute;
   top: 0;
@@ -475,7 +499,7 @@
   animation: celebrate 0.8s ease-in-out;
 }
 
-/* Version B Cat Avatar */
+/* Version B Cat Avatar - z-index above fade overlay so it's visible during transition */
 .version-b-cat-container {
   position: absolute;
   top: 38%;
@@ -486,7 +510,7 @@
   align-items: center;
   gap: 1rem;
   pointer-events: none;
-  z-index: 3;
+  z-index: 10001;
 }
 
 .version-b-cat-avatar-wrapper {
@@ -649,7 +673,7 @@
   }
 }
 
-/* Version B Opponent Avatar (Right Side) */
+/* Version B Opponent Avatar (Right Side) - z-index above fade overlay so it's visible during transition */
 .version-b-opponent-container {
   position: absolute;
   top: 38%;
@@ -660,7 +684,7 @@
   align-items: center;
   gap: 1rem;
   pointer-events: none;
-  z-index: 3;
+  z-index: 10001;
 }
 
 .version-b-opponent-avatar-wrapper {
@@ -896,7 +920,7 @@
   }
 }
 
-/* Top-left back button */
+/* Top-left back button - z-index above fade overlay so it's visible during transition */
 .back-to-playlists-btn {
   position: fixed;
   top: 2rem;
@@ -910,7 +934,7 @@
   transition: all 0.3s ease;
   font-size: 1rem;
   font-weight: 500;
-  z-index: 20;
+  z-index: 10001;
 }
 
 .back-to-playlists-btn:hover {
@@ -970,7 +994,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
-  z-index: 20;
+  z-index: 10001;
   background: rgba(0, 0, 0, 0.85);
   border: 3px solid rgba(255, 165, 0, 0.8);
   border-radius: 12px;
@@ -1042,7 +1066,7 @@
   font-style: italic;
 }
 
-/* Debug Scoring Container */
+/* Debug Scoring Container - z-index above fade overlay so it's visible during transition */
 .debug-scoring-container {
   position: fixed;
   bottom: 2rem;
@@ -1050,7 +1074,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 20;
+  z-index: 10001;
   background: rgba(0, 0, 0, 0.85);
   border: 3px solid rgba(255, 165, 0, 0.8);
   border-radius: 12px;
@@ -1058,6 +1082,7 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(10px);
   overflow: hidden;
+  min-width: 200px; /* Fixed width to prevent resize */
 }
 
 .debug-label-scoring {
@@ -1078,6 +1103,7 @@
 .debug-scoring-container .manual-scoring {
   margin: 1rem;
   padding: 0;
+  min-height: 130px; /* Reserve space for song-number-display to prevent jump */
 }
 
 .debug-scoring-container .score-buttons {

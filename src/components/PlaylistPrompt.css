@@ -11,6 +11,11 @@
   align-items: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease-out;
+  transition: background-color 0.6s ease-out;
+}
+
+.playlist-prompt-backdrop.transitioning {
+  background-color: rgba(0, 0, 0, 1);
 }
 
 .playlist-prompt-modal {
@@ -24,6 +29,13 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   border: 3px solid #9b7fd8;
   animation: slideUp 0.3s ease-out;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  position: relative;
+}
+
+.playlist-prompt-modal.transitioning {
+  opacity: 0;
+  transform: scale(0.95);
 }
 
 .playlist-prompt-content {
@@ -333,6 +345,100 @@
   background-clip: text;
   text-shadow: 0 4px 8px rgba(247, 183, 49, 0.4);
   letter-spacing: 2px;
+}
+
+/* Matchmaking Overlay */
+.matchmaking-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(45, 27, 105, 0.97);
+  border-radius: 17px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.matchmaking-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.matchmaking-spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(155, 127, 216, 0.3);
+  border-top: 5px solid #9b7fd8;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.matchmaking-found-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: white;
+  animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 0 30px rgba(78, 205, 196, 0.6);
+}
+
+.matchmaking-text {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.matchmaking-text.found {
+  color: #4ECDC4;
+  animation: pulseGlow 0.5s ease-out;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulseGlow {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 0 rgba(78, 205, 196, 0);
+  }
+  50% {
+    transform: scale(1.05);
+    text-shadow: 0 0 20px rgba(78, 205, 196, 0.8);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 10px rgba(78, 205, 196, 0.4);
+  }
 }
 
 /* Animations */
