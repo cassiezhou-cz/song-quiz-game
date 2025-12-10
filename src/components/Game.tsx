@@ -4667,6 +4667,9 @@ const Game = () => {
     }
   }, [gameComplete, playlist, score, songsWithPoints])
 
+  // Ref to store the "time's up" callback timeout so we can cancel it
+  const timeUpCallbackRef = useRef<NodeJS.Timeout | null>(null)
+
   // Version B per-question timer effect
   useEffect(() => {
     if (version === 'Version B' && versionBTimerRunning && versionBTimeRemaining > 0 && !showFeedback) {
@@ -4675,12 +4678,6 @@ const Game = () => {
           if (prev <= 1) {
             // Time's up - set to 0 and let the bar animation complete
             setVersionBTimerRunning(false)
-            // Wait for the bar animation to reach 0% before auto-scoring
-            setTimeout(() => {
-              if (!selectedAnswer) {
-                handleVersionBScore(0, 'none')
-              }
-            }, 1000) // Match the CSS transition duration
             return 0
           }
           return prev - 1
@@ -4694,7 +4691,27 @@ const Game = () => {
         versionBTimerRef.current = null
       }
     }
-  }, [version, versionBTimerRunning, versionBTimeRemaining, showFeedback, selectedAnswer])
+  }, [version, versionBTimerRunning, versionBTimeRemaining, showFeedback])
+
+  // Separate effect to handle "time's up" auto-scoring (prevents duplicate calls from StrictMode)
+  useEffect(() => {
+    // When timer hits 0 and we haven't answered yet, schedule auto-scoring
+    if (version === 'Version B' && versionBTimeRemaining === 0 && !versionBTimerRunning && !selectedAnswer && !showFeedback) {
+      // Wait for the bar animation to reach 0% before auto-scoring
+      timeUpCallbackRef.current = setTimeout(() => {
+        if (!selectedAnswer) {
+          handleVersionBScore(0, 'none')
+        }
+      }, 1000) // Match the CSS transition duration
+    }
+    
+    return () => {
+      if (timeUpCallbackRef.current) {
+        clearTimeout(timeUpCallbackRef.current)
+        timeUpCallbackRef.current = null
+      }
+    }
+  }, [version, versionBTimeRemaining, versionBTimerRunning, selectedAnswer, showFeedback])
 
   // Load XP and unlocked lifelines on mount
   useEffect(() => {
